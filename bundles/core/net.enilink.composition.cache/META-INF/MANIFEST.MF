@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Composition Cache
+Bundle-SymbolicName: net.enilink.composition.cache
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package: com.google.inject;version="2.0.0",
+ com.google.inject.binder;version="2.0.0",
+ com.google.inject.multibindings;version="2.0.0",
+ org.objectweb.asm;version="3.2.0",
+ org.objectweb.asm.commons;version="3.2.0",
+ org.objectweb.asm.signature;version="3.2.0",
+ org.objectweb.asm.tree;version="3.2.0",
+ org.objectweb.asm.util;version="3.2.0",
+ net.enilink.composition,
+ net.enilink.composition.annotations,
+ net.enilink.composition.asm,
+ net.enilink.composition.asm.meta,
+ net.enilink.composition.asm.util,
+ net.enilink.composition.concepts,
+ net.enilink.composition.exceptions,
+ net.enilink.composition.mappers,
+ net.enilink.composition.vocabulary,
+ org.slf4j
+Export-Package: net.enilink.composition.cache,
+ net.enilink.composition.cache.annotations,
+ net.enilink.composition.cache.behaviours
