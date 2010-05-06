@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/net.enilink.komma.codegen/src/main/java/net.enilink.komma/converter/OntologyConverter.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="net.enilink.komma.converter.OntologyConverter"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-e net.enilink.komma.IEntity&#13;&#10;-b &quot;net.enilink.vocab.rdfs=http://www.w3.org/2000/01/rdf-schema#&quot;&#13;&#10;-b &quot;net.enilink.vocab.rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns#&quot;&#13;&#10;-j  ${workspace_loc:net.enilink.vocab.rdfs}\lib\rdfs.jar &#13;&#10;${workspace_loc:net.enilink.vocab.rdfs}\META-INF\ontologies\rdfs-schema.rdf"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="net.enilink.komma.codegen"/>
+</launchConfiguration>

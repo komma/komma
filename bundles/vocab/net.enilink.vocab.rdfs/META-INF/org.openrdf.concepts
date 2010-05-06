@@ -1,0 +1,11 @@
+net.enilink.vocab.rdf.Alt
+net.enilink.vocab.rdf.Bag
+net.enilink.vocab.rdf.List
+net.enilink.vocab.rdf.Property
+net.enilink.vocab.rdfs.Class
+net.enilink.vocab.rdfs.Container
+net.enilink.vocab.rdfs.ContainerMembershipProperty
+net.enilink.vocab.rdfs.Datatype
+net.enilink.vocab.rdf.Seq
+net.enilink.vocab.rdfs.Resource
+net.enilink.vocab.rdf.Statement

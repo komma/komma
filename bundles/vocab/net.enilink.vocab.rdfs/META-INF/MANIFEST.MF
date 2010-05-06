@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Rdfs Plug-in
+Bundle-SymbolicName: net.enilink.vocab.rdfs
+Bundle-Version: 1.0.0
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: net.enilink.komma.core
+Export-Package: net.enilink.vocab.rdf,
+ net.enilink.vocab.rdfs,
+ net.enilink.vocab.xmlschema
