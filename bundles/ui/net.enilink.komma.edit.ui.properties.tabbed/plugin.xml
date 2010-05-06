@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<!--
+    Copyright (c) 2009 Fraunhofer IWU and others.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+   
+    Contributors:
+        Fraunhofer IWU - initial API and implementation
+ -->
+
+<plugin>
+      <extension
+         point="org.eclipse.ui.views.properties.tabbed.propertyContributor">
+      <propertyContributor
+            contributorId="net.enilink.komma.edit.ui">
+         <propertyCategory
+               category="properties">
+         </propertyCategory>
+      </propertyContributor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views.properties.tabbed.propertyTabs">
+      <propertyTabs
+            contributorId="net.enilink.komma.edit.ui">
+         <propertyTab
+               afterTab=""
+               category="properties"
+               id="formTab"
+               label="Form">
+         </propertyTab>
+         <propertyTab
+               afterTab=""
+               category="properties"
+               id="propertiesTab"
+               label="Properties">
+         </propertyTab>
+         <propertyTab
+               category="properties"
+               id="detailsTab"
+               label="Details">
+         </propertyTab>
+      </propertyTabs>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views.properties.tabbed.propertySections">
+      <propertySections
+            contributorId="net.enilink.komma.edit.ui">
+         <propertySection
+               class="net.enilink.komma.edit.ui.properties.tabbed.ExtendedAdvancedPropertiesSection"
+               id="propertiesSection"
+               tab="propertiesTab">
+             <input
+                  type="java.lang.Object">
+            </input>
+         </propertySection>
+          <propertySection
+               class="net.enilink.komma.edit.ui.properties.tabbed.internal.sections.PropertiesSection"
+               id="formSection"
+               tab="formTab">
+             <input
+                  type="net.enilink.komma.model.IObject">
+            </input>
+         </propertySection>
+          <propertySection
+                class="net.enilink.komma.edit.ui.properties.tabbed.internal.sections.DetailPropertiesSection"
+                id="detailsSection"
+                tab="detailsTab">
+             <input
+                   type="net.enilink.komma.model.IObject">
+             </input>
+          </propertySection>
+      </propertySections>
+   </extension>
+</plugin>
