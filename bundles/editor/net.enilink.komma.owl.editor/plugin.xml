@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<!--
+    Copyright (c) 2009 Fraunhofer IWU and others.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+   
+    Contributors:
+        Fraunhofer IWU - initial API and implementation
+ -->
+
+<plugin>
+
+<extension
+      point="org.eclipse.ui.views">
+   <category
+         id="net.enilink.komma.owl.editor"
+         name="OWL Editor">
+   </category>
+   <view
+         category="net.enilink.komma.owl.editor"
+         class="net.enilink.komma.owl.editor.internal.classes.ClassesView"
+         icon="icons/full/obj16/Class.png"
+         id="net.enilink.komma.owl.editor.views.ClassesView"
+         name="Classes">
+   </view>
+   <view
+         category="net.enilink.komma.owl.editor"
+         class="net.enilink.komma.owl.editor.internal.individuals.IndividualsView"
+         id="net.enilink.komma.owl.editor.views.IndividualsView"
+         name="Individuals">
+   </view>
+   <view
+         category="net.enilink.komma.owl.editor"
+         class="net.enilink.komma.owl.editor.internal.ontology.ImportsView"
+         id="net.enilink.komma.owl.editor.views.ImportsView"
+         name="Imports">
+   </view>
+   <view
+         category="net.enilink.komma.owl.editor"
+         class="net.enilink.komma.owl.editor.internal.ontology.NamespacesView"
+         icon="icons/full/obj16/Namespace.png"
+         id="net.enilink.komma.owl.editor.views.NamespacesView"
+         name="Namespaces">
+   </view>
+   <view
+         category="net.enilink.komma.owl.editor"
+         class="net.enilink.komma.owl.editor.internal.properties.OtherPropertiesView"
+         icon="icons/full/obj16/Property.png"
+         id="net.enilink.komma.owl.editor.views.OtherPropertiesView"
+         name="Other Properties">
+   </view>
+   <view
+         category="net.enilink.komma.owl.editor"
+         class="net.enilink.komma.owl.editor.internal.properties.ObjectPropertiesView"
+         icon="icons/full/obj16/ObjectProperty.png"
+         id="net.enilink.komma.owl.editor.views.ObjectPropertiesView"
+         name="Object Properties">
+   </view>
+   <view
+         category="net.enilink.komma.owl.editor"
+         class="net.enilink.komma.owl.editor.internal.properties.DatatypePropertiesView"
+         icon="icons/full/obj16/DatatypeProperty.png"
+         id="net.enilink.komma.owl.editor.views.DatatypePropertiesView"
+         name="Datatype Properties">
+   </view>
+</extension>
+<extension
+      point="org.eclipse.ui.perspectives">
+   <perspective
+         class="net.enilink.komma.owl.editor.OWLPerspective"
+         icon="icons/full/obj16/OWLFile.png"
+         id="net.enilink.komma.owl.editor.OWLPerspective"
+         name="OWL Perspective">
+   </perspective>
+</extension>
+
+</plugin>
