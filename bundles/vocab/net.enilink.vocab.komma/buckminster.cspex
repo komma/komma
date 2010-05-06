@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cspecExtension
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:bc="http://www.eclipse.org/buckminster/Common-1.0"
+	xmlns="http://www.eclipse.org/buckminster/CSpec-1.0">
+	<dependencies>
+		<dependency name="net.enilink.komma.build" componentType="buckminster" />
+	</dependencies>
+	<generators>
+		<!-- Place your Generators here -->
+	</generators>
+	<artifacts>
+		<private name="bundle.resources" path="." />
+	
+		<private name="komma.jar" path="lib/komma.jar" />
+		
+		<public name="codegen.ontologies">
+			<path path="META-INF/ontologies/komma.owl" />
+		</public>
+	</artifacts>
+	<actions>
+        <public name="buckminster.prebind" actor="ant">
+            <actorProperties>
+                <property key="buildFile" value="make/build.xml"/>
+            </actorProperties>
+            <prerequisites>
+            	<attribute alias="target.buildfile" name="generate.concepts.buildfile" component="net.enilink.komma.build"/>
+            	
+                <attribute name="generate.bundle"/>
+            </prerequisites>
+        </public>
+        <public name="generate.bundle" actor="ant">
+            <actorProperties>
+                <property key="buildFile" value="make/build.xml"/>
+            </actorProperties>
+            <properties>
+            	   <property key="bindings" value="-bnet.enilink.komma.concepts=http://enilink.net/vocab/komma#" />
+            	   <property key="base.class" value="net.enilink.komma.core.IEntity" />
+            </properties>
+            
+            <prerequisites>
+            	<attribute alias="target.buildfile" name="generate.concepts.buildfile" component="net.enilink.komma.build"/>
+            	
+                <attribute alias="classpath" name="codegen.classpath" component="net.enilink.komma.build" />
+                <!--attribute alias="concepts" name="codegen.concepts" component="net.enilink.komma.build" /-->
+				<attribute alias="ontologies" name="codegen.ontologies" />
+				
+				<!--attribute alias="library" name="komma.jar" /-->                
+            </prerequisites>
+        </public>
+    </actions>
+	<groups>
+		<public name="codegen.concepts">
+			<attribute name="java.binaries" />
+		</public>
+	</groups>
+	<alterDependencies>
+		<!-- Place your Dependency alterations here -->
+	</alterDependencies>
+	<alterArtifacts>
+		
+	</alterArtifacts>
+	<alterActions>
+		<!-- Place your Action alterations here -->
+	</alterActions>
+	<alterGroups>
+		<public name="java.binaries">
+			<attribute name="bundle.resources" />
+		</public>
+	</alterGroups>
+</cspecExtension>
