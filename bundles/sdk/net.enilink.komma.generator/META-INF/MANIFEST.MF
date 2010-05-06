@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Generator Plug-in
+Bundle-SymbolicName: net.enilink.komma.generator
+Bundle-Version: 1.0.0
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.eclipse.core.runtime,
+ net.enilink.commons.util,
+ net.enilink.komma,
+ net.enilink.komma.lib.sesame,
+ net.enilink.vocab.rdfs,
+ net.enilink.vocab.owl,
+ net.enilink.composition.properties.sesame,
+ org.eclipse.jdt.core;resolution:=optional
+Bundle-ClassPath: lib/commons-cli-1.1.jar,
+ .
+Import-Package: org.eclipse.core.resources,
+ org.eclipse.emf.codegen.merge.java,
+ org.eclipse.emf.codegen.merge.java.facade,
+ org.eclipse.emf.codegen.merge.java.facade.ast,
+ org.eclipse.text.edits
+Export-Package: net.enilink.komma.generator

@@ -1,0 +1,4 @@
+net.enilink.komma.generator.support.CodePropertySupport
+net.enilink.komma.generator.support.ClassPropertySupport
+net.enilink.komma.generator.support.ConceptSupport
+net.enilink.komma.generator.support.OntologySupport

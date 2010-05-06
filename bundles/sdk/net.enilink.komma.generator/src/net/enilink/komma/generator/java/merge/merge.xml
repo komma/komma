@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (c) 2009, 2010 Fraunhofer IWU and others.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+   
+    Contributors:
+        Fraunhofer IWU - initial API and implementation
+ -->
+<merge:options xmlns:merge="http://www.eclipse.org/org/eclipse/emf/codegen/jmerge/Options">
+    <merge:dictionaryPattern
+      name="generatedUnmodifiableMembers" 
+      select="Member/getComment" 
+      match="\s*@\s*(gen)erated\s*\n"/>
+
+    <merge:dictionaryPattern
+      name="generatedModifiableMembers" 
+      select="Member/getComment" 
+      match="\s*@\s*generated\s*(modifiable)\s*\n"/>
+
+    <merge:pull 
+      sourceMarkup="^gen$"
+      sourceGet="Member/getFlags"
+      targetPut="Member/setFlags"/>
+
+    <merge:pull 
+      sourceMarkup="^modifiable$"
+      sourceGet="Member/getComment"
+      targetMarkup="^gen$"
+      targetPut="Member/setComment"/>
+
+    <merge:pull 
+      sourceMarkup="^gen$"
+      sourceGet="Initializer/getBody"
+      targetPut="Initializer/setBody"/>
+
+    <merge:pull 
+      sourceMarkup="^gen$"
+      sourceGet="Type/getSuperclass"
+      targetPut="Type/setSuperclass"/>
+    <merge:pull 
+      sourceMarkup="^gen$"
+      sourceGet="Type/getSuperInterfaces"
+      targetPut="Type/addSuperInterface"/>
+
+    <merge:pull 
+      sourceMarkup="^gen$"
+      sourceGet="Field/getType"
+      targetPut="Field/setType"/>
+    <merge:pull 
+      sourceMarkup="^gen$"
+      sourceGet="Field/getInitializer"
+      targetPut="Field/setInitializer"/>
+
+    <merge:pull 
+      sourceMarkup="^gen$"
+      sourceGet="Method/getBody"
+      targetPut="Method/setBody"/>
+    <merge:pull 
+      sourceMarkup="^gen$"
+      sourceGet="Method/getReturnType"
+      targetPut="Method/setReturnType"/>
+    <merge:pull 
+      sourceMarkup="^gen$"
+      sourceGet="Method/getExceptions"
+      targetPut="Method/addException"/>
+
+    <merge:sweep markup="^gen$" select="Member"/>
+</merge:options>
