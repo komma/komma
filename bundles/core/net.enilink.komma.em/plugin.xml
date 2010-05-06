@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+    Copyright (c) 2010 Fraunhofer IWU and others.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+   
+    Contributors:
+        Fraunhofer IWU - initial API and implementation
+ -->
+
+<plugin>
+   <extension-point id="models" name="Base Models" schema="schema/models.exsd"/>
+   
+   <extension-point id="extensionFactories" name="Extension Factories" schema="schema/extensionFactories.exsd"/>
+   <extension-point id="protocolFactories" name="Protocol Factories" schema="schema/protocolFactories.exsd"/>
+   <extension-point id="contentFactories" name="Content Factories" schema="schema/contentFactories.exsd"/>
+   <extension-point id="contentHandlers" name="Content Handlers" schema="schema/contentHandlers.exsd"/>
+   <extension-point id="uriMapRules" name="uriMapRules" schema="schema/uriMapRules.exsd" />
+   <extension-point id="modelBehaviours" name="Behaviours for different model set and model types" schema="schema/modelBehaviours.exsd"/>
+   
+   <extension
+         point="net.enilink.komma.models">
+      <model
+            namespace="http://enilink.net/vocab/komma#"
+            prefix="komma"/>
+   </extension>
+   <extension
+         point="net.enilink.komma.extensionFactories">
+      <factory
+            class="net.enilink.komma.model.mem.MemoryModelFactory"
+            type="*">
+      </factory>
+   </extension>
+   <extension
+         point="net.enilink.komma.uriMapRules">
+      <rule
+            pattern="^.*$"
+            priority="50"
+            replacement="$0.owl"
+            unlessPattern="\.[^/]+$">
+      </rule>
+   </extension>
+   <extension
+         point="net.enilink.komma.modelBehaviours">
+      <modelBehaviour
+            class="net.enilink.komma.model.mem.MemoryModelSetSupport">
+      </modelBehaviour>
+      <modelBehaviour
+            class="net.enilink.komma.model.mem.MemoryModelSupport">
+      </modelBehaviour>
+      <modelBehaviour
+            class="net.enilink.komma.model.IModelSet">
+      </modelBehaviour>
+      <modelBehaviour
+            class="net.enilink.komma.model.IModel">
+      </modelBehaviour>
+   </extension>
+</plugin>

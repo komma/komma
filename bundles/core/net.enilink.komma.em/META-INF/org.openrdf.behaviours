@@ -1,0 +1,9 @@
+## Behaviours
+net.enilink.komma.internal.sesame.behaviours.RDFList
+net.enilink.komma.internal.sesame.behaviours.RDFSContainerDisabler
+net.enilink.komma.internal.sesame.behaviours.RDFSContainer = http://www.w3.org/2000/01/rdf-schema#Container http://www.w3.org/1999/02/22-rdf-syntax-ns#Seq http://www.w3.org/1999/02/22-rdf-syntax-ns#Alt http://www.w3.org/1999/02/22-rdf-syntax-ns#Bag
+net.enilink.komma.internal.sesame.behaviours.KeyValueMap
+net.enilink.komma.internal.sesame.behaviours.LiteralKeyValueMap
+net.enilink.komma.internal.sesame.behaviours.LiteralKeyMap
+net.enilink.komma.internal.sesame.behaviours.LiteralValueMap
+net.enilink.komma.concepts.OntologySupport                                   
