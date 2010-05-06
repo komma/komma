@@ -1,0 +1,18 @@
+net.enilink.vocab.owl.AllDifferent
+net.enilink.vocab.owl.AnnotationProperty
+net.enilink.vocab.owl.Class
+net.enilink.vocab.owl.DataRange
+net.enilink.vocab.owl.DatatypeProperty = http://www.w3.org/2000/01/rdf-schema#label http://www.w3.org/2000/01/rdf-schema#comment
+net.enilink.vocab.owl.DeprecatedClass
+net.enilink.vocab.owl.DeprecatedProperty
+net.enilink.vocab.owl.FunctionalProperty
+net.enilink.vocab.owl.InverseFunctionalProperty
+net.enilink.vocab.owl.Nothing
+net.enilink.vocab.owl.ObjectProperty = http://www.w3.org/2000/01/rdf-schema#member http://www.w3.org/2000/01/rdf-schema#first http://www.w3.org/2000/01/rdf-schema#rest http://www.w3.org/2000/01/rdf-schema#subject http://www.w3.org/2000/01/rdf-schema#predicate http://www.w3.org/2000/01/rdf-schema#object http://www.w3.org/2000/01/rdf-schema#domain http://www.w3.org/2000/01/rdf-schema#range http://www.w3.org/2000/01/rdf-schema#seeAlso
+net.enilink.vocab.owl.Ontology
+net.enilink.vocab.owl.OntologyProperty
+net.enilink.vocab.owl.OwlProperty
+net.enilink.vocab.owl.Restriction
+net.enilink.vocab.owl.SymmetricProperty
+net.enilink.vocab.owl.Thing
+net.enilink.vocab.owl.TransitiveProperty
