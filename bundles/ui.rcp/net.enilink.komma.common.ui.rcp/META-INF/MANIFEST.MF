@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Rcp
+Bundle-SymbolicName: net.enilink.komma.common.ui.rcp;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.eclipse.core.runtime,
+ net.enilink.komma.common,
+ org.eclipse.ui,
+ org.eclipse.ui.ide,
+ org.eclipse.core.resources;resolution:=optional,
+ net.enilink.komma.core,
+ net.enilink.commons.ui,
+ net.enilink.komma.common.ui
+Export-Package: net.enilink.komma.common.ui.rcp.dialogs,
+ net.enilink.komma.common.ui.rcp.wizards
