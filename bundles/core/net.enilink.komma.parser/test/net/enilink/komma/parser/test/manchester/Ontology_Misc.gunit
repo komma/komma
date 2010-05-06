@@ -1,0 +1,61 @@
+gunit Ontology;
+
+@header {
+    package com.sparkleg;
+}
+
+testcase1:
+
+<<
+Ontology: <http://www.co-ode.org/ontologies/pizza/pizza.owl>
+
+Annotations: 
+        rdfs:comment "A property created to be used with the ValuePartition - Spiciness."@en
+
+
+DisjointClasses: 
+        Annotations: 
+            rdfs:comment "ABC."@en
+        
+        Rock,
+        Scissor,
+        Paper
+
+
+EquivalentProperties: 
+        Annotations: 
+            rdfs:comment "Sugar"@en
+        
+        hates,
+        loathes,
+        despises
+
+
+EquivalentClasses:        
+       Annotations: 
+              rdfs:comment "Milk."@en
+              
+              g:favoriteNumber, 
+              g:favouriteNumber,
+              g:favouriteInteger
+ 
+DisjointProperties:
+        Annotations: 
+              rdfs:comment "Milk."@en
+
+        favoriteInteger, favouriteReal
+
+SameIndividual: 
+        Annotations: 
+              rdfs:comment "Milk."@en
+
+        John, Jack
+
+DifferentIndividuals: 
+        Annotations: 
+              rdfs:comment "Milk."@en
+
+        Petra, Georg
+        
+
+>> OK

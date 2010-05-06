@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Sparql
+Bundle-SymbolicName: net.enilink.komma.parser
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-Vendor: Fraunhofer IWU
+Import-Package: org.parboiled,
+ org.parboiled.common,
+ org.parboiled.support,
+ org.parboiled.trees
+Export-Package: net.enilink.komma.parser,
+ net.enilink.komma.parser.sparql,
+ net.enilink.komma.parser.sparql.tree,
+ net.enilink.komma.parser.sparql.tree.expr,
+ net.enilink.komma.parser.sparql.tree.visitor,
+ net.enilink.komma.parser.test.manchester
+DynamicImport-Package: org.parboiled.*

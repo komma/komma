@@ -1,0 +1,43 @@
+gunit Ontology;
+
+@header {
+    package com.sparkleg;
+}
+
+testcase1:
+
+<<
+Ontology: <http://www.co-ode.org/ontologies/pizza/pizza.owl>
+
+Annotations: 
+        rdfs:comment "A property created to be used with the ValuePartition - Spiciness."@en
+
+
+Individual: John
+    Annotations: 
+        rdfs:comment "little John is back in town"@en
+    
+    Types: 
+        Person, 
+        hasFirstName value "John"
+    
+    Facts: 
+        hasWife Mary, 
+        not hasChild Petra, 
+        hasAge 33
+    
+    SameAs: 
+        Jack
+    
+    DifferentFrom: 
+        Peter
+  
+Individual: Klaus
+    
+    Types: 
+        Person, 
+        hasFirstName value "Klaus"
+    
+  
+            
+>> OK

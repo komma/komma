@@ -1,0 +1,78 @@
+gunit Ontology;
+
+@header {
+    package com.sparkleg;
+}
+
+testcase1:
+
+<<
+Ontology: <http://www.co-ode.org/ontologies/pizza/pizza.owl>
+
+Annotations: 
+        rdfs:comment "A property created to be used with the ValuePartition - Spiciness."@en
+
+
+ObjectProperty: hasBase
+
+    Annotations: 
+        rdfs:comment "Eine Pizza bitte!"@de
+    
+    Characteristics: 
+        Functional,
+        InverseFunctional
+     
+    Domain: 
+         Pizza
+    
+     Range: 
+        PizzaBase
+        
+     InverseOf: 
+        isBaseOf
+        
+     SubPropertyOf: 
+        hasIngredient
+        
+ObjectProperty: hasSpiciness
+
+     Annotations: 
+        rdfs:comment "A property created to be used with the ValuePartition - Spiciness."@en
+
+     Characteristics: 
+        Functional      
+
+DataProperty: hasAge
+    
+    Characteristics: 
+       Functional
+    
+    Domain: 
+       Person
+    
+    Range: 
+       integer
+    
+    SubPropertyOf: 
+       hasVerifiedAge
+       
+    EquivalentTo: 
+        hasAgeInYears
+    
+    DisjointWith: 
+        hasSSN
+
+
+
+
+
+
+
+
+
+
+
+
+   
+            
+>> OK
