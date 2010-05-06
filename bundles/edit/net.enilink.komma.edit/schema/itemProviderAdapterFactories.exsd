@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.eclipse.emf.edit" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appinfo>
+         <meta.schema plugin="org.eclipse.emf.edit" id="itemProviderAdapterFactories" name="Registered Item Provider Adapter Factories"/>
+      </appinfo>
+      <documentation>
+         This extension point is used to register the item provider adatper factory that is able to produce adapters for the given supported types for the given package. The global item provider adapter factory registry, &lt;samp&gt;ComposedAdapterFactory.Descriptor.Registry.INSTANCE&lt;/samp&gt;, is used to record the registration.
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appinfo>
+            <meta.element />
+         </appinfo>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="factory" minOccurs="1" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  A fully qualified identifier of the target extension point.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  An optional identifier of the extension instance.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  An optional name of the extension instance.
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="factory">
+      <complexType>
+         <attribute name="uri" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The fully qualified name of a Java package.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The fully qualified Java class name of an item provider adapter factory.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="supportedTypes" type="string" use="required">
+            <annotation>
+               <documentation>
+                  A space separated list of fully Java interface names representing the types of adapters supported by the item provider adapter factory.
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="since"/>
+      </appinfo>
+      <documentation>
+         2.1.0
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="examples"/>
+      </appinfo>
+      <documentation>
+         &lt;extension point=&quot;org.eclipse.emf.edit.itemProviderAdapterFactory&quot;&gt;
+
+  &lt;factory 
+
+     uri = &quot;http:///org/eclipse/example/library.ecore&quot; 
+
+     class = &quot;org.eclipse.example.library.provider.LibraryItemProviderAdapterFactory&quot; 
+
+     supportedTypes = 
+
+       &quot;org.eclipse.emf.edit.provider.IEditingDomainItemProvider
+
+        org.eclipse.emf.edit.provider.IStructuredItemContentProvider
+
+        org.eclipse.emf.edit.provider.ITreeItemContentProvider
+
+        org.eclipse.emf.edit.provider.IItemLabelProvider
+
+        org.eclipse.emf.edit.provider.IItemPropertySource&quot; /&gt;
+
+&lt;/extension&gt;
+      </documentation>
+   </annotation>
+
+
+
+   <annotation>
+      <appinfo>
+         <meta.section type="copyright"/>
+      </appinfo>
+      <documentation>
+         Copyright (c) 2005 IBM Corporation and others.&lt;br&gt;
+
+All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse Public License v1.0 which accompanies this distribution, and is available at &lt;a 
+
+href=&quot;http://www.eclipse.org/legal/epl-v10.html&quot;&gt;http://www.eclipse.org/legal/epl-v10.html&lt;/a&gt;
+      </documentation>
+   </annotation>
+
+</schema>
