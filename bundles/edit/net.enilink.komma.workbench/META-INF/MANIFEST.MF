@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Workspace Plug-in
+Bundle-SymbolicName: net.enilink.komma.workbench;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.eclipse.core.runtime,
+ net.enilink.komma,
+ org.eclipse.core.resources,
+ net.enilink.commons.util
+Export-Package: net.enilink.komma.workbench,
+ net.enilink.komma.workbench.nature
