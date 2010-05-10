@@ -18,8 +18,6 @@ package net.enilink.komma.workbench;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -39,6 +37,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
@@ -52,7 +52,8 @@ import net.enilink.komma.workbench.internal.KommaWorkbenchPlugin;
  */
 
 public class ProjectUtilities {
-	private static final Log log = LogFactory.getLog(ProjectUtilities.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(ProjectUtilities.class);
 
 	private ProjectUtilities() {
 	}
@@ -217,11 +218,9 @@ public class ProjectUtilities {
 	public static void forceAutoBuild(IProject project,
 			IProgressMonitor progressMonitor) {
 		try {
-			project
-					.build(IncrementalProjectBuilder.FULL_BUILD,
-							progressMonitor);
+			project.build(IncrementalProjectBuilder.FULL_BUILD, progressMonitor);
 		} catch (CoreException ce) {
-			log.error(ce);
+			log.error("Building project failed", ce);
 		}
 	}
 
@@ -262,10 +261,11 @@ public class ProjectUtilities {
 			return result;
 		if (result != null && result.isAccessible() && natureId != null)
 			try {
-				if (result.hasNature(natureId))
+				if (result.hasNature(natureId)) {
 					return result;
+				}
 			} catch (CoreException e) {
-				log.error(e);
+				log.error("Determining project nature failed", e);
 			}
 		return null;
 	}
@@ -404,40 +404,6 @@ public class ProjectUtilities {
 	}
 
 	/**
-	 * Turn auto-building off.
-	 * 
-	 * 
-	 * @since 1.0.0
-	 */
-	public static void turnAutoBuildOff() {
-		try {
-			IWorkspace workspace = ResourcesPlugin.getWorkspace();
-			IWorkspaceDescription wd = workspace.getDescription();
-			wd.setAutoBuilding(false);
-			workspace.setDescription(wd);
-		} catch (CoreException ce) {
-			log.error(ce);
-		}
-	}
-
-	/**
-	 * Turn auto-building on.
-	 * 
-	 * 
-	 * @since 1.0.0
-	 */
-	public static void turnAutoBuildOn() {
-		try {
-			IWorkspace workspace = ResourcesPlugin.getWorkspace();
-			IWorkspaceDescription wd = workspace.getDescription();
-			wd.setAutoBuilding(true);
-			workspace.setDescription(wd);
-		} catch (CoreException ce) {
-			log.error(ce);
-		}
-	}
-
-	/**
 	 * Set the auto-building state.
 	 * 
 	 * @param aBoolean
@@ -452,7 +418,7 @@ public class ProjectUtilities {
 			wd.setAutoBuilding(aBoolean);
 			workspace.setDescription(wd);
 		} catch (CoreException ce) {
-			log.error(ce);
+			log.error("Failed to change auto build state", ce);
 
 		}
 	}

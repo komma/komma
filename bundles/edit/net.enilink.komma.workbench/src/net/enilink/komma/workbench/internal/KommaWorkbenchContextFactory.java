@@ -40,8 +40,9 @@ public class KommaWorkbenchContextFactory {
 
 	private static KommaWorkbenchContextFactory createFactoryInstance() {
 		KommaWorkbenchContextFactory factory = createFactoryInstanceFromExtension();
-		if (factory == null)
+		if (factory == null) {
 			factory = new KommaWorkbenchContextFactory();
+		}
 		return factory;
 	}
 

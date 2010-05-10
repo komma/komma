@@ -17,16 +17,17 @@ package net.enilink.komma.workbench.internal.nature;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.enilink.komma.workbench.internal.nls.WorkbenchResourceHandler;
 
 public class KommaNatureRegistry {
-	private static final Log log = LogFactory.getLog(KommaNatureRegistry.class);
+	private final static Logger log = LoggerFactory
+			.getLogger(KommaNatureRegistry.class);
 
 	private static final String NATURE_REGISTRATION_POINT = "net.enilink.komma.workbench.nature_registration"; //$NON-NLS-1$
 	private static final String NATURE = "nature"; //$NON-NLS-1$

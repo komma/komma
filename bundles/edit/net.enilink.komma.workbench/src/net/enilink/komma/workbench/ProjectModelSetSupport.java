@@ -17,11 +17,11 @@ package net.enilink.komma.workbench;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IProject;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.traits.Behaviour;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
@@ -31,8 +31,8 @@ import net.enilink.komma.workbench.internal.KommaWorkbenchContextFactory;
 
 public abstract class ProjectModelSetSupport implements IProjectModelSet,
 		Behaviour<IModelSet> {
-	private static final Log log = LogFactory
-			.getLog(ProjectModelSetSupport.class);
+	private final static Logger log = LoggerFactory
+			.getLogger(ProjectModelSetSupport.class);
 
 	private IProject project;
 	protected ModelSetWorkbenchSynchronizer synchronizer;
@@ -79,7 +79,7 @@ public abstract class ProjectModelSetSupport implements IProjectModelSet,
 			try {
 				model.unload();
 			} catch (RuntimeException ex) {
-				log.error(ex);
+				log.error("Error while unloading model", ex);
 				caughtException = true;
 			}
 		}
