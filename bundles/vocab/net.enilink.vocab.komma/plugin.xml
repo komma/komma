@@ -13,7 +13,7 @@
 
 <plugin>
    <extension
-         point="net.enilink.komma.uriMapRules">
+         point="net.enilink.komma.model.uriMapRules">
       <rule
             pattern="http://enilink.net/vocab/komma"
             priority="30"
