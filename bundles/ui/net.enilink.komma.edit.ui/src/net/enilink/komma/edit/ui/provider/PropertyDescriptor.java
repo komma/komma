@@ -43,7 +43,6 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import net.enilink.vocab.owl.AnnotationProperty;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.OntologyProperty;
-import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.ui.celleditor.ExtendedComboBoxCellEditor;
 import net.enilink.komma.common.ui.celleditor.ExtendedDialogCellEditor;
@@ -54,6 +53,7 @@ import net.enilink.komma.edit.provider.IItemPropertyDescriptor;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.edit.ui.celleditor.PropertyEditorDialog;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.sesame.SesameReference;
@@ -184,7 +184,7 @@ public class PropertyDescriptor implements IPropertyDescriptor {
 				}
 
 				if (convertedValue != null) {
-					Diagnostic diagnostic = KommaCore.getDefault()
+					Diagnostic diagnostic = ModelCore.getDefault()
 							.getDefaultValidator().validate(datatype,
 									convertedValue);
 					if (diagnostic.getSeverity() == Diagnostic.OK) {
@@ -203,8 +203,8 @@ public class PropertyDescriptor implements IPropertyDescriptor {
 		}
 
 		public Object toValue(String string) {
-			return KommaUtil.convertToRange(((IEntity) object).getKommaManager(),
-					datatypes, string);
+			return KommaUtil.convertToRange(((IEntity) object)
+					.getKommaManager(), datatypes, string);
 		}
 
 		public String toString(Object value) {
@@ -356,8 +356,7 @@ public class PropertyDescriptor implements IPropertyDescriptor {
 									cellEditorWindow.getShell(),
 									adapterFactory, editLabelProvider,
 									(IObject) object, property.getNamedRanges(
-											(IObject) object, true)
-											.toSet(),
+											(IObject) object, true).toSet(),
 									(Collection<?>) doGetValue(),
 									getDisplayName(), new ArrayList<Object>(
 											choiceOfValues), false,

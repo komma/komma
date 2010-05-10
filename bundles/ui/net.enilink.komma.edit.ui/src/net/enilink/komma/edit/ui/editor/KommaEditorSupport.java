@@ -68,7 +68,6 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 
-import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.BasicCommandStack;
 import net.enilink.komma.common.command.ICommand;
@@ -103,6 +102,8 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.MODELS;
+import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.base.ModelSetFactory;
 import net.enilink.komma.model.base.SimpleURIMapRule;
 import net.enilink.komma.model.event.IStatementNotification;
@@ -110,7 +111,6 @@ import net.enilink.komma.model.validation.IValidator;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.util.KommaUtil;
 
 /**
  * This is a base class for a multi-page model editor.
@@ -517,7 +517,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 					getString("_UI_CreateModelError_message", model.getURI()),
 					new Object[] { exception == null ? (Object) model
 							: exception });
-			basicDiagnostic.merge(KommaUtil.computeDiagnostic(model, true));
+			basicDiagnostic.merge(ModelUtil.computeDiagnostic(model, true));
 			return basicDiagnostic;
 		} else if (exception != null) {
 			return new BasicDiagnostic(Diagnostic.ERROR,
@@ -591,7 +591,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 				in = editingDomain.getModelSet().getURIConverter()
 						.createInputStream(resourceURI);
 
-				String ontology = KommaUtil.findOntology(in, resourceURI
+				String ontology = ModelUtil.findOntology(in, resourceURI
 						.toString());
 				if (ontology != null) {
 					editingDomain.getModelSet().getURIConverter()
@@ -637,7 +637,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	}
 
 	protected IModelSet createModelSet() {
-		KommaModule module = KommaCore.createModelSetModule(getClass()
+		KommaModule module = ModelCore.createModelSetModule(getClass()
 				.getClassLoader());
 
 		IModelSet modelSet = new ModelSetFactory(module, URIImpl

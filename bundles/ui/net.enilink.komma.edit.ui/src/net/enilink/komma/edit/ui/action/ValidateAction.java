@@ -39,7 +39,6 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ISetSelectionTarget;
 
-import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.ui.EclipseUtil;
@@ -56,10 +55,11 @@ import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.edit.ui.util.EditUIMarkerHelper;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.validation.Diagnostician;
 import net.enilink.komma.model.validation.IValidator;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.util.KommaUtil;
 
 public class ValidateAction extends AbstractActionHandler {
 	public static final String DIAGNOSTIC_SOURCE = "net.enilink.komma";
@@ -230,7 +230,7 @@ public class ValidateAction extends AbstractActionHandler {
 	protected Diagnostician createDiagnostician(
 			final IAdapterFactory adapterFactory,
 			final IProgressMonitor progressMonitor) {
-		return new Diagnostician(KommaCore.getDefault().getValidatorRegistry()) {
+		return new Diagnostician(ModelCore.getDefault().getValidatorRegistry()) {
 			@Override
 			public String getObjectLabel(IObject object) {
 				if (adapterFactory != null) {
@@ -330,7 +330,7 @@ public class ValidateAction extends AbstractActionHandler {
 				return;
 			}
 		}
-		selectedObjects = KommaUtil.filterDescendants(selectedObjects);
+		selectedObjects = ModelUtil.filterDescendants(selectedObjects);
 		setEnabled(!selectedObjects.isEmpty());
 	}
 
