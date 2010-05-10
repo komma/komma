@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="net.enilink.komma" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="net.enilink.komma.model" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appinfo>
-         <meta.schema plugin="net.enilink.komma" id="extensionFactories" name="URI Extension Factory Registry"/>
-      </appinfo>
+      <appInfo>
+         <meta.schema plugin="net.enilink.komma.model" id="extensionFactories" name="URI Extension Factory Registry"/>
+      </appInfo>
       <documentation>
          This extension point is used to define the model factories that handle specific file (or URI) extensions.
       </documentation>
@@ -12,9 +12,9 @@
 
    <element name="extension">
       <annotation>
-         <appinfo>
+         <appInfo>
             <meta.element />
-         </appinfo>
+         </appInfo>
       </annotation>
       <complexType>
          <sequence>
@@ -46,9 +46,9 @@
 
    <element name="factory">
       <annotation>
-         <appinfo>
+         <appInfo>
             <meta.element labelAttribute="type"/>
-         </appinfo>
+         </appInfo>
       </annotation>
       <complexType>
          <attribute name="type" type="string" use="required">
@@ -64,27 +64,27 @@
                   A fully qualified name of the Java class implementing &lt;samp&gt;net.enilink.komma.ontologies.IOntModel.IFactory
 &lt;/samp&gt;.
                </documentation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java" basedOn=":net.enilink.komma.ontologies.IOntModel.IFactory"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>
    </element>
 
    <annotation>
-      <appinfo>
+      <appInfo>
          <meta.section type="since"/>
-      </appinfo>
+      </appInfo>
       <documentation>
          1.0.0
       </documentation>
    </annotation>
 
    <annotation>
-      <appinfo>
+      <appInfo>
          <meta.section type="examples"/>
-      </appinfo>
+      </appInfo>
       <documentation>
          Following is an example of how a URI extension can be registered: 
 &lt;pre&gt;
@@ -96,9 +96,9 @@
    </annotation>
 
    <annotation>
-      <appinfo>
+      <appInfo>
          <meta.section type="apiInfo"/>
-      </appinfo>
+      </appInfo>
       <documentation>
          The value of the class attribute must represent a class 
 that implements &lt;samp&gt;org.eclipse.emf.ecore.resource.Resource.Factory&lt;/samp&gt;.
@@ -112,18 +112,18 @@ A URI extension can be also registered from the source code with the &lt;samp&gt
    </annotation>
 
    <annotation>
-      <appinfo>
+      <appInfo>
          <meta.section type="implementation"/>
-      </appinfo>
+      </appInfo>
       <documentation>
          The &lt;samp&gt;org.eclipse.emf.ecore.xmi&lt;/samp&gt; plug-in extends this extension point to make the default EMF registrations: &quot;ecore&quot; is handled by &lt;samp&gt;EcoreResourceFactoryImpl&lt;/samp&gt;, &quot;emof&quot; by &lt;samp&gt;EMOFResourceFactoryImpl&lt;/samp&gt;, and &lt;samp&gt;XMIResourceFactoryImpl&lt;/samp&gt; is the default.
       </documentation>
    </annotation>
 
    <annotation>
-      <appinfo>
+      <appInfo>
          <meta.section type="copyright"/>
-      </appinfo>
+      </appInfo>
       <documentation>
          Copyright (c) 2002, 2004 IBM Corporation and others.&lt;br&gt;
 All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse Public License v1.0 which accompanies this distribution, and is available at &lt;a 

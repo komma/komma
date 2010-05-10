@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="net.enilink.komma" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="net.enilink.komma.model" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="net.enilink.komma" id="models" name="Base Models"/>
+         <meta.schema plugin="net.enilink.komma.model" id="models" name="Base Models"/>
       </appInfo>
       <documentation>
          [Enter description of this extension point.]
@@ -53,7 +53,6 @@
             <meta.element labelAttribute="namespace"/>
          </appInfo>
       </annotation>
-
       <complexType>
          <attribute name="namespace" type="string" use="required">
             <annotation>

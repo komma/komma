@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.Platform;
 
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.ModelCore;
 
 /**
  * A plugin extension reader that populates the
@@ -32,7 +33,7 @@ public class ExtensionFactoriesRegistryReader extends KommaRegistryReader {
 
 	public ExtensionFactoriesRegistryReader(
 			IModel.Factory.Registry ontologyFactoryRegistry) {
-		super(Platform.getExtensionRegistry(), KommaCore.PLUGIN_ID,
+		super(Platform.getExtensionRegistry(), ModelCore.PLUGIN_ID,
 				"extensionFactories");
 		this.modelFactoryRegistry = ontologyFactoryRegistry;
 	}

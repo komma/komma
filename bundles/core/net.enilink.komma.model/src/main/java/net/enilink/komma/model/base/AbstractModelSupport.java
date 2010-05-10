@@ -53,6 +53,7 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
+import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.sesame.ISesameModelSet;
 import net.enilink.komma.repository.change.IRepositoryChangeTracker;
 import net.enilink.komma.core.IEntity;
@@ -209,7 +210,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 									"Error while loading import: "
 											+ importedModelUri, new Status(
 											IStatus.WARNING,
-											KommaCore.PLUGIN_ID, 0, e
+											ModelCore.PLUGIN_ID, 0, e
 													.getMessage(), e));
 						}
 					}

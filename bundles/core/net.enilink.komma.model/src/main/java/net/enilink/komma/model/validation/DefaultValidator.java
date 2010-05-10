@@ -13,16 +13,16 @@ package net.enilink.komma.model.validation;
 import java.util.Collection;
 import java.util.Map;
 
-import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.DiagnosticChain;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.core.IReference;
 
 public class DefaultValidator implements IValidator {
-	public static final String DIAGNOSTIC_SOURCE = KommaCore.PLUGIN_ID;
-	
+	public static final String DIAGNOSTIC_SOURCE = ModelCore.PLUGIN_ID;
+
 	public static final IValidator INSTANCE = new DefaultValidator();
 
 	@Override

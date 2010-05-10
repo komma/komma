@@ -36,11 +36,11 @@ import org.osgi.framework.Bundle;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.util.URIUtil;
-import net.enilink.komma.concepts.KommaConcepts;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelSetFactory;
 import net.enilink.komma.model.MODELS;
+import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
@@ -87,9 +87,9 @@ public class ModelSetFactory implements IModelSetFactory {
 			repository.initialize();
 
 			Collection<URL> conceptLibraries = KommaUtil.getConceptLibraries(
-					KommaConcepts.PLUGIN_ID).toList();
-			URLClassLoader cl = new URLClassLoader(conceptLibraries
-					.toArray(new URL[conceptLibraries.size()]));
+					ModelCore.PLUGIN_ID).toList();
+			URLClassLoader cl = new URLClassLoader(
+					conceptLibraries.toArray(new URL[conceptLibraries.size()]));
 			for (String owl : loadOntologyList(cl)) {
 				URL url = cl.getResource(owl);
 				loadOntology(repository, url);
@@ -120,11 +120,12 @@ public class ModelSetFactory implements IModelSetFactory {
 		// module.addJarFileUrl(libraryUrl);
 		// }
 
-		module.addConcept(IModel.IDiagnostic.class, MODELS.CLASS_DIAGNOSTIC
-				.toString());
+		module.addConcept(IModel.IDiagnostic.class,
+				MODELS.CLASS_DIAGNOSTIC.toString());
 
-		module.addDataset(getResource(KommaCore.PLUGIN_ID,
-				"META-INF/ontologies/models.owl"),
+		module.addDataset(
+				getResource(ModelCore.PLUGIN_ID,
+						"META-INF/ontologies/models.owl"),
 				"http://enilink.net/vocab/komma/models#");
 
 		module.includeModule(KommaUtil.getCoreModule());

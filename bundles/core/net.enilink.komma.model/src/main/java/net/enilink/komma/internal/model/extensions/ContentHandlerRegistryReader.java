@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.Platform;
 
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.model.IContentHandler;
+import net.enilink.komma.model.ModelCore;
 
 /**
  * A plugin extension reader that populates the
@@ -37,7 +38,7 @@ public class ContentHandlerRegistryReader extends KommaRegistryReader {
 
 	public ContentHandlerRegistryReader(
 			IContentHandler.Registry contentHandlerRegistry) {
-		super(Platform.getExtensionRegistry(), KommaCore.PLUGIN_ID,
+		super(Platform.getExtensionRegistry(), ModelCore.PLUGIN_ID,
 				"contentHandlers");
 		this.contentHandlerRegistry = contentHandlerRegistry;
 	}
@@ -69,16 +70,15 @@ public class ContentHandlerRegistryReader extends KommaRegistryReader {
 									parameter.getAttribute("value"));
 						}
 						IContentHandler contentHandler = parameters.isEmpty() ? contributorHandlerClass
-								.newInstance()
-								: contributorHandlerClass.getConstructor(
-										Map.class).newInstance(parameters);
+								.newInstance() : contributorHandlerClass
+								.getConstructor(Map.class).newInstance(
+										parameters);
 						contentHandlerRegistry.put(priority, contentHandler);
 						List<IContentHandler> contributions = CONTRIBUTION_MAP
 								.get(contributorName);
 						if (contributions == null) {
 							CONTRIBUTION_MAP
-									.put(
-											contributorName,
+									.put(contributorName,
 											contributions = new ArrayList<IContentHandler>());
 						}
 						contributions.add(contentHandler);

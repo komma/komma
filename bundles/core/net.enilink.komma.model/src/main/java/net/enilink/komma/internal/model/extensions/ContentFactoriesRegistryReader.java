@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.Platform;
 
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.ModelCore;
 
 /**
  * A plugin extension reader that populates the
@@ -32,7 +33,7 @@ public class ContentFactoriesRegistryReader extends KommaRegistryReader {
 
 	public ContentFactoriesRegistryReader(
 			IModel.Factory.Registry ontologyFactoryRegistry) {
-		super(Platform.getExtensionRegistry(), KommaCore.PLUGIN_ID,
+		super(Platform.getExtensionRegistry(), ModelCore.PLUGIN_ID,
 				"contentFactories");
 
 		this.modelFactoryRegistry = ontologyFactoryRegistry;
@@ -51,8 +52,7 @@ public class ContentFactoriesRegistryReader extends KommaRegistryReader {
 				Object previous = modelFactoryRegistry
 						.getContentTypeToFactoryMap().put(
 								contentTypeIdentifier,
-								new ModelFactoryDescriptor(element,
-										ATT_CLASS));
+								new ModelFactoryDescriptor(element, ATT_CLASS));
 				if (previous instanceof ModelFactoryDescriptor) {
 					ModelFactoryDescriptor descriptor = (ModelFactoryDescriptor) previous;
 					KommaCore.logErrorMessage("Both '"

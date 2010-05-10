@@ -251,10 +251,6 @@ public class ModelCore extends AbstractKommaPlugin {
 				workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 			}
 
-			// new GeneratedPackageRegistryReader(
-			// getEPackageNsURIToGenModelLocationMap()).readRegistry();
-			// new DynamicPackageRegistryReader().readRegistry();
-			// new FactoryOverrideRegistryReader().readRegistry();
 			IModel.Factory.Registry modelFactoryRegistry = ModelCore
 					.getDefault().getModelFactoryRegistry();
 			new ExtensionFactoriesRegistryReader(modelFactoryRegistry)

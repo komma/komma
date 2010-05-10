@@ -16,7 +16,7 @@ import java.util.Map;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 
-import net.enilink.komma.KommaCore;
+import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.base.IURIMapRuleSet;
 import net.enilink.komma.model.base.RegExURIMapRule;
 import net.enilink.komma.core.URIImpl;
@@ -40,7 +40,7 @@ public class URIMappingRegistryReader extends KommaRegistryReader {
 	private IURIMapRuleSet uriMap;
 
 	public URIMappingRegistryReader(IURIMapRuleSet uriMap) {
-		super(Platform.getExtensionRegistry(), KommaCore.PLUGIN_ID,
+		super(Platform.getExtensionRegistry(), ModelCore.PLUGIN_ID,
 				"uriMapRules");
 
 		this.uriMap = uriMap;
