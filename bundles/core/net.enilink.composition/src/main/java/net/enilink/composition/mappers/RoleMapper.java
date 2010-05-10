@@ -62,7 +62,7 @@ public class RoleMapper<T> implements Cloneable {
 	private Map<T, List<Class<?>>> instances = new ConcurrentHashMap<T, List<Class<?>>>(
 			256);
 	private Map<Class<?>, List<Class<?>>> intersections;
-	private Logger logger = LoggerFactory.getLogger(RoleMapper.class);
+	private static Logger logger = LoggerFactory.getLogger(RoleMapper.class);
 	private RoleMatcher matches = new RoleMatcher();
 	private HierarchicalRoleMapper<T> roleMapper = new HierarchicalRoleMapper<T>();
 	private Set<Method> triggers = new HashSet<Method>();

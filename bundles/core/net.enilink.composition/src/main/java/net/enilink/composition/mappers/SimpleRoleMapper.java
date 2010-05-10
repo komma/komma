@@ -71,7 +71,7 @@ public class SimpleRoleMapper<T> implements Cloneable {
 	public SimpleRoleMapper<T> clone() {
 		try {
 			@SuppressWarnings("unchecked")
-			SimpleRoleMapper<T> cloned = (SimpleRoleMapper) super.clone();
+			SimpleRoleMapper<T> cloned = (SimpleRoleMapper<T>) super.clone();
 			cloned.roles = clone(roles);
 			return cloned;
 		} catch (CloneNotSupportedException e) {
