@@ -14,8 +14,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.emf.codegen.merge.java.JControlModel;
 import org.eclipse.emf.codegen.merge.java.JMerger;
@@ -25,6 +23,8 @@ import org.eclipse.jdt.core.ToolFactory;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants;
 import org.eclipse.text.edits.TextEdit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Receives the java output of a generate action and the target location. Reads
@@ -33,7 +33,7 @@ import org.eclipse.text.edits.TextEdit;
  * 
  */
 public class SourceMerger {
-	protected static final Log log = LogFactory.getLog(SourceMerger.class);
+	private final Logger log = LoggerFactory.getLogger(SourceMerger.class);
 
 	private JControlModel jControlModel;
 	private CodeFormatter codeFormatter;
@@ -66,10 +66,9 @@ public class SourceMerger {
 							e);
 				}
 				try {
-					jMerger
-							.setTargetCompilationUnit(jMerger
-									.createCompilationUnitForInputStream(new FileInputStream(
-											targetFile)));
+					jMerger.setTargetCompilationUnit(jMerger
+							.createCompilationUnitForInputStream(new FileInputStream(
+									targetFile)));
 				} catch (Exception e) { // something wrong in the code itself
 					throw new Exception("Syntax error in current source for "
 							+ targetFile.getName() + " :"
@@ -83,13 +82,13 @@ public class SourceMerger {
 				final String oldSource = jMerger
 						.getTargetCompilationUnitContents();
 				jMerger.merge();
-				
+
 				String mergedContent = jMerger
-				.getTargetCompilationUnitContents();
-				
+						.getTargetCompilationUnitContents();
+
 				System.err.println("old: \n" + oldSource);
 				System.err.println("new: \n" + mergedContent);
-				
+
 				TextEdit edit = getCodeFormatter().format(
 						CodeFormatter.K_COMPILATION_UNIT, mergedContent, 0,
 						mergedContent.length(), 0, "\n");

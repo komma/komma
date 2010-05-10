@@ -18,5 +18,6 @@ Import-Package: org.eclipse.core.resources,
  org.eclipse.emf.codegen.merge.java,
  org.eclipse.emf.codegen.merge.java.facade,
  org.eclipse.emf.codegen.merge.java.facade.ast,
- org.eclipse.text.edits
+ org.eclipse.text.edits,
+ org.slf4j
 Export-Package: net.enilink.komma.generator

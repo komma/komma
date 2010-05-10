@@ -37,9 +37,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.Platform;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.enilink.komma.generator.java.merge.SourceMerger;
 
@@ -69,7 +69,7 @@ public class FileSourceCodeHandler implements SourceCodeHandler {
 			+ PACKAGE.pattern() + ".*@profile.*" + INTERFACE.pattern() + ".*",
 			Pattern.DOTALL);
 
-	private final Log log = LogFactory.getLog(OntologyConverter.class);
+	private final Logger log = LoggerFactory.getLogger(OntologyConverter.class);
 
 	private File target;
 

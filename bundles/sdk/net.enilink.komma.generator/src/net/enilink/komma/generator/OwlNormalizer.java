@@ -43,8 +43,6 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.LiteralFactory;
@@ -66,6 +64,8 @@ import org.openrdf.result.NamespaceResult;
 import org.openrdf.result.Result;
 import org.openrdf.result.TupleResult;
 import org.openrdf.store.StoreException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
@@ -90,7 +90,7 @@ import net.enilink.komma.sesame.ISesameManager;
  * 
  */
 public class OwlNormalizer {
-	private final Log log = LogFactory.getLog(OwlNormalizer.class);
+	private final Logger log = LoggerFactory.getLogger(OwlNormalizer.class);
 
 	private static final String PREFIX = "PREFIX rdf: <" + RDF.NAMESPACE
 			+ "> PREFIX rdfs: <" + RDFS.NAMESPACE + "> PREFIX owl: <"
