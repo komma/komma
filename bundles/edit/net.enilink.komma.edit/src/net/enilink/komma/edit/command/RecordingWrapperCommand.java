@@ -25,7 +25,7 @@ import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
-import net.enilink.komma.repository.change.IChangeDescription;
+import net.enilink.komma.model.change.IChangeDescription;
 import net.enilink.komma.core.IKommaManager;
 import net.enilink.komma.core.IKommaTransaction;
 

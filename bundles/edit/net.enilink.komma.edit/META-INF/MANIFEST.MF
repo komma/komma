@@ -16,7 +16,7 @@ Export-Package: net.enilink.komma.edit,
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.commands,
  net.enilink.komma.common;visibility:=reexport,
- net.enilink.komma;visibility:=reexport,
+ net.enilink.komma.model;visibility:=reexport,
  net.enilink.commons.util,
  net.enilink.komma.lib.sesame
 Eclipse-LazyStart: true

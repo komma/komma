@@ -30,8 +30,8 @@ import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.edit.provider.ComposedAdapterFactory;
 import net.enilink.komma.edit.provider.IChildCreationExtender;
-import net.enilink.komma.internal.extensions.KommaRegistryReader;
-import net.enilink.komma.internal.extensions.KommaRegistryReader.PluginClassDescriptor;
+import net.enilink.komma.internal.model.extensions.KommaRegistryReader;
+import net.enilink.komma.internal.model.extensions.KommaRegistryReader.PluginClassDescriptor;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 

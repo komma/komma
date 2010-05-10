@@ -52,7 +52,7 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
-import net.enilink.komma.repository.change.ChangeRecorder;
+import net.enilink.komma.model.change.ChangeRecorder;
 import net.enilink.komma.core.URIImpl;
 
 /**

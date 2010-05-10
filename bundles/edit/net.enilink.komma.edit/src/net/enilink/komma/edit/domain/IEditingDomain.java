@@ -24,7 +24,7 @@ import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.command.IOverrideableCommand;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.repository.change.ChangeRecorder;
+import net.enilink.komma.model.change.ChangeRecorder;
 
 /**
  * An editing domain manages a self-contained set of interrelated EMF models and

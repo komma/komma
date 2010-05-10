@@ -32,6 +32,7 @@ import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.common.util.Log;
 import net.enilink.komma.concepts.IProperty;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.SetCommand;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
@@ -406,15 +407,15 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 					parentReferences[i] = (IProperty) model
 							.resolve(parentReferences[i]);
 
-					result.addAll(KommaUtil.getInstances(model,
+					result.addAll(KommaUtil.getInstances(model.getManager(),
 							((IProperty) parentReferences[i]).getNamedRanges(
 									(IObject) object, true).toSet()));
 				}
 				return result;
 			} else if (property != null) {
-				Collection<IObject> instances = KommaUtil.getInstances(model,
-						((IProperty) property).getNamedRanges((IObject) object,
-								true).toSet());
+				Collection<IResource> instances = KommaUtil.getInstances(model
+						.getManager(), ((IProperty) property).getNamedRanges(
+						(IResource) object, true).toSet());
 				if (((IObject) object).getApplicableCardinality(property)
 						.getSecond() == 1
 						&& !instances.contains(null)) {
