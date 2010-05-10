@@ -23,7 +23,6 @@ import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.FunctionalProperty;
-import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.util.KommaUtil;
@@ -200,7 +199,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 
 	@Override
 	public boolean isRangeCompatible(IResource subject, Object object) {
-		if (object instanceof IObject) {
+		if (object instanceof IResource) {
 			// query can be optimized if OWL-inferencing is supported
 			if (getKommaManager().getInferencing().doesOWL()) {
 				String query = PREFIX + "ASK {"
@@ -389,8 +388,8 @@ public abstract class PropertySupport extends BehaviorBase implements
 			return hasListRange();
 		}
 		if (subject != null) {
-			if (((IObject) getBehaviourDelegate()).getModel().resolve(subject)
-					.getApplicableCardinality(getBehaviourDelegate())
+			if (((IResource) getBehaviourDelegate().getKommaManager().find(
+					subject)).getApplicableCardinality(getBehaviourDelegate())
 					.getSecond() <= 1) {
 				return hasListRange();
 			}

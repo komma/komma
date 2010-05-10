@@ -20,7 +20,7 @@ import net.enilink.komma.repository.change.IRepositoryChange;
  * @author James Leigh
  * 
  */
-class AddChange extends StatementChange implements IRepositoryChange {
+public class AddChange extends StatementChange implements IRepositoryChange {
 	public AddChange(Resource subj, URI pred, Value obj, Resource... ctx) {
 		super(subj, pred, obj, ctx);
 	}

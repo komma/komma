@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package net.enilink.komma.internal.repository.change;
+package net.enilink.komma.repository.change;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,9 +20,9 @@ import org.openrdf.repository.event.NotifyingRepository;
 import org.openrdf.repository.event.RepositoryConnectionListener;
 import org.openrdf.store.StoreException;
 
-import net.enilink.komma.repository.change.IRepositoryChange;
-import net.enilink.komma.repository.change.IRepositoryChangeListener;
-import net.enilink.komma.repository.change.IRepositoryChangeTracker;
+import net.enilink.komma.internal.repository.change.AddChange;
+import net.enilink.komma.internal.repository.change.OverrideNamespaceChange;
+import net.enilink.komma.internal.repository.change.RemoveChange;
 
 /**
  * Tracks changes to a RepositoryConnection. There is a performance hit when

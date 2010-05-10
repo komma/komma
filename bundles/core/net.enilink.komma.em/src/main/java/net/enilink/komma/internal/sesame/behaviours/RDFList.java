@@ -51,7 +51,7 @@ import org.openrdf.result.Result;
 import org.openrdf.store.StoreException;
 
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.model.ObjectSupport;
+import net.enilink.komma.concepts.ResourceSupport;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.sesame.ISesameEntity;
 import net.enilink.komma.sesame.ISesameManager;
@@ -65,7 +65,7 @@ import net.enilink.komma.sesame.iterators.SesameIterator;
  * @author James Leigh
  */
 @Iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#List")
-@precedes(ObjectSupport.class)
+@precedes(ResourceSupport.class)
 public abstract class RDFList extends AbstractSequentialList<Object>
 		implements java.util.List<Object>, Refreshable, Mergeable,
 		Behaviour<ISesameEntity> {

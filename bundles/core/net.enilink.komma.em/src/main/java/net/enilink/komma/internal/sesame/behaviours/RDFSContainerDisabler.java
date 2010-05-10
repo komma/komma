@@ -36,7 +36,7 @@ import java.util.ListIterator;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.annotations.precedes;
 
-import net.enilink.komma.model.ObjectSupport;
+import net.enilink.komma.concepts.ResourceSupport;
 
 /**
  * This class exists to disable SesameContainer behaviour when creating an
@@ -46,7 +46,7 @@ import net.enilink.komma.model.ObjectSupport;
  * 
  */
 @Iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#List")
-@precedes(ObjectSupport.class)
+@precedes(ResourceSupport.class)
 public abstract class RDFSContainerDisabler extends RDFSContainer {
 	@Override
 	public boolean equals(Object o) {

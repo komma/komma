@@ -24,11 +24,9 @@ import net.enilink.composition.properties.traits.Refreshable;
 import org.openrdf.model.Statement;
 import org.openrdf.store.StoreException;
 
-import com.google.inject.Inject;
-
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.komma.concepts.CONCEPTS;
-import net.enilink.komma.model.IObject;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.sesame.ISesameEntity;
 import net.enilink.komma.sesame.iterators.SesameIterator;
@@ -238,7 +236,7 @@ public class OrderedSesamePropertySet<E> extends SesamePropertySet<E> implements
 
 	@SuppressWarnings("unchecked")
 	private Collection<E> getPrecedes(E element) {
-		return (Collection<E>) ((IObject) element)
+		return (Collection<E>) ((IResource) element)
 				.get(CONCEPTS.PROPERTY_PRECEDES);
 	}
 

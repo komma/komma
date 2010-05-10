@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.internal.sesame;
+package net.enilink.komma.sesame;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -25,6 +25,7 @@ import org.openrdf.model.Value;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
 
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.komma.internal.sesame.ISesameManagerAware;
 import net.enilink.komma.core.FlushModeType;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
@@ -36,8 +37,6 @@ import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.InferencingCapability;
 import net.enilink.komma.core.LockModeType;
-import net.enilink.komma.sesame.ISesameEntity;
-import net.enilink.komma.sesame.ISesameManager;
 
 public class DelegatingSesameManager implements ISesameManager {
 	ISesameManager delegate;

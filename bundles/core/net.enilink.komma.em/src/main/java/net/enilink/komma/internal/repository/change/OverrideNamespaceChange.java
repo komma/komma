@@ -8,8 +8,6 @@ package net.enilink.komma.internal.repository.change;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.store.StoreException;
 
-import net.enilink.komma.common.notify.INotification;
-import net.enilink.komma.model.event.INamespaceNotification;
 import net.enilink.komma.repository.change.INamespaceChange;
 import net.enilink.komma.repository.change.IRepositoryChange;
 
@@ -19,8 +17,7 @@ import net.enilink.komma.repository.change.IRepositoryChange;
  * @author James Leigh
  * 
  */
-class OverrideNamespaceChange implements INamespaceChange,
-		INamespaceNotification, IRepositoryChange {
+public class OverrideNamespaceChange implements INamespaceChange, IRepositoryChange {
 	private String newNS;
 
 	private String oldNS;
@@ -54,20 +51,11 @@ class OverrideNamespaceChange implements INamespaceChange,
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.repository.event.INamespaceChange#getPrefix()
+	 * @see
+	 * net.enilink.komma.repository.event.INamespaceChange#getPrefix()
 	 */
 	public String getPrefix() {
 		return prefix;
-	}
-
-	@Override
-	public Object getSubject() {
-		return getPrefix();
-	}
-
-	@Override
-	public boolean merge(INotification notification) {
-		return false;
 	}
 
 	public void redo(RepositoryConnection conn) throws StoreException {

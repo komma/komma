@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package net.enilink.komma.internal.repository.change;
+package net.enilink.komma.repository.change;
 
 import java.util.List;
 import java.util.Stack;
@@ -12,8 +12,6 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.event.NotifyingRepository;
 import org.openrdf.store.StoreException;
 
-import net.enilink.komma.repository.change.IRepositoryChange;
-import net.enilink.komma.repository.change.IRepositoryChangeStack;
 
 /**
  * Tracks changes to a RepositoryConnection and allows those changes to be

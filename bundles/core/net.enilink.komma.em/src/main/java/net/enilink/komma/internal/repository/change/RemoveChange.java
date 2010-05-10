@@ -19,7 +19,7 @@ import net.enilink.komma.repository.change.IRepositoryChange;
  * @author James Leigh
  * 
  */
-class RemoveChange extends StatementChange implements IRepositoryChange {
+public class RemoveChange extends StatementChange implements IRepositoryChange {
 	public RemoveChange(Resource subj, URI pred, Value obj, Resource... ctx) {
 		super(subj, pred, obj, ctx);
 	}
