@@ -30,10 +30,10 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 
-import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.util.WrappedException;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.workbench.internal.KommaWorkbenchContextFactory;
@@ -86,11 +86,13 @@ public class WorkbenchModelHelperBase {
 			if (isPlatformModelURI(uri)) {
 				// Need to get the path and remove the first two segments
 				// (/resource/project name/).
-				path = new Path(URIImpl.decode(uri.path())).removeFirstSegments(2);
+				path = new Path(URIImpl.decode(uri.path()))
+						.removeFirstSegments(2);
 			} else {
 				// Need to get the path and remove the first segment (/project
 				// name/).
-				path = new Path(URIImpl.decode(uri.path())).removeFirstSegments(1);
+				path = new Path(URIImpl.decode(uri.path()))
+						.removeFirstSegments(1);
 			}
 			return project.getFile(path);
 		} else
@@ -130,10 +132,10 @@ public class WorkbenchModelHelperBase {
 	 * 
 	 * @since 1.0.0
 	 */
-	public static KommaWorkbenchContextBase createKommaContext(IProject project,
-			IKommaContextContributor contributor) {
-		return KommaWorkbenchContextFactory.INSTANCE.createKommaContext(project,
-				contributor);
+	public static KommaWorkbenchContextBase createKommaContext(
+			IProject project, IKommaContextContributor contributor) {
+		return KommaWorkbenchContextFactory.INSTANCE.createKommaContext(
+				project, contributor);
 	}
 
 	/**
@@ -146,7 +148,8 @@ public class WorkbenchModelHelperBase {
 	 */
 	public static boolean isPlatformModelURI(URI uri) {
 		return KommaWorkbenchPlugin.PLATFORM_PROTOCOL.equals(uri.scheme())
-				&& KommaWorkbenchPlugin.PLATFORM_RESOURCE.equals(uri.segment(0));
+				&& KommaWorkbenchPlugin.PLATFORM_RESOURCE
+						.equals(uri.segment(0));
 	}
 
 	/**
@@ -344,7 +347,8 @@ public class WorkbenchModelHelperBase {
 			int index = href.indexOf('#');
 			if (index > -1)
 				file = href.substring(0, index);
-			return KommaCore.getDefault().getURIMap().map(URIImpl.createURI(file)) != null;
+			return ModelCore.getDefault().getURIMap().map(
+					URIImpl.createURI(file)) != null;
 		}
 		return false;
 	}

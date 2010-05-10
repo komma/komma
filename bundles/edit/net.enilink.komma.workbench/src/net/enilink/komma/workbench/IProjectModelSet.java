@@ -37,8 +37,19 @@ import net.enilink.komma.model.MODELS;
  */
 @Iri(MODELS.NAMESPACE + "ProjectModelSet")
 public interface IProjectModelSet extends IModelSet {
+	/**
+	 * Return the associated {@link IProject}.
+	 * 
+	 * @return The associated project.
+	 */
 	IProject getProject();
 
+	/**
+	 * Associates this model set with the given <code>project</code>.
+	 * 
+	 * @param project
+	 *            The project that is managed by this model set.
+	 */
 	void setProject(IProject project);
 
 	/**

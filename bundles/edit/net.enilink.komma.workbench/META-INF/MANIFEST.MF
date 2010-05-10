@@ -5,8 +5,8 @@ Bundle-SymbolicName: net.enilink.komma.workbench;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.core.runtime,
- net.enilink.komma,
  org.eclipse.core.resources,
- net.enilink.commons.util
+ net.enilink.commons.util,
+ net.enilink.komma.model
 Export-Package: net.enilink.komma.workbench,
  net.enilink.komma.workbench.nature

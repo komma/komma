@@ -33,11 +33,11 @@ import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
 
 import net.enilink.komma.KommaCore;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.base.ExtensibleURIConverter;
 import net.enilink.komma.model.base.IURIMapRule;
 import net.enilink.komma.model.base.SimpleURIMapRule;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.util.KommaUtil;
 
 /**
  * A default implementation of the WorkbenchURIConverter interface.
@@ -110,7 +110,7 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 		}
 		String ontology;
 		try {
-			ontology = KommaUtil.findOntology(file.getContents(), fileURI
+			ontology = ModelUtil.findOntology(file.getContents(), fileURI
 					.toString());
 
 			if (ontology != null) {
