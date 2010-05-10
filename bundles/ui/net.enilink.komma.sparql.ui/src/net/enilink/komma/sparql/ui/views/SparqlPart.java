@@ -69,10 +69,10 @@ import net.enilink.commons.ui.editor.PageBook;
 import net.enilink.commons.ui.jface.viewers.CComboViewer;
 import net.enilink.commons.ui.progress.ProgressDistributor;
 import net.enilink.commons.ui.progress.UiProgressMonitorWrapper;
-import net.enilink.komma.KommaCore;
-import net.enilink.komma.ModelDescription;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelDescription;
 import net.enilink.komma.sesame.ISesameManager;
 import net.enilink.komma.sesame.ISesameResourceAware;
 import net.enilink.komma.sesame.iterators.SesameIterator;
@@ -150,8 +150,8 @@ class SparqlPart extends AbstractEditorPart {
 			if (models.size() != 1) {
 				queryConnection = this.connection;
 			} else {
-				queryConnection = ((ISesameManager)models.iterator().next().getManager())
-						.getConnection();
+				queryConnection = ((ISesameManager) models.iterator().next()
+						.getManager()).getConnection();
 			}
 
 			try {
@@ -523,7 +523,7 @@ class SparqlPart extends AbstractEditorPart {
 		queryText.append("PREFIX owl: <" + OWL.NAMESPACE + ">\n");
 		queryText.append("PREFIX rdf: <" + RDF.NAMESPACE + ">\n");
 		queryText.append("PREFIX rdfs: <" + RDFS.NAMESPACE + ">\n");
-		for (ModelDescription modelDescription : KommaCore.getBaseModels())
+		for (ModelDescription modelDescription : ModelCore.getBaseModels())
 			queryText.append("PREFIX " + modelDescription.getPrefix() + ": <"
 					+ modelDescription.getNamespace() + ">\n");
 
