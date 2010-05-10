@@ -1,7 +1,6 @@
 package net.enilink.komma.edit.ui.editor;
 
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 
@@ -18,11 +17,7 @@ public interface ISupportedEditor extends IEditorPart {
 
 	void setPartName(String partName);
 
-	Control getControl(int pageIndex);
-
 	IEditorPart getEditor(int pageIndex);
 
 	void setActivePage(int pageIndex);
-	
-	IEditorPart getActiveEditor();
 }

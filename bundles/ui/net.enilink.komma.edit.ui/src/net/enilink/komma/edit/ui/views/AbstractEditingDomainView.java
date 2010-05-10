@@ -87,7 +87,8 @@ public class AbstractEditingDomainView extends ViewPart implements
 			public Object getAdapter(Class adapter) {
 				if (IToolBarManager.class.equals(adapter)) {
 					return getViewSite().getActionBars().getToolBarManager();
-				} if (IEditingDomainProvider.class.equals(adapter)) {
+				}
+				if (IEditingDomainProvider.class.equals(adapter)) {
 					return editingDomainProvider;
 				} else if (IViewerMenuSupport.class.equals(adapter)
 						&& part instanceof IViewerMenuSupport) {
@@ -109,7 +110,7 @@ public class AbstractEditingDomainView extends ViewPart implements
 
 		this.listener = new Listener();
 		getSite().getPage().addPartListener(listener);
-		getSite().getPage().addPostSelectionListener(listener);
+		getSite().getPage().addSelectionListener(listener);
 	}
 
 	@Override

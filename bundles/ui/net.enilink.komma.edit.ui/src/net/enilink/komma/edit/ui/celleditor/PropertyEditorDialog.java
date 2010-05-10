@@ -59,6 +59,7 @@ import net.enilink.komma.edit.provider.ItemProvider;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.util.KommaUtil;
 
 public class PropertyEditorDialog extends Dialog {
@@ -452,7 +453,7 @@ public class PropertyEditorDialog extends Dialog {
 					choiceTableViewer.setSelection(selection);
 				} else if (choiceText != null) {
 					if (firstValue != null) {
-						String value = KommaUtil.getLabel(firstValue);
+						String value = ModelUtil.getLabel(firstValue);
 						choiceText.setText(value);
 					}
 				}

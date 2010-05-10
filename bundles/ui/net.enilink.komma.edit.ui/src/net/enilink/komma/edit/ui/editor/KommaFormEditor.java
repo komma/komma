@@ -5,7 +5,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
@@ -83,10 +82,6 @@ public abstract class KommaFormEditor extends FormEditor implements
 		return super.getContainer();
 	}
 
-	public Control getControl(int pageIndex) {
-		return super.getControl(pageIndex);
-	}
-
 	/**
 	 * This returns the editing domain as required by the
 	 * {@link IEditingDomainProvider} interface. This is important for
@@ -108,7 +103,7 @@ public abstract class KommaFormEditor extends FormEditor implements
 	public int getPageCount() {
 		return super.getPageCount();
 	}
-	
+
 	public void gotoMarker(IMarker marker) {
 		editorSupport.gotoMarker(marker);
 	}

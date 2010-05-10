@@ -133,7 +133,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 		 * This keeps track of the active selection provider.
 		 * 
 		 */
-		protected ISelectionProvider selectionProvider;
+		private ISelectionProvider selectionProvider;
 
 		/**
 		 * This implements {@link org.eclipse.jface.viewers.ISelectionProvider}
@@ -218,8 +218,8 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 						// of
 						// the editor.
 						//
-						if (selectionProvider != null) {
-							((ISelectionProvider) selectionProvider)
+						if (getSelectionProvider() != null) {
+							((ISelectionProvider) getSelectionProvider())
 									.setSelection(new StructuredSelection(
 											theSelection.toArray()));
 						}
@@ -227,6 +227,10 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 				};
 				runnable.run();
 			}
+		}
+
+		public ISelectionProvider getSelectionProvider() {
+			return selectionProvider;
 		}
 	};
 
@@ -370,9 +374,10 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 							.contains(((IStatementNotification) notification)
 									.getPredicate().getURI())) {
 						IModel model = (IModel) ((IStatementNotification) notification)
-								.getModelSet().getMetaDataManager().find(
-										((IStatementNotification) notification)
-												.getSubject());
+								.getModelSet()
+								.getMetaDataManager()
+								.find(((IStatementNotification) notification)
+										.getSubject());
 						Diagnostic diagnostic = analyzeModelProblems(model,
 								null);
 						if (diagnostic.getSeverity() != Diagnostic.OK) {
@@ -382,8 +387,8 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 						}
 
 						if (updateProblemIndication) {
-							editor.getSite().getShell().getDisplay().asyncExec(
-									new Runnable() {
+							editor.getSite().getShell().getDisplay()
+									.asyncExec(new Runnable() {
 										public void run() {
 											updateProblemIndication();
 										}
@@ -459,11 +464,11 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 				if (!visitor.getRemovedModels().isEmpty()) {
 					removedModels.addAll(visitor.getRemovedModels());
 					if (!isDirty()) {
-						editor.getSite().getShell().getDisplay().asyncExec(
-								new Runnable() {
+						editor.getSite().getShell().getDisplay()
+								.asyncExec(new Runnable() {
 									public void run() {
-										editor.getSite().getPage().closeEditor(
-												editor, false);
+										editor.getSite().getPage()
+												.closeEditor(editor, false);
 									}
 								});
 					}
@@ -472,8 +477,8 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 				if (!visitor.getChangedModels().isEmpty()) {
 					changedModels.addAll(visitor.getChangedModels());
 					if (editor.getSite().getPage().getActiveEditor() == KommaEditorSupport.this) {
-						editor.getSite().getShell().getDisplay().asyncExec(
-								new Runnable() {
+						editor.getSite().getShell().getDisplay()
+								.asyncExec(new Runnable() {
 									public void run() {
 										handleActivate();
 									}
@@ -591,11 +596,14 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 				in = editingDomain.getModelSet().getURIConverter()
 						.createInputStream(resourceURI);
 
-				String ontology = ModelUtil.findOntology(in, resourceURI
-						.toString());
+				String ontology = ModelUtil.findOntology(in,
+						resourceURI.toString());
 				if (ontology != null) {
-					editingDomain.getModelSet().getURIConverter()
-							.getURIMapRules().addRule(
+					editingDomain
+							.getModelSet()
+							.getURIConverter()
+							.getURIMapRules()
+							.addRule(
 									new SimpleURIMapRule(ontology, resourceURI
 											.toString()));
 
@@ -626,8 +634,8 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 
 		Diagnostic diagnostic = analyzeModelProblems(model, exception);
 		if (diagnostic.getSeverity() != Diagnostic.OK) {
-			modelToDiagnosticMap.put(model, analyzeModelProblems(model,
-					exception));
+			modelToDiagnosticMap.put(model,
+					analyzeModelProblems(model, exception));
 		}
 
 		model.getManager();
@@ -640,8 +648,8 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 		KommaModule module = ModelCore.createModelSetModule(getClass()
 				.getClassLoader());
 
-		IModelSet modelSet = new ModelSetFactory(module, URIImpl
-				.createURI(MODELS.NAMESPACE +
+		IModelSet modelSet = new ModelSetFactory(module,
+				URIImpl.createURI(MODELS.NAMESPACE +
 				// "MemoryModelSet" //
 						"OwlimModelSet" //
 				)).createModelSet();
@@ -897,7 +905,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 
 			contentOutlinePage = new BasicContentOutlinePage();
 
-			// Listen to selection so that we can handle it is a special way.
+			// Listen to selection so that we can handle it in a special way.
 			contentOutlinePage
 					.addSelectionChangedListener(new ISelectionChangedListener() {
 						// This ensures that we handle selections correctly.
@@ -986,6 +994,8 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	 * 
 	 */
 	protected void handleActivate() {
+		handlePageChange();
+
 		// Recompute the read only state.
 		if (editingDomain.getModelToReadOnlyMap() != null) {
 			editingDomain.getModelToReadOnlyMap().clear();
@@ -1204,17 +1214,14 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	}
 
 	public void handlePageChange() {
-		Object activeEditor = editor.getActiveEditor();
+		Object activeEditor = editor.getSelectedPage();
 		if (activeEditor instanceof ISelectionProvider) {
-			setSelectionProvider((ISelectionProvider) activeEditor);
+			editorSelectionProvider
+					.setSelectionProvider((ISelectionProvider) activeEditor);
 		}
 		if (contentOutlinePage != null) {
 			handleContentOutlineSelection(contentOutlinePage.getSelection());
 		}
-	}
-
-	public void setSelectionProvider(ISelectionProvider selectionProvider) {
-		editorSelectionProvider.setSelectionProvider(selectionProvider);
 	}
 
 	/**
@@ -1222,8 +1229,9 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	 * 
 	 */
 	public void setStatusLineManager(ISelection selection) {
-		IStatusLineManager statusLineManager = editorSelectionProvider.selectionProvider != null
-				&& editorSelectionProvider.selectionProvider == contentOutlineViewer ? contentOutlineStatusLineManager
+		IStatusLineManager statusLineManager = editorSelectionProvider
+				.getSelectionProvider() != null
+				&& editorSelectionProvider.getSelectionProvider() == contentOutlineViewer ? contentOutlineStatusLineManager
 				: getActionBars().getStatusLineManager();
 
 		if (statusLineManager != null) {
@@ -1246,8 +1254,8 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 				}
 				default: {
 					statusLineManager.setMessage(getString(
-							"_UI_MultiObjectSelected", Integer
-									.toString(collection.size())));
+							"_UI_MultiObjectSelected",
+							Integer.toString(collection.size())));
 					break;
 				}
 				}
@@ -1311,10 +1319,10 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 				problemEditorPart.setDiagnostic(diagnostic);
 				problemEditorPart.setMarkerHelper(markerHelper);
 				try {
-					editor.addPage(++lastEditorPage, problemEditorPart, editor
-							.getEditorInput());
-					editor.setPageText(lastEditorPage, problemEditorPart
-							.getPartName());
+					editor.addPage(++lastEditorPage, problemEditorPart,
+							editor.getEditorInput());
+					editor.setPageText(lastEditorPage,
+							problemEditorPart.getPartName());
 					editor.setActivePage(lastEditorPage);
 					showTabs();
 				} catch (PartInitException exception) {

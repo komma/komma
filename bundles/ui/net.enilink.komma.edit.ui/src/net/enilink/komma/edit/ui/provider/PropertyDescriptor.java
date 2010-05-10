@@ -54,6 +54,7 @@ import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.edit.ui.celleditor.PropertyEditorDialog;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.sesame.SesameReference;
@@ -208,7 +209,7 @@ public class PropertyDescriptor implements IPropertyDescriptor {
 		}
 
 		public String toString(Object value) {
-			String result = KommaUtil.getLabel(value);
+			String result = ModelUtil.getLabel(value);
 			return result == null ? "" : result;
 		}
 
