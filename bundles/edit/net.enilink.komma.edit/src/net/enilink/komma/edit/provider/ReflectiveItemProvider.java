@@ -27,9 +27,9 @@ import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.util.KommaUtil;
 
 /**
  * This adapter implementation provides reflective support that emulates the
@@ -191,6 +191,6 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 	}
 
 	public String getText(Object object) {
-		return KommaUtil.getLabel(object);
+		return ModelUtil.getLabel(object);
 	}
 }

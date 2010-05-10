@@ -77,11 +77,11 @@ import net.enilink.komma.edit.command.SetCommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.IKommaManager;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.util.KommaUtil;
 
 /**
  * This adapter implementation provides a convenient reusable base for adapters
@@ -773,8 +773,8 @@ public class ItemProviderAdapter extends
 					Arrays.sort(rangeArray, new Comparator<IClass>() {
 						@Override
 						public int compare(IClass c1, IClass c2) {
-							String label1 = KommaUtil.getLabel(c1);
-							String label2 = KommaUtil.getLabel(c2);
+							String label1 = ModelUtil.getLabel(c1);
+							String label2 = ModelUtil.getLabel(c2);
 
 							if (label1 == null) {
 								if (label2 == null) {
@@ -1992,7 +1992,7 @@ public class ItemProviderAdapter extends
 				for (IProperty property : ((IObject) object)
 						.getApplicableProperties()) {
 					itemPropertyDescriptors.add(createItemPropertyDescriptor(
-							adapterFactory, this, KommaUtil.getLabel(property),
+							adapterFactory, this, ModelUtil.getLabel(property),
 							"", property, true, false, true, null, null, null));
 				}
 			}
@@ -2004,7 +2004,7 @@ public class ItemProviderAdapter extends
 	 * This looks up the name of the specified feature.
 	 */
 	protected String getPropertyText(IProperty property) {
-		return KommaUtil.getLabel(property);
+		return ModelUtil.getLabel(property);
 	}
 
 	/**
@@ -2177,7 +2177,7 @@ public class ItemProviderAdapter extends
 			if (rangeSb.length() > 0) {
 				rangeSb.append(", ");
 			}
-			rangeSb.append(KommaUtil.getLabel(rangeClass));
+			rangeSb.append(ModelUtil.getLabel(rangeClass));
 		}
 		return getString("_UI_Unknown_datatype");
 	}
@@ -2192,7 +2192,7 @@ public class ItemProviderAdapter extends
 				if (typesSb.length() > 0) {
 					typesSb.append(", ");
 				}
-				typesSb.append(KommaUtil.getLabel(type));
+				typesSb.append(ModelUtil.getLabel(type));
 			}
 			return typesSb.toString();
 		} else if (object instanceof IObject) {
@@ -2202,10 +2202,10 @@ public class ItemProviderAdapter extends
 				if (typesSb.length() > 0) {
 					typesSb.append(", ");
 				}
-				typesSb.append(KommaUtil.getLabel(rangeClass));
+				typesSb.append(ModelUtil.getLabel(rangeClass));
 			}
 		}
-		return KommaUtil.getLabel(object);
+		return ModelUtil.getLabel(object);
 	}
 
 	/**

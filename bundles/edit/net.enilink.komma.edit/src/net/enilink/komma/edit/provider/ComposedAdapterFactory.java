@@ -30,6 +30,7 @@ import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.NotificationSupport;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IResource;
+import net.enilink.komma.edit.provider.ComposedAdapterFactory.IDescriptor;
 import net.enilink.komma.core.URI;
 
 /**

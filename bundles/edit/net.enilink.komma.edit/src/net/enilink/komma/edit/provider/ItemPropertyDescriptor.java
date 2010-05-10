@@ -41,6 +41,7 @@ import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.provider.IItemPropertyDescriptor.OverrideableCommandOwner;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.util.KommaUtil;
 
@@ -185,7 +186,7 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 						for (Iterator<?> i = ((Collection<?>) object)
 								.iterator(); i.hasNext();) {
 							Object value = i.next();
-							result.append(KommaUtil.getLabel(value));
+							result.append(ModelUtil.getLabel(value));
 							if (i.hasNext()) {
 								result.append(", ");
 							}
@@ -193,7 +194,7 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 						return result.toString();
 					}
 				} else {
-					return KommaUtil.getLabel(object);
+					return ModelUtil.getLabel(object);
 				}
 			}
 
@@ -407,18 +408,19 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 					parentReferences[i] = (IProperty) model
 							.resolve(parentReferences[i]);
 
-					result.addAll(KommaUtil.getInstances(model.getManager(),
+					result.addAll(KommaUtil.getInstances(
+							model.getManager(),
 							((IProperty) parentReferences[i]).getNamedRanges(
 									(IObject) object, true).toSet()));
 				}
 				return result;
 			} else if (property != null) {
-				Collection<IResource> instances = KommaUtil.getInstances(model
-						.getManager(), ((IProperty) property).getNamedRanges(
-						(IResource) object, true).toSet());
+				Collection<IResource> instances = KommaUtil.getInstances(
+						model.getManager(),
+						((IProperty) property).getNamedRanges(
+								(IResource) object, true).toSet());
 				if (((IObject) object).getApplicableCardinality(property)
-						.getSecond() == 1
-						&& !instances.contains(null)) {
+						.getSecond() == 1 && !instances.contains(null)) {
 					instances.add(null);
 				}
 				return instances;
@@ -562,8 +564,8 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 			}
 			return "";
 		} else {
-			return createPropertyValueWrapper(object, getValue(iObject,
-					property));
+			return createPropertyValueWrapper(object,
+					getValue(iObject, property));
 		}
 	}
 

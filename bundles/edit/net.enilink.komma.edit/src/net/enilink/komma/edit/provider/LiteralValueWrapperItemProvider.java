@@ -27,8 +27,8 @@ import net.enilink.komma.edit.command.CopyCommand;
 import net.enilink.komma.edit.command.SetCommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.util.KommaUtil;
 
 /**
  * A wrapper implementation for simple attribute values.
@@ -74,7 +74,7 @@ public class LiteralValueWrapperItemProvider extends WrapperItemProvider
 	 */
 	@Override
 	public String getText(Object object) {
-		return value != null ? KommaUtil.getLabel(value) : "null";
+		return value != null ? ModelUtil.getLabel(value) : "null";
 	}
 
 	/**
