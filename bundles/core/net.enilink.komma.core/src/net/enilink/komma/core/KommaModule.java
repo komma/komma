@@ -210,6 +210,7 @@ public class KommaModule {
 		readableGraphs.addAll(module.readableGraphs);
 		datasets.putAll(module.datasets);
 		resources.addAll(module.resources);
+		libraries.addAll(module.libraries);
 		if (!cl.equals(module.cl)) {
 			cl = new CombinedClassLoader(cl, module.cl);
 		}
