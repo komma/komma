@@ -37,8 +37,6 @@ import org.eclipse.swt.widgets.Tree;
 import net.enilink.commons.ui.dialogs.ListDialog;
 import net.enilink.vocab.owl.Ontology;
 import net.enilink.vocab.rdfs.Resource;
-import net.enilink.komma.KommaCore;
-import net.enilink.komma.ModelDescription;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.SimpleCommand;
@@ -52,6 +50,8 @@ import net.enilink.komma.edit.ui.provider.reflective.ObjectComparator;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelDescription;
 import net.enilink.komma.owl.edit.IOWLEditImages;
 import net.enilink.komma.owl.edit.OWLEditPlugin;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
@@ -108,7 +108,7 @@ public class ImportsPart extends AbstractEditingDomainPart {
 					}
 				});
 
-		modelDescriptions = KommaCore.getBaseModels();
+		modelDescriptions = ModelCore.getBaseModels();
 	}
 
 	public void createActions() {
