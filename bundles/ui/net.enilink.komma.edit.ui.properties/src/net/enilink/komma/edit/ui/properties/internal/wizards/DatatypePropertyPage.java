@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Text;
 import net.enilink.commons.ui.jface.viewers.CComboViewer;
 import net.enilink.vocab.rdfs.Datatype;
 import net.enilink.komma.concepts.IClass;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.util.KommaUtil;
@@ -181,8 +182,8 @@ class DatatypePropertyPage extends WizardPage {
 			}
 
 			super.setDescription("Edit property "
-					+ KommaUtil.getLabel(context.predicate) + " of "
-					+ KommaUtil.getLabel(context.subject));
+					+ ModelUtil.getLabel(context.predicate) + " of "
+					+ ModelUtil.getLabel(context.subject));
 
 			if (useRanges.getSelection()) {
 				datatypeViewer.setInput(ranges);

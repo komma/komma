@@ -64,12 +64,12 @@ import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.util.KommaUtil;
 
 public class PropertyTreePart extends AbstractEditingDomainPart implements
 		IPropertyChangeListener {
@@ -679,7 +679,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	void setUriText() {
 		if (resource != null) {
 			if (resource.getURI() == null) {
-				uriText.setText(KommaUtil.getLabel(resource));
+				uriText.setText(ModelUtil.getLabel(resource));
 				uriText.setEnabled(false);
 				itemShowFull.setEnabled(false);
 			} else {

@@ -20,13 +20,13 @@ import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.ui.properties.internal.wizards.PropertyUtil;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.util.ISparqlConstants;
-import net.enilink.komma.util.KommaUtil;
 
 class ValueEditingSupport extends EditingSupport {
 	class ContentProposal implements IContentProposal {
@@ -210,7 +210,7 @@ class ValueEditingSupport extends EditingSupport {
 	}
 
 	protected String getText(Object element) {
-		return labelProvider == null ? KommaUtil.getLabel(element)
+		return labelProvider == null ? ModelUtil.getLabel(element)
 				: labelProvider.getText(element);
 	}
 

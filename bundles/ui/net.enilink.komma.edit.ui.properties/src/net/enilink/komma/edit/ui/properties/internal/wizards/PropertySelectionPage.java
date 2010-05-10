@@ -29,7 +29,7 @@ import net.enilink.komma.edit.ui.dialogs.FilteredList;
 import net.enilink.komma.edit.ui.dialogs.FilteredList.AbstractContentProvider;
 import net.enilink.komma.edit.ui.dialogs.FilteredList.ItemsFilter;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
-import net.enilink.komma.util.KommaUtil;
+import net.enilink.komma.model.ModelUtil;
 
 public class PropertySelectionPage extends WizardPage {
 	private Collection<IProperty> applicableProperties;
@@ -61,7 +61,7 @@ public class PropertySelectionPage extends WizardPage {
 	@Override
 	public void createControl(Composite parent) {
 		super.setDescription("Select property for "
-				+ KommaUtil.getLabel(context.subject));
+				+ ModelUtil.getLabel(context.subject));
 
 		Composite topLevel = new Composite(parent, SWT.NONE);
 		topLevel.setLayout(new GridLayout(1, false));

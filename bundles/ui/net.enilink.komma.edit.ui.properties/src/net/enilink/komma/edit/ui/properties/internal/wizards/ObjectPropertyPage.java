@@ -27,13 +27,13 @@ import net.enilink.vocab.owl.OWL;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
-import net.enilink.komma.edit.ui.dialogs.FilteredTreeAndListSelectionWidget;
-import net.enilink.komma.edit.ui.dialogs.IFilteredTreeAndListDescriptor;
 import net.enilink.komma.edit.ui.dialogs.FilteredList.AbstractContentProvider;
 import net.enilink.komma.edit.ui.dialogs.FilteredList.ItemsFilter;
+import net.enilink.komma.edit.ui.dialogs.FilteredTreeAndListSelectionWidget;
+import net.enilink.komma.edit.ui.dialogs.IFilteredTreeAndListDescriptor;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
-import net.enilink.komma.util.KommaUtil;
+import net.enilink.komma.model.ModelUtil;
 
 public class ObjectPropertyPage extends WizardPage implements
 		IFilteredTreeAndListDescriptor {
@@ -95,8 +95,8 @@ public class ObjectPropertyPage extends WizardPage implements
 		super.setVisible(visible);
 		if (visible) {
 			super.setDescription("Edit property "
-					+ KommaUtil.getLabel(context.predicate) + " of "
-					+ KommaUtil.getLabel(context.subject));
+					+ ModelUtil.getLabel(context.predicate) + " of "
+					+ ModelUtil.getLabel(context.subject));
 
 			widget.getFilteredList().clearAndRefresh();
 			widget.show();
