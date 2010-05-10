@@ -4,7 +4,7 @@ Bundle-Name: Commons Plug-in
 Bundle-SymbolicName: net.enilink.commons.util;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.core.runtime
-Eclipse-LazyStart: true
+Bundle-ActivationPolicy: lazy
 Export-Package: net.enilink.commons,
  net.enilink.commons.extensions,
  net.enilink.commons.models,
