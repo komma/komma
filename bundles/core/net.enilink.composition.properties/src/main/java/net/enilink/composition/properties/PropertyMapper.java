@@ -67,7 +67,7 @@ public class PropertyMapper {
 	private static final String SET_PREFIX = "set";
 	private static final String IS_PREFIX = "is";
 
-	private Logger logger = LoggerFactory.getLogger(PropertyMapper.class);
+	private static Logger logger = LoggerFactory.getLogger(PropertyMapper.class);
 	private boolean readTypes;
 	private Properties properties = new Properties();
 
