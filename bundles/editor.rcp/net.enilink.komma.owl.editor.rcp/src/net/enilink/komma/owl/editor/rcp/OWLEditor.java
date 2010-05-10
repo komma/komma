@@ -3,7 +3,6 @@ package net.enilink.komma.owl.editor.rcp;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.ui.IFileEditorInput;
 
-import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.edit.ui.editor.IPropertySheetPageSupport;
 import net.enilink.komma.edit.ui.editor.KommaEditorSupport;
@@ -13,6 +12,7 @@ import net.enilink.komma.edit.ui.views.IViewerMenuSupport;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.MODELS;
+import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.base.ModelSetFactory;
 import net.enilink.komma.owl.editor.IModelProvider;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
@@ -81,7 +81,7 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport,
 			}
 
 			protected IModelSet createModelSet() {
-				KommaModule module = KommaCore.createModelSetModule(getClass()
+				KommaModule module = ModelCore.createModelSetModule(getClass()
 						.getClassLoader());
 				module.addConcept(IProjectModelSet.class);
 				module.addBehaviour(ProjectModelSetSupport.class);
