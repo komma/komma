@@ -13,13 +13,13 @@ package net.enilink.commons.logging;
 import java.io.File;
 import java.io.PrintStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -72,7 +72,7 @@ public class CommonsLoggingPlugin extends Plugin {
 
 		// redirect system output output to log.info()
 		PrintStream printStreamSystemOut = new PrintStream(System.out) {
-			private Log log = LogFactory.getLog(System.class);
+			private Logger log = LoggerFactory.getLogger(System.class);
 
 			public void print(String message) {
 				log.info(message);
@@ -83,7 +83,7 @@ public class CommonsLoggingPlugin extends Plugin {
 
 		// redirect system error output to log.error()
 		PrintStream printStreamSystemErr = new PrintStream(System.err) {
-			private Log log = LogFactory.getLog(System.class);
+			private Logger log = LoggerFactory.getLogger(System.class);
 
 			public void print(String message) {
 				log.error(message);
