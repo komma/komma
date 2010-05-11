@@ -72,7 +72,7 @@ public class KommaUtil implements ISparqlConstants {
 		module.addConcept(IResource.class);
 		module.addConcept(IOntology.class);
 		module.addConcept(IProperty.class);
-		
+
 		return module;
 	}
 
@@ -227,48 +227,6 @@ public class KommaUtil implements ISparqlConstants {
 			}
 		}
 		return value;
-	}
-
-	public static String getLabel(Object element) {
-		StringBuilder text = new StringBuilder();
-		if (element instanceof IStatement) {
-			element = ((IStatement) element).getObject();
-		}
-		if (element instanceof Resource) {
-			Resource resource = (Resource) element;
-
-			String label = null;
-			if (!(resource instanceof IResource && ((IResource) resource)
-					.isOntLanguageTerm())) {
-				label = resource.getRdfsLabel();
-			}
-			if (label != null) {
-				text.append(label);
-			} else {
-				URI uri = resource.getURI();
-
-				if (uri != null) {
-					String prefix = resource.getKommaManager().getPrefix(
-							uri.namespace());
-
-					if (prefix != null && prefix.length() > 0) {
-						text.append(prefix).append(":");
-					}
-
-					String fragment = uri.localPart();
-
-					text.append(fragment != null ? fragment : uri.toString());
-				} else {
-					text.append(resource.toString());
-				}
-			}
-		} else if (element instanceof ILiteral) {
-			text.append(((ILiteral) element).getLabel());
-		} else {
-			text.append(String.valueOf(element));
-		}
-
-		return text.toString();
 	}
 
 	public static void removeSuperClasses(Set<IClass> classes) {
