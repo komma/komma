@@ -166,8 +166,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 					// Create the listener on demand.
 					selectionChangedListener = new ISelectionChangedListener() {
 						// This just notifies those things that are affected by
-						// the
-						// section.
+						// the section.
 						public void selectionChanged(
 								SelectionChangedEvent selectionChangedEvent) {
 							setSelection(selectionChangedEvent.getSelection());
