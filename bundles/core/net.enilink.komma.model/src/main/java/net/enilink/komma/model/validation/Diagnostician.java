@@ -28,8 +28,8 @@ import net.enilink.komma.common.util.DiagnosticChain;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.util.KommaUtil;
 
 /**
  * A validity checker for basic {@link IObject} constraints.
@@ -43,15 +43,15 @@ public class Diagnostician implements IValidator.SubstitutionLabelProvider,
 	}
 
 	public String getObjectLabel(IObject object) {
-		return KommaUtil.getLabel(object);
+		return ModelUtil.getLabel(object);
 	}
 
 	public String getPropertyLabel(IProperty property) {
-		return KommaUtil.getLabel(property);
+		return ModelUtil.getLabel(property);
 	}
 
 	public String getValueLabel(Object value) {
-		return KommaUtil.getLabel(value);
+		return ModelUtil.getLabel(value);
 	}
 
 	/**
@@ -136,8 +136,8 @@ public class Diagnostician implements IValidator.SubstitutionLabelProvider,
 				}
 			}
 
-			boolean result = ((IValidator) validator).validate(Arrays
-					.asList(clazz), object, diagnostics, context);
+			boolean result = ((IValidator) validator).validate(
+					Arrays.asList(clazz), object, diagnostics, context);
 			if (result || diagnostics != null) {
 				result &= doValidateContents(object, diagnostics, context);
 			}
