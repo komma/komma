@@ -1341,4 +1341,8 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 			}
 		}
 	}
+
+	public void setSelectionProvider(ISelectionProvider selectionProvider) {
+		editorSelectionProvider.setSelectionProvider(selectionProvider);
+	}
 }
