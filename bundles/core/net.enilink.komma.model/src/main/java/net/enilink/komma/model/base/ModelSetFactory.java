@@ -41,9 +41,11 @@ import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelSetFactory;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.core.IGraph;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.LinkedHashGraph;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.sesame.EagerCachingSesameManagerFactory;
 import net.enilink.komma.sesame.ISesameManager;
@@ -51,28 +53,41 @@ import net.enilink.komma.sesame.SesameReference;
 import net.enilink.komma.util.KommaUtil;
 
 public class ModelSetFactory implements IModelSetFactory {
-	private KommaModule parentModule;
 	private URI[] modelSetTypes;
+	private KommaModule parentModule;
 
 	public ModelSetFactory(KommaModule module, URI... modelSetTypes) {
 		this.modelSetTypes = modelSetTypes;
 		this.parentModule = module;
 	}
 
-	@Override
-	public IModelSet createModelSet() {
-		ISesameManager metaDataManager = createMetaDataManager();
-		List<IReference> types = new ArrayList<IReference>();
-		for (URI type : modelSetTypes) {
-			types.add(new SesameReference(URIUtil.toSesameUri(type)));
+	/**
+	 * Initializes Sesame manager for meta data
+	 */
+	protected ISesameManager createMetaDataManager() {
+		KommaModule module = new KommaModule(getClass().getClassLoader());
+		if (parentModule != null) {
+			module.includeModule(parentModule);
 		}
-		types.add(MODELS.CLASS_MODELSET);
-		types.add(RDFS.TYPE_RESOURCE);
 
-		IModelSet modelSet = (IModelSet) metaDataManager.create(types
-				.toArray(new IReference[types.size()]));
-		// modelSetResource.setPersistent(isPersistent());
-		return modelSet;
+		// for (URL libraryUrl : KommaUtil.getConceptLibraries(
+		// Platform.getBundle(KommaConcepts.PLUGIN_ID)).andThen(
+		// KommaUtil.getBundleMetaInfLocations(KommaConcepts.PLUGIN_ID))) {
+		// module.addJarFileUrl(libraryUrl);
+		// }
+
+		module.addConcept(IModel.IDiagnostic.class,
+				MODELS.CLASS_DIAGNOSTIC.toString());
+
+		module.addDataset(
+				getResource(ModelCore.PLUGIN_ID,
+						"META-INF/ontologies/models.owl"),
+				"http://enilink.net/vocab/komma/models#");
+
+		module.includeModule(KommaUtil.getCoreModule());
+
+		return new EagerCachingSesameManagerFactory(module,
+				createMetaDataRepository()).createKommaManager();
 	}
 
 	/**
@@ -105,33 +120,36 @@ public class ModelSetFactory implements IModelSetFactory {
 		}
 	}
 
-	/**
-	 * Initializes Sesame manager for meta data
-	 */
-	protected ISesameManager createMetaDataManager() {
-		KommaModule module = new KommaModule(getClass().getClassLoader());
-		if (parentModule != null) {
-			module.includeModule(parentModule);
+	@Override
+	public IModelSet createModelSet() {
+		return createModelSet(new LinkedHashGraph());
+	}
+
+	@Override
+	public IModelSet createModelSet(IGraph configuration) {
+		ISesameManager metaDataManager = createMetaDataManager();
+		metaDataManager.add(configuration.iterator());
+
+		List<IReference> types = new ArrayList<IReference>();
+		for (URI type : modelSetTypes) {
+			types.add(new SesameReference(URIUtil.toSesameUri(type)));
 		}
+		types.add(MODELS.CLASS_MODELSET);
+		types.add(RDFS.TYPE_RESOURCE);
 
-		// for (URL libraryUrl : KommaUtil.getConceptLibraries(
-		// Platform.getBundle(KommaConcepts.PLUGIN_ID)).andThen(
-		// KommaUtil.getBundleMetaInfLocations(KommaConcepts.PLUGIN_ID))) {
-		// module.addJarFileUrl(libraryUrl);
-		// }
+		IModelSet modelSet = (IModelSet) metaDataManager.create(types
+				.toArray(new IReference[types.size()]));
+		// modelSetResource.setPersistent(isPersistent());
+		return modelSet;
+	}
 
-		module.addConcept(IModel.IDiagnostic.class,
-				MODELS.CLASS_DIAGNOSTIC.toString());
-
-		module.addDataset(
-				getResource(ModelCore.PLUGIN_ID,
-						"META-INF/ontologies/models.owl"),
-				"http://enilink.net/vocab/komma/models#");
-
-		module.includeModule(KommaUtil.getCoreModule());
-
-		return new EagerCachingSesameManagerFactory(module,
-				createMetaDataRepository()).createKommaManager();
+	private RDFFormat formatForFileName(String filename) {
+		RDFFormat format = RDFFormat.forFileName(filename);
+		if (format != null)
+			return format;
+		if (filename.endsWith(".owl"))
+			return RDFFormat.RDFXML;
+		throw new IllegalArgumentException("Unknow RDF format for " + filename);
 	}
 
 	protected URL getResource(String bundleName, String path) {
@@ -157,15 +175,6 @@ public class ModelSetFactory implements IModelSetFactory {
 		} finally {
 			conn.close();
 		}
-	}
-
-	private RDFFormat formatForFileName(String filename) {
-		RDFFormat format = RDFFormat.forFileName(filename);
-		if (format != null)
-			return format;
-		if (filename.endsWith(".owl"))
-			return RDFFormat.RDFXML;
-		throw new IllegalArgumentException("Unknow RDF format for " + filename);
 	}
 
 	@SuppressWarnings("unchecked")

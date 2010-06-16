@@ -10,6 +10,10 @@
  *******************************************************************************/
 package net.enilink.komma.model;
 
+import net.enilink.komma.core.IGraph;
+
 public interface IModelSetFactory {
 	IModelSet createModelSet();
+	
+	IModelSet createModelSet(IGraph configuration);
 }
