@@ -30,6 +30,16 @@ public interface IKommaManager {
 	void addDecorator(IEntityDecorator decorator);
 
 	/**
+	 * Add statements to this manager
+	 * 
+	 * @param statements
+	 *            the statements to add
+	 * @throws KommaException
+	 *             thrown if there is an error while adding the statements
+	 */
+	void add(Iterator<? extends IStatement> statements);
+
+	/**
 	 * Clear the persistence context, causing all managed entities to become
 	 * detached. Changes made to entities that have not been flushed to the
 	 * database will not be persisted.
@@ -568,6 +578,16 @@ public interface IKommaManager {
 	 *            to be removed from the pool and repository.
 	 */
 	void remove(Object entity);
+
+	/**
+	 * Remove statements from this manager
+	 * 
+	 * @param statement
+	 *            the statement to remove
+	 * @throws KommaException
+	 *             thrown if there is an error while removing the statements
+	 */
+	void remove(Iterator<? extends IStatement> statements);
 
 	/**
 	 * Unregisters an {@link IEntityDecorator decorator}

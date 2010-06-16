@@ -593,7 +593,6 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 	}
 
 	class EmptyGraph extends AbstractSet<IStatement> implements IGraph {
-
 		private static final long serialVersionUID = 3123007631452759092L;
 
 		private Set<IStatement> emptySet = Collections.emptySet();
