@@ -70,6 +70,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
+import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
 import org.openrdf.result.Result;
@@ -96,6 +97,7 @@ import net.enilink.komma.core.IKommaTransaction;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.InferencingCapability;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.LockModeType;
@@ -114,8 +116,8 @@ import net.enilink.komma.util.RESULTS;
  * 
  */
 public abstract class AbstractSesameManager implements ISesameManager {
-	private static final URI RESULT_NODE = new URIImpl(RESULTS.TYPE_RESULT
-			.toString());
+	private static final URI RESULT_NODE = new URIImpl(
+			RESULTS.TYPE_RESULT.toString());
 
 	private ClassResolver<URI> classResolver;
 
@@ -149,6 +151,22 @@ public abstract class AbstractSesameManager implements ISesameManager {
 	private SesameTransaction transaction;
 
 	private SesameTypeManager typeManager;
+
+	@Override
+	public void add(Iterator<? extends IStatement> statements) {
+		try {
+			RepositoryConnection conn = getConnection();
+			while (statements.hasNext()) {
+				IStatement stmt = statements.next();
+
+				conn.add(getResource(stmt.getSubject()),
+						(URI) getResource(stmt.getPredicate()),
+						getValue(stmt.getObject()));
+			}
+		} catch (StoreException e) {
+			throw new KommaException(e);
+		}
+	}
 
 	private <C extends Collection<URI>> C addConcept(Resource resource,
 			Class<?> role, C set) throws StoreException {
@@ -337,8 +355,8 @@ public abstract class AbstractSesameManager implements ISesameManager {
 				}
 			}
 
-			ISesameEntity bean = createBeanForClass(resource, classResolver
-					.resolveComposite(types));
+			ISesameEntity bean = createBeanForClass(resource,
+					classResolver.resolveComposite(types));
 			if (model != null) {
 				initializeBean(bean, model);
 			}
@@ -809,8 +827,8 @@ public abstract class AbstractSesameManager implements ISesameManager {
 				return literalManager.createLiteral(literal.getLabel(),
 						datatype);
 			}
-			return literalManager.createLiteral(literal.getLabel(), literal
-					.getLanguage());
+			return literalManager.createLiteral(literal.getLabel(),
+					literal.getLanguage());
 		}
 		Class<?> type = instance.getClass();
 		if (literalManager.isDatatype(type)) {
@@ -825,11 +843,11 @@ public abstract class AbstractSesameManager implements ISesameManager {
 			return getValue(merge(instance));
 		}
 
-		return literalManager.createLiteral(String.valueOf(instance), URIUtil
-				.toSesameUri(XMLSCHEMA.TYPE_STRING));
+		return literalManager.createLiteral(String.valueOf(instance),
+				URIUtil.toSesameUri(XMLSCHEMA.TYPE_STRING));
 	}
 
-	@SuppressWarnings( { "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void initializeBean(ISesameEntity bean, Model model) {
 		if (!model.contains(bean.getSesameResource(), null, null)) {
 			return;
@@ -850,8 +868,8 @@ public abstract class AbstractSesameManager implements ISesameManager {
 								.filter(bean.getSesameResource(),
 										new URIImpl(Iri.value()), null)
 								.objects());
-						model.remove(bean.getSesameResource(), new URIImpl(Iri
-								.value()), null);
+						model.remove(bean.getSesameResource(),
+								new URIImpl(Iri.value()), null);
 
 						Object result = method.invoke(bean);
 						if (result instanceof PropertySet<?>) {
@@ -892,9 +910,7 @@ public abstract class AbstractSesameManager implements ISesameManager {
 							Set<Value> objects = new LinkedHashSet<Value>(model
 									.filter(bean.getSesameResource(), keyUri,
 											null).objects());
-							model
-									.remove(bean.getSesameResource(), keyUri,
-											null);
+							model.remove(bean.getSesameResource(), keyUri, null);
 
 							IExtendedIterator<Value> valuesIt = filterResultNode(objects);
 
@@ -1071,6 +1087,22 @@ public abstract class AbstractSesameManager implements ISesameManager {
 	public void remove(Object entity) {
 		Resource resource = getResourceOrFail(entity);
 		resourceManager.removeResource(resource);
+	}
+
+	@Override
+	public void remove(Iterator<? extends IStatement> statements) {
+		try {
+			RepositoryConnection conn = getConnection();
+			while (statements.hasNext()) {
+				IStatement stmt = statements.next();
+
+				conn.removeMatch(getResource(stmt.getSubject()),
+						(URI) getResource(stmt.getPredicate()),
+						getValue(stmt.getObject()));
+			}
+		} catch (StoreException e) {
+			throw new KommaException(e);
+		}
 	}
 
 	@Override

@@ -29,12 +29,14 @@ import net.enilink.komma.internal.sesame.ISesameManagerAware;
 import net.enilink.komma.core.FlushModeType;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
+import net.enilink.komma.core.IGraph;
 import net.enilink.komma.core.IKommaManagerFactory;
 import net.enilink.komma.core.IKommaTransaction;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.InferencingCapability;
 import net.enilink.komma.core.LockModeType;
 
@@ -52,6 +54,11 @@ public class DelegatingSesameManager implements ISesameManager {
 	@Override
 	public void addDecorator(IEntityDecorator decorator) {
 		delegate.addDecorator(decorator);
+	}
+
+	@Override
+	public void add(Iterator<? extends IStatement> statements) {
+		delegate.add(statements);
 	}
 
 	@Override
@@ -349,6 +356,11 @@ public class DelegatingSesameManager implements ISesameManager {
 	@Override
 	public void remove(Object entity) {
 		delegate.remove(entity);
+	}
+
+	@Override
+	public void remove(Iterator<? extends IStatement> statements) {
+		delegate.remove(statements);
 	}
 
 	@Override
