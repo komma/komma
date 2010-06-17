@@ -58,11 +58,11 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import net.enilink.composition.properties.sesame.SesameLiteralManager;
@@ -206,7 +206,11 @@ public class OntologyConverter implements IApplication {
 				if (file.exists()) {
 					url = file.toURI().toURL();
 				} else {
-					url = new URL(args[i]);
+					try {
+						url = new URL(args[i]);
+					} catch (MalformedURLException mue) {
+						continue;
+					}
 				}
 				if (file.isDirectory() || args[i].endsWith(".jar")) {
 					jars.add(url);
@@ -225,8 +229,6 @@ public class OntologyConverter implements IApplication {
 
 	private static final String META_INF_ONTOLOGIES = "META-INF/org.openrdf.ontologies";
 
-	private static final String META_INF_PROFILES = "META-INF/org.openrdf.profiles";
-
 	private static final Options options = new Options();
 	static {
 		Option pkg = new Option("b", "bind", true,
@@ -236,10 +238,13 @@ public class OntologyConverter implements IApplication {
 
 		Option jar = new Option("j", "jar", true,
 				"filename where the jar will be saved");
+		jar.setArgName("jar file");
+
 		Option dir = new Option("d", "directory", true,
 				"directory where the files will be saved");
+		Option metaInfDir = new Option(null, "meta-inf", true,
+				"directory for meta information (usually META-INF)");
 
-		jar.setArgName("jar file");
 		Option file = new Option("r", "rdf", true,
 				"filename where the rdf ontology will be saved");
 		file.setArgName("RDF file");
@@ -261,12 +266,13 @@ public class OntologyConverter implements IApplication {
 		options.addOption(pkg);
 		options.addOption(jar);
 		options.addOption(dir);
+		options.addOption(metaInfDir);
 		options.addOption(file);
 	}
 
 	public static void main(String[] args) throws Exception {
 		try {
-			CommandLine line = new GnuParser().parse(options, args);
+			CommandLine line = new PosixParser().parse(options, args);
 			if (line.hasOption('h')) {
 				HelpFormatter formatter = new HelpFormatter();
 				String cmdLineSyntax = "codegen [options] [ontology | jar]...";
@@ -292,7 +298,9 @@ public class OntologyConverter implements IApplication {
 			if (line.hasOption('j')) {
 				converter.createJar(new File(line.getOptionValue('j')));
 			} else if (line.hasOption('d')) {
-				converter.createFiles(new File(line.getOptionValue('d')));
+				String metaInfDir = line.getOptionValue("meta-inf");
+				converter.createFiles(new File(line.getOptionValue('d')),
+						metaInfDir != null ? new File(metaInfDir) : null);
 			} else {
 				converter.createOntology(new File(line.getOptionValue('r')));
 			}
@@ -431,8 +439,8 @@ public class OntologyConverter implements IApplication {
 				beans.addAll(findBeans(packageName, jars, cl));
 			}
 		}
-		ValueFactory valueFactory = new ValueFactoryImpl(repository
-				.getURIFactory(), repository.getLiteralFactory());
+		ValueFactory valueFactory = new ValueFactoryImpl(
+				repository.getURIFactory(), repository.getLiteralFactory());
 		SesameLiteralManager manager = new SesameLiteralManager(valueFactory,
 				valueFactory);
 		manager.setClassLoader(cl);
@@ -448,19 +456,20 @@ public class OntologyConverter implements IApplication {
 	 * @see {@link #addRdfSource(URL)}
 	 */
 	public void createJar(File jarOutputFile) throws Exception {
-		createFiles(repository, cl, jarOutputFile, true);
+		createFiles(repository, cl, jarOutputFile, null, true);
 	}
 
 	/**
 	 * Generate concept Java classes from the ontology in the local repository.
 	 * 
 	 * @param directory
+	 * @param metaInfDir
 	 * @throws Exception
 	 * @see {@link #addOntology(URI, String)}
 	 * @see {@link #addRdfSource(URL)}
 	 */
-	public void createFiles(File directory) throws Exception {
-		createFiles(repository, cl, directory, false);
+	public void createFiles(File directory, File metaInfDir) throws Exception {
+		createFiles(repository, cl, directory, metaInfDir, false);
 	}
 
 	protected Repository createRepository() throws StoreException {
@@ -618,7 +627,7 @@ public class OntologyConverter implements IApplication {
 	}
 
 	private void createFiles(Repository repository, URLClassLoader cl,
-			File output, boolean createJar) throws Exception {
+			File output, File metaInfDir, boolean createJar) throws Exception {
 		DecoratingSesameManagerFactory factory = createSesameManagerFactory(
 				repository, cl);
 		Collection<AbstractModule> modules = factory.createGuiceModules(null);
@@ -628,11 +637,11 @@ public class OntologyConverter implements IApplication {
 				Multibinder<IGenerator> generators = Multibinder.newSetBinder(
 						binder(), IGenerator.class);
 				if (!constantsOnly) {
-					generators.addBinding().to(CodeGenerator.class).in(
-							Singleton.class);
+					generators.addBinding().to(CodeGenerator.class)
+							.in(Singleton.class);
 				}
-				generators.addBinding().to(ConstantsClassesGenerator.class).in(
-						Singleton.class);
+				generators.addBinding().to(ConstantsClassesGenerator.class)
+						.in(Singleton.class);
 			}
 
 			@Provides
@@ -665,8 +674,8 @@ public class OntologyConverter implements IApplication {
 				}
 				if (propertyNamesPrefix != null) {
 					for (Map.Entry<String, String> e : packages.entrySet()) {
-						resolver.bindPrefixToNamespace(propertyNamesPrefix, e
-								.getKey());
+						resolver.bindPrefixToNamespace(propertyNamesPrefix,
+								e.getKey());
 					}
 				}
 				for (URI uri : normalizer.getAnonymousClasses()) {
@@ -717,7 +726,24 @@ public class OntologyConverter implements IApplication {
 				.getInstance(new Key<Set<IGenerator>>() {
 				});
 		generateSourceCode(generators, handler);
-		if (createJar) {
+
+		Set<String> concepts = new TreeSet<String>();
+		Set<String> behaviours = new TreeSet<String>();
+		concepts.addAll(handler.getAnnotatedClasses());
+		behaviours.addAll(handler.getAbstractClasses());
+		List<String> literals = handler.getConcreteClasses();
+		concepts.removeAll(literals);
+
+		if (!createJar) {
+			if (metaInfDir != null) {
+				// omit META-INF subdirectory since it will be added by
+				// packageManifests
+				if ("meta-inf".equals(metaInfDir.getName().toLowerCase())) {
+					metaInfDir = metaInfDir.getParentFile();
+				}
+				packageManifests(metaInfDir, concepts, behaviours, literals);
+			}
+		} else {
 			if (handler.getClasses().isEmpty())
 				throw new IllegalArgumentException(
 						"No classes found - Try a different namespace.");
@@ -726,20 +752,8 @@ public class OntologyConverter implements IApplication {
 			List<File> classpath = getClassPath(cl);
 			File dir = handler.getTarget();
 			javac.compile(handler.getClasses(), dir, classpath);
-			List<File> cp = new ArrayList<File>(classpath.size() + 1);
-			cp.add(dir);
-			cp.addAll(classpath);
-			Set<String> concepts = new TreeSet<String>();
-			Set<String> behaviours = new TreeSet<String>();
-			concepts.addAll(handler.getAnnotatedClasses());
-			behaviours.addAll(handler.getAbstractClasses());
-			List<String> literals = handler.getConcreteClasses();
-			concepts.removeAll(literals);
 
-			List<String> profiles = handler.getProfileClasses();
-			concepts.removeAll(profiles);
-
-			packageJar(output, dir, concepts, behaviours, literals, profiles);
+			packageJar(output, dir, concepts, behaviours, literals);
 		}
 	}
 
@@ -763,17 +777,24 @@ public class OntologyConverter implements IApplication {
 		}
 	}
 
+	private void packageManifests(File targetDir, Collection<String> concepts,
+			Collection<String> behaviours, List<String> literals)
+			throws Exception {
+		printManifest(concepts, targetDir, META_INF_CONCEPTS);
+		printManifest(behaviours, targetDir, META_INF_BEHAVIOURS);
+		printManifest(literals, targetDir, META_INF_DATATYPES);
+	}
+
 	private void packageJar(File output, File dir, Collection<String> concepts,
-			Collection<String> behaviours, List<String> literals,
-			List<String> profiles) throws Exception {
+			Collection<String> behaviours, List<String> literals)
+			throws Exception {
 		FileOutputStream stream = new FileOutputStream(output);
 		JarOutputStream jar = new JarOutputStream(stream);
 		try {
 			packageFiles(dir, dir, jar);
-			printClasses(concepts, jar, META_INF_CONCEPTS);
-			printClasses(behaviours, jar, META_INF_BEHAVIOURS);
-			printClasses(literals, jar, META_INF_DATATYPES);
-			printClasses(profiles, jar, META_INF_PROFILES);
+			printManifest(concepts, jar, META_INF_CONCEPTS);
+			printManifest(behaviours, jar, META_INF_BEHAVIOURS);
+			printManifest(literals, jar, META_INF_DATATYPES);
 			packOntologies(rdfSources, jar);
 		} finally {
 			jar.close();
@@ -815,7 +836,22 @@ public class OntologyConverter implements IApplication {
 		}
 	}
 
-	private void printClasses(Collection<String> roles, JarOutputStream jar,
+	private void printManifest(Collection<String> roles, File targetDir,
+			String entry) throws IOException {
+		File targetFile = new File(targetDir, entry);
+		PrintStream out = null;
+		for (String name : roles) {
+			if (out == null) {
+				out = new PrintStream(targetFile);
+			}
+			out.println(name);
+		}
+		if (out != null) {
+			out.close();
+		}
+	}
+
+	private void printManifest(Collection<String> roles, JarOutputStream jar,
 			String entry) throws IOException {
 		PrintStream out = null;
 		for (String name : roles) {

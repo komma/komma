@@ -36,7 +36,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import net.enilink.composition.annotations.Iri;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDFS;
 import org.slf4j.Logger;
@@ -115,7 +114,7 @@ public class ConstantsClassesGenerator implements IGenerator {
 			String[] parts = pkg.split("\\.");
 			String className = parts[parts.length - 1].toUpperCase();
 
-			jcb.annotateURI(Iri.class, entry.getKey());
+			// jcb.annotateURI(Iri.class, entry.getKey());
 			jcb.interfaceName(className);
 
 			jcb.staticStringField("NAMESPACE", entry.getKey().toString());
@@ -133,9 +132,9 @@ public class ConstantsClassesGenerator implements IGenerator {
 				name += entity.getURI().localPart().toUpperCase();
 
 				jcb.code("\tpublic static final ").code(jcb.imports(URI.class))
-						.code(" ").code(name).code(
-								" = NAMESPACE_URI.appendFragment(\"").code(
-								entity.getURI().localPart()).code("\");\n\n");
+						.code(" ").code(name)
+						.code(" = NAMESPACE_URI.appendFragment(\"")
+						.code(entity.getURI().localPart()).code("\");\n\n");
 			}
 
 			jcb.close();

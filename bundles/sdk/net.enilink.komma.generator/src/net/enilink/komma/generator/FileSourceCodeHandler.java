@@ -61,12 +61,8 @@ public class FileSourceCodeHandler implements SourceCodeHandler {
 	private static final Pattern ABSTRACT = Pattern.compile(
 			".*public abstract class .*", Pattern.DOTALL);
 
-	private static final Pattern ANNOTATED = Pattern.compile(".*"
-			+ PACKAGE.pattern() + ".*@.*" + INTERFACE.pattern() + ".*",
-			Pattern.DOTALL);
-
-	private static final Pattern PROFILE = Pattern.compile(".*"
-			+ PACKAGE.pattern() + ".*@profile.*" + INTERFACE.pattern() + ".*",
+	private static final Pattern ANNOTATED = Pattern.compile(
+			".*" + PACKAGE.pattern() + ".*@.*" + INTERFACE.pattern() + ".*",
 			Pattern.DOTALL);
 
 	private final Logger log = LoggerFactory.getLogger(OntologyConverter.class);
@@ -80,8 +76,6 @@ public class FileSourceCodeHandler implements SourceCodeHandler {
 	private List<String> concreteClasses = new ArrayList<String>();
 
 	private List<String> abstractClasses = new ArrayList<String>();
-
-	private List<String> profileClasses = new ArrayList<String>();
 
 	private SourceMerger merger;
 
@@ -112,10 +106,6 @@ public class FileSourceCodeHandler implements SourceCodeHandler {
 		return annotatedClasses;
 	}
 
-	public List<String> getProfileClasses() {
-		return profileClasses;
-	}
-
 	public List<String> getClasses() {
 		return content;
 	}
@@ -129,14 +119,15 @@ public class FileSourceCodeHandler implements SourceCodeHandler {
 		log.debug("Saving " + className);
 		saveClass(pkg, name, code);
 		content.add(className);
-		if (PROFILE.matcher(code).matches())
-			profileClasses.add(className);
-		if (ANNOTATED.matcher(code).matches())
+		if (ANNOTATED.matcher(code).matches()) {
 			annotatedClasses.add(className);
-		if (ABSTRACT.matcher(code).matches())
+		}
+		if (ABSTRACT.matcher(code).matches()) {
 			abstractClasses.add(className);
-		if (CONCRETE.matcher(code).matches())
+		}
+		if (CONCRETE.matcher(code).matches()) {
 			concreteClasses.add(className);
+		}
 	}
 
 	private String getPackageName(String code) {
