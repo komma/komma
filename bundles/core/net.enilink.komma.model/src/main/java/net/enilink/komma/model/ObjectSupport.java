@@ -26,8 +26,13 @@ public abstract class ObjectSupport extends BehaviorBase implements IObject,
 	private static final String SELECT_APPLICABLE_CHILD_PROPERTIES = PREFIX //
 			+ "SELECT DISTINCT ?property " //
 			+ "WHERE { " //
-			+ "?property rdfs:domain ?class ." //
-			+ "?resource rdf:type ?class ." //
+			+ "?resource rdf:type ?class" //
+			+ "{" //
+			+ "		?property rdfs:domain ?class ." //
+			+ "} UNION {" //
+			+ "		?class rdfs:subClassOf ?restriction ."
+			+ "		?restriction owl:onProperty ?property" //
+			+ "}" //
 			+ "?property rdfs:subPropertyOf komma:contains ." //
 			+ "} ORDER BY ?property";
 
