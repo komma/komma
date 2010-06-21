@@ -12,29 +12,6 @@ public class PropertyNode {
 		this.hasChildren = hasChildren;
 	}
 
-	public boolean hasChildren() {
-		return hasChildren
-				|| (statement != null && statement.getObject() instanceof IReference);
-	}
-
-	public IStatement getStatement() {
-		return statement;
-	}
-
-	public void setStatement(IStatement statement) {
-		this.statement = statement;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (hasChildren ? 1231 : 1237);
-		result = prime * result
-				+ ((statement == null) ? 0 : statement.hashCode());
-		return result;
-	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -52,5 +29,28 @@ public class PropertyNode {
 		} else if (!statement.equals(other.statement))
 			return false;
 		return true;
+	}
+
+	public IStatement getStatement() {
+		return statement;
+	}
+
+	public boolean hasChildren() {
+		return hasChildren
+				|| (statement != null && statement.getObject() instanceof IReference);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (hasChildren ? 1231 : 1237);
+		result = prime * result
+				+ ((statement == null) ? 0 : statement.hashCode());
+		return result;
+	}
+
+	public void setStatement(IStatement statement) {
+		this.statement = statement;
 	}
 }

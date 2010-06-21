@@ -147,8 +147,8 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				if (itemShowFull.getSelection()) {
 					uri = URIImpl.createURI(uriText.getText());
 				} else {
-					uri = resource.getURI().namespace().appendFragment(
-							uriText.getText());
+					uri = resource.getURI().namespace()
+							.appendFragment(uriText.getText());
 				}
 
 				try {
@@ -191,8 +191,8 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				EditPropertyWizard editPropertyWizard = new EditPropertyWizard(
 						getAdapterFactory(), getEditingDomain(),
 						(IResource) statement.getSubject(),
-						(IProperty) statement.getPredicate(), statement
-								.getObject());
+						(IProperty) statement.getPredicate(),
+						statement.getObject());
 				WizardDialog dialog = new WizardDialog(getShell(),
 						editPropertyWizard);
 				dialog.open();
@@ -203,9 +203,9 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	class RemoveButtonListener extends SelectionAdapter {
 		String toString(IStatement stmt) {
 			return new StringBuilder(labelProvider.getText(stmt.getSubject()))
-					.append(" ").append(
-							labelProvider.getText(stmt.getPredicate())).append(
-							" ")
+					.append(" ")
+					.append(labelProvider.getText(stmt.getPredicate()))
+					.append(" ")
 					.append(labelProvider.getText(stmt.getObject())).toString();
 		}
 
@@ -230,12 +230,13 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				int response = messageBox.open();
 				if (response == SWT.YES) {
 					IStatus status = PropertyUtil.removeProperty(
-							getEditingDomain(), resource, (IProperty) statement
-									.getPredicate(), statement.getObject());
+							getEditingDomain(), resource,
+							(IProperty) statement.getPredicate(),
+							statement.getObject());
 
 					if (!status.isOK()) {
-						MessageDialog.openError(getShell(), "Error", status
-								.getMessage());
+						MessageDialog.openError(getShell(), "Error",
+								status.getMessage());
 					}
 				}
 			}
@@ -551,6 +552,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 		tree.setLayoutData(treeGridData);
 
 		treeViewer = new TreeViewer(tree);
+		treeViewer.setUseHashlookup(true);
 		enableToolTips(treeViewer);
 		treeViewer.setContentProvider(contentProvider);
 

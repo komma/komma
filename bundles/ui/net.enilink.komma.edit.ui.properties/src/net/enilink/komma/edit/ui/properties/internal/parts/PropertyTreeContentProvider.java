@@ -27,8 +27,6 @@ import net.enilink.komma.util.ISparqlConstants;
 
 public class PropertyTreeContentProvider extends ModelContentProvider implements
 		ITreeContentProvider {
-	private boolean useRawObjectsInStatements;
-
 	private boolean includeInferred = true;
 
 	public void setIncludeInferred(boolean includeInferred) {
@@ -38,76 +36,55 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 	@Override
 	protected boolean addedStatement(IStatement stmt,
 			Collection<Runnable> runnables) {
-		/*
-		 * if (property.equals(stmt.getPredicate()) &&
-		 * stmt.getSubject().equals(subject)) { postRefresh(runnables); return
-		 * false; } return true;
-		 */
+		postRefresh(runnables);
 		return true;
 	}
 
 	public Object[] getElements(Object inputElement) {
-		String SELECT_PROPERTIES = ISparqlConstants.PREFIX //
-				+ "SELECT DISTINCT ?property " //
-				+ "WHERE { " //
-				+ "?resource ?property ?object" //
-				+ "} ORDER BY ?property";
+		if (inputElement instanceof IEntity) {
+			String SELECT_PROPERTIES = ISparqlConstants.PREFIX //
+					+ "SELECT DISTINCT ?property " //
+					+ "WHERE { " //
+					+ "?resource ?property ?object" //
+					+ "} ORDER BY ?property";
 
-		IExtendedIterator<IProperty> result = ((IEntity) inputElement)
-				.getKommaManager().createQuery(SELECT_PROPERTIES).setParameter(
-						"resource", (IEntity) inputElement).setIncludeInferred(
-						includeInferred).evaluate(IProperty.class);
+			IExtendedIterator<IProperty> result = ((IEntity) inputElement)
+					.getKommaManager().createQuery(SELECT_PROPERTIES)
+					.setParameter("resource", (IEntity) inputElement)
+					.setIncludeInferred(includeInferred)
+					.evaluate(IProperty.class);
 
-		Collection<PropertyNode> nodes = new ArrayList<PropertyNode>();
-		for (IProperty property : result) {
-			IExtendedIterator<? extends IStatement> stmtIt = UniqueExtendedIterator
-					.create(((IResource) inputElement).getPropertyStatements(
-							property, includeInferred));
+			Collection<PropertyNode> nodes = new ArrayList<PropertyNode>();
+			for (IProperty property : result) {
+				IExtendedIterator<? extends IStatement> stmtIt = UniqueExtendedIterator
+						.create(((IResource) inputElement)
+								.getPropertyStatements(property,
+										includeInferred));
 
-			// nur erstes holen
-			if (stmtIt.hasNext()) {
-				PropertyNode node = new PropertyNode(stmtIt.next(), stmtIt
-						.hasNext());
-				stmtIt.close();
-				nodes.add(node);
+				// nur erstes holen
+				if (stmtIt.hasNext()) {
+					PropertyNode node = new PropertyNode(stmtIt.next(),
+							stmtIt.hasNext());
+
+					stmtIt.close();
+					nodes.add(node);
+				}
 			}
+			return nodes.toArray();
 		}
-		return nodes.toArray();
-	}
-
-	@Override
-	protected void internalInputChanged(Viewer viewer, Object oldInput,
-			Object newInput) {
-		/*
-		 * if (viewer instanceof TableViewer) { this.viewer = (TableViewer)
-		 * viewer; } else { this.viewer = null; }
-		 */
-	}
-
-	public boolean isUseRawObjectsInStatements() {
-		return useRawObjectsInStatements;
+		return getChildren(inputElement);
 	}
 
 	@Override
 	protected boolean removedStatement(IStatement stmt,
 			Collection<Runnable> runnables) {
-		/*
-		 * if (property.equals(stmt.getPredicate()) &&
-		 * subject.equals(stmt.getSubject())) { postRefresh(runnables); return
-		 * false; }
-		 */
+		postRefresh(runnables);
 		return true;
-	}
-
-	public void setUseRawObjectsInStatements(boolean useRawObjectsInStatements) {
-		this.useRawObjectsInStatements = useRawObjectsInStatements;
-		setTransformStatementObjects(!useRawObjectsInStatements);
 	}
 
 	@Override
 	protected boolean shouldRegisterListener(Viewer viewer) {
-		return false;
-		// return viewer != null;
+		return viewer != null;
 	}
 
 	@Override
