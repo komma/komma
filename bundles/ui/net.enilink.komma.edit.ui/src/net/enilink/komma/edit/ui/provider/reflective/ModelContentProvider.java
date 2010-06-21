@@ -115,8 +115,8 @@ public abstract class ModelContentProvider implements IContentProvider {
 		if (oldInput instanceof IModel) {
 			((IModel) oldInput).getModelSet().removeListener(listener);
 		} else if (oldInput instanceof IObject) {
-			((IObject) oldInput).getModel().getModelSet().removeListener(
-					listener);
+			((IObject) oldInput).getModel().getModelSet()
+					.removeListener(listener);
 		}
 
 		internalInputChanged(viewer, oldInput, newInput);
@@ -281,5 +281,14 @@ public abstract class ModelContentProvider implements IContentProvider {
 				}
 			}
 		});
+	}
+
+	/**
+	 * Returns the associated viewer of this content provider
+	 * 
+	 * @return the viewer
+	 */
+	protected Viewer getViewer() {
+		return viewer;
 	}
 }
