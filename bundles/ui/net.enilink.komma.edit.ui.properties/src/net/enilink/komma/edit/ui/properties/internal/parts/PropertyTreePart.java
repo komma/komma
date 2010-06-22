@@ -84,7 +84,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 						.getSubject();
 			} else if (selected instanceof PropertyNode) {
 				selectedResource = (IResource) ((PropertyNode) selected)
-						.getStatement().getSubject();
+						.getFirstStatement().getSubject();
 			} else {
 				// simply use root object
 				selectedResource = resource;
@@ -117,7 +117,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				IStatement statement = null;
 
 				if (element instanceof PropertyNode) {
-					statement = ((PropertyNode) element).getStatement();
+					statement = ((PropertyNode) element).getFirstStatement();
 				} else if (element instanceof IStatement) {
 					statement = (IStatement) element;
 				}
@@ -184,7 +184,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 			if (selected instanceof IStatement) {
 				statement = (IStatement) selected;
 			} else if (selected instanceof PropertyNode) {
-				statement = ((PropertyNode) selected).getStatement();
+				statement = ((PropertyNode) selected).getFirstStatement();
 			}
 
 			if (statement != null) {
@@ -218,7 +218,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 			if (selected instanceof IStatement) {
 				statement = (IStatement) selected;
 			} else if (selected instanceof PropertyNode) {
-				statement = ((PropertyNode) selected).getStatement();
+				statement = ((PropertyNode) selected).getFirstStatement();
 			}
 
 			if (statement != null) {
@@ -286,7 +286,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				if (element instanceof IStatement) {
 					return toImage(((IStatement) element).getPredicate());
 				} else if (element instanceof PropertyNode) {
-					return toImage(((PropertyNode) element).getStatement()
+					return toImage(((PropertyNode) element).getFirstStatement()
 							.getPredicate());
 				}
 				break;
@@ -296,7 +296,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 						return null;
 					}
 
-					return toImage(((PropertyNode) element).getStatement()
+					return toImage(((PropertyNode) element).getFirstStatement()
 							.getObject());
 				} else if (element instanceof IStatement) {
 					return toImage(element);
@@ -308,7 +308,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 						return null;
 					}
 
-					element = ((PropertyNode) element).getStatement();
+					element = ((PropertyNode) element).getFirstStatement();
 				} else {
 					element = (IStatement) element;
 				}
@@ -331,7 +331,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				PropertyNode propertyNode = (PropertyNode) element;
 				switch (column) {
 				case 0:
-					return toString(propertyNode.getStatement().getPredicate());
+					return toString(propertyNode.getFirstStatement().getPredicate());
 				case 1:
 
 					if (treeViewer.getExpandedState(element)) {
@@ -364,14 +364,14 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				PropertyNode propertyNode = (PropertyNode) element;
 				switch (column) {
 				case 0:
-					target = propertyNode.getStatement().getPredicate();
+					target = propertyNode.getFirstStatement().getPredicate();
 					break;
 				case 1:
 					if (treeViewer.getExpandedState(element)) {
 						return null;
 					}
 
-					target = propertyNode.getStatement().getObject();
+					target = propertyNode.getFirstStatement().getObject();
 					break;
 				}
 			} else if (element instanceof IStatement) {
@@ -403,7 +403,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 			}
 
 			if (element instanceof PropertyNode) {
-				element = ((PropertyNode) element).getStatement()
+				element = ((PropertyNode) element).getFirstStatement()
 						.getPredicate();
 			} else if (element instanceof IStatement) {
 				element = ((IStatement) element).getObject();
@@ -422,7 +422,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 					return null;
 				}
 
-				element = ((PropertyNode) element).getStatement();
+				element = ((PropertyNode) element).getFirstStatement();
 			}
 
 			if (element instanceof IStatement) {

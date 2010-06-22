@@ -191,7 +191,7 @@ class ValueEditingSupport extends EditingSupport {
 			element = ((Item) element).getData();
 		}
 		if (element instanceof PropertyNode) {
-			element = ((PropertyNode) element).getStatement();
+			element = ((PropertyNode) element).getFirstStatement();
 		}
 		return (IStatement) element;
 	}

@@ -1,56 +1,96 @@
+/*******************************************************************************
+ * Copyright (c) 2009 Fraunhofer IWU and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Fraunhofer IWU - initial API and implementation
+ *******************************************************************************/
 package net.enilink.komma.edit.ui.properties.internal.parts;
 
-import net.enilink.komma.core.IReference;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.commons.iterator.UniqueExtendedIterator;
+import net.enilink.komma.concepts.IProperty;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IStatement;
 
+/**
+ * Tree node that represents the values of a given property for a given resource
+ * as its children.
+ * 
+ * @author Ken Wenzel
+ */
 public class PropertyNode {
-	private IStatement statement;
-	private boolean hasChildren;
+	private IStatement firstStatement;
+	private Boolean hasMultipleStatements;
+	private boolean includeInferred;
 
-	public PropertyNode(IStatement statement, boolean hasChildren) {
-		this.statement = statement;
-		this.hasChildren = hasChildren;
+	private IProperty property;
+	private IResource resource;
+	private List<IStatement> statements;
+
+	public PropertyNode(IResource resource, IProperty property,
+			boolean includeInferred) {
+		this.resource = resource;
+		this.property = property;
+		this.includeInferred = includeInferred;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		PropertyNode other = (PropertyNode) obj;
-		if (hasChildren != other.hasChildren)
-			return false;
-		if (statement == null) {
-			if (other.statement != null)
-				return false;
-		} else if (!statement.equals(other.statement))
-			return false;
-		return true;
+	public Collection<IStatement> getChildren() {
+		if (statements == null) {
+			firstStatement = null;
+			statements = getStatementIterator().toList();
+		}
+		return statements != null ? statements : Collections
+				.<IStatement> emptyList();
 	}
 
-	public IStatement getStatement() {
-		return statement;
+	public IStatement getFirstStatement() {
+		if (firstStatement == null && statements == null) {
+			IExtendedIterator<IStatement> stmtIt = getStatementIterator();
+			firstStatement = stmtIt.next();
+			hasMultipleStatements = stmtIt.hasNext();
+			stmtIt.close();
+		}
+
+		return statements != null && statements.size() > 0 ? statements.get(0)
+				: firstStatement;
+	}
+
+	public IProperty getProperty() {
+		return property;
+	}
+
+	public IResource getResource() {
+		return resource;
+	}
+
+	protected IExtendedIterator<IStatement> getStatementIterator() {
+		return UniqueExtendedIterator.create(resource.getPropertyStatements(
+				property, includeInferred));
 	}
 
 	public boolean hasChildren() {
-		return hasChildren
-				|| (statement != null && statement.getObject() instanceof IReference);
+		if (hasMultipleStatements == null) {
+			getFirstStatement();
+		}
+		return hasMultipleStatements;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (hasChildren ? 1231 : 1237);
-		result = prime * result
-				+ ((statement == null) ? 0 : statement.hashCode());
-		return result;
+	public void refreshChildren() {
+		firstStatement = null;
+		statements = null;
+		hasMultipleStatements = null;
 	}
 
-	public void setStatement(IStatement statement) {
-		this.statement = statement;
+	public void setResource(IResource resource) {
+		this.resource = resource;
+		refreshChildren();
 	}
 }
