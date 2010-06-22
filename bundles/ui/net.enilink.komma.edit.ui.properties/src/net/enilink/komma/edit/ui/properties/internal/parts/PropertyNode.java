@@ -51,6 +51,11 @@ public class PropertyNode {
 				.<IStatement> emptyList();
 	}
 
+	/**
+	 * Returns the first statement without initializing the list all statements.
+	 * 
+	 * @return The first statement
+	 */
 	public IStatement getFirstStatement() {
 		if (firstStatement == null && statements == null) {
 			IExtendedIterator<IStatement> stmtIt = getStatementIterator();
