@@ -101,7 +101,7 @@ public class AbstractEditingDomainView extends ViewPart implements
 
 		editPart.createContents(parent);
 
-		getSite().setSelectionProvider(selectionProvider);
+		installSelectionProvider();
 
 		IWorkbenchPart editor = getSite().getPage().getActiveEditor();
 		if (editor != null) {
@@ -113,6 +113,10 @@ public class AbstractEditingDomainView extends ViewPart implements
 		getSite().getPage().addSelectionListener(listener);
 	}
 
+	protected void installSelectionProvider() {
+		getSite().setSelectionProvider(selectionProvider);
+	}
+
 	@Override
 	public void dispose() {
 		if (editorForm != null) {
@@ -120,7 +124,7 @@ public class AbstractEditingDomainView extends ViewPart implements
 			editorForm = null;
 		}
 		if (listener != null) {
-			getSite().getPage().removePostSelectionListener(listener);
+			getSite().getPage().removeSelectionListener(listener);
 			getSite().getPage().removePartListener(listener);
 			listener = null;
 		}

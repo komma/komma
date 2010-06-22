@@ -232,14 +232,13 @@ public abstract class ModelContentProvider implements IContentProvider {
 		});
 	}
 
-	protected void postRefresh(final List<Object> toRefresh,
+	protected void postRefresh(final List<?> toRefresh,
 			final boolean updateLabels, Collection<Runnable> runnables) {
 		assert viewer instanceof StructuredViewer : "This method may only be called for structured viewers";
 
 		runnables.add(new Runnable() {
 			public void run() {
-				for (Iterator<Object> iter = toRefresh.iterator(); iter
-						.hasNext();) {
+				for (Iterator<?> iter = toRefresh.iterator(); iter.hasNext();) {
 					((StructuredViewer) viewer).refresh(iter.next(),
 							updateLabels);
 				}
