@@ -12,7 +12,6 @@ package net.enilink.komma.internal.sesame;
 
 import java.util.Map;
 
-import org.apache.commons.collections.map.ReferenceIdentityMap;
 import org.apache.commons.collections.map.ReferenceMap;
 import org.openrdf.model.Resource;
 
@@ -24,7 +23,7 @@ import net.enilink.komma.sesame.SesameReference;
 public class EagerCachingSesameManager extends DecoratingSesameManager {
 	@SuppressWarnings("unchecked")
 	private Map<Resource, Object> resource2Bean = new ReferenceMap(
-			ReferenceIdentityMap.HARD, ReferenceIdentityMap.HARD, true);
+			ReferenceMap.HARD, ReferenceMap.HARD, true);
 
 	public EagerCachingSesameManager(boolean injectManager,
 			IEntityDecorator... decorators) {
