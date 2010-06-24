@@ -44,6 +44,12 @@ public class PropertyNode {
 		this.includeInferred = includeInferred;
 	}
 
+	/**
+	 * Returns the list of all statements for the corresponding
+	 * <code>resource</code> and <code>property</code>.
+	 * 
+	 * @return The list of all statements
+	 */
 	public Collection<IStatement> getChildren() {
 		if (statements == null) {
 			firstStatement = null;
@@ -62,37 +68,48 @@ public class PropertyNode {
 				stmtAry[1] = typeThingStmt;
 			}
 			statements = Arrays.asList(stmtAry);
+			hasMultipleStatements = statements.size() > 1;
 		}
 		return statements != null ? statements : Collections
 				.<IStatement> emptyList();
 	}
 
 	/**
-	 * Returns the first statement without initializing the list all statements.
+	 * Returns the first statement for the corresponding <code>resource</code>
+	 * and <code>property</code>. This method does not initialize the list all
+	 * statements if it was not loaded before.
 	 * 
 	 * @return The first statement
 	 */
 	public IStatement getFirstStatement() {
-		if (firstStatement == null && statements == null) {
-			IExtendedIterator<IStatement> stmtIt = getStatementIterator();
+		if (hasMultipleStatements == null) {
+			if (statements != null) {
+				statements = null;
+				getChildren();
+			} else {
+				IExtendedIterator<IStatement> stmtIt = getStatementIterator();
 
-			firstStatement = stmtIt.next();
-			hasMultipleStatements = stmtIt.hasNext();
+				firstStatement = stmtIt.next();
+				hasMultipleStatements = stmtIt.hasNext();
 
-			// skip first statement if it's rdf:type=owl:Thing and if there are
-			// more non-inferred statements
-			// this way, the collapsed view does not show owl:Thing as the type
-			if (hasMultipleStatements
-					&& RDF.PROPERTY_TYPE.equals(firstStatement.getPredicate())
-					&& net.enilink.vocab.owl.OWL.TYPE_THING
-							.equals(firstStatement.getObject())) {
-				IStatement secondStatement = stmtIt.next();
-				if (!secondStatement.isInferred()) {
-					firstStatement = secondStatement;
+				// skip first statement if it's rdf:type=owl:Thing and if there
+				// are
+				// more non-inferred statements
+				// this way, the collapsed view does not show owl:Thing as the
+				// type
+				if (hasMultipleStatements
+						&& RDF.PROPERTY_TYPE.equals(firstStatement
+								.getPredicate())
+						&& net.enilink.vocab.owl.OWL.TYPE_THING
+								.equals(firstStatement.getObject())) {
+					IStatement secondStatement = stmtIt.next();
+					if (!secondStatement.isInferred()) {
+						firstStatement = secondStatement;
+					}
 				}
-			}
 
-			stmtIt.close();
+				stmtIt.close();
+			}
 		}
 
 		return statements != null && statements.size() > 0 ? statements.get(0)
@@ -112,6 +129,14 @@ public class PropertyNode {
 				property, includeInferred));
 	}
 
+	/**
+	 * Returns <code>true</code> if there are multiple statements for the
+	 * corresponding <code>resource</code> and <code>property</code>, else
+	 * <code>false</code>.
+	 * 
+	 * @return <code>true</code> if multiple statements exist, else
+	 *         <code>false</code>
+	 */
 	public boolean hasChildren() {
 		if (hasMultipleStatements == null) {
 			getFirstStatement();
@@ -119,9 +144,17 @@ public class PropertyNode {
 		return hasMultipleStatements;
 	}
 
+	/**
+	 * Removes all cached statements of this property node.
+	 */
 	public void refreshChildren() {
 		firstStatement = null;
-		statements = null;
+		if (statements != null) {
+			// required to mark statements as already loaded,
+			// that next reload fetches all statements and not only the first
+			// one
+			statements = Collections.emptyList();
+		}
 		hasMultipleStatements = null;
 	}
 

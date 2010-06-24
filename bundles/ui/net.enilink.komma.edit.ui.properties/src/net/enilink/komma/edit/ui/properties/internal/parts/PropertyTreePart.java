@@ -11,6 +11,9 @@
 package net.enilink.komma.edit.ui.properties.internal.parts;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -331,9 +334,9 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				PropertyNode propertyNode = (PropertyNode) element;
 				switch (column) {
 				case 0:
-					return toString(propertyNode.getFirstStatement().getPredicate());
+					return toString(propertyNode.getFirstStatement()
+							.getPredicate());
 				case 1:
-
 					if (treeViewer.getExpandedState(element)) {
 						return null;
 					}
@@ -457,6 +460,8 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 	private Text uriText;
 
+	private List<Object> cachedExpandedElements = Collections.emptyList();
+
 	@Override
 	public void activate() {
 		contentProvider.registerListener();
@@ -551,7 +556,14 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 		GridData treeGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		tree.setLayoutData(treeGridData);
 
-		treeViewer = new TreeViewer(tree);
+		treeViewer = new TreeViewer(tree) {
+			public boolean getExpandedState(Object elementOrTreePath) {
+				if (cachedExpandedElements.contains(elementOrTreePath)) {
+					return true;
+				}
+				return super.getExpandedState(elementOrTreePath);
+			};
+		};
 		treeViewer.setUseHashlookup(true);
 		enableToolTips(treeViewer);
 		treeViewer.setContentProvider(contentProvider);
@@ -652,13 +664,16 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 			// createContextMenuFor(treeViewer);
 		}
 
-		Object[] elements = treeViewer.getExpandedElements();
+		cachedExpandedElements = Arrays
+				.asList(treeViewer.getExpandedElements());
+
 		treeViewer.setInput(resource);
 		setUriText();
 		changeUri.setEnabled(false);
 		super.refresh();
 
-		treeViewer.setExpandedElements(elements);
+		treeViewer.setExpandedElements(cachedExpandedElements.toArray());
+		cachedExpandedElements = Collections.emptyList();
 	}
 
 	@Override
