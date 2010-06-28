@@ -88,6 +88,7 @@ import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.provider.AdapterFactoryItemDelegator;
 import net.enilink.komma.edit.provider.ComposedAdapterFactory;
+import net.enilink.komma.edit.provider.ReflectiveItemProviderAdapterFactory;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.edit.ui.action.EditingDomainActionBarContributor;
 import net.enilink.komma.edit.ui.dnd.EditingDomainViewerDropAdapter;
@@ -1123,7 +1124,33 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 		if (editingDomain == null) {
 			// Create an adapter factory that yields item providers.
 			ownedAdapterFactory = new ComposedAdapterFactory(
-					ComposedAdapterFactory.IDescriptor.IRegistry.INSTANCE);
+					ComposedAdapterFactory.IDescriptor.IRegistry.INSTANCE) {
+				/**
+				 * Default adapter factory for all namespaces
+				 */
+				class DefaultItemProviderAdapterFactory extends
+						ReflectiveItemProviderAdapterFactory {
+					public DefaultItemProviderAdapterFactory() {
+						super(KommaEditUIPlugin.getPlugin());
+					}
+
+					@Override
+					public boolean isFactoryForType(Object type) {
+						return type instanceof URI
+								|| supportedTypes.contains(type);
+					}
+				}
+
+				DefaultItemProviderAdapterFactory defaultAdapterFactory = new DefaultItemProviderAdapterFactory();
+
+				@Override
+				protected IAdapterFactory delegatedGetFactoryForTypes(
+						Collection<?> types) {
+					// provide a default adapter factory as fallback if no
+					// specific adapter factory was found
+					return defaultAdapterFactory;
+				}
+			};
 
 			// Create the command stack that will notify this editor as commands
 			// are
