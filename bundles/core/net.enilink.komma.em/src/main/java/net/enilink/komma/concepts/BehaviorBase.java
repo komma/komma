@@ -11,8 +11,10 @@
 package net.enilink.komma.concepts;
 
 import org.openrdf.model.Resource;
+import org.openrdf.model.impl.URIImpl;
 
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.sesame.ISesameEntity;
 import net.enilink.komma.sesame.ISesameManager;
 import net.enilink.komma.sesame.ISesameResourceAware;
@@ -20,6 +22,9 @@ import net.enilink.komma.util.ISparqlConstants;
 
 public abstract class BehaviorBase implements ISparqlConstants, ISesameEntity {
 	protected Resource getSesameResource(IReference entity) {
+		if (entity instanceof URI) {
+			return new URIImpl(((URI) entity).toString());
+		}
 		return ((ISesameResourceAware) entity).getSesameResource();
 	}
 
