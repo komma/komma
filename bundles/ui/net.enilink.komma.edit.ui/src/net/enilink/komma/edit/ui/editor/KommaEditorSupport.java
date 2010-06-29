@@ -82,6 +82,7 @@ import net.enilink.komma.common.ui.editor.ProblemEditorPart;
 import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.edit.command.EditingDomainCommandStack;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -1132,6 +1133,15 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 						ReflectiveItemProviderAdapterFactory {
 					public DefaultItemProviderAdapterFactory() {
 						super(KommaEditUIPlugin.getPlugin());
+					}
+
+					@Override
+					public Object adapt(Object object, Object type) {
+						if (object instanceof IClass) {
+							// do not override the adapter for classes
+							return null;
+						}
+						return super.adapt(object, type);
 					}
 
 					@Override
