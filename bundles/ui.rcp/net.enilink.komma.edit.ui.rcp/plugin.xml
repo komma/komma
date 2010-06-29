@@ -27,5 +27,13 @@
             name="%_UI_LoadModel_cmd">
       </command>
    </extension>
-
+   <extension point="org.eclipse.ui.editors">
+      <editor
+            id="net.enilink.komma.edit.ui.editor.BasicEditor"
+            name="%_UI_BasicEditor_label"
+            icon="icons/full/obj16/ModelFile.gif"
+            class="net.enilink.komma.edit.ui.rcp.internal.editor.BasicEditor"
+            contributorClass="net.enilink.komma.edit.ui.rcp.internal.editor.ActionBarContributor">
+      </editor>
+   </extension>
 </plugin>
