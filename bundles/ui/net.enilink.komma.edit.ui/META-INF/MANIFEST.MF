@@ -7,7 +7,7 @@ Bundle-ClassPath: .
 Bundle-Activator: net.enilink.komma.edit.ui.KommaEditUIPlugin$Implementation
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: net.enilink.komma.edit.ui,
  net.enilink.komma.edit.ui.action,
  net.enilink.komma.edit.ui.celleditor,
