@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -61,11 +62,15 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 	 *         processed, else <code>false</code>
 	 */
 	protected boolean addedOrRemovedStatement(IStatement stmt,
-			Collection<Runnable> runnables) {
+			Collection<Runnable> runnables, boolean added) {
 		Pair<IReference, IReference> subjectPredicate = new Pair<IReference, IReference>(
 				stmt.getSubject(), stmt.getPredicate());
 		PropertyNode existing = subjectPredicateToNode.get(subjectPredicate);
 		if (existing != null) {
+			if (!added && !existing.hasMultipleStatements()) {
+				postRefresh(runnables);
+				return false;
+			}
 			existing.refreshChildren();
 			postRefresh(Arrays.asList(existing), true, runnables);
 		} else if (stmt.getSubject().equals(input)) {
@@ -78,7 +83,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 	@Override
 	protected boolean addedStatement(IStatement stmt,
 			Collection<Runnable> runnables) {
-		return addedOrRemovedStatement(stmt, runnables);
+		return addedOrRemovedStatement(stmt, runnables, true);
 	}
 
 	@Override
@@ -106,14 +111,14 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 			IExtendedIterator<IProperty> result = ((IEntity) inputElement)
 					.getKommaManager().createQuery(SELECT_PROPERTIES)
 					.setParameter("resource", (IEntity) inputElement)
-					.setIncludeInferred(includeInferred)
-					.evaluate(IProperty.class);
+					.setIncludeInferred(includeInferred).evaluate(
+							IProperty.class);
 
-			Collection<PropertyNode> nodes = new ArrayList<PropertyNode>();
+			Map<Pair<IReference, IReference>, PropertyNode> nodes = new LinkedHashMap<Pair<IReference, IReference>, PropertyNode>();
 			for (IProperty property : result) {
 				Pair<IReference, IReference> subjectPredicate = new Pair<IReference, IReference>(
-						((IEntity) inputElement).getReference(),
-						property.getReference());
+						((IEntity) inputElement).getReference(), property
+								.getReference());
 				PropertyNode node = subjectPredicateToNode
 						.get(subjectPredicate);
 				if (node == null) {
@@ -124,9 +129,11 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 					node.refreshChildren();
 				}
 
-				nodes.add(node);
+				nodes.put(subjectPredicate, node);
 			}
-			return nodes.toArray();
+			subjectPredicateToNode.keySet().retainAll(nodes.keySet());
+
+			return nodes.values().toArray();
 		}
 		return getChildren(inputElement);
 	}
@@ -139,7 +146,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 	@Override
 	public boolean hasChildren(Object element) {
 		return element instanceof PropertyNode
-				&& ((PropertyNode) element).hasChildren()
+				&& ((PropertyNode) element).hasMultipleStatements()
 				|| (element instanceof IStatement && ((IStatement) element)
 						.getObject() instanceof IResource);
 	}
@@ -191,7 +198,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 	@Override
 	protected boolean removedStatement(IStatement stmt,
 			Collection<Runnable> runnables) {
-		return addedOrRemovedStatement(stmt, runnables);
+		return addedOrRemovedStatement(stmt, runnables, false);
 	}
 
 	public void setIncludeInferred(boolean includeInferred) {

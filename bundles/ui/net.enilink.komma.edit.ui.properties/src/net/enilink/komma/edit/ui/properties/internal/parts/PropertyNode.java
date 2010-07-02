@@ -137,7 +137,7 @@ public class PropertyNode {
 	 * @return <code>true</code> if multiple statements exist, else
 	 *         <code>false</code>
 	 */
-	public boolean hasChildren() {
+	public boolean hasMultipleStatements() {
 		if (hasMultipleStatements == null) {
 			getFirstStatement();
 		}

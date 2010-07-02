@@ -177,12 +177,12 @@ class ValueEditingSupport extends EditingSupport {
 				.getKommaManager()
 				.createQuery(
 						ISparqlConstants.PREFIX
-								+ "SELECT DISTINCT ?s WHERE {{?s ?p ?o . FILTER regex(str(?s), \""
-								+ uriPattern
-								+ "\")}"
+								+ "SELECT DISTINCT ?s WHERE {{?s ?p ?o . FILTER regex(str(?s), ?uriPattern)}"
 								+ " UNION "
-								+ "{?s rdfs:label ?l . FILTER regex(str(?l), \"^"
-								+ template + "\")}" + "} LIMIT " + limit)
+								+ "{?s rdfs:label ?l . FILTER regex(str(?l), ?template)}"
+								+ "} LIMIT " + limit) //
+				.setParameter("uriPattern", uriPattern) //
+				.setParameter("template", "^" + template) // 
 				.evaluate(IResource.class);
 	}
 
