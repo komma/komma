@@ -243,7 +243,7 @@ public class ClassCompositor<T> implements Types, Opcodes {
 	}
 
 	private boolean isSpecial(Class<?> iface) {
-		return Behaviour.class.equals(iface);
+		return Behaviour.class.isAssignableFrom(iface);
 	}
 
 	private boolean isSpecial(Method m) {
@@ -294,8 +294,9 @@ public class ClassCompositor<T> implements Types, Opcodes {
 		boolean chained = implementations.size() > 1
 				|| !returnType.equals(((Method) implementations.get(0)[1])
 						.getReturnType()) || isMessage(chain, method);
-		Method face = AsmUtils.findInterfaceOrSuperMethod(method, method
-				.getDeclaringClass(), compositeClass.getInterfacesClasses());
+		Method face = AsmUtils.findInterfaceOrSuperMethod(method,
+				method.getDeclaringClass(),
+				compositeClass.getInterfacesClasses());
 
 		ExtendedMethod newMethod = compositeClass.addExtendedMethod(face,
 				definer);
@@ -330,12 +331,13 @@ public class ClassCompositor<T> implements Types, Opcodes {
 					}
 
 					// push method
-					loadMethodObject(Type.getType(m.getDeclaringClass()), m
-							.getName(), Type.getType(m.getReturnType()),
+					loadMethodObject(Type.getType(m.getDeclaringClass()),
+							m.getName(), Type.getType(m.getReturnType()),
 							toTypes(m.getParameterTypes()), gen);
 					gen.loadArgArray();
 
-					gen.invokeConstructor(INVOCATIONMESSAGECONTEXT_TYPE,
+					gen.invokeConstructor(
+							INVOCATIONMESSAGECONTEXT_TYPE,
 							new org.objectweb.asm.commons.Method("<init>",
 									Type.VOID_TYPE, new Type[] { OBJECT_TYPE,
 											Type.getType(Class.class),
@@ -345,13 +347,13 @@ public class ClassCompositor<T> implements Types, Opcodes {
 				if ("super".equals(target)) {
 					String dname = createSuperCall(m);
 					appendInvocation("this", compositeClass.getType(), dname,
-							Type.getType(m.getReturnType()), toTypes(m
-									.getParameterTypes()), gen);
+							Type.getType(m.getReturnType()),
+							toTypes(m.getParameterTypes()), gen);
 				} else {
-					appendInvocation(target, Type
-							.getType(m.getDeclaringClass()), m.getName(), Type
-							.getType(m.getReturnType()), toTypes(m
-							.getParameterTypes()), gen);
+					appendInvocation(target,
+							Type.getType(m.getDeclaringClass()), m.getName(),
+							Type.getType(m.getReturnType()),
+							toTypes(m.getParameterTypes()), gen);
 				}
 			} else {
 				callMethod(target, m, gen);
@@ -387,8 +389,8 @@ public class ClassCompositor<T> implements Types, Opcodes {
 			return superMethods.get(m);
 		}
 		String name = "_$super" + superMethods.size() + "_" + m.getName();
-		MethodNode mn = new MethodNode(ACC_PRIVATE, name, Type
-				.getMethodDescriptor(m), null, null);
+		MethodNode mn = new MethodNode(ACC_PRIVATE, name,
+				Type.getMethodDescriptor(m), null, null);
 		compositeClass.methods.add(mn);
 		MethodNodeGenerator gen = new MethodNodeGenerator(mn);
 		// call super method
@@ -552,7 +554,8 @@ public class ClassCompositor<T> implements Types, Opcodes {
 	}
 
 	private void loadBehaviour(Class<?> behaviourClass, MethodNodeGenerator gen) {
-		gen.invokeVirtual(compositeClass.getType(),
+		gen.invokeVirtual(
+				compositeClass.getType(),
 				new org.objectweb.asm.commons.Method(
 						getGetterName(behaviourClass), Type
 								.getType(behaviourClass), new Type[0]));
@@ -562,8 +565,8 @@ public class ClassCompositor<T> implements Types, Opcodes {
 			Type returnType, Type[] paramTypes, MethodNodeGenerator gen) {
 		FieldNode methodField = compositeClass.addStaticMethodField(
 				declaringClass, name, returnType, paramTypes);
-		gen.getStatic(compositeClass.getType(), methodField.name, Type
-				.getType(methodField.desc));
+		gen.getStatic(compositeClass.getType(), methodField.name,
+				Type.getType(methodField.desc));
 	}
 
 	private void callMethod(Object target, Method method,
