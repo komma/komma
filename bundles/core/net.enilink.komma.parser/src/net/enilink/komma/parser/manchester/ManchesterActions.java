@@ -7,7 +7,7 @@ public class ManchesterActions extends BaseActions<Object> implements IMancheste
 	/* (non-Javadoc)
 	 * @see net.enilink.komma.parser.manchester.IManchesterAction#action(java.lang.Object, java.lang.Object, java.lang.Object)
 	 */
-	public boolean action(Object subject,Object predicate, Object object) {
+	public boolean createStmt(Object subject,Object predicate, Object object) {
 		System.out.println(subject.toString().replaceAll("\n", "")+ "  "+predicate+"  "+object);
 		return true;
 	}

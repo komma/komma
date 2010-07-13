@@ -1,7 +1,7 @@
 package net.enilink.komma.parser.manchester;
 
 import org.parboiled.Rule;
-import org.parboiled.support.In;
+import org.parboiled.annotations.Var;
 
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
@@ -20,302 +20,323 @@ import net.enilink.komma.core.URI;
  * 
  * @author Ken Wenzel
  */
-//TODO Es sind noch Leerzeichen und Zeilenumbrüche an den IRIs und Co dran.
+// TODO Es sind noch Leerzeichen und Zeilenumbrüche an den IRIs und Co dran.
 public class ManchesterSyntaxParser extends BaseRdfParser {
-	
 	public static final String OWL_HAS_KEY = "owl:hasKey";
 
-	//TODO muss in CONCEPTS
-	public static final URI OWL_DISJOINT_UNION_OF = OWL.NAMESPACE_URI.appendFragment("disjointUnionOf");
+	// TODO muss in CONCEPTS
+	public static final URI OWL_DISJOINT_UNION_OF = OWL.NAMESPACE_URI
+			.appendFragment("disjointUnionOf");
 
-	//TODO muss in CONCEPTS	
-	public static final URI OWL_TYPES = OWL.NAMESPACE_URI.appendFragment("types");
+	// TODO muss in CONCEPTS
+	public static final URI OWL_INDIVIDUAL = OWL.NAMESPACE_URI
+			.appendFragment("Individual");
 
-	//TODO muss in CONCEPTS
-	public static final URI OWL_EQUIVALENTTO = OWL.NAMESPACE_URI.appendFragment("equivalentTo");
-
-	//TODO muss in CONCEPTS
-	public static final URI OWL_CHARACTERISTICS = OWL.NAMESPACE_URI.appendFragment("Characteristics");
-	
-	//TODO muss in CONCEPTS
-	public static final URI OWL_INDIVIDUAL = OWL.NAMESPACE_URI.appendFragment("Individual");
-	
-	//TODO muss in CONCEPTS
+	// TODO muss in CONCEPTS
 	public static final URI OWL_FACT = OWL.NAMESPACE_URI.appendFragment("Fact");
 
-	
-	
-	public IManchesterAction actions;;
-	
-	 
-	
-	
-	
-	 public void setManchesterActions(IManchesterAction action) {
-		 this.actions = action;
-	 }
-	 
-	 // 2.1 IRIs, Integers, Literals, and Entities
+	public IManchesterAction actions;
+
+	public ManchesterSyntaxParser(IManchesterAction actions) {
+		this.actions = actions;
+	}
+
+	// 2.1 IRIs, Integers, Literals, and Entities
 
 	public Rule Datatype() {
-		return firstOf(iriRef(), "integer", "decimal", "float", "string");
+		return FirstOf(IriRef(), "integer", "decimal", "float", "string");
 	}
 
-	public Rule individual() {
-		return firstOf(iriRef(), blankNode());
+	public Rule Individual() {
+		return FirstOf(IriRef(), BlankNode());
 	}
 
-	public Rule individual(@In GraphNode subject, @In URI predicate) {
-		return firstOf(iriRef(subject,predicate), blankNode());
-	}
-	
-	
-	public Rule literal() {
-		return firstOf(rdfLiteral(), numericLiteral(), booleanLiteral());
+	public Rule Individual(@Var GraphNode subject, @Var URI predicate) {
+		return FirstOf(IriRef(subject, predicate), BlankNode());
 	}
 
-	public Rule entity() {
-		return firstOf(sequence("Datatype", '(', Datatype(), ')'), //
-				sequence("Class", '(', iriRef(), ')'), //
-				sequence("ObjectProperty", '(', iriRef(), ')'), //
-				sequence("DataProperty", '(', iriRef(), ')'), //
-				sequence("AnnotationProperty", '(', iriRef(), //
+	public Rule Literal() {
+		return FirstOf(RdfLiteral(), NumericLiteral(), BooleanLiteral());
+	}
+
+	public Rule Entity() {
+		return FirstOf(Sequence("Datatype", '(', Datatype(), ')'), //
+				Sequence("Class", '(', IriRef(), ')'), //
+				Sequence("ObjectProperty", '(', IriRef(), ')'), //
+				Sequence("DataProperty", '(', IriRef(), ')'), //
+				Sequence("AnnotationProperty", '(', IriRef(), //
 						')'), //
-				sequence("NamedIndividual", '(', iriRef(), ')'));
+				Sequence("NamedIndividual", '(', IriRef(), ')'));
 	}
 
 	// 2.2 Ontologies and Annotations
 
-	public Rule annotations(@In GraphNode subject) {
-		return zeroOrMore(sequence("Annotations:", annotatedList(annotation(subject))));
+	public Rule Annotations(@Var GraphNode subject) {
+		return ZeroOrMore(Sequence("Annotations:",
+				AnnotatedList(Annotation(subject))));
 	}
 
-	//TODO VALUE für action(.., pre,obj)
-	public Rule annotation(@In GraphNode subject) {
-		return sequence(iriRef(), annotationTarget(),
-				DO(actions.action(subject, VALUE("iriRef"), TEXT("annotationTarget")))); 
+	// TODO VALUE für action(.., pre,obj)
+	public Rule Annotation(@Var GraphNode subject) {
+		return Sequence(IriRef(), AnnotationTarget(), //
+				DO(actions.createStmt(subject, value("IriRef"),
+						text("AnnotationTarget"))));
 	}
 
-	public Rule annotationTarget() {
-		return firstOf(blankNode(), iriRef(), literal());
+	public Rule AnnotationTarget() {
+		return FirstOf(BlankNode(), IriRef(), Literal());
 	}
 
-	public Rule ontologyDocument() {
-		return sequence(zeroOrMore(prefixDeclaration()), ontology(), eoi());
+	public Rule OntologyDocument() {
+		return Sequence(ZeroOrMore(PrefixDeclaration()), Ontology(), Eoi());
 	}
 
-	public Rule prefixDeclaration() {
-		return sequence("Prefix:", PNAME_NS(), IRI_REF());
+	public Rule PrefixDeclaration() {
+		return Sequence("Prefix:", PNAME_NS(), IRI_REF());
 	}
 
-	public Rule ontology() {
+	public Rule Ontology() {
 		IriRef ontologyIri;
-		
-		return sequence("Ontology:", optional(sequence(ontologyIRI(),
-				DO(ontologyIri = (IriRef)VALUE("ontologyIRI")),
-				DO(actions.action(ontologyIri,RDF.PROPERTY_TYPE,OWL.TYPE_ONTOLOGY)),
-				optional(sequence(versionIRI(),
-						DO(actions.action(ontologyIri,OWL.PROPERTY_VERSIONINFO,TEXT(NODE_BY_LABEL("versionIRI"))))
-				)))), // 
-				zeroOrMore(importOntology()), //
-				annotations(ontologyIri), //
-				zeroOrMore(frame()));
+
+		return Sequence(
+				"Ontology:",
+				Optional(Sequence(
+						OntologyIRI(),
+						DO(ontologyIri = (IriRef) value("OntologyIRI")),
+						DO(actions.createStmt(ontologyIri, RDF.PROPERTY_TYPE,
+								OWL.TYPE_ONTOLOGY)),
+						Optional(Sequence(VersionIRI(), DO(actions.createStmt(
+								ontologyIri, OWL.PROPERTY_VERSIONINFO,
+								text(nodeByLabel("versionIRI")))))))), //
+				ZeroOrMore(ImportOntology()), //
+				Annotations(ontologyIri), //
+				ZeroOrMore(Frame()));
 	}
 
-	public Rule iriRef(@In GraphNode subject,@In URI predicate) {
-		return sequence(firstOf(
-				  IRI_REF(), prefixedName(), 
-				  sequence(PN_LOCAL(),SET(new QName("", TEXT("PN_LOCAL"))))
-			   ),
-			   DO(actions.action(subject,predicate,LAST_TEXT())));
+	public Rule IriRef(@Var GraphNode subject, @Var URI predicate) {
+		return Sequence(
+				FirstOf(IRI_REF(),
+						PrefixedName(),
+						Sequence(PN_LOCAL(),
+								set(new QName("", text("PN_LOCAL"))))),
+				DO(actions.createStmt(subject, predicate, lastText())));
 	}
-	
-	public Rule iriRef() {
-		return firstOf(
-				  IRI_REF(), prefixedName(), 
-				  sequence(PN_LOCAL(),SET(new QName("", TEXT("PN_LOCAL"))))
-			   );
+
+	public Rule IriRef() {
+		return FirstOf(IRI_REF(), PrefixedName(),
+				Sequence(PN_LOCAL(), set(new QName("", text("PN_LOCAL")))));
 	}
-	
+
 	public Rule IRI_REF_WS() {
-		return sequence(IRI_REF(), WS());
+		return Sequence(IRI_REF(), WS());
 	}
 
-	public Rule ontologyIRI() {
+	public Rule OntologyIRI() {
 		return IRI_REF_WS();
 	}
 
-	public Rule versionIRI() {
+	public Rule VersionIRI() {
 		return IRI_REF_WS();
 	}
 
-	public Rule importOntology() {
-		return sequence("Import:", IRI_REF_WS());
+	public Rule ImportOntology() {
+		return Sequence("Import:", IRI_REF_WS());
 	}
 
-	public Rule frame() {
-		return firstOf(
-				datatypeFrame(), //done
-				classFrame(), //done
-				objectPropertyFrame(), //done
-				dataPropertyFrame(), // done
-				annotationPropertyFrame(), //done
-				individualFrame(),// done
-				misc() //
+	public Rule Frame() {
+		return FirstOf(DatatypeFrame(), //
+				ClassFrame(), //
+				ObjectPropertyFrame(), //
+				DataPropertyFrame(), //
+				AnnotationPropertyFrame(), //
+				IndividualFrame(), //
+				Misc() //
 		);
 	}
 
 	// 2.3 Property and Datatype Expressions
 
-	public Rule objectPropertyExpression(@In GraphNode subject,@In URI predicate) {
-		return sequence(firstOf(iriRef(), inverseObjectProperty()),
-				DO(actions.action(subject,predicate, LAST_TEXT())));
-		
+	public Rule ObjectPropertyExpression(@Var GraphNode subject,
+			@Var URI predicate) {
+		return Sequence(FirstOf(IriRef(), InverseObjectProperty()),
+				DO(actions.createStmt(subject, predicate, lastText())));
+
 	}
 
-	public Rule objectPropertyExpression() {
-		return firstOf(iriRef(), inverseObjectProperty());
-		
+	public Rule ObjectPropertyExpression() {
+		return FirstOf(IriRef(), InverseObjectProperty());
+
 	}
-	
-	public Rule inverseObjectProperty() {
-		return sequence("inverse", iriRef());
+
+	public Rule InverseObjectProperty() {
+		return Sequence("inverse", IriRef());
 	};
 
-	public Rule dataPropertyExpression() {
-		return iriRef();
+	public Rule DataPropertyExpression() {
+		return IriRef();
 	}
 
-	public Rule dataPropertyExpression(@In GraphNode subject,@In URI predicate) {
-		return sequence(iriRef(),DO(actions.action(subject,predicate, TEXT("iriRef"))));
-	}
-	
-	
-	
-	public Rule dataRange() {
-		return sequence(dataConjunction(), zeroOrMore(sequence("or",
-				dataConjunction())));
-	}
-	
-	
-	//TODO was ist mit dem or und der 2. dataConjunction?
-	public Rule dataRange(@In GraphNode subject,@In URI predicate) {
-		return sequence(dataConjunction(), zeroOrMore(sequence("or",
-				dataConjunction())),
-				DO(actions.action(subject,predicate, TEXT("dataConjunction"))));
+	public Rule DataPropertyExpression(@Var GraphNode subject,
+			@Var URI predicate) {
+		return Sequence(IriRef(),
+				DO(actions.createStmt(subject, predicate, text("IriRef"))));
 	}
 
-	
-	
-	public Rule dataConjunction() {
-		return sequence(dataPrimary(),
-				zeroOrMore(sequence("and", dataPrimary())));
+	public Rule DataRange() {
+		return Sequence(DataConjunction(),
+				ZeroOrMore(Sequence("or", DataConjunction())));
 	}
 
-	public Rule dataPrimary() {
-		return sequence(optional("not"), dataAtomic());
+	// TODO was ist mit dem or und der 2. dataConjunction?
+	public Rule DataRange(@Var GraphNode subject, @Var URI predicate) {
+		return Sequence(DataConjunction(),
+				ZeroOrMore(Sequence("or", DataConjunction())),
+				DO(actions.createStmt(subject, predicate,
+						text("DataConjunction"))));
 	}
 
-	public Rule dataAtomic() {
-		return firstOf(datatypeRestriction(), sequence('{', list(literal()),
-				'}'), sequence('(', dataRange(), ')'));
+	public Rule DataConjunction() {
+		return Sequence(DataPrimary(),
+				ZeroOrMore(Sequence("and", DataPrimary())));
 	}
 
-	public Rule datatypeRestriction() {
-		return sequence(Datatype(), optional(sequence('[', facet(),
-				restrictionValue(), zeroOrMore(sequence(',', facet(),
-						restrictionValue())), ']')));
+	public Rule DataPrimary() {
+		return Sequence(Optional("not"), DataAtomic());
 	}
 
-	public Rule facet() {
-		return firstOf("length", "minLength", "maxLength", "pattern",
+	public Rule DataAtomic() {
+		return FirstOf(DatatypeRestriction(),
+				Sequence('{', List(Literal()), '}'),
+				Sequence('(', DataRange(), ')'));
+	}
+
+	public Rule DatatypeRestriction() {
+		return Sequence(
+				Datatype(),
+				Optional(Sequence('[', Facet(), RestrictionValue(),
+						ZeroOrMore(Sequence(',', Facet(), RestrictionValue())),
+						']')));
+	}
+
+	public Rule Facet() {
+		return FirstOf("length", "minLength", "maxLength", "pattern",
 				"langPattern", "<=", '<', ">=", '>');
 	}
 
-	public Rule restrictionValue() {
-		return literal();
+	public Rule RestrictionValue() {
+		return Literal();
 	}
 
 	// 2.4 Descriptions
 
-	public Rule description(@In GraphNode subject,@In URI predicate) {
-		return sequence(conjunction(),
-				zeroOrMore(sequence("or", conjunction())),DO(actions.action(subject, predicate, TEXT("conjunction"))));
+	public Rule Description(@Var GraphNode subject, @Var URI predicate) {
+		return Sequence(Conjunction(),
+				ZeroOrMore(Sequence("or", Conjunction())),
+				DO(actions.createStmt(subject, predicate, text("Conjunction"))));
 	}
 
-	public Rule conjunction() {
-		return firstOf(sequence(iriRef(), "that", optional("not"),
-				restriction(), zeroOrMore(sequence("and", optional("not"),
-						restriction()))), sequence(primary(),
-				zeroOrMore(sequence("and", primary()))));
+	public Rule Conjunction() {
+		return FirstOf(
+				Sequence(
+						IriRef(),
+						"that",
+						Optional("not"),
+						Restriction(),
+						ZeroOrMore(Sequence("and", Optional("not"),
+								Restriction()))),
+				Sequence(Primary(), ZeroOrMore(Sequence("and", Primary()))));
 	}
 
-	public Rule primary() {
-		return sequence(optional("not"), firstOf(restriction(), atomic()));
+	public Rule Primary() {
+		return Sequence(Optional("not"), FirstOf(Restriction(), Atomic()));
 	}
 
-	public Rule restriction() {
-		return firstOf(
-				sequence(objectPropertyExpression(), "some", primary()),
-				sequence(objectPropertyExpression(), "only", primary()),
-				sequence(objectPropertyExpression(), "value", individual()),
-				sequence(objectPropertyExpression(), "Self"), //
-				sequence(objectPropertyExpression(), "min", INTEGER_POSITIVE(),
-						optional(primary())), //
-				sequence(objectPropertyExpression(), "max", INTEGER_POSITIVE(),
-						optional(primary())), //
-				sequence(objectPropertyExpression(), "exactly",
-						INTEGER_POSITIVE(), optional(primary())), //
-				sequence(dataPropertyExpression(), "some", dataPrimary()),
-				sequence(dataPropertyExpression(), "only", dataPrimary()),
-				sequence(dataPropertyExpression(), "value", literal()),
-				sequence(dataPropertyExpression(), "min", INTEGER_POSITIVE(),
-						optional(dataPrimary())), //
-				sequence(dataPropertyExpression(), "max", INTEGER_POSITIVE(),
-						optional(dataPrimary())), //
-				sequence(dataPropertyExpression(), "exactly",
-						INTEGER_POSITIVE(), optional(dataPrimary())));
+	public Rule Restriction() {
+		return FirstOf(
+				Sequence(ObjectPropertyExpression(), "some", Primary()),
+				Sequence(ObjectPropertyExpression(), "only", Primary()),
+				Sequence(ObjectPropertyExpression(), "value", Individual()),
+				Sequence(ObjectPropertyExpression(), "Self"), //
+				Sequence(ObjectPropertyExpression(), "min", INTEGER_POSITIVE(),
+						Optional(Primary())), //
+				Sequence(ObjectPropertyExpression(), "max", INTEGER_POSITIVE(),
+						Optional(Primary())), //
+				Sequence(ObjectPropertyExpression(), "exactly",
+						INTEGER_POSITIVE(), Optional(Primary())), //
+				Sequence(DataPropertyExpression(), "some", DataPrimary()),
+				Sequence(DataPropertyExpression(), "only", DataPrimary()),
+				Sequence(DataPropertyExpression(), "value", Literal()),
+				Sequence(DataPropertyExpression(), "min", INTEGER_POSITIVE(),
+						Optional(DataPrimary())), //
+				Sequence(DataPropertyExpression(), "max", INTEGER_POSITIVE(),
+						Optional(DataPrimary())), //
+				Sequence(DataPropertyExpression(), "exactly",
+						INTEGER_POSITIVE(), Optional(DataPrimary())));
 	}
 
-	public Rule atomic() {
-		return firstOf(iriRef(), sequence('{', list(individual()), '}'),
-				sequence('(', description(null,null), ')'));
+	public Rule Atomic() {
+		return FirstOf(IriRef(), Sequence('{', List(Individual()), '}'),
+				Sequence('(', Description(null, null), ')'));
 	}
 
 	// 2.5 Frames and Miscellaneous
 
-	public Rule datatypeFrame() {
+	public Rule DatatypeFrame() {
 		QName datatypeIri;
-		
-		return sequence(
+
+		return Sequence(
 				"Datatype:",
 				Datatype(),
-				DO(datatypeIri = (QName)VALUE("Datatype")),
-				DO(actions.action(datatypeIri, RDF.PROPERTY_TYPE, RDFS.TYPE_DATATYPE)),
-				zeroOrMore(sequence("Annotations:", annotatedList(annotation(datatypeIri)))),
-				//TODO Annotations, dataRange
-				optional(sequence("EquivalentTo:", annotations(null), dataRange())),
-				zeroOrMore(sequence("Annotations:", annotatedList(annotation(datatypeIri)))));
+				DO(datatypeIri = (QName) value("Datatype")),
+				DO(actions.createStmt(datatypeIri, RDF.PROPERTY_TYPE,
+						RDFS.TYPE_DATATYPE)),
+				ZeroOrMore(Sequence("Annotations:",
+						AnnotatedList(Annotation(datatypeIri)))),
+				// TODO Annotations, dataRange
+				Optional(Sequence("EquivalentTo:", Annotations(null),
+						DataRange())),
+				ZeroOrMore(Sequence("Annotations:",
+						AnnotatedList(Annotation(datatypeIri)))));
 	}
 
-	//TODO wenn man 2 Class frames hat geht es nicht, darum ist HasKey auskommentiert!
-	public Rule classFrame() {
+	// TODO wenn man 2 Class frames hat geht es nicht, darum ist HasKey
+	// auskommentiert!
+	public Rule ClassFrame() {
 		QName classIri;
-		
-		
-		return sequence("Class:", iriRef(),
-				DO(classIri = (QName)VALUE("iriRef")),
-				DO(actions.action(classIri, RDF.PROPERTY_TYPE, OWL.TYPE_CLASS)),
-				zeroOrMore(firstOf(sequence(
-				"Annotations:", annotatedList(annotation(classIri))), sequence(
-				"SubClassOf:", annotatedList(description(classIri, RDFS.PROPERTY_SUBCLASSOF))), sequence(
-				"EquivalentTo:", annotatedList(description(classIri, OWL_EQUIVALENTTO))), sequence(
-				"DisjointWith:", annotatedList(description(classIri,OWL.PROPERTY_DISJOINTWITH))), sequence(
-				//TODO Die Annotations fehlen noch
-				"DisjointUnionOf:", annotations(classIri), list2(description(classIri,OWL_DISJOINT_UNION_OF)))))//,
-				//TODO  Die Annotations fehlen noch
-				/*sequence("HasKey:", annotations(classIri), oneOrMore(firstOf(
-						objectPropertyExpression(classIri,OWL_HAS_KEY), dataPropertyExpression())))*/);
+
+		return Sequence(
+				"Class:",
+				IriRef(),
+				DO(classIri = (QName) value("IriRef")),
+				DO(actions.createStmt(classIri, RDF.PROPERTY_TYPE,
+						OWL.TYPE_CLASS)),
+				ZeroOrMore(FirstOf(
+						Sequence("Annotations:",
+								AnnotatedList(Annotation(classIri))),
+						Sequence(
+								"SubClassOf:",
+								AnnotatedList(Description(classIri,
+										RDFS.PROPERTY_SUBCLASSOF))),
+						Sequence(
+								"EquivalentTo:",
+								AnnotatedList(Description(classIri,
+										OWL.PROPERTY_EQUIVALENTCLASS))),
+						Sequence(
+								"DisjointWith:",
+								AnnotatedList(Description(classIri,
+										OWL.PROPERTY_DISJOINTWITH))),
+						Sequence(
+								// TODO Die Annotations fehlen noch
+								"DisjointUnionOf:",
+								Annotations(classIri),
+								List2(Description(classIri,
+										OWL_DISJOINT_UNION_OF)))))// ,
+		// TODO Die Annotations fehlen noch
+		/*
+		 * Sequence("HasKey:", Annotations(classIri), OneOrMore(FirstOf(
+		 * ObjectPropertyExpression(classIri,OWL_HAS_KEY),
+		 * DataPropertyExpression())))
+		 */);
 	}
 
 	public boolean echo(String value) {
@@ -323,124 +344,209 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 		return true;
 	}
 
-	public Rule objectPropertyFrame() {
+	public Rule ObjectPropertyFrame() {
 		QName objectPropertyIri;
-		
-		return sequence("ObjectProperty:", iriRef(), 
-				DO(objectPropertyIri = (QName)VALUE("iriRef")),
-				DO(actions.action(objectPropertyIri, RDF.PROPERTY_TYPE, OWL.TYPE_OBJECTPROPERTY)),
-				zeroOrMore(firstOf(
-				sequence("Annotations:", annotatedList(annotation(objectPropertyIri))),
-				sequence("Domain:", annotatedList(description(objectPropertyIri,RDFS.PROPERTY_DOMAIN))), 
-				sequence("Range:", annotatedList(description(objectPropertyIri,RDFS.PROPERTY_RANGE))), 
-				sequence("Characteristics:",annotatedList(objectPropertyCharacteristic(objectPropertyIri))),
-				sequence("SubPropertyOf:",annotatedList(objectPropertyExpression(objectPropertyIri,RDFS.PROPERTY_SUBPROPERTYOF))), 
-				sequence("EquivalentTo:",annotatedList(objectPropertyExpression(objectPropertyIri,OWL_EQUIVALENTTO))), 
-				sequence("DisjointWith:",annotatedList(objectPropertyExpression(objectPropertyIri,OWL.PROPERTY_DISJOINTWITH))),
-				sequence("InverseOf:",annotatedList(objectPropertyExpression(objectPropertyIri,OWL.PROPERTY_INVERSEOF))), 
-				//TODO
-				sequence("SubPropertyChain:", annotations(null), oneOrMore(sequence(
-								objectPropertyExpression(null,null), 'o',
-								objectPropertyExpression(null,null)))))));
+
+		return Sequence(
+				"ObjectProperty:",
+				IriRef(),
+				DO(objectPropertyIri = (QName) value("IriRef")),
+				DO(actions.createStmt(objectPropertyIri, RDF.PROPERTY_TYPE,
+						OWL.TYPE_OBJECTPROPERTY)),
+				ZeroOrMore(FirstOf(
+						Sequence("Annotations:",
+								AnnotatedList(Annotation(objectPropertyIri))),
+						Sequence(
+								"Domain:",
+								AnnotatedList(Description(objectPropertyIri,
+										RDFS.PROPERTY_DOMAIN))),
+						Sequence(
+								"Range:",
+								AnnotatedList(Description(objectPropertyIri,
+										RDFS.PROPERTY_RANGE))),
+						Sequence(
+								"Characteristics:",
+								AnnotatedList(ObjectPropertyCharacteristic(objectPropertyIri))),
+						Sequence(
+								"SubPropertyOf:",
+								AnnotatedList(ObjectPropertyExpression(
+										objectPropertyIri,
+										RDFS.PROPERTY_SUBPROPERTYOF))),
+						Sequence(
+								"EquivalentTo:",
+								AnnotatedList(ObjectPropertyExpression(
+										objectPropertyIri,
+										OWL.PROPERTY_EQUIVALENTPROPERTY))),
+						Sequence(
+								"DisjointWith:",
+								AnnotatedList(ObjectPropertyExpression(
+										objectPropertyIri,
+										OWL.PROPERTY_DISJOINTWITH))),
+						Sequence(
+								"InverseOf:",
+								AnnotatedList(ObjectPropertyExpression(
+										objectPropertyIri,
+										OWL.PROPERTY_INVERSEOF))),
+						// TODO
+						Sequence(
+								"SubPropertyChain:",
+								Annotations(null),
+								OneOrMore(Sequence(
+										ObjectPropertyExpression(null, null),
+										'o',
+										ObjectPropertyExpression(null, null)))))));
 	}
 
-	public Rule objectPropertyCharacteristic(@In GraphNode subject) {
-		return sequence(firstOf("Functional", "InverseFunctional", "Reflexive",
-				"Irreflexive", "Symmetric", "Asymmetric", "Transitive"),DO(actions.action(subject, OWL_CHARACTERISTICS, LAST_TEXT())));
+	public Rule ObjectPropertyCharacteristic(@Var GraphNode subject) {
+		return Sequence(
+				FirstOf("Functional", "InverseFunctional", "Reflexive",
+						"Irreflexive", "Symmetric", "Asymmetric", "Transitive"),
+				DO(actions.createStmt(
+						subject,
+						RDF.PROPERTY_TYPE,
+						OWL.NAMESPACE_URI.appendFragment(lastText().trim()
+								+ "Property"))));
 	}
 
-	public Rule dataPropertyFrame() {
+	public Rule DataPropertyFrame() {
 		QName datapropertyIri;
-		
-		return sequence("DataProperty:", iriRef(), 
-				DO(datapropertyIri = (QName)VALUE("iriRef")),
-				DO(actions.action(datapropertyIri, RDF.PROPERTY_TYPE, OWL.TYPE_DATATYPEPROPERTY)),
-				zeroOrMore(firstOf(sequence(
-				"Annotations:", annotatedList(annotation(datapropertyIri))), sequence(
-				"Domain:", annotatedList(description(datapropertyIri,RDFS.PROPERTY_DOMAIN))), 
-				sequence("Range:",annotatedList(dataRange(datapropertyIri,RDFS.PROPERTY_RANGE))), 
-				//TODO Annotations
-				sequence("Characteristics:",annotations(null), "Functional",
-						DO(actions.action(datapropertyIri, OWL_CHARACTERISTICS, LAST_TEXT()))), 
-				sequence("SubPropertyOf:",	annotatedList(dataPropertyExpression(datapropertyIri,RDFS.PROPERTY_SUBPROPERTYOF))), 
-				sequence("EquivalentTo:", annotatedList(dataPropertyExpression(datapropertyIri,OWL_EQUIVALENTTO))),
-				sequence("DisjointWith:",
-						annotatedList(dataPropertyExpression(datapropertyIri,OWL.PROPERTY_DISJOINTWITH))))));
+
+		return Sequence(
+				"DataProperty:",
+				IriRef(),
+				DO(datapropertyIri = (QName) value("IriRef")),
+				DO(actions.createStmt(datapropertyIri, RDF.PROPERTY_TYPE,
+						OWL.TYPE_DATATYPEPROPERTY)),
+				ZeroOrMore(FirstOf(
+						Sequence("Annotations:",
+								AnnotatedList(Annotation(datapropertyIri))),
+						Sequence(
+								"Domain:",
+								AnnotatedList(Description(datapropertyIri,
+										RDFS.PROPERTY_DOMAIN))),
+						Sequence(
+								"Range:",
+								AnnotatedList(DataRange(datapropertyIri,
+										RDFS.PROPERTY_RANGE))),
+						// TODO Annotations
+						Sequence("Characteristics:", Annotations(null),
+								"Functional", DO(actions.createStmt(
+										datapropertyIri, RDF.PROPERTY_TYPE,
+										OWL.TYPE_FUNCTIONALPROPERTY))),
+						Sequence(
+								"SubPropertyOf:",
+								AnnotatedList(DataPropertyExpression(
+										datapropertyIri,
+										RDFS.PROPERTY_SUBPROPERTYOF))),
+						Sequence(
+								"EquivalentTo:",
+								AnnotatedList(DataPropertyExpression(
+										datapropertyIri,
+										OWL.PROPERTY_EQUIVALENTPROPERTY))),
+						Sequence(
+								"DisjointWith:",
+								AnnotatedList(DataPropertyExpression(
+										datapropertyIri,
+										OWL.PROPERTY_DISJOINTWITH))))));
 	}
 
-	public Rule annotationPropertyFrame() {
+	public Rule AnnotationPropertyFrame() {
 		QName annotationPropertyIri;
-		
-		return sequence("AnnotationProperty:", iriRef(), 
-				DO(annotationPropertyIri = (QName)VALUE("iriRef")),
-				DO(actions.action(annotationPropertyIri, RDF.PROPERTY_TYPE, OWL.TYPE_ANNOTATIONPROPERTY)),
-				zeroOrMore(firstOf(
-				sequence("Annotations:", annotatedList(annotation(annotationPropertyIri))),
-				sequence("Domain:", annotatedList(iriRef(annotationPropertyIri,RDFS.PROPERTY_DOMAIN))), 
-				sequence("Range:", annotatedList(iriRef(annotationPropertyIri,RDFS.PROPERTY_RANGE))), 
-				sequence("SubPropertyOf:", annotatedList(iriRef(annotationPropertyIri,RDFS.PROPERTY_SUBPROPERTYOF))))));
+
+		return Sequence(
+				"AnnotationProperty:",
+				IriRef(),
+				DO(annotationPropertyIri = (QName) value("IriRef")),
+				DO(actions.createStmt(annotationPropertyIri, RDF.PROPERTY_TYPE,
+						OWL.TYPE_ANNOTATIONPROPERTY)),
+				ZeroOrMore(FirstOf(
+						Sequence(
+								"Annotations:",
+								AnnotatedList(Annotation(annotationPropertyIri))),
+						Sequence(
+								"Domain:",
+								AnnotatedList(IriRef(annotationPropertyIri,
+										RDFS.PROPERTY_DOMAIN))),
+						Sequence(
+								"Range:",
+								AnnotatedList(IriRef(annotationPropertyIri,
+										RDFS.PROPERTY_RANGE))),
+						Sequence(
+								"SubPropertyOf:",
+								AnnotatedList(IriRef(annotationPropertyIri,
+										RDFS.PROPERTY_SUBPROPERTYOF))))));
 	}
 
-	public Rule individualFrame() {
+	public Rule IndividualFrame() {
 		QName individualIri;
-		
-		
-		return sequence("Individual:", individual(), 
-				DO(individualIri = (QName)VALUE("individual")),
-				//TODO Name noch falsch
-				DO(actions.action(individualIri, RDF.PROPERTY_TYPE,OWL_INDIVIDUAL)),
-				zeroOrMore(firstOf(
-				sequence("Annotations:", annotatedList(annotation(individualIri))),
-				//TODO Name noch unklar
-				sequence("Types:", annotatedList(description(individualIri,OWL_TYPES))), 
-				sequence("Facts:", annotatedList(fact(individualIri))), 
-				sequence("SameAs:",	annotatedList(individual(individualIri,OWL.PROPERTY_SAMEAS))), 
-				sequence("DifferentFrom:", annotatedList(individual(individualIri,OWL.PROPERTY_DIFFERENTFROM))))));
+
+		return Sequence(
+				"Individual:",
+				Individual(),
+				DO(individualIri = (QName) value("Individual")),
+				// TODO Name noch falsch
+				DO(actions.createStmt(individualIri, RDF.PROPERTY_TYPE,
+						OWL_INDIVIDUAL)),
+				ZeroOrMore(FirstOf(
+						Sequence("Annotations:",
+								AnnotatedList(Annotation(individualIri))),
+						// TODO Name noch unklar
+						Sequence(
+								"Types:",
+								AnnotatedList(Description(individualIri,
+										RDF.PROPERTY_TYPE))),
+						Sequence("Facts:", AnnotatedList(Fact(individualIri))),
+						Sequence(
+								"SameAs:",
+								AnnotatedList(Individual(individualIri,
+										OWL.PROPERTY_SAMEAS))),
+						Sequence(
+								"DifferentFrom:",
+								AnnotatedList(Individual(individualIri,
+										OWL.PROPERTY_DIFFERENTFROM))))));
 	}
 
-	//TODO Name (predicate) noch unklar
-	public Rule fact(@In GraphNode subject) {
-		
-		return sequence(optional("not"), firstOf(objectPropertyFact(),
-				dataPropertyFact()),
-				DO(actions.action(subject,OWL_FACT, LAST_TEXT())));
+	// TODO Name (predicate) noch unklar
+	public Rule Fact(@Var GraphNode subject) {
+		return Sequence(Optional("not"),
+				FirstOf(ObjectPropertyFact(), DataPropertyFact()),
+				DO(actions.createStmt(subject, OWL_FACT, lastText())));
 	}
 
-	public Rule objectPropertyFact() {
-		return sequence(iriRef(), individual());
+	public Rule ObjectPropertyFact() {
+		return Sequence(IriRef(), Individual());
 	}
 
-	public Rule dataPropertyFact() {
-		return sequence(iriRef(), literal());
+	public Rule DataPropertyFact() {
+		return Sequence(IriRef(), Literal());
 	}
 
-	public Rule misc() {
-		return firstOf(
-				sequence("EquivalentClasses:", annotations(null),
-						list2(description(null,null))), //
-				sequence("DisjointClasses:", annotations(null),
-						list2(description(null,null))), //
-				sequence("EquivalentProperties:", annotations(null),
-						list2(iriRef())), //
-				sequence("DisjointProperties:", annotations(null), list2(iriRef())), //
-				sequence("SameIndividual:", annotations(null), list2(individual())), //
-				sequence("DifferentIndividuals:", annotations(null),
-						list2(individual())));
+	public Rule Misc() {
+		return FirstOf(
+				Sequence("EquivalentClasses:", Annotations(null),
+						List2(Description(null, null))), //
+				Sequence("DisjointClasses:", Annotations(null),
+						List2(Description(null, null))), //
+				Sequence("EquivalentProperties:", Annotations(null),
+						List2(IriRef())), //
+				Sequence("DisjointProperties:", Annotations(null),
+						List2(IriRef())), //
+				Sequence("SameIndividual:", Annotations(null),
+						List2(Individual())), //
+				Sequence("DifferentIndividuals:", Annotations(null),
+						List2(Individual())));
 	}
 
-	public Rule annotatedList(Rule element) {
-		return sequence(annotations(null), element, zeroOrMore(sequence(',',
-				annotations(null), element)));
+	public Rule AnnotatedList(Rule element) {
+		return Sequence(Annotations(null), element,
+				ZeroOrMore(Sequence(',', Annotations(null), element)));
 	}
 
-	
-
-	
-	public Rule list(Rule element) {
-		return sequence(element, zeroOrMore(sequence(',', element)));
+	public Rule List(Rule element) {
+		return Sequence(element, ZeroOrMore(Sequence(',', element)));
 	}
 
-	public Rule list2(Rule element) {
-		return sequence(element, oneOrMore(sequence(',', element)));
+	public Rule List2(Rule element) {
+		return Sequence(element, OneOrMore(Sequence(',', element)));
 	}
 }

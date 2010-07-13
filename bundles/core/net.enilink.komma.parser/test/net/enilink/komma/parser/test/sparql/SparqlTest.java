@@ -39,7 +39,7 @@ public class SparqlTest extends GUnitBaseTestCase {
 
 		for (TextInfo textInfo : getTextInfos(in)) {
 			ParsingResult<Object> result = new ReportingParseRunner<Object>(
-					parser.query(), textInfo.text).run();
+					parser.Query(), textInfo.text).run();
 
 			boolean passed = result.hasErrors()
 					&& textInfo.result == Result.FAIL || !result.hasErrors()

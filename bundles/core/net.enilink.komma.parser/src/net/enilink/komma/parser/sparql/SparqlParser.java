@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.parboiled.Rule;
-import org.parboiled.support.In;
+import org.parboiled.annotations.Var;
 
 import net.enilink.komma.parser.BaseRdfParser;
 import net.enilink.komma.parser.sparql.tree.AbstractGraphNode;
@@ -72,10 +72,13 @@ public class SparqlParser extends BaseRdfParser {
 	public static String RDF_NEXT = RDF_NAMESPACE + "next";
 	public static String RDF_NIL = RDF_NAMESPACE + "nil";
 
-	public Rule query() {
-		return sequence(WS(), prologue(), firstOf(selectQuery(),
-				constructQuery(), describeQuery(), askQuery()), setPrologue(
-				(Prologue) VALUE("p"), (Query) LAST_VALUE()), eoi());
+	public Rule Query() {
+		return Sequence(
+				WS(),
+				Prologue(),
+				FirstOf(SelectQuery(), ConstructQuery(), DescribeQuery(),
+						AskQuery()),
+				setPrologue((Prologue) value("P"), (Query) lastValue()), Eoi());
 	}
 
 	protected boolean setPrologue(Prologue prologue, Query query) {
@@ -85,253 +88,285 @@ public class SparqlParser extends BaseRdfParser {
 		return true;
 	}
 
-	public Rule prologue() {
-		return sequence(optional(baseDecl()), zeroOrMore(prefixDecl()),
-				SET(new Prologue((IriRef) VALUE("o/b"), toList(
-						PrefixDecl.class, VALUES("z/p")))));
+	public Rule Prologue() {
+		return Sequence(
+				Optional(BaseDecl()),
+				ZeroOrMore(PrefixDecl()),
+				set(new Prologue((IriRef) value("O/B"), toList(
+						PrefixDecl.class, values("Z/P")))));
 	}
 
-	public Rule baseDecl() {
-		return sequence("BASE", IRI_REF());
+	public Rule BaseDecl() {
+		return Sequence("BASE", IRI_REF());
 	}
 
-	public Rule prefixDecl() {
-		return sequence("PREFIX", PNAME_NS(), IRI_REF(),
-				SET(new PrefixDecl(stripColon(TEXT("PNAME_NS").trim()),
-						(IriRef) VALUE("IRI_REF"))));
+	public Rule PrefixDecl() {
+		return Sequence("PREFIX", PNAME_NS(), IRI_REF(),
+				set(new PrefixDecl(stripColon(text("PNAME_NS").trim()),
+						(IriRef) value("IRI_REF"))));
 	}
 
 	@SuppressWarnings("unchecked")
-	public Rule selectQuery() {
+	public Rule SelectQuery() {
 		SelectQuery.Modifier modifier;
 		Dataset dataset;
-		return sequence(
+		return Sequence(
 				"SELECT",
-				optional(firstOf(
+				Optional(FirstOf(
 						//
-						sequence("DISTINCT",
+						Sequence("DISTINCT",
 								DO(modifier = SelectQuery.Modifier.DISTINCT)),
-						sequence("REDUCED",
+						Sequence("REDUCED",
 								DO(modifier = SelectQuery.Modifier.REDUCED)))
 				//
-				), firstOf(oneOrMore(var()), '*'), DO(dataset = new Dataset()),
-				zeroOrMore(datasetClause(dataset)), whereClause(),
-				solutionModifier(), //
-				SET(new SelectQuery(modifier, toList(Variable.class,
-						VALUES("f/o/v")), dataset,
-						(Graph) VALUE("whereClause"),
-						(List<SolutionModifier>) LAST_VALUE())) //
-		);
-	}
-
-	@SuppressWarnings("unchecked")
-	public Rule constructQuery() {
-		Dataset dataset;
-		return sequence("CONSTRUCT", constructTemplate(),
+				),
+				FirstOf(OneOrMore(Var()), '*'),
 				DO(dataset = new Dataset()),
-				zeroOrMore(datasetClause(dataset)), whereClause(),
-				solutionModifier(), //
-				SET(new ConstructQuery((List<GraphNode>) VALUE("c"), dataset,
-						(Graph) VALUE("whereClause"),
-						(List<SolutionModifier>) LAST_VALUE())) //
+				ZeroOrMore(DatasetClause(dataset)),
+				WhereClause(),
+				SolutionModifier(), //
+				set(new SelectQuery(modifier, toList(Variable.class,
+						values("F/O/V")), dataset,
+						(Graph) value("WhereClause"),
+						(List<SolutionModifier>) lastValue())) //
 		);
 	}
 
 	@SuppressWarnings("unchecked")
-	public Rule describeQuery() {
+	public Rule ConstructQuery() {
 		Dataset dataset;
-		return sequence("DESCRIBE", firstOf(oneOrMore(varOrIRIref()), '*'),
+		return Sequence("CONSTRUCT", ConstructTemplate(),
 				DO(dataset = new Dataset()),
-				zeroOrMore(datasetClause(dataset)), optional(whereClause()),
-				solutionModifier(), //
-				SET(new DescribeQuery(toList(GraphNode.class, VALUES("f/o/v")),
-						dataset, (Graph) VALUE("o/w"),
-						(List<SolutionModifier>) LAST_VALUE())) //
+				ZeroOrMore(DatasetClause(dataset)), WhereClause(),
+				SolutionModifier(), //
+				set(new ConstructQuery((List<GraphNode>) value("C"), dataset,
+						(Graph) value("WhereClause"),
+						(List<SolutionModifier>) lastValue())) //
 		);
-	}
-
-	public Rule askQuery() {
-		Dataset dataset;
-		return sequence("ASK", DO(dataset = new Dataset()),
-				zeroOrMore(datasetClause(dataset)), whereClause(), //
-				SET(new AskQuery(dataset, (Graph) VALUE("whereClause"))) //
-		);
-	}
-
-	public Rule datasetClause(@In Dataset dataset) {
-		return sequence("FROM", firstOf(//
-				sequence(defaultGraphClause(), dataset
-						.addDefaultGraph((Expression) LAST_VALUE())), //
-				sequence(namedGraphClause(), dataset
-						.addNamedGraph((Expression) LAST_VALUE()))));
-	}
-
-	public Rule defaultGraphClause() {
-		return sourceSelector();
-	}
-
-	public Rule namedGraphClause() {
-		return sequence("NAMED", sourceSelector());
-	}
-
-	public Rule sourceSelector() {
-		return iriRef();
-	}
-
-	public Rule whereClause() {
-		return sequence(optional("WHERE"), groupGraphPattern());
 	}
 
 	@SuppressWarnings("unchecked")
-	public Rule solutionModifier() {
-		return sequence(optional(orderClause()),
-				optional(limitOffsetClauses()), SET(toList(
-						SolutionModifier.class, VALUES("o/o"),
-						(List<SolutionModifier>) VALUE("last:o/l"))));
+	public Rule DescribeQuery() {
+		Dataset dataset;
+		return Sequence("DESCRIBE", FirstOf(OneOrMore(VarOrIRIref()), '*'),
+				DO(dataset = new Dataset()),
+				ZeroOrMore(DatasetClause(dataset)), Optional(WhereClause()),
+				SolutionModifier(), //
+				set(new DescribeQuery(toList(GraphNode.class, values("F/O/V")),
+						dataset, (Graph) value("O/W"),
+						(List<SolutionModifier>) lastValue())) //
+		);
 	}
 
-	public Rule limitOffsetClauses() {
-		return firstOf(//
-				sequence(limitClause(), optional(offsetClause()), SET(toList(
-						SolutionModifier.class, VALUE("l"), VALUES("o/o")))), //
-				sequence(offsetClause(), optional(limitClause()), SET(toList(
-						SolutionModifier.class, VALUE("o"), VALUES("o/l")))));
+	public Rule AskQuery() {
+		Dataset dataset;
+		return Sequence("ASK", DO(dataset = new Dataset()),
+				ZeroOrMore(DatasetClause(dataset)), WhereClause(), //
+				set(new AskQuery(dataset, (Graph) value("WhereClause"))) //
+		);
 	}
 
-	public Rule orderClause() {
-		return sequence(
+	public Rule DatasetClause(@Var Dataset dataset) {
+		return Sequence(
+				"FROM",
+				FirstOf(//
+				Sequence(DefaultGraphClause(),
+						dataset.addDefaultGraph((Expression) lastValue())), //
+						Sequence(NamedGraphClause(),
+								dataset.addNamedGraph((Expression) lastValue()))));
+	}
+
+	public Rule DefaultGraphClause() {
+		return SourceSelector();
+	}
+
+	public Rule NamedGraphClause() {
+		return Sequence("NAMED", SourceSelector());
+	}
+
+	public Rule SourceSelector() {
+		return IriRef();
+	}
+
+	public Rule WhereClause() {
+		return Sequence(Optional("WHERE"), GroupGraphPattern());
+	}
+
+	@SuppressWarnings("unchecked")
+	public Rule SolutionModifier() {
+		return Sequence(
+				Optional(OrderClause()),
+				Optional(LimitOffsetClauses()),
+				set(toList(SolutionModifier.class, values("O/O"),
+						(List<SolutionModifier>) value("last:O/L"))));
+	}
+
+	public Rule LimitOffsetClauses() {
+		return FirstOf(
+				//
+				Sequence(
+						LimitClause(),
+						Optional(OffsetClause()),
+						set(toList(SolutionModifier.class, value("L"),
+								values("O/O")))), //
+				Sequence(
+						OffsetClause(),
+						Optional(LimitClause()),
+						set(toList(SolutionModifier.class, value("O"),
+								values("O/L")))));
+	}
+
+	public Rule OrderClause() {
+		return Sequence(
 				"ORDER",
 				"BY",
-				oneOrMore(orderCondition()),
-				SET(new OrderModifier(toList(OrderCondition.class, VALUES("")))));
+				OneOrMore(OrderCondition()),
+				set(new OrderModifier(toList(OrderCondition.class, values("")))));
 	}
 
-	public Rule orderCondition() {
-		return firstOf(
-				sequence(firstOf("ASC", "DESC"), brackettedExpression(),
-						SET(new OrderCondition("asc".equals(TEXT("f")
+	public Rule OrderCondition() {
+		return FirstOf(
+				Sequence(
+						FirstOf("ASC", "DESC"),
+						BrackettedExpression(),
+						set(new OrderCondition("asc".equals(text("F")
 								.toLowerCase()) ? OrderCondition.Direction.ASC
 								: OrderCondition.Direction.DESC,
-								(Expression) LAST_VALUE()))), //
-				sequence(firstOf(constraint(), var()),
-						SET(new OrderCondition(OrderCondition.Direction.ASC,
-								(Expression) LAST_VALUE()))));
+								(Expression) lastValue()))), //
+				Sequence(FirstOf(Constraint(), Var()),
+						set(new OrderCondition(OrderCondition.Direction.ASC,
+								(Expression) lastValue()))));
 	}
 
-	public Rule limitClause() {
-		return sequence("LIMIT", INTEGER(), //
-				SET(new LimitModifier(((IntegerLiteral) VALUE()).getValue())) //
+	public Rule LimitClause() {
+		return Sequence("LIMIT", INTEGER(), //
+				set(new LimitModifier(((IntegerLiteral) value()).getValue())) //
 		);
 	}
 
-	public Rule offsetClause() {
-		return sequence("OFFSET", INTEGER(), //
-				SET(new OffsetModifier(((IntegerLiteral) VALUE()).getValue())) //
+	public Rule OffsetClause() {
+		return Sequence("OFFSET", INTEGER(), //
+				set(new OffsetModifier(((IntegerLiteral) value()).getValue())) //
 		);
 	}
 
 	@SuppressWarnings("unchecked")
-	public Rule groupGraphPattern() {
+	public Rule GroupGraphPattern() {
 		List<Graph> patterns;
-		return sequence('{', DO(patterns = new ArrayList<Graph>()),
-				optional(sequence(triplesBlock(), //
+		return Sequence(
+				'{',
+				DO(patterns = new ArrayList<Graph>()),
+				Optional(Sequence(TriplesBlock(), //
 						patterns.add(new BasicGraphPattern(
-								(List<GraphNode>) LAST_VALUE())))),
-				zeroOrMore(sequence(firstOf(sequence(graphPatternNotTriples(),
-						patterns.add((Graph) LAST_VALUE())), filter()),
-						optional('.'), optional(sequence(triplesBlock(), //
+								(List<GraphNode>) lastValue())))),
+				ZeroOrMore(Sequence(
+						FirstOf(Sequence(GraphPatternNotTriples(),
+								patterns.add((Graph) lastValue())), Filter()),
+						Optional('.'),
+						Optional(Sequence(TriplesBlock(), //
 								patterns.add(new BasicGraphPattern(
-										(List<GraphNode>) LAST_VALUE())))))),
+										(List<GraphNode>) lastValue())))))),
 				'}', //
-				SET(new GraphPattern(patterns, toList(Expression.class,
-						VALUES("z/s/f/f")))));
+				set(new GraphPattern(patterns, toList(Expression.class,
+						values("Z/S/F/F")))));
 	}
 
 	@SuppressWarnings("unchecked")
-	public Rule triplesBlock() {
+	public Rule TriplesBlock() {
 		List<GraphNode> nodes;
-		return sequence(triplesSameSubject(), // 
-				DO(nodes = new ArrayList<GraphNode>()), nodes
-						.add((GraphNode) LAST_VALUE()), // 
-				optional(sequence('.', optional(sequence(triplesBlock(), nodes
-						.addAll((List<GraphNode>) LAST_VALUE()))))), //
-				SET(nodes));
+		return Sequence(
+				TriplesSameSubject(), //
+				DO(nodes = new ArrayList<GraphNode>()),
+				nodes.add((GraphNode) lastValue()), //
+				Optional(Sequence(
+						'.',
+						Optional(Sequence(TriplesBlock(),
+								nodes.addAll((List<GraphNode>) lastValue()))))), //
+				set(nodes));
 	}
 
-	public Rule graphPatternNotTriples() {
-		return firstOf(optionalGraphPattern(), groupOrUnionGraphPattern(),
-				graphGraphPattern());
+	public Rule GraphPatternNotTriples() {
+		return FirstOf(OptionalGraphPattern(), GroupOrUnionGraphPattern(),
+				GraphGraphPattern());
 	}
 
-	public Rule optionalGraphPattern() {
-		return sequence("OPTIONAL", groupGraphPattern(), SET(new OptionalGraph(
-				(Graph) LAST_VALUE())));
+	public Rule OptionalGraphPattern() {
+		return Sequence("OPTIONAL", GroupGraphPattern(), set(new OptionalGraph(
+				(Graph) lastValue())));
 	}
 
-	public Rule graphGraphPattern() {
-		return sequence(
+	public Rule GraphGraphPattern() {
+		return Sequence(
 				"GRAPH",
-				varOrIRIref(),
-				groupGraphPattern(),
-				SET(new NamedGraph((GraphNode) VALUE("v"), (Graph) LAST_VALUE())));
+				VarOrIRIref(),
+				GroupGraphPattern(),
+				set(new NamedGraph((GraphNode) value("V"), (Graph) lastValue())));
 	}
 
-	public Rule groupOrUnionGraphPattern() {
-		return sequence(groupGraphPattern(), sequence(zeroOrMore(sequence(
-				"UNION", groupGraphPattern())), SET(new UnionGraph(toList(
-				Graph.class, UP(VALUE("g")), VALUES("z/s"))))));
+	public Rule GroupOrUnionGraphPattern() {
+		return Sequence(
+				GroupGraphPattern(),
+				Sequence(
+						ZeroOrMore(Sequence("UNION", GroupGraphPattern())),
+						set(new UnionGraph(toList(Graph.class, UP(value("G")),
+								values("Z/S"))))));
 	}
 
-	public Rule filter() {
-		return sequence("FILTER", constraint());
+	public Rule Filter() {
+		return Sequence("FILTER", Constraint());
 	}
 
-	public Rule constraint() {
-		return firstOf(brackettedExpression(), builtInCall(), functionCall());
+	public Rule Constraint() {
+		return FirstOf(BrackettedExpression(), BuiltInCall(), FunctionCall());
 	}
 
 	@SuppressWarnings("unchecked")
-	public Rule functionCall() {
-		return sequence(iriRef(), argList(), //
-				SET(new FunctionCall((Expression) VALUE("i"),
-						(List<Expression>) VALUE("a"))));
+	public Rule FunctionCall() {
+		return Sequence(IriRef(), ArgList(), //
+				set(new FunctionCall((Expression) value("I"),
+						(List<Expression>) value("A"))));
 	}
 
-	public Rule argList() {
-		return firstOf(
+	public Rule ArgList() {
+		return FirstOf(
 				//
-				sequence('(', ')', SET(Collections.emptyList())), //
-				sequence('(',
-						expression(),
-						zeroOrMore(sequence(',', expression())),
+				Sequence('(', ')', set(Collections.emptyList())), //
+				Sequence(
+						'(',
+						Expression(),
+						ZeroOrMore(Sequence(',', Expression())),
 						')', //
-						SET(toList(Expression.class, VALUE("e"), VALUES("z/s")))) //
+						set(toList(Expression.class, value("E"), values("Z/S")))) //
 		);
 	}
 
-	public Rule constructTemplate() {
-		return sequence('{', optional(constructTriples()), '}');
+	public Rule ConstructTemplate() {
+		return Sequence('{', Optional(ConstructTriples()), '}');
 	}
 
 	@SuppressWarnings("unchecked")
-	public Rule constructTriples() {
+	public Rule ConstructTriples() {
 		List<GraphNode> nodes;
-		return sequence(triplesSameSubject(),
+		return Sequence(
+				TriplesSameSubject(),
 				DO(nodes = new ArrayList<GraphNode>()), //
-				nodes.add((GraphNode) LAST_VALUE()), optional(sequence('.',
-						optional(//
-						sequence(constructTriples(), nodes
-								.addAll((List<GraphNode>) LAST_VALUE()))//
+				nodes.add((GraphNode) lastValue()),
+				Optional(Sequence(
+						'.',
+						Optional(//
+						Sequence(ConstructTriples(),
+								nodes.addAll((List<GraphNode>) lastValue()))//
 						))), //
-				SET(nodes));
+				set(nodes));
 	}
 
-	public Rule triplesSameSubject() {
-		return firstOf(//
-				sequence(varOrTerm(), SET(),
-						propertyListNotEmpty((AbstractGraphNode) LAST_VALUE())), // 
-				sequence(triplesNode(), SET(),
-						propertyList((AbstractGraphNode) LAST_VALUE())) //
+	public Rule TriplesSameSubject() {
+		return FirstOf(
+				//
+				Sequence(VarOrTerm(), set(),
+						PropertyListNotEmpty((AbstractGraphNode) lastValue())), //
+				Sequence(TriplesNode(), set(),
+						PropertyList((AbstractGraphNode) lastValue())) //
 		);
 	}
 
@@ -346,8 +381,7 @@ public class SparqlParser extends BaseRdfParser {
 	protected PropertyList createPropertyList(GraphNode subject) {
 		PropertyList propertyList = subject.getPropertyList();
 		if ((propertyList == null || PropertyList.EMPTY_LIST
-				.equals(propertyList))
-				&& subject instanceof AbstractGraphNode) {
+				.equals(propertyList)) && subject instanceof AbstractGraphNode) {
 			propertyList = new PropertyList();
 			((AbstractGraphNode) subject).setPropertyList(propertyList);
 		}
@@ -355,216 +389,230 @@ public class SparqlParser extends BaseRdfParser {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Rule propertyListNotEmpty(@In GraphNode subject) {
+	public Rule PropertyListNotEmpty(@Var GraphNode subject) {
 		PropertyList propertyList;
-		return sequence(verb(),
-				objectList(), //
+		return Sequence(
+				Verb(),
+				ObjectList(), //
 				DO(propertyList = createPropertyList(subject)),
-				addPropertyPatterns(propertyList, (GraphNode) VALUE("v"),
-						(List<GraphNode>) VALUE("o")), //
-				zeroOrMore(sequence(';', optional(sequence(verb(),
-						objectList(), //
-						addPropertyPatterns(propertyList,
-								(GraphNode) VALUE("v"),
-								(List<GraphNode>) VALUE("o")))))));
+				addPropertyPatterns(propertyList, (GraphNode) value("V"),
+						(List<GraphNode>) value("O")), //
+				ZeroOrMore(Sequence(
+						';',
+						Optional(Sequence(Verb(),
+								ObjectList(), //
+								addPropertyPatterns(propertyList,
+										(GraphNode) value("V"),
+										(List<GraphNode>) value("O")))))));
 	}
 
-	public Rule propertyList(@In GraphNode subject) {
-		return optional(propertyListNotEmpty(subject));
+	public Rule PropertyList(@Var GraphNode subject) {
+		return Optional(PropertyListNotEmpty(subject));
 	}
 
-	public Rule objectList() {
-		return sequence(object(), zeroOrMore(sequence(',', object())),
-				SET(toList(GraphNode.class, VALUE("o"), VALUES("z/s/o"))));
+	public Rule ObjectList() {
+		return Sequence(Object(), ZeroOrMore(Sequence(',', Object())),
+				set(toList(GraphNode.class, value("O"), values("Z/S/O"))));
 	}
 
-	public Rule object() {
-		return graphNode();
+	public Rule Object() {
+		return GraphNode();
 	}
 
-	public Rule verb() {
-		return firstOf(varOrIRIref(), sequence('a', SET(new IriRef(RDF_TYPE))));
+	public Rule Verb() {
+		return FirstOf(VarOrIRIref(), Sequence('a', set(new IriRef(RDF_TYPE))));
 	}
 
-	public Rule triplesNode() {
-		return firstOf(collection(), blankNodePropertyList());
+	public Rule TriplesNode() {
+		return FirstOf(Collection(), BlankNodePropertyList());
 	}
 
-	public Rule blankNodePropertyList() {
-		return sequence('[', SET(new BNodePropertyList()),
-				propertyListNotEmpty(UP((BNode) VALUE())), ']');
+	public Rule BlankNodePropertyList() {
+		return Sequence('[', set(new BNodePropertyList()),
+				PropertyListNotEmpty(UP((BNode) value())), ']');
 	}
 
-	public Rule collection() {
-		return sequence('(',
-				oneOrMore(graphNode()), //
-				SET(new Collection(toList(GraphNode.class, VALUES("o/g")))),
+	public Rule Collection() {
+		return Sequence('(',
+				OneOrMore(GraphNode()), //
+				set(new Collection(toList(GraphNode.class, values("O/G")))),
 				')');
 	}
 
-	public Rule graphNode() {
-		return firstOf(varOrTerm(), triplesNode());
+	public Rule GraphNode() {
+		return FirstOf(VarOrTerm(), TriplesNode());
 	}
 
-	public Rule varOrTerm() {
-		return firstOf(var(), graphTerm());
+	public Rule VarOrTerm() {
+		return FirstOf(Var(), GraphTerm());
 	}
 
-	public Rule varOrIRIref() {
-		return firstOf(var(), iriRef());
+	public Rule VarOrIRIref() {
+		return FirstOf(Var(), IriRef());
 	}
 
-	public Rule var() {
-		return firstOf(VAR1(), VAR2());
+	public Rule Var() {
+		return FirstOf(VAR1(), VAR2());
 	}
 
-	public Rule graphTerm() {
-		return firstOf(iriRef(), rdfLiteral(), numericLiteral(),
-				booleanLiteral(), blankNode(), sequence(sequence('(', ')'),
-						SET(new IriRef(RDF_NIL))));
+	public Rule GraphTerm() {
+		return FirstOf(IriRef(), RdfLiteral(), NumericLiteral(),
+				BooleanLiteral(), BlankNode(),
+				Sequence(Sequence('(', ')'), set(new IriRef(RDF_NIL))));
 	}
 
-	public Rule expression() {
-		return conditionalOrExpression();
+	public Rule Expression() {
+		return ConditionalOrExpression();
 	}
 
-	public Rule conditionalOrExpression() {
-		return sequence(conditionalAndExpression(), zeroOrMore(sequence("||",
-				conditionalAndExpression())), //
-				SET(NODE("z/s") != null ? new LogicalExpr(LogicalOperator.OR,
-						toList(Expression.class, VALUE("c"), VALUES("z/s")))
-						: VALUE()));
+	public Rule ConditionalOrExpression() {
+		return Sequence(ConditionalAndExpression(),
+				ZeroOrMore(Sequence("||", ConditionalAndExpression())), //
+				set(node("Z/S") != null ? new LogicalExpr(LogicalOperator.OR,
+						toList(Expression.class, value("C"), values("Z/S")))
+						: value()));
 	}
 
-	public Rule conditionalAndExpression() {
-		return sequence(valueLogical(), zeroOrMore(sequence("&&",
-				valueLogical())), //
-				SET(NODE("z/s") != null ? new LogicalExpr(LogicalOperator.AND,
-						toList(Expression.class, VALUE("v"), VALUES("z/s")))
-						: VALUE()));
+	public Rule ConditionalAndExpression() {
+		return Sequence(ValueLogical(),
+				ZeroOrMore(Sequence("&&", ValueLogical())), //
+				set(node("Z/S") != null ? new LogicalExpr(LogicalOperator.AND,
+						toList(Expression.class, value("V"), values("Z/S")))
+						: value()));
 	}
 
-	public Rule valueLogical() {
-		return relationalExpression();
+	public Rule ValueLogical() {
+		return RelationalExpression();
 	}
 
-	public Rule relationalExpression() {
-		return sequence(numericExpression(), //
-				optional(sequence(firstOf(//
-						sequence('=', numericExpression()), //
-						sequence("!=", numericExpression()), //
-						sequence('<', numericExpression()), //
-						sequence('>', numericExpression()), //
-						sequence("<=", numericExpression()), //
-						sequence(">=", numericExpression()) //
+	public Rule RelationalExpression() {
+		return Sequence(
+				NumericExpression(), //
+				Optional(Sequence(
+						FirstOf(//
+						Sequence('=', NumericExpression()), //
+						Sequence("!=", NumericExpression()), //
+								Sequence('<', NumericExpression()), //
+								Sequence('>', NumericExpression()), //
+								Sequence("<=", NumericExpression()), //
+								Sequence(">=", NumericExpression()) //
 						), //
-						SET(new RelationalExpr(RelationalOperator
-								.fromSymbol(TEXT("f/s/").trim()),
-								UP(UP((Expression) VALUE("n"))),
-								(Expression) VALUE("f/s/n"))))));
+						set(new RelationalExpr(RelationalOperator
+								.fromSymbol(text("F/S/").trim()),
+								UP(UP((Expression) value("N"))),
+								(Expression) value("F/S/N"))))));
 	}
 
-	public Rule numericExpression() {
-		return additiveExpression();
+	public Rule NumericExpression() {
+		return AdditiveExpression();
 	}
 
-	public Rule additiveExpression() {
+	public Rule AdditiveExpression() {
 		Expression expr;
-		return sequence(multiplicativeExpression(),
-				DO(expr = (Expression) LAST_VALUE()), //
-				zeroOrMore(firstOf(//
-						sequence('+', multiplicativeExpression(),
+		return Sequence(
+				MultiplicativeExpression(),
+				DO(expr = (Expression) lastValue()), //
+				ZeroOrMore(FirstOf(
+						//
+						Sequence('+', MultiplicativeExpression(),
 								DO(expr = new NumericExpr(NumericOperator.ADD,
-										expr, (Expression) LAST_VALUE()))), //
-						sequence('-', multiplicativeExpression(),
+										expr, (Expression) lastValue()))), //
+						Sequence('-', MultiplicativeExpression(),
 								DO(expr = new NumericExpr(NumericOperator.SUB,
-										expr, (Expression) LAST_VALUE()))), //
-						sequence(numericLiteralPositive(),
+										expr, (Expression) lastValue()))), //
+						Sequence(NumericLiteralPositive(),
 								DO(expr = new NumericExpr(NumericOperator.ADD,
-										expr, (Expression) LAST_VALUE()))), //
-						sequence(numericLiteralNegative(),
+										expr, (Expression) lastValue()))), //
+						Sequence(
+								NumericLiteralNegative(),
 								DO(expr = new NumericExpr(NumericOperator.SUB,
-										expr, ((NumericLiteral) LAST_VALUE())
-												.negate()))))), SET(expr));
+										expr, ((NumericLiteral) lastValue())
+												.negate()))))), set(expr));
 	}
 
-	public Rule multiplicativeExpression() {
+	public Rule MultiplicativeExpression() {
 		Expression expr;
-		return sequence(unaryExpression(),
-				DO(expr = (Expression) LAST_VALUE()), //
-				zeroOrMore(firstOf(//
-						sequence('*', unaryExpression(),
+		return Sequence(UnaryExpression(),
+				DO(expr = (Expression) lastValue()), //
+				ZeroOrMore(FirstOf(
+						//
+						Sequence('*', UnaryExpression(),
 								DO(expr = new NumericExpr(NumericOperator.MUL,
-										expr, (Expression) LAST_VALUE()))), //
-						sequence('/', unaryExpression(),
+										expr, (Expression) lastValue()))), //
+						Sequence('/', UnaryExpression(),
 								DO(expr = new NumericExpr(NumericOperator.DIV,
-										expr, (Expression) LAST_VALUE()))) //
-				)), SET(expr));
+										expr, (Expression) lastValue()))) //
+				)), set(expr));
 	}
 
-	public Rule unaryExpression() {
-		return firstOf(sequence('!', primaryExpression(), //
-				SET(new LogicalExpr(LogicalOperator.NOT, Collections
-						.singletonList((Expression) LAST_VALUE())))), // 
-				sequence('+', primaryExpression()), // 
-				sequence('-', primaryExpression(), //
-						SET(new NegateExpr((Expression) LAST_VALUE()))), // 
-				primaryExpression());
+	public Rule UnaryExpression() {
+		return FirstOf(
+				Sequence('!',
+						PrimaryExpression(), //
+						set(new LogicalExpr(LogicalOperator.NOT, Collections
+								.singletonList((Expression) lastValue())))), //
+				Sequence('+', PrimaryExpression()), //
+				Sequence('-', PrimaryExpression(), //
+						set(new NegateExpr((Expression) lastValue()))), //
+				PrimaryExpression());
 	}
 
-	public Rule primaryExpression() {
-		return firstOf(brackettedExpression(), builtInCall(),
-				iriRefOrFunction(), rdfLiteral(), numericLiteral(),
-				booleanLiteral(), var());
+	public Rule PrimaryExpression() {
+		return FirstOf(BrackettedExpression(), BuiltInCall(),
+				IriRefOrFunction(), RdfLiteral(), NumericLiteral(),
+				BooleanLiteral(), Var());
 	}
 
-	public Rule brackettedExpression() {
-		return sequence('(', expression(), ')');
+	public Rule BrackettedExpression() {
+		return Sequence('(', Expression(), ')');
 	}
 
-	public Rule builtInCall() {
-		return sequence(
-				firstOf(sequence("STR", '(', expression(), ')'), //
-						sequence("LANG", '(', expression(), ')'), //
-						sequence("LANGMATCHES", '(', expression(), ',',
-								expression(), ')'), //
-						sequence("DATATYPE", '(', expression(), ')'), //
-						sequence("BOUND", '(', var(), ')'), //
-						sequence("SAMETERM", '(', expression(), ',',
-								expression(), ')'), //
-						sequence("ISIRI", '(', expression(), ')'), //
-						sequence("ISURI", '(', expression(), ')'), //
-						sequence("ISBLANK", '(', expression(), ')'), //
-						sequence("ISLITERAL", '(', expression(), ')'), //
-						sequence("REGEX", '(', expression(), ',', expression(),
-								optional(sequence(',', expression())), ')') //
+	public Rule BuiltInCall() {
+		return Sequence(
+				FirstOf(Sequence("STR", '(', Expression(), ')'), //
+						Sequence("LANG", '(', Expression(), ')'), //
+						Sequence("LANGMATCHES", '(', Expression(), ',',
+								Expression(), ')'), //
+						Sequence("DATATYPE", '(', Expression(), ')'), //
+						Sequence("BOUND", '(', Var(), ')'), //
+						Sequence("SAMETERM", '(', Expression(), ',',
+								Expression(), ')'), //
+						Sequence("ISIRI", '(', Expression(), ')'), //
+						Sequence("ISURI", '(', Expression(), ')'), //
+						Sequence("ISBLANK", '(', Expression(), ')'), //
+						Sequence("ISLITERAL", '(', Expression(), ')'), //
+						Sequence("REGEX", '(', Expression(), ',', Expression(),
+								Optional(Sequence(',', Expression())), ')') //
 				), //
-				SET(new BuiltInCall(TEXT("f/s/"), toList(Expression.class,
-						VALUES("f/s/e"), VALUES("f/s/v")))) //
+				set(new BuiltInCall(text("F/S/"), toList(Expression.class,
+						values("F/S/E"), values("F/S/V")))) //
 		);
 	}
 
 	@SuppressWarnings("unchecked")
-	public Rule iriRefOrFunction() {
-		return sequence(iriRef(), //
-				optional(sequence(argList(), SET(new FunctionCall(
-						(Expression) UP(UP(VALUE())),
-						(List<Expression>) VALUE("a"))))));
+	public Rule IriRefOrFunction() {
+		return Sequence(
+				IriRef(), //
+				Optional(Sequence(ArgList(), set(new FunctionCall(
+						(Expression) UP(UP(value())),
+						(List<Expression>) value("A"))))));
 	}
 
 	public Rule VAR1() {
-		return sequence(ch('?'), VARNAME());
+		return Sequence(Ch('?'), VARNAME());
 	}
 
 	public Rule VAR2() {
-		return sequence(ch('$'), VARNAME());
+		return Sequence(Ch('$'), VARNAME());
 	}
 
 	public Rule VARNAME() {
-		return sequence(firstOf(PN_CHARS_U(), DIGIT()), zeroOrMore(firstOf(
-				PN_CHARS_U(), DIGIT(), ch('\u00B7'), charRange('\u0300',
-						'\u036F'), charRange('\u203F', '\u2040'))),
-				SET(new Variable(TEXT("f") + TEXT("z"))), WS());
+		return Sequence(
+				FirstOf(PN_CHARS_U(), DIGIT()),
+				ZeroOrMore(FirstOf(PN_CHARS_U(), DIGIT(), Ch('\u00B7'),
+						CharRange('\u0300', '\u036F'),
+						CharRange('\u203F', '\u2040'))), set(new Variable(
+						text("F") + text("Z"))), WS());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -610,9 +658,9 @@ public class SparqlParser extends BaseRdfParser {
 		}
 		return list;
 	}
-	
+
 	@Override
-	protected Rule fromStringLiteral(String string) {
-		return sequence(stringIgnoreCase(string), WS());
+	protected Rule FromStringLiteral(String string) {
+		return Sequence(StringIgnoreCase(string), WS());
 	}
 }

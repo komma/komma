@@ -12,17 +12,19 @@ import org.junit.Test;
 import org.parboiled.Parboiled;
 import org.parboiled.ReportingParseRunner;
 import org.parboiled.common.StringUtils;
+import org.parboiled.support.DefaultInputBuffer;
 import org.parboiled.support.InputBuffer;
 import org.parboiled.support.ParseTreeUtils;
 import org.parboiled.support.ParsingResult;
 
+import net.enilink.komma.parser.manchester.ManchesterActions;
 import net.enilink.komma.parser.manchester.ManchesterSyntaxParser;
 import net.enilink.komma.parser.test.GUnitBaseTestCase;
 
 public class ManchesterTest extends GUnitBaseTestCase {
 
-	ManchesterSyntaxParser parser = Parboiled
-			.createParser(ManchesterSyntaxParser.class);
+	ManchesterSyntaxParser parser = Parboiled.createParser(
+			ManchesterSyntaxParser.class, new ManchesterActions());
 
 	@Test
 	public void objectProperty() throws Exception {
@@ -40,7 +42,7 @@ public class ManchesterTest extends GUnitBaseTestCase {
 
 		parse(in, 2);
 	}
-	
+
 	@Test
 	public void dataProperty() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(getClass()
@@ -56,7 +58,7 @@ public class ManchesterTest extends GUnitBaseTestCase {
 
 		parse(in, 4);
 	}
-	
+
 	@Test
 	public void annotationProperty() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(getClass()
@@ -64,7 +66,7 @@ public class ManchesterTest extends GUnitBaseTestCase {
 
 		parse(in, 5);
 	}
-	
+
 	@Test
 	public void misc() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(getClass()
@@ -85,9 +87,9 @@ public class ManchesterTest extends GUnitBaseTestCase {
 			System.out.println(textInfo.text);
 
 			ParsingResult<Object> result = new ReportingParseRunner<Object>(
-					parser.ontologyDocument(), textInfo.text).run();
+					parser.OntologyDocument(), textInfo.text).run();
 
-			InputBuffer inputBuffer = new InputBuffer(textInfo.text);
+			InputBuffer inputBuffer = new DefaultInputBuffer(textInfo.text);
 
 			boolean passed = result.hasErrors()
 					&& textInfo.result == Result.FAIL || !result.hasErrors()

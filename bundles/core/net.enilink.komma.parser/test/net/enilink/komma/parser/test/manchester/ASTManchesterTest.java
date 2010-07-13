@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.parboiled.Parboiled;
 import org.parboiled.ReportingParseRunner;
 import org.parboiled.common.StringUtils;
+import org.parboiled.support.DefaultInputBuffer;
 import org.parboiled.support.InputBuffer;
 import org.parboiled.support.ParsingResult;
 
@@ -22,19 +23,13 @@ import net.enilink.komma.parser.test.GUnitBaseTestCase;
 
 public class ASTManchesterTest extends GUnitBaseTestCase {
 
-	
 	private static ManchesterSyntaxParser parser;
-	
+
 	@BeforeClass
 	public static void before() {
-		parser = Parboiled
-		.createParser(ManchesterSyntaxParser.class);
-
-		parser.setManchesterActions(new ManchesterActions());	
+		parser = Parboiled.createParser(ManchesterSyntaxParser.class,
+				new ManchesterActions());
 	}
-	
-
-	
 
 	@Test
 	public void ast() throws Exception {
@@ -43,13 +38,12 @@ public class ASTManchesterTest extends GUnitBaseTestCase {
 
 		int failures = 0;
 
-		
 		for (TextInfo textInfo : getTextInfos(in)) {
 
 			ParsingResult<Object> result = new ReportingParseRunner<Object>(
-					parser.ontologyDocument(), textInfo.text).run();
+					parser.OntologyDocument(), textInfo.text).run();
 
-			InputBuffer inputBuffer = new InputBuffer(textInfo.text);
+			InputBuffer inputBuffer = new DefaultInputBuffer(textInfo.text);
 
 			boolean passed = result.hasErrors()
 					&& textInfo.result == Result.FAIL || !result.hasErrors()
@@ -83,9 +77,7 @@ public class ASTManchesterTest extends GUnitBaseTestCase {
 			}
 		}
 		Assert.assertEquals(0, failures);
-		
-		
-		
+
 	}
 
 }
