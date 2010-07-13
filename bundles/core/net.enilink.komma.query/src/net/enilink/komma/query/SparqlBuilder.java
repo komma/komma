@@ -135,7 +135,7 @@ public class SparqlBuilder {
 	}
 
 	protected Query parseQuery(String sparql) {
-		return (Query) parse(getParser().query(), sparql);
+		return (Query) parse(getParser().Query(), sparql);
 	}
 
 	protected void toConstructQuery() {
@@ -421,12 +421,12 @@ public class SparqlBuilder {
 
 			getUsedVarNames().add(typeVar);
 
-			parse(parser.propertyListNotEmpty(copy), "a ?" + typeVar);
+			parse(parser.PropertyListNotEmpty(copy), "a ?" + typeVar);
 
 			((ConstructQuery) query).getTemplate().add(copy);
 
 			((GraphPattern) entry.getValue()).getPatterns().add(
-					(Graph) parse(parser.optionalGraphPattern(), "OPTIONAL {"
+					(Graph) parse(parser.OptionalGraphPattern(), "OPTIONAL {"
 							+ nodeName + " a ?" + typeVar + " . FILTER isIRI(?"
 							+ typeVar + ")}}"));
 		}
