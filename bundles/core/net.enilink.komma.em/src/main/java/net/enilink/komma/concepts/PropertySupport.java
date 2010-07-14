@@ -173,7 +173,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 			return false;
 		}
 
-		if (CONCEPTS.PROPERTY_CONTAINS.equals(getURI())) {
+		if (CONCEPTS.PROPERTY_ORDEREDCONTAINS.equals(getURI())) {
 			return true;
 		}
 
