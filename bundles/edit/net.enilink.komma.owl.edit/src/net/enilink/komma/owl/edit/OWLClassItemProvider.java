@@ -36,6 +36,7 @@ import net.enilink.komma.edit.provider.ReflectiveItemProvider;
 import net.enilink.komma.edit.provider.ViewerNotification;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.event.IStatementNotification;
+import net.enilink.komma.owl.edit.manchester.ManchesterSyntaxGenerator;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.sesame.SesameReference;
 
@@ -216,5 +217,10 @@ public class OWLClassItemProvider extends ReflectiveItemProvider {
 			return ((IClass) object).hasNamedSubClasses(true);
 		}
 		return hasChildren(object, false);
+	}
+	
+	@Override
+	public String getText(Object object) {
+		return ManchesterSyntaxGenerator.generateText(object);
 	}
 }
