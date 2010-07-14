@@ -765,8 +765,7 @@ public class ItemProviderAdapter extends
 				if (((IObject) object).getApplicableCardinality(property)
 						.getSecond() > 0) {
 					Set<IClass> ranges = new HashSet<IClass>(property
-							.getNamedRanges((IObject) object, false)
-							.toList());
+							.getNamedRanges((IObject) object, false).toList());
 
 					IClass[] rangeArray = ranges.toArray(new IClass[ranges
 							.size()]);
@@ -792,14 +791,24 @@ public class ItemProviderAdapter extends
 					});
 
 					for (net.enilink.vocab.rdfs.Class rangeClass : rangeArray) {
-						newChildDescriptors
-								.add(createChildParameter(property,
-										new ChildDescriptor(Arrays
-												.asList(rangeClass))));
+						newChildDescriptors.add(createChildParameter(property,
+								new ChildDescriptor(Arrays.asList(rangeClass),
+										childRequiresName((IObject) object,
+												property, rangeClass))));
 					}
 				}
 			}
 		}
+	}
+
+	/**
+	 * Overwrite to return true for
+	 * {@link net.enilink.vocab.rdfs.Class}es that should be created as
+	 * named nodes.
+	 */
+	protected boolean childRequiresName(IObject subject, IReference property,
+			net.enilink.vocab.rdfs.Class rangeClass) {
+		return false;
 	}
 
 	/**
@@ -1543,7 +1552,8 @@ public class ItemProviderAdapter extends
 	 */
 	protected IProperty getChildProperty(Object object, Object child) {
 		for (IProperty property : getChildrenProperties(object)) {
-			int maxCard = ((IObject) object).getApplicableCardinality(property).getSecond();
+			int maxCard = ((IObject) object).getApplicableCardinality(property)
+					.getSecond();
 			if (maxCard > 0) {
 				if (isValidValue(object, child, property)) {
 					return property;
