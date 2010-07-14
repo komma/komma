@@ -11,7 +11,7 @@
 package net.enilink.vocab.owl;
 
 import java.math.BigInteger;
-import java.util.Set;
+import java.util.List;
 
 import net.enilink.composition.annotations.Iri;
 
@@ -93,11 +93,11 @@ public interface Restriction extends net.enilink.vocab.owl.Class {
 
 	/** http://www.w3.org/2002/07/owl#onProperties */
 	@Iri("http://www.w3.org/2002/07/owl#onProperties")
-	public abstract Set<DatatypeProperty> getOwlOnProperties();
+	public abstract List<DatatypeProperty> getOwlOnProperties();
 
-	/** http://www.w3.org/2002/07/owl#onProperty */
+	/** http://www.w3.org/2002/07/owl#onProperties */
 	public abstract void setOwlOnProperties(
-			Set<? extends DatatypeProperty> properties);
+			List<? extends DatatypeProperty> properties);
 
 	/** http://www.w3.org/2002/07/owl#onClass */
 	@Iri("http://www.w3.org/2002/07/owl#onClass")
