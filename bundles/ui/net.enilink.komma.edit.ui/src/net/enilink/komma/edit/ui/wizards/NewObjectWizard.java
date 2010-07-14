@@ -81,7 +81,7 @@ abstract public class NewObjectWizard extends Wizard {
 					if (name.length() == 0) {
 						errorMsg = "Name may not be empty.";
 					} else {
-						Pattern namePattern = Pattern.compile("\\w+");
+						Pattern namePattern = Pattern.compile("(\\w|[.])+");
 						if (!namePattern.matcher(name).matches()) {
 							errorMsg = "Invalid name.";
 						} else if (model.getManager().createQuery(
