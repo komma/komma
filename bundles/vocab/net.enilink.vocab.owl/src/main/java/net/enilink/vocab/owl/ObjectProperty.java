@@ -23,12 +23,4 @@ public interface ObjectProperty extends OwlProperty {
 
 	/** http://www.w3.org/2002/07/owl#inverseOf */
 	public abstract void setOwlInverseOf(Set<? extends ObjectProperty> value);
-
-	/** http://www.w3.org/2002/07/owl#propertyChain */
-	@Iri("http://www.w3.org/2002/07/owl#propertyChain")
-	public abstract Set<ObjectProperty> getOwlPropertyChain();
-
-	/** http://www.w3.org/2002/07/owl#propertyChain */
-	public abstract void setOwlPropertyChain(Set<? extends ObjectProperty> value);
-
 }
