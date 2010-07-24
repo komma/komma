@@ -54,7 +54,8 @@ public class ExtensibleURIConverter implements IURIConverter {
 
 	protected static List<IURIHandler> DEFAULT_URI_HANDLERS = Collections
 			.unmodifiableList(Arrays.<IURIHandler> asList(
-					new PlatformResourceURIHandler(), new URIHandler()));
+					new PlatformResourceURIHandler(), new FileURIHandler(),
+					new URIHandler()));
 
 	/**
 	 * Creates an instance.
