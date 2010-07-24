@@ -18,11 +18,11 @@ import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
 import org.openrdf.repository.event.NotifyingRepository;
-import org.openrdf.store.StoreException;
 
 import net.enilink.komma.concepts.IOntology;
 import net.enilink.komma.core.IKommaManager;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.sesame.ISesameManager;
@@ -62,9 +62,9 @@ public interface IModel {
 	 * 
 	 * @param uri
 	 * @param prefix
-	 * @throws StoreException
+	 * @throws KommaException
 	 */
-	void addImport(URI uri, String prefix) throws StoreException;
+	void addImport(URI uri, String prefix) throws KommaException;
 
 	/**
 	 * {@link IURIConverter#delete(URI, Map) deletes} the model resource using
@@ -234,10 +234,8 @@ public interface IModel {
 	 * 
 	 * @param importedOnt
 	 *            the imported model
-	 * @throws StoreException
-	 *             if removing the import fails
 	 */
-	void removeImport(URI importedOnt) throws StoreException;
+	void removeImport(URI importedOnt);
 
 	/**
 	 * Saves the resource using the specified options.
