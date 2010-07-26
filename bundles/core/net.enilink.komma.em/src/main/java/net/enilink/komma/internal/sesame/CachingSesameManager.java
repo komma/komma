@@ -33,10 +33,10 @@ public class CachingSesameManager extends DecoratingSesameManager implements
 	@Inject
 	TreeCache<Object, Object> cache;
 
+	IRepositoryChangeTracker changeTracker;
+
 	@Inject
 	IPropertyCache propertyCache;
-
-	IRepositoryChangeTracker changeTracker;
 
 	public CachingSesameManager(boolean injectManager,
 			IEntityDecorator... decorators) {
@@ -68,6 +68,20 @@ public class CachingSesameManager extends DecoratingSesameManager implements
 	}
 
 	@Override
+	protected void initializeCache(ISesameEntity entity, Object property,
+			Object value) {
+		System.out.println("init cache for " + entity + "/" + property + ": "
+				+ value);
+		propertyCache.put(entity, property, new Object[0], value);
+	}
+
+	@Override
+	public void refresh(Object entity) {
+		super.refresh(entity);
+		cache.removeNode(Fqn.fromElements(entity));
+	}
+
+	@Override
 	public void repositoryChanged(IRepositoryChange... changes) {
 		for (IRepositoryChange change : changes) {
 			if (change instanceof IStatementChange) {
@@ -76,14 +90,6 @@ public class CachingSesameManager extends DecoratingSesameManager implements
 				cache.removeNode(Fqn.fromElements(stmtChange.getObject()));
 			}
 		}
-	}
-
-	@Override
-	protected void initializeCache(ISesameEntity entity, Object property,
-			Object value) {
-		System.out.println("init cache for " + entity + "/" + property + ": "
-				+ value);
-		propertyCache.put(entity, property, new Object[0], value);
 	}
 
 	@Inject

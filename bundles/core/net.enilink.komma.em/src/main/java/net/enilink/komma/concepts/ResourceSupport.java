@@ -77,8 +77,8 @@ public abstract class ResourceSupport extends BehaviorBase implements
 				return sesamePropertySet;
 			}
 
-			PropertySetModifier modifier = new PropertySetModifier(URIUtil
-					.toSesameUri(property.getURI()));
+			PropertySetModifier modifier = new PropertySetModifier(
+					URIUtil.toSesameUri(property.getURI()));
 
 			if (property instanceof IProperty
 					&& ((IProperty) property).isOrderedContainment()) {
@@ -118,7 +118,9 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	private static final String HAS_APPLICABLE_PROPERTY = PREFIX //
 			+ "ASK { " //
-			+ "{?property a owl:AnnotationProperty OPTIONAL {?property rdfs:domain ?class} FILTER (!bound(?class))} UNION "
+			+ "{?property a owl:AnnotationProperty "
+			+ "OPTIONAL {?property rdfs:domain ?domain . "
+			+ "		OPTIONAL {?resurce a ?class . ?class rdfs:subClassOf ?domain}} FILTER (!bound(?domain) || bound(?class))} UNION "
 			+ "{?property rdfs:subPropertyOf rdf:type} UNION "
 			+ "{?resource a ?class ." // given resource has type class
 			+ "{{?property rdfs:domain ?class} UNION" //
@@ -298,18 +300,18 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public IExtendedIterator<IClass> getDirectClasses() {
-		return getKommaManager().createQuery(
-				DIRECT_CLASSES_DESC().toQueryString()).setParameter("resource",
-				getBehaviourDelegate()).setIncludeInferred(true).evaluate(
-				IClass.class);
+		return getKommaManager()
+				.createQuery(DIRECT_CLASSES_DESC().toQueryString())
+				.setParameter("resource", getBehaviourDelegate())
+				.setIncludeInferred(true).evaluate(IClass.class);
 	}
 
 	@Override
 	public IExtendedIterator<IClass> getDirectNamedClasses() {
-		return getKommaManager().createQuery(
-				DIRECT_NAMED_CLASSES_DESC().toQueryString()).setParameter(
-				"resource", getBehaviourDelegate()).setIncludeInferred(true)
-				.evaluate(IClass.class);
+		return getKommaManager()
+				.createQuery(DIRECT_NAMED_CLASSES_DESC().toQueryString())
+				.setParameter("resource", getBehaviourDelegate())
+				.setIncludeInferred(true).evaluate(IClass.class);
 	}
 
 	@Override
@@ -445,14 +447,15 @@ public abstract class ResourceSupport extends BehaviorBase implements
 								.getDatatype() != null) ? URIImpl
 								.createURI(((Literal) object).getDatatype()
 										.toString()) : null;
-						object = manager.createLiteral(manager
-								.getInstance((Value) object), uri,
+						object = manager.createLiteral(
+								manager.getInstance((Value) object), uri,
 								((Literal) object).getLanguage());
 					}
 					return new Statement(getBehaviourDelegate(),
 							property != null ? property : (IEntity) manager
 									.getInstance(value.getValue("pred")),
-							object, includeInferred);
+							object,
+							includeInferred);
 				}
 			};
 		} catch (Exception e) {
