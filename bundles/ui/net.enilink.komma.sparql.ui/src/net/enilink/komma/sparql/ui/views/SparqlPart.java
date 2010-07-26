@@ -22,6 +22,8 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.wizard.ProgressMonitorPart;
@@ -73,6 +75,7 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelDescription;
+import net.enilink.komma.query.SparqlBuilder;
 import net.enilink.komma.sesame.ISesameManager;
 import net.enilink.komma.sesame.ISesameResourceAware;
 import net.enilink.komma.sesame.iterators.SesameIterator;
@@ -529,6 +532,20 @@ class SparqlPart extends AbstractEditorPart {
 
 		queryText.append("\nselect ?p ?o\nwhere {\n\t?selected ?p ?o\n}\n");
 
+		MenuManager menuManager = new MenuManager();
+		menuManager.add(new Action("Format") {
+			@Override
+			public void run() {
+				try {
+					queryText.setText(new SparqlBuilder(queryText.getText())
+							.toString());
+				} catch (Exception e) {
+					// ignore
+				}
+			}
+		});
+		queryText.setMenu(menuManager.createContextMenu(queryText));
+
 		Button button = getWidgetFactory().createButton(queryComposite, "Run",
 				SWT.PUSH);
 		button.addSelectionListener(new SelectionAdapter() {
@@ -562,9 +579,9 @@ class SparqlPart extends AbstractEditorPart {
 		Object formInput = getForm().getInput();
 		if (formInput instanceof IStructuredSelection) {
 			@SuppressWarnings("unchecked")
-			List<IObject> selected = (List<IObject>) WrappedIterator.create(
-					((IStructuredSelection) formInput).toList().iterator())
-					.filterKeep(new Filter<Object>() {
+			List<IObject> selected = (List<IObject>) WrappedIterator
+					.create(((IStructuredSelection) formInput).toList()
+							.iterator()).filterKeep(new Filter<Object>() {
 						@Override
 						public boolean accept(Object o) {
 							return o instanceof IObject;
