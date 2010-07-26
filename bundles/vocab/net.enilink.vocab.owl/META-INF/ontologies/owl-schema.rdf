@@ -668,4 +668,9 @@
         <rdfs:label>withRestrictions</rdfs:label>
         <rdfs:range rdf:resource="&rdf;List"/>
     </rdf:Property>
+    
+    <owl:AnnotationProperty rdf:about="&rdfs;label"/>
+	<owl:AnnotationProperty rdf:about="&rdfs;comment"/>
+	<owl:AnnotationProperty rdf:about="&rdfs;seeAlso"/>
+	<owl:AnnotationProperty rdf:about="&rdfs;isDefinedBy"/>
 </rdf:RDF>
