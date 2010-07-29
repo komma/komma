@@ -90,7 +90,7 @@ public class SesameProjectedTupleResult extends SesameIterator<BindingSet, Objec
 			// }
 			return result;
 		}
-		return manager.getInstance(value);
+		return manager.getInstance(value, null);
 	}
 
 	// private Map<Class<?>, List<Method>> useBindingsMap;

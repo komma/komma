@@ -338,7 +338,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 			final IReference property, boolean includeInferred) {
 		IEntity propertyEntity = (property instanceof IEntity) ? (IEntity) property
 				: (IEntity) getSesameManager().getInstance(
-						((ISesameResourceAware) property).getSesameResource());
+						((ISesameResourceAware) property).getSesameResource(), null);
 
 		IExtendedIterator<IStatement> stmts = internalGetPropertyStmts(
 				propertyEntity, false);
@@ -366,14 +366,14 @@ public abstract class ResourceSupport extends BehaviorBase implements
 				protected Object convert(BindingSet value) throws Exception {
 					Value object = value.getValue("obj");
 					if (object instanceof Resource) {
-						return getSesameManager().getInstance(object);
+						return getSesameManager().getInstance(object, null);
 					} else {
 						net.enilink.komma.core.URI uri = (((Literal) object)
 								.getDatatype() != null) ? URIImpl
 								.createURI(((Literal) object).getDatatype()
 										.toString()) : null;
 						return getKommaManager().createLiteral(
-								getSesameManager().getInstance(object), uri,
+								getSesameManager().getInstance(object, null), uri,
 								((Literal) object).getLanguage());
 					}
 				}
@@ -441,19 +441,19 @@ public abstract class ResourceSupport extends BehaviorBase implements
 				protected IStatement convert(BindingSet value) throws Exception {
 					Object object = value.getValue("obj");
 					if (object instanceof Resource) {
-						object = manager.getInstance((Resource) object);
+						object = manager.getInstance((Resource) object, null);
 					} else {
 						net.enilink.komma.core.URI uri = (((Literal) object)
 								.getDatatype() != null) ? URIImpl
 								.createURI(((Literal) object).getDatatype()
 										.toString()) : null;
 						object = manager.createLiteral(
-								manager.getInstance((Value) object), uri,
+								manager.getInstance((Value) object, null), uri,
 								((Literal) object).getLanguage());
 					}
 					return new Statement(getBehaviourDelegate(),
 							property != null ? property : (IEntity) manager
-									.getInstance(value.getValue("pred")),
+									.getInstance(value.getValue("pred"), null),
 							object,
 							includeInferred);
 				}

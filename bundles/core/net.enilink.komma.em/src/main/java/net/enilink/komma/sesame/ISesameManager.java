@@ -35,7 +35,7 @@ public interface ISesameManager extends IKommaManager, SesamePropertyContext {
 
 	ContextAwareConnection getConnection();
 
-	Object getInstance(Value value);
+	Object getInstance(Value value, Class<?> type);
 
 	RoleMapper<URI> getRoleMapper();
 

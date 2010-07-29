@@ -61,7 +61,7 @@ public class SesameGraphResult extends SesameIterator<Statement, IStatement> {
 	protected IStatement convert(Statement stmt) {
 		return new net.enilink.komma.core.Statement((IResource) manager.find(
 				stmt.getSubject(), IResource.class), manager.find(stmt
-				.getPredicate()), manager.getInstance(stmt.getObject()));
+				.getPredicate()), manager.getInstance(stmt.getObject(), null));
 	}
 
 	@Override

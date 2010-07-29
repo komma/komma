@@ -361,7 +361,7 @@ public abstract class AbstractSesameMap extends AbstractMap<Object, Object>
 		}
 
 		if (entry != null) {
-			return ((ISesameManager) manager).getInstance(entry);
+			return ((ISesameManager) manager).getInstance(entry, null);
 		} else {
 			return null;
 		}
@@ -435,8 +435,8 @@ public abstract class AbstractSesameMap extends AbstractMap<Object, Object>
 				getUri4Key(), null);
 		Value key = keyIter.next();
 
-		Object keyObj = ((ISesameManager) manager).getInstance(key);
-		Object valueObj = ((ISesameManager) manager).getInstance(value);
+		Object keyObj = ((ISesameManager) manager).getInstance(key, null);
+		Object valueObj = ((ISesameManager) manager).getInstance(value, null);
 
 		Entry entry = (Entry) new AbstractSesameMap.Entry(keyObj, valueObj);
 		return entry;

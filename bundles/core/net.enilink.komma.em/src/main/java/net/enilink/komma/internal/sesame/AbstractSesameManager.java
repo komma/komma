@@ -31,6 +31,8 @@ package net.enilink.komma.internal.sesame;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,6 +52,7 @@ import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.cache.annotations.Cacheable;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.properties.PropertySet;
+import net.enilink.composition.properties.sesame.ConversionUtil;
 import net.enilink.composition.properties.sesame.ObjectQuery;
 import net.enilink.composition.properties.sesame.SesameLiteralManager;
 import net.enilink.composition.properties.sesame.SesameTypeManager;
@@ -293,7 +296,7 @@ public abstract class AbstractSesameManager implements ISesameManager {
 
 	@Override
 	public Object convertValue(ILiteral literal) {
-		return getInstance(getValue((Object) literal));
+		return getInstance(getValue((Object) literal), null);
 	}
 
 	@Override
@@ -647,13 +650,30 @@ public abstract class AbstractSesameManager implements ISesameManager {
 	}
 
 	@Override
-	public Object getInstance(Value value) {
-		return getInstance(value, null);
+	public Object getInstance(Value value, Class<?> type) {
+		return getInstance(value, type, null);
 	}
 
-	protected Object getInstance(Value value, Model model) {
+	protected Object getInstance(Value value, Class<?> type, Model model) {
 		if (value instanceof Resource) {
-			ISesameEntity bean = createBean((Resource) value, null, model);
+			Collection<URI> types = Collections.emptyList();
+			if (type != null) {
+				URI typeUri = mapper.findType(type);
+				if (typeUri != null) {
+					// ensure that specified type is added as role to resulting
+					// object
+					types = new ArrayList<URI>();
+					types.add(typeUri);
+
+					try {
+						types.addAll(typeManager.getTypes((Resource) value));
+					} catch (StoreException e) {
+						throw new KommaException(e);
+					}
+				}
+			}
+
+			ISesameEntity bean = createBean((Resource) value, types, model);
 			if (logger.isDebugEnabled()) {
 				try {
 					if (!getConnection().hasMatch((Resource) value, null, null))
@@ -664,13 +684,30 @@ public abstract class AbstractSesameManager implements ISesameManager {
 			}
 			return bean;
 		}
-		return literalManager.createObject((Literal) value);
+		
+		Object instance = literalManager.createObject((Literal) value);
+		if (type != null) {
+			if (instance == null) {
+				if (type.isPrimitive()) {
+					instance = ConversionUtil.convertValue(
+							type, 0, null);
+				}
+			} else if (!type.isAssignableFrom(ConversionUtil
+					.wrapperType(instance.getClass()))) {
+				// convert instance if actual type is not compatible
+				// with valueType
+				instance = ConversionUtil.convertValue(type,
+						instance, instance);
+			}
+		}
+		return instance;
 	}
 
-	protected List<Object> getInstances(Iterator<Value> values, Model model) {
+	protected List<Object> getInstances(Iterator<Value> values, Class<?> type,
+			Model model) {
 		List<Object> instances = new ArrayList<Object>();
 		while (values.hasNext()) {
-			instances.add(getInstance(values.next(), model));
+			instances.add(getInstance(values.next(), type, model));
 		}
 		return instances;
 	}
@@ -874,7 +911,9 @@ public abstract class AbstractSesameManager implements ISesameManager {
 						Object result = method.invoke(bean);
 						if (result instanceof PropertySet<?>) {
 							((PropertySet) result).init(getInstances(
-									filterResultNode(objects), model));
+									filterResultNode(objects),
+									((PropertySet) result).getElementType(),
+									model));
 						}
 					}
 				} else if (method.isAnnotationPresent(Cacheable.class)) {
@@ -916,8 +955,20 @@ public abstract class AbstractSesameManager implements ISesameManager {
 
 							Object value = null;
 							if (collection != null) {
-								collection
-										.addAll(getInstances(valuesIt, model));
+								// get element type
+								Type t = method.getGenericReturnType();
+								Class<?> valueType = null;
+								if (t instanceof ParameterizedType) {
+									ParameterizedType pt = (ParameterizedType) t;
+									Type[] args = pt.getActualTypeArguments();
+									if (args.length == 1
+											&& args[0] instanceof Class<?>) {
+										valueType = (Class<?>) args[0];
+									}
+								}
+
+								collection.addAll(getInstances(valuesIt,
+										valueType, model));
 
 								if (isIterator) {
 									value = collection.iterator();

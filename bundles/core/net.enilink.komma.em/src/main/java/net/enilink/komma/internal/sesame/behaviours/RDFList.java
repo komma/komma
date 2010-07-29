@@ -213,7 +213,7 @@ public abstract class RDFList extends AbstractSequentialList<Object>
 			}
 
 			private Object createInstance(Value first) {
-				return getManager().getInstance(first);
+				return getManager().getInstance(first, null);
 			}
 
 			public boolean hasNext() {

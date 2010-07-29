@@ -88,7 +88,7 @@ public class SesameTupleResult extends SesameIterator<BindingSet, Object[]> {
 							resultInfos[i].types);
 				}
 			} else {
-				result[i] = manager.getInstance(value);
+				result[i] = manager.getInstance(value, null);
 			}
 		}
 		return result;

@@ -220,8 +220,8 @@ public class DelegatingSesameManager implements ISesameManager {
 	}
 
 	@Override
-	public Object getInstance(Value value) {
-		return delegate.getInstance(value);
+	public Object getInstance(Value value, Class<?> type) {
+		return delegate.getInstance(value, type);
 	}
 
 	@Override

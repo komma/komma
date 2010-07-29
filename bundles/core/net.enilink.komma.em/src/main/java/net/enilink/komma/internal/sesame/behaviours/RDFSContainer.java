@@ -101,7 +101,7 @@ public abstract class RDFSContainer extends AbstractList<Object> implements
 	}
 
 	private Object createInstance(Value next) {
-		return getManager().getInstance(next);
+		return getManager().getInstance(next, null);
 	}
 
 	@Override
