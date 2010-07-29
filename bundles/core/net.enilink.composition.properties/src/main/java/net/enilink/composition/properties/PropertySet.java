@@ -44,6 +44,12 @@ import net.enilink.composition.properties.traits.Refreshable;
  */
 public interface PropertySet<E> extends Refreshable {
 	/**
+	 * 
+	 * @return
+	 */
+	Class<E> getElementType();
+	
+	/**
 	 * Get all values for property.
 	 * 
 	 * @return set of all values

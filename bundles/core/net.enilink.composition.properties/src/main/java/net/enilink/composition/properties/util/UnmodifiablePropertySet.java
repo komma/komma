@@ -51,6 +51,11 @@ public class UnmodifiablePropertySet<E> implements PropertySet<E> {
 	public UnmodifiablePropertySet(PropertySet<E> delegate) {
 		this.delegate = delegate;
 	}
+	
+	@Override
+	public Class<E> getElementType() {
+		return delegate.getElementType();
+	}
 
 	public Set<E> getAll() {
 		return Collections.unmodifiableSet(delegate.getAll());

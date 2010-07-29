@@ -104,6 +104,11 @@ public class TestPropertySetDescriptorFactory implements
 		public void init(Collection<? extends E> values) {
 			// not required
 		}
+		
+		@Override
+		public Class<E> getElementType() {
+			return null;
+		}
 	}
 
 	@Override
