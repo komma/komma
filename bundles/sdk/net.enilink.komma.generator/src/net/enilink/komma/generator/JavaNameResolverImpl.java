@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.mappers.RoleMapper;
@@ -163,6 +165,17 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 		if (prefix == null || prefix.length() == 0) {
 			prefixes.remove(namespace);
 		} else {
+			// replace characters which are not allowed in Java identifiers
+			Matcher m = Pattern.compile("[-]+(.?)").matcher(prefix);
+			if (m.find()) {
+				StringBuffer sb = new StringBuffer();
+				do {
+					m.appendReplacement(sb, m.group(1) != null ? m.group(1).toUpperCase() : "");
+				} while (m.find());
+				m.appendTail(sb);
+				
+				prefix = sb.toString();
+			}
 			prefixes.put(namespace, prefix);
 		}
 	}

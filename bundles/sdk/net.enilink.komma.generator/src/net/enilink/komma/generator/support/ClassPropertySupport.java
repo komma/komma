@@ -49,11 +49,11 @@ public abstract class ClassPropertySupport implements CodeClass,
 	private static final String PREFIX = "PREFIX rdfs:<" + RDFS
 			+ ">\nPREFIX owl:<" + OWL + ">\n";
 	private static final String WHERE_PROP_DOMAIN_TYPE = PREFIX
-			+ "SELECT DISTINCT ?prop WHERE { ?prop rdfs:domain ?type } ORDER BY ?prop";
+			+ "SELECT DISTINCT ?prop WHERE { { ?prop rdfs:domain ?type } UNION { ?type rdfs:subClassOf [owl:onProperty ?prop] } } ORDER BY ?prop";
 
 	@SuppressWarnings("unchecked")
 	public Iterable<Property> getDeclaredProperties() {
-		IQuery query = getKommaManager().createQuery(
+		IQuery<?> query = getKommaManager().createQuery(
 				WHERE_PROP_DOMAIN_TYPE);
 		query.setParameter("type", this);
 		return (Iterable<Property>) query.getResultList();

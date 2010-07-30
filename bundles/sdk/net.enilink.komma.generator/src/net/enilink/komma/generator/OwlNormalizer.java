@@ -83,7 +83,7 @@ import net.enilink.komma.sesame.ISesameManager;
 
 /**
  * Applies a series of rules against the ontology, making it easier to convert
- * into Java classes. This includes appling some OWL reasoning on properties,
+ * into Java classes. This includes applying some OWL reasoning on properties,
  * renaming anonymous and foreign classes.
  * 
  * @author James Leigh
@@ -102,7 +102,8 @@ public class OwlNormalizer {
 			+ "UNION { ?prop a owl:ObjectProperty } UNION { ?prop a owl:DatatypeProperty } "
 			+ "UNION { ?prop a owl:DeprecatedProperty } UNION { ?prop a owl:AnnotationProperty } "
 			+ "OPTIONAL { ?prop rdfs:domain ?domain } "
-			+ "FILTER (!bound(?domain)) }";
+			+ "OPTIONAL { ?restriction owl:onProperty ?prop }"
+			+ "FILTER (!(bound(?domain) || bound(?restriction))) }";
 
 	private static final String SELECT_DEFINED = PREFIX + "SELECT ?bean "
 			+ "WHERE { ?bean rdfs:isDefinedBy ?ont "
@@ -725,20 +726,6 @@ public class OwlNormalizer {
 		return null;
 	}
 
-	private void nameAnonymousClasses() throws StoreException {
-		Iterable<? extends IEntity> classes = manager.findAll(Class.class);
-		for (IEntity clazz : classes) {
-			Resource res = ((ISesameEntity) clazz).getSesameResource();
-			if (res instanceof URI) {
-				continue;
-			}
-			// if not already moved
-			if (clazz instanceof Class) {
-				nameAnonymous((Class) clazz);
-			}
-		}
-	}
-
 	public void normalize() throws Exception {
 		infer(manager.getConnection());
 		ontologies = findOntologies();
@@ -746,7 +733,6 @@ public class OwlNormalizer {
 		checkPropertyDomains();
 		subClassIntersectionOf();
 		subClassOneOf();
-		// nameAnonymousClasses();
 		distributeEquivalentClasses();
 		mergeUnionClasses();
 		moveForeignDomains(manager.getConnection());
@@ -936,10 +922,10 @@ public class OwlNormalizer {
 		java.util.List<Class> classes = (java.util.List<Class>) query
 				.getResultList();
 		for (Class c : classes) {
-			java.util.List list = new ArrayList();
+			java.util.List<Object> list = new ArrayList<Object>();
 			for (Object of : c.getOwlOneOf()) {
 				if (of instanceof Thing) {
-					Set types = ((Thing) of).getRdfTypes();
+					Set<?> types = ((Thing) of).getRdfTypes();
 					if (types.isEmpty()) {
 						list.add(manager.find(URIImpl.createURI(OWL.NAMESPACE)
 								.appendFragment("Thing")));
