@@ -47,6 +47,8 @@ public interface CONCEPTS {
 	public static final URI PROPERTY_VALUE = NAMESPACE_URI.appendFragment("value");
 
 	public static final URI PROPERTY_CONTAINSTRANSITIVE = NAMESPACE_URI.appendFragment("containsTransitive");
+	
+	public static final URI PROPERTY_HASDESCENDANT = NAMESPACE_URI.appendFragment("hasDescendant");
 
 	public static final URI PROPERTY_CONTAINS = NAMESPACE_URI.appendFragment("contains");
 
