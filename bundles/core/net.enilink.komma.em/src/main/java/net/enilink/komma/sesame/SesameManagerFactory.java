@@ -53,6 +53,7 @@ import net.enilink.composition.properties.behaviours.PropertyMapperProcessor;
 import net.enilink.composition.properties.sesame.SesameLiteralManager;
 import net.enilink.composition.properties.sesame.SesamePropertyContext;
 import net.enilink.composition.properties.sesame.SesamePropertySetDescriptorFactory;
+import net.enilink.composition.properties.sesame.converters.Marshall;
 import net.enilink.composition.properties.sparql.SparqlBehaviourMethodProcessor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -91,8 +92,6 @@ import net.enilink.komma.core.KommaModule;
 /**
  * Creates SesameManagers.
  * 
- * @author James Leigh
- * 
  */
 public abstract class SesameManagerFactory implements IKommaManagerFactory {
 	protected class ManagerCompositionModule extends AbstractModule {
@@ -114,16 +113,19 @@ public abstract class SesameManagerFactory implements IKommaManagerFactory {
 				protected void initBindings() {
 					super.initBindings();
 
-					getBehaviourClassProcessorBinder().addBinding().to(
-							PropertyMapperProcessor.class).in(Singleton.class);
+					getBehaviourClassProcessorBinder().addBinding()
+							.to(PropertyMapperProcessor.class)
+							.in(Singleton.class);
 
-					getBehaviourMethodProcessorBinder().addBinding().to(
-							SparqlBehaviourMethodProcessor.class).in(
-							Singleton.class);
+					getBehaviourMethodProcessorBinder().addBinding()
+							.to(SparqlBehaviourMethodProcessor.class)
+							.in(Singleton.class);
 				}
-				
-				protected RoleMapper<URI> provideRoleMapper(TypeFactory<URI> typeFactory) {
-					RoleMapper<URI> roleMapper = new RoleMapper<URI>(typeFactory);
+
+				protected RoleMapper<URI> provideRoleMapper(
+						TypeFactory<URI> typeFactory) {
+					RoleMapper<URI> roleMapper = new RoleMapper<URI>(
+							typeFactory);
 
 					RoleClassLoader<URI> loader = new RoleClassLoader<URI>();
 					loader.setClassLoader(module.getClassLoader());
@@ -137,24 +139,25 @@ public abstract class SesameManagerFactory implements IKommaManagerFactory {
 						if (e.getRdfType() == null) {
 							roleMapper.addConcept(e.getJavaClass());
 						} else {
-							roleMapper.addConcept(e.getJavaClass(), typeFactory
-									.createType(e.getRdfType()));
+							roleMapper.addConcept(e.getJavaClass(),
+									typeFactory.createType(e.getRdfType()));
 						}
 					}
 					for (KommaModule.Association e : module.getBehaviours()) {
 						if (e.getRdfType() == null) {
 							roleMapper.addBehaviour(e.getJavaClass());
 						} else {
-							roleMapper.addBehaviour(e.getJavaClass(), typeFactory
-									.createType(e.getRdfType()));
+							roleMapper.addBehaviour(e.getJavaClass(),
+									typeFactory.createType(e.getRdfType()));
 						}
 					}
 
-					roleMapper.addBehaviour(SesameEntitySupport.class, RDFS.RESOURCE);
+					roleMapper.addBehaviour(SesameEntitySupport.class,
+							RDFS.RESOURCE);
 
 					return roleMapper;
 				}
-				
+
 				protected ClassDefiner provideClassDefiner() {
 					return getSharedDefiner(module.getClassLoader());
 				}
@@ -249,12 +252,12 @@ public abstract class SesameManagerFactory implements IKommaManagerFactory {
 			injector.injectMembers(literalManager);
 
 			for (KommaModule.Association e : module.getDatatypes()) {
-				literalManager.addDatatype(e.getJavaClass(), typeFactory
-						.createType(e.getRdfType()));
+				literalManager.addDatatype(e.getJavaClass(),
+						typeFactory.createType(e.getRdfType()));
 			}
 
-			// record additional Marshall for Base64 encoded byte arrays
-			ByteArrayMarshall marshall = new ByteArrayMarshall(getRepository()
+			// record additional marshall for Base64 encoded byte arrays
+			Marshall<?> marshall = new ByteArrayMarshall(getRepository()
 					.getLiteralFactory());
 			literalManager
 					.recordMarshall(marshall.getJavaClassName(), marshall);
@@ -455,9 +458,6 @@ public abstract class SesameManagerFactory implements IKommaManagerFactory {
 		for (Map.Entry<URL, String> e : module.getDatasets().entrySet()) {
 			loadContext(e.getKey(), e.getValue());
 		}
-		for (String path : module.getResources()) {
-			loadResources(path);
-		}
 	}
 
 	public boolean isOpen() {
@@ -468,18 +468,6 @@ public abstract class SesameManagerFactory implements IKommaManagerFactory {
 		try {
 			ValueFactory vf = repository.getValueFactory();
 			repository.loadContext(dataset, vf.createURI(context));
-		} catch (StoreException e) {
-			throw new KommaException(e);
-		} catch (RDFParseException e) {
-			throw new KommaException(e);
-		} catch (IOException e) {
-			throw new KommaException(e);
-		}
-	}
-
-	private void loadResources(String path) throws KommaException {
-		try {
-			repository.loadResources(path);
 		} catch (StoreException e) {
 			throw new KommaException(e);
 		} catch (RDFParseException e) {

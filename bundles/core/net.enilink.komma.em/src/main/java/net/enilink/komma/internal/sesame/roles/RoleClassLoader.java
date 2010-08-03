@@ -61,8 +61,8 @@ public class RoleClassLoader<URI> {
 	}
 
 	public void load(Collection<? extends URL> libraries) {
-		URLClassLoader urlCl = new URLClassLoader(libraries
-				.toArray(new URL[libraries.size()]));
+		URLClassLoader urlCl = new URLClassLoader(
+				libraries.toArray(new URL[libraries.size()]));
 
 		Set<URL> seenUrls = new HashSet<URL>();
 		for (String roles : Arrays.asList(CONCEPTS, BEHAVIOURS, ANNOTATIONS)) {
@@ -74,14 +74,14 @@ public class RoleClassLoader<URI> {
 								WrappedIterator.create(urlCl
 										.getResources(roles)));
 
-				load(resources, !BEHAVIOURS.equals(roles), seenUrls);
+				load(resources, seenUrls);
 			} catch (Exception e) {
 				throw new KommaException(e);
 			}
 		}
 	}
 
-	public void load(Iterator<URL> resources, boolean concept, Set<URL> exclude)
+	public void load(Iterator<URL> resources, Set<URL> exclude)
 			throws IOException, ClassNotFoundException {
 		while (resources.hasNext()) {
 			URL url = resources.next();
@@ -92,7 +92,7 @@ public class RoleClassLoader<URI> {
 					Properties p = new Properties();
 					p.load(url.openStream());
 
-					load(p, cl, concept);
+					load(p, cl);
 				} catch (IOException e) {
 					String msg = e.getMessage() + " in: " + url;
 					IOException ioe = new IOException(msg);
@@ -103,8 +103,7 @@ public class RoleClassLoader<URI> {
 		}
 	}
 
-	private void load(Properties p, ClassLoader cl, boolean concept)
-			throws IOException {
+	private void load(Properties p, ClassLoader cl) throws IOException {
 		for (Map.Entry<Object, Object> e : p.entrySet()) {
 			String role = (String) e.getKey();
 
@@ -112,7 +111,7 @@ public class RoleClassLoader<URI> {
 			try {
 				Class<?> clazz = Class.forName(role, true, cl);
 				for (String rdf : types.split("\\s+")) {
-					recordRole(clazz, rdf, concept);
+					recordRole(clazz, rdf);
 				}
 			} catch (Throwable exc) {
 				logger.error("Could not load " + role, exc);
@@ -120,12 +119,12 @@ public class RoleClassLoader<URI> {
 		}
 	}
 
-	private void recordRole(Class<?> clazz, String uri, boolean concept) {
+	private void recordRole(Class<?> clazz, String uri) {
 		boolean uriMapped = uri != null && uri.length() > 0;
 		if (!uriMapped || isAnnotationPresent(clazz)) {
 			if (clazz.isAnnotation()) {
 				roleMapper.addAnnotation(clazz);
-			} else if (concept) {
+			} else if (clazz.isInterface()) {
 				roleMapper.addConcept(clazz);
 			} else {
 				roleMapper.addBehaviour(clazz);
@@ -135,7 +134,7 @@ public class RoleClassLoader<URI> {
 		if (uriMapped) {
 			if (clazz.isAnnotation()) {
 				roleMapper.addAnnotation(clazz, typeFactory.createType(uri));
-			} else if (concept) {
+			} else if (clazz.isInterface()) {
 				roleMapper.addConcept(clazz, typeFactory.createType(uri));
 			} else {
 				roleMapper.addBehaviour(clazz, typeFactory.createType(uri));
