@@ -6,7 +6,7 @@
          <meta.schema plugin="net.enilink.komma.model" id="uriMapRules" name="uriMapRules"/>
       </appInfo>
       <documentation>
-         [Enter description of this extension point.]
+         Allows the definition of rules for the mapping of ontology namespaces to physical locations of the corresponding files.
       </documentation>
    </annotation>
 
@@ -49,7 +49,7 @@
          <attribute name="priority" type="string" use="required">
             <annotation>
                <documentation>
-                  A low priority means an earlier execution of the rule!
+                  A lower priority causes an earlier application of the rule.
                </documentation>
             </annotation>
          </attribute>

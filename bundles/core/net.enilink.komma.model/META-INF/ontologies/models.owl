@@ -19,7 +19,19 @@
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-    <owl:Ontology rdf:about=""/>
+    <owl:Ontology rdf:about="http://enilink.net/vocab/komma/models"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <owl:AnnotationProperty rdf:about="&rdfs;comment"/>
     
 
 
@@ -36,41 +48,39 @@
 
     <!-- http://enilink.net/vocab/komma/models#error -->
 
-    <owl:ObjectProperty rdf:about="#error">
-        <rdfs:comment
-            >A set of the errors in a model.</rdfs:comment>
-        <rdfs:range rdf:resource="#Diagnostic"/>
-        <rdfs:domain rdf:resource="#Model"/>
+    <owl:ObjectProperty rdf:about="&models;error">
+        <rdfs:comment>A set of the errors in a model.</rdfs:comment>
+        <rdfs:range rdf:resource="&models;Diagnostic"/>
+        <rdfs:domain rdf:resource="&models;Model"/>
     </owl:ObjectProperty>
     
 
 
     <!-- http://enilink.net/vocab/komma/models#model -->
 
-    <owl:ObjectProperty rdf:about="#model">
-        <rdfs:range rdf:resource="#Model"/>
-        <rdfs:domain rdf:resource="#ModelSet"/>
+    <owl:ObjectProperty rdf:about="&models;model">
+        <rdfs:range rdf:resource="&models;Model"/>
+        <rdfs:domain rdf:resource="&models;ModelSet"/>
     </owl:ObjectProperty>
     
 
 
     <!-- http://enilink.net/vocab/komma/models#modelSet -->
 
-    <owl:ObjectProperty rdf:about="#modelSet">
-        <rdfs:domain rdf:resource="#Model"/>
-        <rdfs:range rdf:resource="#ModelSet"/>
-        <owl:inverseOf rdf:resource="#model"/>
+    <owl:ObjectProperty rdf:about="&models;modelSet">
+        <rdfs:domain rdf:resource="&models;Model"/>
+        <rdfs:range rdf:resource="&models;ModelSet"/>
+        <owl:inverseOf rdf:resource="&models;model"/>
     </owl:ObjectProperty>
     
 
 
     <!-- http://enilink.net/vocab/komma/models#warning -->
 
-    <owl:ObjectProperty rdf:about="#warning">
-        <rdfs:comment
-            >A set of the warnings in a model.</rdfs:comment>
-        <rdfs:range rdf:resource="#Diagnostic"/>
-        <rdfs:domain rdf:resource="#Model"/>
+    <owl:ObjectProperty rdf:about="&models;warning">
+        <rdfs:comment>A set of the warnings in a model.</rdfs:comment>
+        <rdfs:range rdf:resource="&models;Diagnostic"/>
+        <rdfs:domain rdf:resource="&models;Model"/>
     </owl:ObjectProperty>
     
 
@@ -88,10 +98,9 @@
 
     <!-- http://enilink.net/vocab/komma/models#column -->
 
-    <owl:DatatypeProperty rdf:about="#column">
-        <rdfs:comment
-            >Returns the column location of the issue within the source. Column 1 is the first column.</rdfs:comment>
-        <rdfs:domain rdf:resource="#Diagnostic"/>
+    <owl:DatatypeProperty rdf:about="&models;column">
+        <rdfs:comment>Returns the column location of the issue within the source. Column 1 is the first column.</rdfs:comment>
+        <rdfs:domain rdf:resource="&models;Diagnostic"/>
         <rdfs:range rdf:resource="&xsd;int"/>
     </owl:DatatypeProperty>
     
@@ -99,10 +108,9 @@
 
     <!-- http://enilink.net/vocab/komma/models#line -->
 
-    <owl:DatatypeProperty rdf:about="#line">
-        <rdfs:comment
-            >Returns the line location of the issue within the source. Line 1 is the first line.</rdfs:comment>
-        <rdfs:domain rdf:resource="#Diagnostic"/>
+    <owl:DatatypeProperty rdf:about="&models;line">
+        <rdfs:comment>Returns the line location of the issue within the source. Line 1 is the first line.</rdfs:comment>
+        <rdfs:domain rdf:resource="&models;Diagnostic"/>
         <rdfs:range rdf:resource="&xsd;int"/>
     </owl:DatatypeProperty>
     
@@ -110,10 +118,9 @@
 
     <!-- http://enilink.net/vocab/komma/models#loaded -->
 
-    <owl:DatatypeProperty rdf:about="#loaded">
-        <rdfs:comment
-            >Indicates whether the model has finished loading.</rdfs:comment>
-        <rdfs:domain rdf:resource="#Model"/>
+    <owl:DatatypeProperty rdf:about="&models;loaded">
+        <rdfs:comment>Indicates whether the model has finished loading.</rdfs:comment>
+        <rdfs:domain rdf:resource="&models;Model"/>
         <rdfs:range rdf:resource="&xsd;boolean"/>
     </owl:DatatypeProperty>
     
@@ -121,10 +128,9 @@
 
     <!-- http://enilink.net/vocab/komma/models#loading -->
 
-    <owl:DatatypeProperty rdf:about="#loading">
-        <rdfs:comment
-            >Indicates whether the model is currently being loaded.</rdfs:comment>
-        <rdfs:domain rdf:resource="#Model"/>
+    <owl:DatatypeProperty rdf:about="&models;loading">
+        <rdfs:comment>Indicates whether the model is currently being loaded.</rdfs:comment>
+        <rdfs:domain rdf:resource="&models;Model"/>
         <rdfs:range rdf:resource="&xsd;boolean"/>
     </owl:DatatypeProperty>
     
@@ -132,10 +138,9 @@
 
     <!-- http://enilink.net/vocab/komma/models#location -->
 
-    <owl:DatatypeProperty rdf:about="#location">
-        <rdfs:comment
-            >Returns the source location of the issue.</rdfs:comment>
-        <rdfs:domain rdf:resource="#Diagnostic"/>
+    <owl:DatatypeProperty rdf:about="&models;location">
+        <rdfs:comment>Returns the source location of the issue.</rdfs:comment>
+        <rdfs:domain rdf:resource="&models;Diagnostic"/>
         <rdfs:range rdf:resource="&xsd;string"/>
     </owl:DatatypeProperty>
     
@@ -143,10 +148,9 @@
 
     <!-- http://enilink.net/vocab/komma/models#message -->
 
-    <owl:DatatypeProperty rdf:about="#message">
-        <rdfs:comment
-            >Returns a translated message describing the issue.</rdfs:comment>
-        <rdfs:domain rdf:resource="#Diagnostic"/>
+    <owl:DatatypeProperty rdf:about="&models;message">
+        <rdfs:comment>Returns a translated message describing the issue.</rdfs:comment>
+        <rdfs:domain rdf:resource="&models;Diagnostic"/>
         <rdfs:range rdf:resource="&xsd;string"/>
     </owl:DatatypeProperty>
     
@@ -154,10 +158,9 @@
 
     <!-- http://enilink.net/vocab/komma/models#modified -->
 
-    <owl:DatatypeProperty rdf:about="#modified">
-        <rdfs:comment
-            >Returns whether a model has been modified.</rdfs:comment>
-        <rdfs:domain rdf:resource="#Model"/>
+    <owl:DatatypeProperty rdf:about="&models;modified">
+        <rdfs:comment>Returns whether a model has been modified.</rdfs:comment>
+        <rdfs:domain rdf:resource="&models;Model"/>
         <rdfs:range rdf:resource="&xsd;boolean"/>
     </owl:DatatypeProperty>
     
@@ -165,11 +168,10 @@
 
     <!-- http://enilink.net/vocab/komma/models#persistent -->
 
-    <owl:DatatypeProperty rdf:about="#persistent">
-        <rdfs:comment
-            >Returns whether a model or model set is persistent.</rdfs:comment>
-        <rdfs:domain rdf:resource="#Model"/>
-        <rdfs:domain rdf:resource="#ModelSet"/>
+    <owl:DatatypeProperty rdf:about="&models;persistent">
+        <rdfs:comment>Returns whether a model or model set is persistent.</rdfs:comment>
+        <rdfs:domain rdf:resource="&models;Model"/>
+        <rdfs:domain rdf:resource="&models;ModelSet"/>
         <rdfs:range rdf:resource="&xsd;boolean"/>
     </owl:DatatypeProperty>
     
@@ -188,81 +190,80 @@
 
     <!-- http://enilink.net/vocab/komma/models#Diagnostic -->
 
-    <owl:Class rdf:about="#Diagnostic">
+    <owl:Class rdf:about="&models;Diagnostic">
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="#column"/>
+                <owl:onProperty rdf:resource="&models;location"/>
                 <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="#location"/>
+                <owl:onProperty rdf:resource="&models;column"/>
                 <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="#line"/>
+                <owl:onProperty rdf:resource="&models;message"/>
                 <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="#message"/>
+                <owl:onProperty rdf:resource="&models;line"/>
                 <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:comment
-            >A noteworthy issue in a document.</rdfs:comment>
+        <rdfs:comment>A noteworthy issue in a document.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://enilink.net/vocab/komma/models#Model -->
 
-    <owl:Class rdf:about="#Model">
+    <owl:Class rdf:about="&models;Model">
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="#persistent"/>
+                <owl:onProperty rdf:resource="&models;loaded"/>
                 <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="#error"/>
-                <owl:allValuesFrom rdf:resource="#Diagnostic"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="#modelSet"/>
-                <owl:onClass rdf:resource="#Model"/>
+                <owl:onProperty rdf:resource="&models;loading"/>
                 <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="#warning"/>
-                <owl:allValuesFrom rdf:resource="#Diagnostic"/>
+                <owl:onProperty rdf:resource="&models;modelSet"/>
+                <owl:onClass rdf:resource="&models;ModelSet"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="#loaded"/>
+                <owl:onProperty rdf:resource="&models;modified"/>
                 <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="#loading"/>
+                <owl:onProperty rdf:resource="&models;persistent"/>
                 <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="#modified"/>
-                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+                <owl:onProperty rdf:resource="&models;error"/>
+                <owl:allValuesFrom rdf:resource="&models;Diagnostic"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&models;warning"/>
+                <owl:allValuesFrom rdf:resource="&models;Diagnostic"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -271,17 +272,17 @@
 
     <!-- http://enilink.net/vocab/komma/models#ModelSet -->
 
-    <owl:Class rdf:about="#ModelSet">
+    <owl:Class rdf:about="&models;ModelSet">
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="#model"/>
-                <owl:allValuesFrom rdf:resource="#Model"/>
+                <owl:onProperty rdf:resource="&models;persistent"/>
+                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="#persistent"/>
-                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+                <owl:onProperty rdf:resource="&models;model"/>
+                <owl:allValuesFrom rdf:resource="&models;Model"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -289,5 +290,5 @@
 
 
 
-<!-- Generated by the OWL API (version 2.2.1.962) http://owlapi.sourceforge.net -->
+<!-- Generated by the OWL API (version 3.0.0.1469) http://owlapi.sourceforge.net -->
 

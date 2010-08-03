@@ -33,7 +33,7 @@ public abstract class ObjectSupport extends BehaviorBase implements IObject,
 			+ "		?class rdfs:subClassOf ?restriction ."
 			+ "		?restriction owl:onProperty ?property" //
 			+ "}" //
-			+ "?property rdfs:subPropertyOf komma:contains ." //
+			+ "?property rdfs:subPropertyOf komma:hasDescendant ." //
 			+ "OPTIONAL {" //
 			+ "	?otherProperty rdfs:subPropertyOf ?property ." //
 			+ "	{" //
