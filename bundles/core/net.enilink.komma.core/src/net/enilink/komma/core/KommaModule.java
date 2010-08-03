@@ -144,8 +144,6 @@ public class KommaModule {
 
 	private Map<URL, String> datasets = new HashMap<URL, String>();
 
-	private List<String> resources = new ArrayList<String>();
-
 	private List<URL> libraries = new ArrayList<URL>();
 
 	public KommaModule() {
@@ -209,7 +207,6 @@ public class KommaModule {
 		readableGraphs.addAll(module.writableGraphs);
 		readableGraphs.addAll(module.readableGraphs);
 		datasets.putAll(module.datasets);
-		resources.addAll(module.resources);
 		libraries.addAll(module.libraries);
 		if (!cl.equals(module.cl)) {
 			cl = new CombinedClassLoader(cl, module.cl);
@@ -299,17 +296,6 @@ public class KommaModule {
 	}
 
 	/**
-	 * Marks this dataset to be loaded into the repository under a context of
-	 * the same URL.
-	 * 
-	 * @param dataset
-	 * @return this
-	 */
-	public KommaModule addDataset(URL dataset) {
-		return addDataset(dataset, dataset.toExternalForm());
-	}
-
-	/**
 	 * Marks this dataset to be loaded and replace any data in the given
 	 * context.
 	 * 
@@ -319,21 +305,6 @@ public class KommaModule {
 	 */
 	public KommaModule addDataset(URL dataset, String context) {
 		datasets.put(dataset, context);
-		return this;
-	}
-
-	public List<String> getResources() {
-		return unmodifiableList(resources);
-	}
-
-	/**
-	 * Load a resource listing datasets - optionally assigned to a context
-	 * 
-	 * @param path
-	 * @return
-	 */
-	public KommaModule addResources(String path) {
-		resources.add(path);
 		return this;
 	}
 
@@ -363,8 +334,6 @@ public class KommaModule {
 				+ ((libraries == null) ? 0 : libraries.hashCode());
 		result = prime * result
 				+ ((readableGraphs == null) ? 0 : readableGraphs.hashCode());
-		result = prime * result
-				+ ((resources == null) ? 0 : resources.hashCode());
 		result = prime * result
 				+ ((writableGraphs == null) ? 0 : writableGraphs.hashCode());
 		return result;
@@ -413,11 +382,6 @@ public class KommaModule {
 			if (other.readableGraphs != null)
 				return false;
 		} else if (!readableGraphs.equals(other.readableGraphs))
-			return false;
-		if (resources == null) {
-			if (other.resources != null)
-				return false;
-		} else if (!resources.equals(other.resources))
 			return false;
 		if (writableGraphs == null) {
 			if (other.writableGraphs != null)
