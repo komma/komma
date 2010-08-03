@@ -38,8 +38,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Tracks recorded roles and maps them to their subject type.
  * 
- * @author James Leigh
- * 
  */
 public class TypeMapper<T> implements Cloneable {
 	private final Logger logger = LoggerFactory.getLogger(TypeMapper.class);

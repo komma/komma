@@ -45,8 +45,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Tracks recorded roles and maps them to their subject type.
  * 
- * @author James Leigh
- * 
  */
 public class SimpleRoleMapper<T> implements Cloneable {
 	/** http://www.w3.org/2000/01/rdf-schema#Resource */
@@ -59,14 +57,10 @@ public class SimpleRoleMapper<T> implements Cloneable {
 
 	private boolean empty = true;
 
-	private Map<T, List<Class<?>>> roles; // javancss cannot parse Map<T,
-	// Class<?>[]>
+	private Map<T, List<Class<?>>> roles = new ConcurrentHashMap<T, List<Class<?>>>(
+			256);
 
 	private Map<T, Boolean> unregisteredTypes = new ConcurrentHashMap<T, Boolean>();
-
-	public SimpleRoleMapper() {
-		roles = new ConcurrentHashMap<T, List<Class<?>>>(256);
-	}
 
 	public SimpleRoleMapper<T> clone() {
 		try {
@@ -105,60 +99,52 @@ public class SimpleRoleMapper<T> implements Cloneable {
 		return list;
 	}
 
-	public Collection<Class<?>> findRoles(T type) {
-		List<Class<?>> classes = roles.get(type);
-		if (classes == null) {
+	public void findRoles(T type, Collection<Class<?>> classes) {
+		List<Class<?>> rolesForType = roles.get(type);
+		if (rolesForType == null) {
 			unregistered(type);
-			return findBaseRoles();
+			classes.addAll(findBaseRoles());
+		} else {
+			classes.addAll(rolesForType);
 		}
-		return classes;
 	}
 
-	public Collection<Class<?>> findRoles(Collection<T> types,
-			Collection<Class<?>> classes) {
+	public void findRoles(Collection<T> types, Collection<Class<?>> classes) {
 		boolean found = false;
 		for (T type : types) {
-			List<Class<?>> javaClass = roles.get(type);
-			if (javaClass == null) {
+			List<Class<?>> rolesForType = roles.get(type);
+			if (rolesForType == null) {
 				unregistered(type);
 			} else {
 				found = true;
-				classes.addAll(javaClass);
+				classes.addAll(rolesForType);
 			}
 		}
 		if (!found) {
 			classes.addAll(findBaseRoles());
-			return classes;
 		}
-		return classes;
 	}
 
 	public boolean isTypeRecorded(T type) {
 		return roles.containsKey(type);
 	}
 
-	public synchronized Set<Class<?>> recordRoles(Set<Class<?>> role, T uri) {
-		List<Class<?>> set = roles.get(uri);
+	public synchronized Set<Class<?>> recordRoles(Set<Class<?>> newRoles, T uri) {
+		List<Class<?>> existingRoles = roles.get(uri);
 		Set<Class<?>> changed = new HashSet<Class<?>>();
-		if (set == null) {
-			List<Class<?>> bar = roles.get(baseType);
-			if (bar == null) {
-				changed = role;
-			} else {
-				changed.addAll(bar);
-				changed.addAll(role);
-			}
+		if (existingRoles == null) {
+			changed.addAll(findBaseRoles());
 		} else {
-			changed.addAll(set);
-			changed.addAll(role);
+			changed.addAll(existingRoles);
 		}
-		if (set == null || changed.size() != set.size()) {
+		changed.addAll(newRoles);
+
+		if (existingRoles == null || changed.size() != existingRoles.size()) {
 			empty &= uri.equals(baseType);
 			roles.put(uri, Arrays.asList(changed.toArray(new Class<?>[changed
 					.size()])));
 		}
 		return changed;
-
 	}
 
 	public synchronized void recordBaseRole(Class<?> role) {
@@ -181,7 +167,9 @@ public class SimpleRoleMapper<T> implements Cloneable {
 	}
 
 	private Collection<Class<?>> findBaseRoles() {
-		return roles.get(baseType);
+		Collection<Class<?>> baseRoles = roles.get(baseType);
+		return baseRoles == null ? Collections.<Class<?>> emptySet()
+				: baseRoles;
 	}
 
 	private void unregistered(T type) {

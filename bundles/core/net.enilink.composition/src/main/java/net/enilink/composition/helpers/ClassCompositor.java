@@ -73,8 +73,6 @@ import com.google.inject.Inject;
  * This class takes a collection of roles (interfaces or classes) and uses
  * composition to combine this into a single class.
  * 
- * @author James Leigh
- * 
  */
 public class ClassCompositor<T> implements Types, Opcodes {
 	private String RDFS_SUBCLASSOF = "http://www.w3.org/2000/01/rdf-schema#subClassOf";

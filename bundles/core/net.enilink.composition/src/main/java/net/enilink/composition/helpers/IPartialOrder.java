@@ -15,8 +15,6 @@ import java.util.Collection;
 /**
  * Defines a partial ordered set.
  * 
- * @author Ken Wenzel
- * 
  */
 public interface IPartialOrder<T> {
 	Collection<T> getElements();

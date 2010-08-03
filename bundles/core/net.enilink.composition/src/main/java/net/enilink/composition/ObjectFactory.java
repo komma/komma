@@ -15,8 +15,6 @@ import java.util.Collection;
 /**
  * Interface for a factory that creates composite objects.
  * 
- * @author Ken Wenzel
- * 
  * @param <T>
  *            The identifier type.
  */

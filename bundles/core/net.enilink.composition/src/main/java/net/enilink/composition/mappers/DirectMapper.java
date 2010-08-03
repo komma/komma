@@ -36,18 +36,13 @@ import java.util.Set;
 /**
  * Tracks recorded roles and maps them to their subject type.
  * 
- * @author James Leigh
- * 
  */
 public class DirectMapper<T> implements Cloneable {
-	private Map<Class<?>, Set<T>> directTypes;
+	private Map<Class<?>, Set<T>> directTypes = new HashMap<Class<?>, Set<T>>(
+			256);
 
-	private Map<T, Set<Class<?>>> directRoles;
-
-	public DirectMapper() {
-		directTypes = new HashMap<Class<?>, Set<T>>(256);
-		directRoles = new HashMap<T, Set<Class<?>>>(256);
-	}
+	private Map<T, Set<Class<?>>> directRoles = new HashMap<T, Set<Class<?>>>(
+			256);
 
 	public DirectMapper<T> clone() {
 		try {

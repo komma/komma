@@ -39,8 +39,6 @@ import net.enilink.composition.exceptions.CompositionException;
 /**
  * Tracks recorded roles and maps them to their subject type.
  * 
- * @author James Leigh
- * 
  */
 public class HierarchicalRoleMapper<T> implements Cloneable {
 	private DirectMapper<T> directMapper = new DirectMapper<T>();
@@ -83,13 +81,12 @@ public class HierarchicalRoleMapper<T> implements Cloneable {
 		return simpleRoleMapper.findAllRoles();
 	}
 
-	public Collection<Class<?>> findRoles(T type) {
-		return simpleRoleMapper.findRoles(type);
+	public void findRoles(T type, Collection<Class<?>> roles) {
+		simpleRoleMapper.findRoles(type, roles);
 	}
 
-	public Collection<Class<?>> findRoles(Collection<T> types,
-			Collection<Class<?>> classes) {
-		return simpleRoleMapper.findRoles(types, classes);
+	public void findRoles(Collection<T> types, Collection<Class<?>> classes) {
+		simpleRoleMapper.findRoles(types, classes);
 	}
 
 	public boolean isTypeRecorded(T type) {
@@ -153,7 +150,6 @@ public class HierarchicalRoleMapper<T> implements Cloneable {
 		directMapper.recordRole(role, type);
 
 		if (simpleRoleMapper.getBaseType().equals(type)) {
-			directMapper.recordRole(role, type);
 			recordClassHierarchy(role);
 			simpleRoleMapper.recordBaseRole(role);
 			return true;
@@ -172,18 +168,17 @@ public class HierarchicalRoleMapper<T> implements Cloneable {
 			Set<Class<?>> set = subclasses.get(sup);
 			if (set == null)
 				subclasses.put(sup, set = new HashSet<Class<?>>());
-			if (!set.contains(concept)) {
-				set.add(concept);
+			if (set.add(concept)) {
 				recordClassHierarchy(sup);
 			}
 		}
 		Class<?> sup = concept.getSuperclass();
 		if (sup != null) {
 			Set<Class<?>> set = subclasses.get(sup);
-			if (set == null)
+			if (set == null) {
 				subclasses.put(sup, set = new HashSet<Class<?>>());
-			if (!set.contains(concept)) {
-				set.add(concept);
+			}
+			if (set.add(concept)) {
 				recordClassHierarchy(sup);
 			}
 		}
@@ -219,11 +214,14 @@ public class HierarchicalRoleMapper<T> implements Cloneable {
 		roles.addAll(existing);
 		Set<T> set = directMapper.getDirectTypes(role);
 		if (set != null) {
+			Set<Class<?>> rolesForType = new HashSet<Class<?>>();
 			for (T uri : set) {
 				simpleRoleMapper.recordRoles(existing, uri);
-				for (Class<?> c : simpleRoleMapper.findRoles(uri)) {
+				simpleRoleMapper.findRoles(uri, rolesForType);
+				for (Class<?> c : rolesForType) {
 					roles.add(c);
 				}
+				rolesForType.clear();
 			}
 		}
 		return roles;

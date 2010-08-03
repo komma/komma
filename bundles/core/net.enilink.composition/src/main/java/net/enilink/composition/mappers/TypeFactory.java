@@ -14,7 +14,6 @@ package net.enilink.composition.mappers;
  * Factory that is able to convert between type instance and their string
  * representations.
  * 
- * @author Ken Wenzel
  */
 public interface TypeFactory<T> {
 	T createType(String type);

@@ -21,8 +21,6 @@ import java.util.Map;
  * Simple class that creates a topological ordering for a partial ordering given
  * by an {@link IPartialOrder}.
  * 
- * @author Ken Wenzel
- * 
  */
 public class LinearExtension<T> {
 	private static <T> void addSuccessorsToMinElements(

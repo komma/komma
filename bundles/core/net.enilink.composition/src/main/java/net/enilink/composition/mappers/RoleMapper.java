@@ -42,7 +42,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.annotations.triggeredBy;
 import net.enilink.composition.exceptions.ConfigException;
 import net.enilink.composition.vocabulary.OBJ;
 import net.enilink.composition.vocabulary.OWL;
@@ -53,19 +52,17 @@ import org.slf4j.LoggerFactory;
  * Tracks the annotation, concept, and behaviour classes and what rdf:type they
  * should be used with.
  * 
- * @author James Leigh
- * 
  */
 public class RoleMapper<T> implements Cloneable {
+	private static Logger logger = LoggerFactory.getLogger(RoleMapper.class);
+
 	private Map<Class<?>, T> annotations = new HashMap<Class<?>, T>();
 	private Map<Class<?>, Class<?>> complements;
 	private Map<T, List<Class<?>>> instances = new ConcurrentHashMap<T, List<Class<?>>>(
 			256);
 	private Map<Class<?>, List<Class<?>>> intersections;
-	private static Logger logger = LoggerFactory.getLogger(RoleMapper.class);
 	private RoleMatcher matches = new RoleMatcher();
 	private HierarchicalRoleMapper<T> roleMapper = new HierarchicalRoleMapper<T>();
-	private Set<Method> triggers = new HashSet<Method>();
 	private TypeFactory<T> typeFactory;
 
 	public RoleMapper(TypeFactory<T> typeFactory) {
@@ -91,14 +88,14 @@ public class RoleMapper<T> implements Cloneable {
 		assertBehaviour(role);
 
 		// behaviour is mapped explicitly with an annotation
-		if (recordRole(role, role, null, false, false)) {
+		if (recordRole(role, role, null, false)) {
 			return;
 		}
 
 		// behaviour is mapped by implementing a concept
 		boolean hasType = false;
 		for (Class<?> face : role.getInterfaces()) {
-			boolean recorded = recordRole(role, face, null, false, false);
+			boolean recorded = recordRole(role, face, null, false);
 			if (recorded && hasType) {
 				throw new ConfigException(role.getSimpleName()
 						+ " can only implement one concept");
@@ -113,15 +110,15 @@ public class RoleMapper<T> implements Cloneable {
 
 	public void addBehaviour(Class<?> role, T type) throws ConfigException {
 		assertBehaviour(role);
-		recordRole(role, null, type, false, false);
+		recordRole(role, null, type, false);
 	}
 
 	public void addConcept(Class<?> role) throws ConfigException {
-		recordRole(role, role, null, true, true);
+		recordRole(role, role, null, true);
 	}
 
 	public void addConcept(Class<?> role, T type) throws ConfigException {
-		recordRole(role, role, type, true, false);
+		recordRole(role, role, type, false);
 	}
 
 	private void addInterfaces(Set<Class<?>> set, Class<?>... list) {
@@ -163,9 +160,6 @@ public class RoleMapper<T> implements Cloneable {
 	}
 
 	private void assertBehaviour(Class<?> role) throws ConfigException {
-		// if (isAnnotationPresent(role))
-		// throw new ConfigException(role.getSimpleName()
-		// + " cannot have a concept annotation");
 		if (role.isInterface())
 			throw new ConfigException(role.getSimpleName()
 					+ " is an interface and not a behaviour");
@@ -187,7 +181,6 @@ public class RoleMapper<T> implements Cloneable {
 			cloned.complements = new ConcurrentHashMap<Class<?>, Class<?>>(
 					complements);
 			cloned.intersections = clone(intersections);
-			cloned.triggers = new HashSet<Method>(triggers);
 			return cloned;
 		} catch (CloneNotSupportedException e) {
 			throw new AssertionError();
@@ -210,22 +203,11 @@ public class RoleMapper<T> implements Cloneable {
 		return false;
 	}
 
-	public Collection<Class<?>> findAdditionalRoles(Collection<Class<?>> classes) {
-		if (complements.isEmpty())
-			return classes;
-		Collection<Class<?>> result = new ArrayList<Class<?>>(
-				classes.size() * 2);
-		result.addAll(classes);
-		addIntersectionsAndComplements(result);
-		return result;
-	}
-
-	public Collection<Class<?>> findAllRoles() {
-		Collection<Class<?>> list = roleMapper.findAllRoles();
-		list.addAll(annotations.keySet());
-		list.addAll(complements.keySet());
-		list.addAll(intersections.keySet());
-		return list;
+	private void findAdditionalRoles(Collection<Class<?>> classes) {
+		if (complements.isEmpty()) {
+			return;
+		}
+		addIntersectionsAndComplements(classes);
 	}
 
 	private Collection<Class<?>> findAllRoles(T type) {
@@ -248,15 +230,6 @@ public class RoleMapper<T> implements Cloneable {
 		return annotation != null ? typeFactory.toString(annotation) : null;
 	}
 
-	public Class<?> findAnnotationType(T uri) {
-		for (Map.Entry<Class<?>, T> e : annotations.entrySet()) {
-			if (e.getValue().equals(uri)) {
-				return e.getKey();
-			}
-		}
-		return null;
-	}
-
 	private T findDefaultType(Class<?> role, AnnotatedElement element) {
 		if (element.isAnnotationPresent(Iri.class)) {
 			String value = element.getAnnotation(Iri.class).value();
@@ -267,14 +240,12 @@ public class RoleMapper<T> implements Cloneable {
 		return null;
 	}
 
-	public Collection<Class<?>> findIndividualRoles(T instance,
-			Collection<Class<?>> classes) {
+	public void findIndividualRoles(T instance, Collection<Class<?>> classes) {
 		List<Class<?>> list = instances.get(instance);
 		if (list != null) {
 			classes.addAll(list);
 		}
 		matches.findRoles(typeFactory.toString(instance), classes);
-		return classes;
 	}
 
 	public Class<?> findInterfaceConcept(T uri) {
@@ -289,12 +260,6 @@ public class RoleMapper<T> implements Cloneable {
 					mapped = r;
 
 					break;
-
-					// What is this good for?
-					//					
-					// if (r.getSimpleName().equals(uri.getLocalName())) {
-					// return r;
-					// }
 				}
 			}
 		}
@@ -305,19 +270,20 @@ public class RoleMapper<T> implements Cloneable {
 		return null;
 	}
 
-	public Collection<Class<?>> findRoles(Collection<T> types,
-			Collection<Class<?>> roles) {
+	public void findRoles(Collection<T> types, Collection<Class<?>> roles) {
 		roleMapper.findRoles(types, roles);
 		for (T type : types) {
 			matches.findRoles(typeFactory.toString(type), roles);
 		}
-		return findAdditionalRoles(roles);
+		findAdditionalRoles(roles);
 	}
 
 	public Collection<Class<?>> findRoles(T type) {
-		Collection<Class<?>> roles = roleMapper.findRoles(type);
+		Collection<Class<?>> roles = new ArrayList<Class<?>>();
+		roleMapper.findRoles(type, roles);
 		matches.findRoles(typeFactory.toString(type), roles);
-		return findAdditionalRoles(roles);
+		findAdditionalRoles(roles);
+		return roles;
 	}
 
 	public Collection<T> findSubTypes(Class<?> role, Collection<T> rdfTypes) {
@@ -326,10 +292,6 @@ public class RoleMapper<T> implements Cloneable {
 
 	public T findType(Class<?> concept) {
 		return roleMapper.findType(concept);
-	}
-
-	public Collection<Method> getTriggerMethods() {
-		return triggers;
 	}
 
 	private boolean intersects(Collection<Class<?>> roles, List<Class<?>> ofs) {
@@ -350,10 +312,6 @@ public class RoleMapper<T> implements Cloneable {
 				&& instances.containsKey(instance);
 	}
 
-	public boolean isRecordedAnnotation(T uri) {
-		return findAnnotationType(uri) != null;
-	}
-
 	public boolean isRecordedConcept(T type) {
 		if (roleMapper.isTypeRecorded(type)) {
 			for (Class<?> role : findAllRoles(type)) {
@@ -365,8 +323,8 @@ public class RoleMapper<T> implements Cloneable {
 		return false;
 	}
 
-	private boolean recordAnonymous(Class<?> role, Class<?> elm,
-			boolean isConcept) throws ConfigException {
+	private boolean recordAnonymous(Class<?> role, Class<?> elm)
+			throws ConfigException {
 		boolean recorded = false;
 		for (Annotation ann : elm.getAnnotations()) {
 			try {
@@ -406,7 +364,7 @@ public class RoleMapper<T> implements Cloneable {
 				if (OWL.COMPLEMENTOF.equals(nameStr)) {
 					if (value instanceof Class<?>) {
 						Class<?> concept = (Class<?>) value;
-						recordRole(concept, concept, null, true, true);
+						recordRole(concept, concept, null, true);
 						complements.put(role, concept);
 						recorded = true;
 					} else {
@@ -422,7 +380,7 @@ public class RoleMapper<T> implements Cloneable {
 					for (Object v : (Object[]) value) {
 						if (v instanceof Class<?>) {
 							Class<?> concept = (Class<?>) v;
-							recordRole(concept, concept, null, true, true);
+							recordRole(concept, concept, null, true);
 							ofs.add(concept);
 						} else {
 							ofs.addAll(findRoles(typeFactory
@@ -436,15 +394,14 @@ public class RoleMapper<T> implements Cloneable {
 					for (Object v : (Object[]) value) {
 						if (v instanceof Class<?>) {
 							Class<?> concept = (Class<?>) v;
-							recordRole(concept, concept, null, true, true);
-							recorded |= recordRole(role, concept, null,
-									isConcept, true);
+							recordRole(concept, concept, null, true);
+							recorded |= recordRole(role, concept, null, true);
 						} else {
 							for (Class<?> concept : findRoles(typeFactory
 									.createType(((String) v)))) {
 								if (!role.equals(concept)) {
 									recorded |= recordRole(role, concept, null,
-											isConcept, true);
+											true);
 								}
 							}
 						}
@@ -459,39 +416,34 @@ public class RoleMapper<T> implements Cloneable {
 	}
 
 	private boolean recordRole(Class<?> role, Class<?> element, T rdfType,
-			boolean isConcept, boolean base) throws ConfigException {
+			boolean base) throws ConfigException {
 		T defType = element == null ? null : findDefaultType(role, element);
 		boolean hasType = false;
 		if (rdfType != null) {
-			if (isConcept) {
+			if (role.isInterface()) {
 				roleMapper.recordConcept(role, rdfType);
 			} else {
 				roleMapper.recordBehaviour(role, rdfType);
 			}
 			hasType = true;
 		} else if (defType != null) {
-			if (isConcept) {
+			if (role.isInterface()) {
 				roleMapper.recordConcept(role, defType);
 			} else {
 				roleMapper.recordBehaviour(role, defType);
 			}
 			hasType = true;
 		} else if (element != null) {
-			hasType = recordAnonymous(role, element, isConcept);
+			hasType = recordAnonymous(role, element);
 		}
 		if (!hasType && element != null) {
 			for (Class<?> face : element.getInterfaces()) {
-				hasType |= recordRole(role, face, null, isConcept, false);
+				hasType |= recordRole(role, face, null, false);
 			}
 		}
 		if (!hasType && base) {
 			throw new ConfigException(role.getSimpleName()
 					+ " does not have an RDF type mapping");
-		}
-		for (Method m : role.getMethods()) {
-			if (m.isAnnotationPresent(triggeredBy.class)) {
-				triggers.add(m);
-			}
 		}
 		return hasType;
 	}

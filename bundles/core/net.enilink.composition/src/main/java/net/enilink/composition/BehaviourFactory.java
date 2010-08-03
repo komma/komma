@@ -31,8 +31,6 @@ package net.enilink.composition;
 /**
  * Base class for constructing behaviours from other interfaces or classes.
  * 
- * @author James Leigh
- * @author Ken Wenzel
  */
 public interface BehaviourFactory {
 	/**

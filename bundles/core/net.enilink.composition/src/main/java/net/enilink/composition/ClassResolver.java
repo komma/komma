@@ -50,8 +50,6 @@ import com.google.inject.Singleton;
 /**
  * Find a proxy class that can be used for a set of rdf:types.
  * 
- * @author James Leigh
- * @author Ken Wenzel
  */
 @Singleton
 public class ClassResolver<T> {
@@ -85,8 +83,8 @@ public class ClassResolver<T> {
 
 	public Class<?> resolveComposite(T resource, Collection<T> types) {
 		Collection<Class<?>> roles = new ArrayList<Class<?>>();
-		roles = mapper.findIndividualRoles(resource, roles);
-		roles = mapper.findRoles(types, roles);
+		mapper.findIndividualRoles(resource, roles);
+		mapper.findRoles(types, roles);
 		return getCompositeClass(roles);
 	}
 
@@ -96,7 +94,8 @@ public class ClassResolver<T> {
 			return proxy;
 		}
 		Collection<Class<?>> roles = new ArrayList<Class<?>>();
-		proxy = getCompositeClass(mapper.findRoles(types, roles));
+		mapper.findRoles(types, roles);
+		proxy = getCompositeClass(roles);
 		multiples.putIfAbsent(types, proxy);
 		return proxy;
 	}

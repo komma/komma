@@ -46,8 +46,6 @@ import net.enilink.composition.vocabulary.OBJ;
 /**
  * Implements the Message interface(s) through an InvocationHandler.
  * 
- * @author James Leigh
- * 
  */
 public class InvocationMessageContext implements InvocationHandler, Message {
 	private Object target;
