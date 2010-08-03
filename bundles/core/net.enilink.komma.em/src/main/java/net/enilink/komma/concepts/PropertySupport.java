@@ -206,8 +206,9 @@ public abstract class PropertySupport extends BehaviorBase implements
 						+ "?o a ?c . ?p rdfs:range ?c }";
 
 				return subject.getKommaManager().createQuery(query)
-						.setParameter("o", object).setParameter("p",
-								getBehaviourDelegate()).getBooleanResult();
+						.setParameter("o", object)
+						.setParameter("p", getBehaviourDelegate())
+						.getBooleanResult();
 			}
 
 			String query = PREFIX
@@ -218,9 +219,9 @@ public abstract class PropertySupport extends BehaviorBase implements
 
 			@SuppressWarnings("unchecked")
 			IExtendedIterator<? extends IClass> it = (IExtendedIterator<IClass>) subject
-					.getKommaManager().createQuery(query).setParameter("o",
-							object).setParameter("p", getBehaviourDelegate())
-					.evaluate();
+					.getKommaManager().createQuery(query)
+					.setParameter("o", object)
+					.setParameter("p", getBehaviourDelegate()).evaluate();
 
 			if (it.hasNext()) {
 				Set<IClass> rangeClasses = new HashSet<IClass>();
@@ -286,33 +287,34 @@ public abstract class PropertySupport extends BehaviorBase implements
 			IResource subject, boolean direct) {
 		// query can be optimized if OWL-inferencing is supported
 		if (getKommaManager().getInferencing().doesOWL()) {
-			String query = PREFIX + "SELECT DISTINCT ?class WHERE {"
+			String query = PREFIX
+					+ "SELECT DISTINCT ?r WHERE {"
 					+ "	?o a ?c ."
 					+ "	?c rdfs:subClassOf ?restriction ."
 					+ "	?restriction owl:onProperty ?p ."
-					+ "	{"
-					+ "		?restriction owl:allValuesFrom ?r"
-					+ "	} UNION {"
-					+ "		?restriction owl:someValuesFrom ?r"
-					+ " } ."
+					+ "	{?restriction owl:allValuesFrom ?r} UNION {?restriction owl:someValuesFrom ?r} ."
 					+ "	OPTIONAL {"
-					+ "		?c rdfs:subClassOf ?otherRestriction ."
-					+ "		?otherRestriction owl:onProperty ?subP ."
+					+ "		?c rdfs:subClassOf [ owl:onProperty ?subP; owl:allValuesFrom ?otherR ] . " // 
 					+ "		?subP rdfs:subPropertyOf ?p ."
-					+ "		?otherRestriction owl:allValuesFrom ?otherR ."
 					+ "		?otherR rdfs:subClassOf ?r" //
-					+ "		FILTER (?p != ?subP || ?otherR = ?r)" + "	}"
-					+ "	FILTER (! bound(?otherR) || ?r != ?otherR)"
-					+ "	?class rdfs:subClassOf ?r ."
-					+ "	FILTER(!bound(?otherSubClass) && isIRI(?class))"
+					+ "		FILTER (isIRI(?otherR) && (?subP != ?p || ?otherR != ?r))" //
+					+ "	}" //
+					+ "	OPTIONAL {"
+					+ "		?c rdfs:subClassOf [ owl:onProperty ?subP; owl:someValueFrom ?otherR ] . " // 
+					+ "		?subP rdfs:subPropertyOf ?p ."
+					+ "		?otherR rdfs:subClassOf ?r" //
+					+ "		FILTER (isIRI(?otherR) && (?subP != ?p || ?otherR != ?r))" //
+					+ "	}" //
+					+ "	FILTER (! bound(?otherR) && isIRI(?r))" //
 					+ "	OPTIONAL {" //
-					+ "		?class komma:isAbstract ?abstract" //
+					+ "		?r komma:isAbstract ?abstract" //
 					+ "	} ." //
-					+ "	FILTER(!bound(?abstract)) " // 
+					+ "	FILTER(!bound(?abstract)) " //
 					+ "}";
 
-			return subject.getKommaManager().createQuery(query).setParameter(
-					"o", subject).setParameter("p", getBehaviourDelegate())
+			return subject.getKommaManager().createQuery(query)
+					.setParameter("o", subject)
+					.setParameter("p", this)
 					.evaluate(IClass.class);
 		}
 
@@ -323,8 +325,9 @@ public abstract class PropertySupport extends BehaviorBase implements
 				+ "}";
 
 		IExtendedIterator<? extends IClass> it = subject.getKommaManager()
-				.createQuery(query).setParameter("o", subject).setParameter(
-						"p", getBehaviourDelegate()).evaluate(IClass.class);
+				.createQuery(query).setParameter("o", subject)
+				.setParameter("p", getBehaviourDelegate())
+				.evaluate(IClass.class);
 
 		if (it.hasNext()) {
 			Set<IClass> namedRangeClasses = new HashSet<IClass>();
@@ -383,9 +386,10 @@ public abstract class PropertySupport extends BehaviorBase implements
 
 	@Override
 	public IExtendedIterator<? extends IClass> getRanges(boolean direct) {
-		return getKommaManager().createQuery(
-				direct ? DIRECT_RANGE_QUERY : RANGE_QUERY).setParameter(
-				"property", getBehaviourDelegate()).evaluate(IClass.class);
+		return getKommaManager()
+				.createQuery(direct ? DIRECT_RANGE_QUERY : RANGE_QUERY)
+				.setParameter("property", getBehaviourDelegate())
+				.evaluate(IClass.class);
 	}
 
 	public boolean isMany(IReference subject) {
