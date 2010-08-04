@@ -7,6 +7,7 @@ import net.enilink.composition.ClassResolver;
 import net.enilink.composition.CompositionModule;
 import net.enilink.composition.DefaultObjectFactory;
 import net.enilink.composition.ObjectFactory;
+import net.enilink.composition.mappers.DefaultRoleMapper;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.mappers.TypeFactory;
 import org.openrdf.model.URI;
@@ -44,7 +45,7 @@ public class DynamicAdapterFactory implements IAdapterFactory {
 		@Provides
 		@Singleton
 		protected RoleMapper<URI> provideRoleMapper(TypeFactory<URI> typeFactory) {
-			RoleMapper<URI> roleMapper = new RoleMapper<URI>(typeFactory);
+			RoleMapper<URI> roleMapper = new DefaultRoleMapper<URI>(typeFactory);
 
 			// RoleClassLoader<URI> loader = new RoleClassLoader<URI>();
 			// loader.setClassLoader(module.getClassLoader());

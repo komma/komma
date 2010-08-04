@@ -56,10 +56,7 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 	/**
 	 * This handles model notifications by calling {@link #updateChildren} to
 	 * update any cached children and by creating a viewer notification, which
-	 * it passes to {@link #fireNotifyChanged}. <!-- begin-user-doc --> <!--
-	 * end-user-doc -->
-	 * 
-	 * @generated
+	 * it passes to {@link #fireNotifyChanged}.
 	 */
 	@Override
 	public void notifyChanged(Collection<? extends INotification> notifications) {
@@ -139,8 +136,7 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 				+ resolvedProperty.getURI().localPart();
 
 		Object childType = childDescription instanceof Collection<?> ? ((Collection<?>) childDescription)
-				.iterator().next()
-				: childDescription;
+				.iterator().next() : childDescription;
 
 		if (childType instanceof net.enilink.vocab.rdfs.Class
 				&& ((IObject) childType).getURI() != null) {
@@ -177,12 +173,21 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 	@Override
 	public Object getImage(Object object) {
 		try {
-			return overlayImage(object, getResourceLocator().getImage(
-					"full/obj16/"
-							+ getTypes(object).iterator().next().getURI()
-									.localPart()));
-		} catch (Exception e) {
-			return super.getImage(object);
+			return overlayImage(
+					object,
+					getResourceLocator().getImage(
+							"full/obj16/"
+									+ getTypes(object).iterator().next()
+											.getURI().localPart()));
+		} catch (Exception missing) {
+			try {
+				// try default image from provided resource locator
+				return overlayImage(object,
+						getResourceLocator().getImage("full/obj16/Item"));
+			} catch (Exception missing2) {
+				// fall back to image provided by edit plugin
+				return KommaEditPlugin.INSTANCE.getImage("full/obj16/Item");
+			}
 		}
 	}
 

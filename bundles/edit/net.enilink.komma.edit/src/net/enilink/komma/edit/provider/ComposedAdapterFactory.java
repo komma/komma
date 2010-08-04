@@ -19,11 +19,17 @@ package net.enilink.komma.edit.provider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdf.RDF;
+import net.enilink.vocab.rdfs.RDFS;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.notify.INotification;
@@ -133,6 +139,38 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 	 */
 	protected ComposedAdapterFactory parentAdapterFactory;
 
+	/**
+	 * Comparator to sort classes according to their "semantic" level.
+	 */
+	protected Comparator<IClass> classComparator = new Comparator<IClass>() {
+		URI[] defaultNamespaces = { XMLSCHEMA.NAMESPACE_URI, RDF.NAMESPACE_URI,
+				RDFS.NAMESPACE_URI, OWL.NAMESPACE_URI };
+
+		@Override
+		public int compare(IClass a, IClass b) {
+			URI aUri = a.getURI();
+			URI bUri = b.getURI();
+			if (aUri == null) {
+				if (bUri != null) {
+					return 1;
+				}
+				return 0;
+			} else if (bUri == null) {
+				return -1;
+			}
+			return getRank(bUri.namespace()) - getRank(aUri.namespace());
+		}
+
+		int getRank(URI namespace) {
+			for (int i = 0; i < defaultNamespaces.length; i++) {
+				if (namespace.equals(defaultNamespaces[i])) {
+					return i;
+				}
+			}
+			return defaultNamespaces.length + 1;
+		}
+	};
+
 	public ComposedAdapterFactory() {
 		super();
 	}
@@ -240,8 +278,8 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 		if (result == null) {
 			Class<?> superclass = javaClass.getSuperclass();
 			if (superclass != null) {
-				result = adaptJavaClass(target, type, failedPackages, javaClass
-						.getSuperclass());
+				result = adaptJavaClass(target, type, failedPackages,
+						javaClass.getSuperclass());
 			}
 			if (result == null) {
 				Class<?>[] interfaces = javaClass.getInterfaces();
@@ -356,8 +394,8 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 		if (target instanceof IResource) {
 			IResource resource = (IResource) target;
 			result = adaptEntityClass(resource, type, new ArrayList<Object>(),
-					new HashSet<URI>(), new HashSet<IClass>(), resource
-							.getDirectNamedClasses().toList());
+					new HashSet<URI>(), new HashSet<IClass>(), sort(resource
+							.getDirectNamedClasses().toList()));
 		}
 
 		if (result != null) {
@@ -365,10 +403,21 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 		}
 
 		if (target != null) {
-			result = adaptJavaClass(target, type, new HashSet<Object>(), target
-					.getClass());
+			result = adaptJavaClass(target, type, new HashSet<Object>(),
+					target.getClass());
 		}
 		return result == null ? target : result;
+	}
+
+	/**
+	 * Sort classes according to their "semantic" level.
+	 * 
+	 * @param classes
+	 * @return
+	 */
+	private Collection<? extends IClass> sort(List<IClass> classes) {
+		Collections.sort(classes, classComparator);
+		return classes;
 	}
 
 	public boolean isFactoryForType(Object type) {
