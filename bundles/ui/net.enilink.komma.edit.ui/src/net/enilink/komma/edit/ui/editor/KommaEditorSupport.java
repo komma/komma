@@ -83,6 +83,7 @@ import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
+import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.EditingDomainCommandStack;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -1132,7 +1133,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 				class DefaultItemProviderAdapterFactory extends
 						ReflectiveItemProviderAdapterFactory {
 					public DefaultItemProviderAdapterFactory() {
-						super(KommaEditUIPlugin.getPlugin());
+						super(KommaEditPlugin.getPlugin());
 					}
 
 					@Override
@@ -1151,7 +1152,11 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 					}
 				}
 
-				DefaultItemProviderAdapterFactory defaultAdapterFactory = new DefaultItemProviderAdapterFactory();
+				DefaultItemProviderAdapterFactory defaultAdapterFactory;
+				{
+					defaultAdapterFactory = new DefaultItemProviderAdapterFactory();
+					defaultAdapterFactory.setParentAdapterFactory(this);
+				}
 
 				@Override
 				protected IAdapterFactory delegatedGetFactoryForTypes(
