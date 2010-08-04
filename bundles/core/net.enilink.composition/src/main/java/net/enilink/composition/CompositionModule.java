@@ -16,6 +16,7 @@ import net.enilink.composition.asm.BehaviourMethodProcessor;
 import net.enilink.composition.asm.processors.BehaviourInterfaceImplementor;
 import net.enilink.composition.asm.processors.BehaviourConstructorGenerator;
 import net.enilink.composition.asm.processors.MethodDelegationGenerator;
+import net.enilink.composition.mappers.DefaultRoleMapper;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.mappers.TypeFactory;
 
@@ -80,7 +81,7 @@ public class CompositionModule<T> extends AbstractModule {
 	@Provides
 	@Singleton
 	protected RoleMapper<T> provideRoleMapper(TypeFactory<T> typeFactory) {
-		RoleMapper<T> roleMapper = new RoleMapper<T>(typeFactory);
+		RoleMapper<T> roleMapper = new DefaultRoleMapper<T>(typeFactory);
 		initRoleMapper(roleMapper, typeFactory);
 		return roleMapper;
 	}
