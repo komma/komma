@@ -17,9 +17,9 @@ import java.util.Collections;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.openrdf.model.vocabulary.OWL;
-import org.openrdf.model.vocabulary.RDFS;
 
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CompositeCommand;
 import net.enilink.komma.common.command.ICommand;
@@ -38,11 +38,8 @@ import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.owl.edit.manchester.ManchesterSyntaxGenerator;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.sesame.SesameReference;
 
 public class OWLClassItemProvider extends ReflectiveItemProvider {
-	IReference subClassOf = new SesameReference(RDFS.SUBCLASSOF);
-
 	public OWLClassItemProvider(OWLItemProviderAdapterFactory adapterFactory,
 			IResourceLocator resourceLocator, Collection<IClass> supportedTypes) {
 		super(adapterFactory, resourceLocator, supportedTypes);
@@ -57,10 +54,12 @@ public class OWLClassItemProvider extends ReflectiveItemProvider {
 	protected void collectNewChildDescriptors(
 			Collection<Object> newChildDescriptors, Object object) {
 		if (object instanceof IClass) {
-			newChildDescriptors.add(createChildParameter(((IObject) object)
-					.getModel().resolve(subClassOf), new ChildDescriptor(Arrays
-					.asList((IClass) ((IObject) object).getModel().resolve(
-							new SesameReference(OWL.CLASS))), true)));
+			newChildDescriptors.add(createChildParameter(
+					((IObject) object).getModel().resolve(
+							RDFS.PROPERTY_SUBCLASSOF),
+					new ChildDescriptor(Arrays
+							.asList((IClass) ((IObject) object).getModel()
+									.resolve(OWL.TYPE_CLASS)), true)));
 		}
 	}
 
@@ -68,7 +67,7 @@ public class OWLClassItemProvider extends ReflectiveItemProvider {
 	protected ICommand createCreateChildCommand(IEditingDomain domain,
 			IObject owner, IReference property, Object value, int index,
 			Collection<?> collection) {
-		if (subClassOf.equals(property)) {
+		if (RDFS.PROPERTY_SUBCLASSOF.equals(property)) {
 			return new CreateChildCommand(domain, owner, property, value,
 					index, collection, this) {
 				@Override
@@ -111,7 +110,7 @@ public class OWLClassItemProvider extends ReflectiveItemProvider {
 			Collection<IViewerNotification> viewerNotifications,
 			IStatementNotification notification, boolean contentRefresh,
 			boolean labelUpdate) {
-		if (subClassOf.equals(notification.getPredicate())) {
+		if (RDFS.PROPERTY_SUBCLASSOF.equals(notification.getPredicate())) {
 			Object element = notification.getObject();
 
 			IObject object;
@@ -150,8 +149,11 @@ public class OWLClassItemProvider extends ReflectiveItemProvider {
 			if (owner instanceof IClass && value instanceof IClass
 					&& !owner.equals(value)
 					&& !((IClass) owner).getRdfsSubClassOf().contains(value)) {
-				addCommand.add(createAddCommand(domain, (IObject) value,
-						((IObject) value).getModel().resolve(subClassOf),
+				addCommand.add(createAddCommand(
+						domain,
+						(IObject) value,
+						((IObject) value).getModel().resolve(
+								RDFS.PROPERTY_SUBCLASSOF),
 						Arrays.asList(owner), CommandParameter.NO_INDEX));
 			} else {
 				addCommand.dispose();
@@ -185,9 +187,12 @@ public class OWLClassItemProvider extends ReflectiveItemProvider {
 				removeCommand.dispose();
 				return UnexecutableCommand.INSTANCE;
 			}
-			removeCommand.add(createRemoveCommand(domain, (IObject) value,
-					((IObject) value).getModel().resolve(subClassOf), Arrays
-							.asList(commandParameter.getOwner())));
+			removeCommand.add(createRemoveCommand(
+					domain,
+					(IObject) value,
+					((IObject) value).getModel().resolve(
+							RDFS.PROPERTY_SUBCLASSOF),
+					Arrays.asList(commandParameter.getOwner())));
 		}
 		return removeCommand.reduce();
 	}
@@ -203,9 +208,8 @@ public class OWLClassItemProvider extends ReflectiveItemProvider {
 	@Override
 	protected Collection<? extends IClass> getTypes(Object object) {
 		if (object instanceof IClass
-				&& (((IClass) object).equals(new SesameReference(
-						OWL.OBJECTPROPERTY)) || ((IClass) object)
-						.equals(new SesameReference(OWL.DATATYPEPROPERTY)))) {
+				&& (((IClass) object).equals(OWL.TYPE_OBJECTPROPERTY) || ((IClass) object)
+						.equals(OWL.TYPE_DATATYPEPROPERTY))) {
 			return Arrays.asList((IClass) object);
 		}
 		return super.getTypes(object);
@@ -218,7 +222,7 @@ public class OWLClassItemProvider extends ReflectiveItemProvider {
 		}
 		return hasChildren(object, false);
 	}
-	
+
 	@Override
 	public String getText(Object object) {
 		return ManchesterSyntaxGenerator.generateText(object);

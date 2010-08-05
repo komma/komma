@@ -16,10 +16,6 @@ import net.enilink.komma.model.ModelUtil;
  */
 public class ManchesterSyntaxGenerator {
 	public static String generateText(Object object) {
-		if (object instanceof Restriction) {
-			return new ManchesterSyntaxGenerator().restriction(
-					(Restriction) object).toString();
-		}
 		if (object instanceof Class) {
 			return new ManchesterSyntaxGenerator().clazz((Class) object)
 					.toString();
@@ -30,18 +26,21 @@ public class ManchesterSyntaxGenerator {
 	private StringBuilder sb = new StringBuilder();
 
 	private ManchesterSyntaxGenerator clazz(Class clazz) {
-		if (clazz.getURI() == null
-				&& clazz instanceof net.enilink.vocab.owl.Class) {
-			net.enilink.vocab.owl.Class owlClass = (net.enilink.vocab.owl.Class) clazz;
-			if (owlClass.getOwlUnionOf() != null) {
-				return setOfClasses(owlClass.getOwlUnionOf(), "or");
-			} else if (owlClass.getOwlIntersectionOf() != null) {
-				return setOfClasses(owlClass.getOwlIntersectionOf(), "and");
-			} else if (owlClass.getOwlComplementOf() != null) {
-				sb.append("not ");
-				return clazz(owlClass.getOwlComplementOf());
-			} else if (owlClass.getOwlOneOf() != null) {
-				return list(owlClass.getOwlOneOf());
+		if (clazz.getURI() == null) {
+			if (clazz instanceof Restriction) {
+				return restriction((Restriction) clazz);
+			} else if (clazz instanceof net.enilink.vocab.owl.Class) {
+				net.enilink.vocab.owl.Class owlClass = (net.enilink.vocab.owl.Class) clazz;
+				if (owlClass.getOwlUnionOf() != null) {
+					return setOfClasses(owlClass.getOwlUnionOf(), "or");
+				} else if (owlClass.getOwlIntersectionOf() != null) {
+					return setOfClasses(owlClass.getOwlIntersectionOf(), "and");
+				} else if (owlClass.getOwlComplementOf() != null) {
+					sb.append("not ");
+					return clazz(owlClass.getOwlComplementOf());
+				} else if (owlClass.getOwlOneOf() != null) {
+					return list(owlClass.getOwlOneOf());
+				}
 			}
 		}
 
