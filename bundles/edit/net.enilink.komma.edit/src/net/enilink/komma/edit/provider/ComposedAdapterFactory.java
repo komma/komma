@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -210,11 +211,15 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 
 	protected Object adaptEntityClass(IResource target, Object type,
 			Collection<Object> typesCache, Set<URI> seenNamespaces,
-			Collection<IClass> seenClasses, Collection<? extends IClass> classes) {
+			final Collection<IClass> seenClasses,
+			Collection<? extends IClass> classes) {
 		Object result = null;
 
-		for (IClass resourceClass : classes) {
+		for (Iterator<? extends IClass> it = classes.iterator(); it.hasNext();) {
+			IClass resourceClass = it.next();
+
 			if (!seenClasses.add(resourceClass)) {
+				it.remove();
 				continue;
 			}
 
