@@ -18,9 +18,10 @@ import java.util.Set;
 import net.enilink.composition.traits.Behaviour;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.QueryLanguage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.vocab.owl.OWL;
 import net.enilink.komma.results.ResultDescriptor;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IResultDescriptor;
@@ -29,20 +30,7 @@ import net.enilink.komma.core.URI;
 
 public abstract class ClassSupport extends BehaviorBase implements IClass,
 		Behaviour<IClass> {
-	private static final String SELECT_ROOT_CLASSES(boolean named) {
-		return PREFIX
-				+ "SELECT DISTINCT ?class "
-				+ "WHERE { "
-				+ "?class a rdfs:Class ."
-				+ "OPTIONAL {"
-				+ "?class rdfs:subClassOf ?otherClass "
-				+ "FILTER (?class != ?otherClass && ?otherClass != owl:Thing"
-				+ (named ? " && isIRI(?otherClass)" : "")
-				+ ")"
-				+ "} FILTER ("
-				+ (named ? "isIRI(?class) && " : "")
-				+ "!bound(?otherClass) && ?class != owl:Thing) } ORDER BY ?class";
-	};
+	private static Logger log = LoggerFactory.getLogger(ClassSupport.class);
 
 	private static final String SELECT_DIRECT_SUBCLASSES(boolean named) {
 		return PREFIX
@@ -54,7 +42,7 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 				+ "?otherSuperClass rdfs:subClassOf ?superClass ."
 				+ "FILTER (?subClass != ?otherSuperClass && ?superClass != ?otherSuperClass"
 				+ (named ? " && isIRI(?otherSuperClass)" : "") + ")}"
-				+ " FILTER (?subClass != ?superClass"
+				+ " FILTER (?subClass != ?superClass && ?subClass != owl:Nothing"
 				+ (named ? " && isIRI(?subClass)" : "")
 				+ " && !bound(?otherSuperClass))}" + "ORDER BY ?subClass";
 	};
@@ -68,16 +56,12 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	};
 
 	private static final String SELECT_LEAF_SUBCLASSES(boolean named) {
-		return PREFIX
-				+ "SELECT DISTINCT ?subClass "
-				+ "WHERE { "
+		return PREFIX + "SELECT DISTINCT ?subClass " + "WHERE { "
 				+ "?subClass rdfs:subClassOf ?superClass ; a rdfs:Class."
-				+ "OPTIONAL {"
-				+ "?otherSubClass rdfs:subClassOf ?subClass . "
-				+ "FILTER (?subClass != ?otherSubClass)"
-				+ "} FILTER ("
+				+ "OPTIONAL {" + "?otherSubClass rdfs:subClassOf ?subClass . "
+				+ "FILTER (?subClass != ?otherSubClass)" + "} FILTER ("
 				+ (named ? "isIRI(?subClass) && " : "")
-				+ "!bound(?otherSubClass) && ?subClass != owl:Nothing) } ORDER BY ?subClass";
+				+ "!bound(?otherSubClass)) } ORDER BY ?subClass";
 	};
 
 	private static final String SELECT_DIRECT_SUPERCLASSES(boolean named) {
@@ -98,7 +82,9 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	};
 
 	private static final String SELECT_SUPERCLASSES(boolean named) {
-		return PREFIX + "SELECT DISTINCT ?superClass " + "WHERE { "
+		return PREFIX
+				+ "SELECT DISTINCT ?superClass "
+				+ "WHERE { "
 				+ "?subClass rdfs:subClassOf ?superClass . ?superClass a rdfs:Class ."
 				+ "OPTIONAL {?superClass a owl:Restriction . ?superClass a ?dummy2FilterRestr}"
 				+ "FILTER (! bound(?dummy2FilterRestr))"
@@ -114,7 +100,7 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	private static final String HAS_SUBCLASSES(boolean named) {
 		return PREFIX + "ASK { " + "?subClass rdfs:subClassOf ?superClass ."
 				+ "?subClass a rdfs:Class . "
-				+ "FILTER (?subClass != ?superClass"
+				+ "FILTER (?subClass != ?superClass && ?subClass != owl:Nothing"
 				+ (named ? " && isIRI(?subClass)" : "") + ")}";
 	}
 
@@ -167,20 +153,14 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 			boolean includeInferred, boolean named) {
 		String queryString;
 		if (direct) {
-			boolean selectRoots = OWL.TYPE_THING.equals(getBehaviourDelegate());
-			if (selectRoots) {
-				queryString = SELECT_ROOT_CLASSES(named);
-			} else {
-				queryString = SELECT_DIRECT_SUBCLASSES(named);
-			}
+			queryString = SELECT_DIRECT_SUBCLASSES(named);
 		} else {
 			queryString = SELECT_SUBCLASSES(named);
 		}
 
 		if (named) {
 			queryString = new ResultDescriptor<IClass>(queryString)
-					//
-					.prefetch(DIRECT_NAMED_SUPERCLASSES_DESC()).prefetchTypes()
+			// .prefetch(DIRECT_NAMED_SUPERCLASSES_DESC()).prefetchTypes()
 					.prefetch(HAS_NAMED_SUBCLASSES_DESC()).//
 					prefetch(ResourceSupport.DIRECT_NAMED_CLASSES_DESC()).//
 					toQueryString();
@@ -188,7 +168,7 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 		}
 
 		IQuery<?> query = getKommaManager().createQuery(queryString);
-		query.setParameter("superClass", getBehaviourDelegate());
+		query.setParameter("superClass", this);
 		query.setIncludeInferred(includeInferred);
 
 		return query.evaluate(IClass.class);
@@ -196,9 +176,10 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 
 	@Override
 	public Boolean hasNamedSubClasses() {
-		return getKommaManager().createQuery(
-				HAS_NAMED_SUBCLASSES_DESC().toQueryString()).setParameter(
-				"superClass", this).setIncludeInferred(true).getBooleanResult();
+		return getKommaManager()
+				.createQuery(HAS_NAMED_SUBCLASSES_DESC().toQueryString())
+				.setParameter("superClass", this).setIncludeInferred(true)
+				.getBooleanResult();
 	}
 
 	@Override
@@ -224,10 +205,12 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 
 	@Override
 	public IExtendedIterator<IClass> getDirectNamedSuperClasses() {
-		return getKommaManager().createQuery(
-				DIRECT_NAMED_SUPERCLASSES_DESC().toQueryString()).setParameter(
-				"subClass", getBehaviourDelegate()).setIncludeInferred(true)
-				.evaluate(IClass.class);
+		log.info("Get super classes for {}", getBehaviourDelegate());
+
+		return getKommaManager()
+				.createQuery(DIRECT_NAMED_SUPERCLASSES_DESC().toQueryString())
+				.setParameter("subClass", getBehaviourDelegate())
+				.setIncludeInferred(true).evaluate(IClass.class);
 	}
 
 	@Override
@@ -266,9 +249,6 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	}
 
 	protected boolean hasSubClasses(boolean includeInferred, boolean named) {
-		if (OWL.TYPE_THING.equals(getBehaviourDelegate())) {
-			return true;
-		}
 		if (named) {
 			// use cacheable method
 			return getBehaviourDelegate().hasNamedSubClasses();

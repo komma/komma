@@ -45,6 +45,7 @@ import net.enilink.composition.ClassResolver;
 import net.enilink.composition.CompositionModule;
 import net.enilink.composition.DefaultObjectFactory;
 import net.enilink.composition.ObjectFactory;
+import net.enilink.composition.mappers.DefaultRoleMapper;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.mappers.TypeFactory;
 import net.enilink.composition.properties.PropertyMapper;
@@ -124,7 +125,7 @@ public abstract class SesameManagerFactory implements IKommaManagerFactory {
 
 				protected RoleMapper<URI> provideRoleMapper(
 						TypeFactory<URI> typeFactory) {
-					RoleMapper<URI> roleMapper = new RoleMapper<URI>(
+					RoleMapper<URI> roleMapper = new DefaultRoleMapper<URI>(
 							typeFactory);
 
 					RoleClassLoader<URI> loader = new RoleClassLoader<URI>();
