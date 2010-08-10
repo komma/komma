@@ -16,16 +16,19 @@ import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.cache.annotations.Cacheable;
 
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
 
 @Iri("http://www.w3.org/2000/01/rdf-schema#Class")
 public interface IClass extends net.enilink.vocab.owl.Class, IResource {
 	IExtendedIterator<IProperty> getDeclaredProperties(boolean includeInferred);
 
-	Collection<IResource> getInstances(boolean includeInferred);
+	Collection<IResource> getInstances();
+	
+	Collection<IReference> getInstancesAsReferences();
 
 	IExtendedIterator<IClass> getNamedSubClasses();
-	
+
 	@Cacheable
 	IExtendedIterator<IClass> getDirectNamedSubClasses();
 

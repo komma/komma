@@ -29,7 +29,6 @@ import net.enilink.komma.internal.sesame.ISesameManagerAware;
 import net.enilink.komma.core.FlushModeType;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
-import net.enilink.komma.core.IGraph;
 import net.enilink.komma.core.IKommaManagerFactory;
 import net.enilink.komma.core.IKommaTransaction;
 import net.enilink.komma.core.ILiteral;
@@ -185,7 +184,7 @@ public class DelegatingSesameManager implements ISesameManager {
 	}
 
 	@Override
-	public ISesameEntity findRestricted(Resource resource, Class<?>... concepts) {
+	public IReference findRestricted(Resource resource, Class<?>... concepts) {
 		return delegate.findRestricted(resource, concepts);
 	}
 

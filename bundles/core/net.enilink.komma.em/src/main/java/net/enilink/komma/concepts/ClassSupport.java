@@ -11,9 +11,6 @@
 package net.enilink.komma.concepts;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 
 import net.enilink.composition.traits.Behaviour;
 import org.openrdf.query.BooleanQuery;
@@ -24,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.results.ResultDescriptor;
 import net.enilink.komma.core.IQuery;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IResultDescriptor;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.URI;
@@ -41,7 +39,8 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 				+ "?subClass rdfs:subClassOf ?otherSuperClass . "
 				+ "?otherSuperClass rdfs:subClassOf ?superClass ."
 				+ "FILTER (?subClass != ?otherSuperClass && ?superClass != ?otherSuperClass"
-				+ (named ? " && isIRI(?otherSuperClass)" : "") + ")}"
+				+ (named ? " && isIRI(?otherSuperClass)" : "")
+				+ ")}"
 				+ " FILTER (?subClass != ?superClass && ?subClass != owl:Nothing"
 				+ (named ? " && isIRI(?subClass)" : "")
 				+ " && !bound(?otherSuperClass))}" + "ORDER BY ?subClass";
@@ -98,7 +97,9 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 			+ "?instance a ?class ." + "}";
 
 	private static final String HAS_SUBCLASSES(boolean named) {
-		return PREFIX + "ASK { " + "?subClass rdfs:subClassOf ?superClass ."
+		return PREFIX
+				+ "ASK { "
+				+ "?subClass rdfs:subClassOf ?superClass ."
 				+ "?subClass a rdfs:Class . "
 				+ "FILTER (?subClass != ?superClass && ?subClass != owl:Nothing"
 				+ (named ? " && isIRI(?subClass)" : "") + ")}";
@@ -121,16 +122,18 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 				"urn:komma:directNamedSuperClasses", "superClass", "subClass");
 	}
 
-	public Collection<IResource> getInstances(boolean includeInferred) {
+	public Collection<IResource> getInstances() {
 		IQuery<?> query = getKommaManager().createQuery(SELECT_INSTANCES);
 		query.setURI("class", getURI());
-		query.setIncludeInferred(includeInferred);
+		query.setIncludeInferred(true);
+		return query.evaluate(IResource.class).toSet();
+	}
 
-		Set<IResource> instances = new HashSet<IResource>();
-		for (Iterator<?> it = query.evaluate(); it.hasNext();) {
-			instances.add((IResource) it.next());
-		}
-		return instances;
+	public Collection<IReference> getInstancesAsReferences() {
+		IQuery<?> query = getKommaManager().createQuery(SELECT_INSTANCES);
+		query.setURI("class", getURI());
+		query.setIncludeInferred(true);
+		return query.evaluateRestricted(IReference.class).toSet();
 	}
 
 	@Override

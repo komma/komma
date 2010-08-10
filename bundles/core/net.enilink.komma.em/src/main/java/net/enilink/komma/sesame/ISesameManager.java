@@ -21,6 +21,7 @@ import org.openrdf.model.Value;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
 
 import net.enilink.komma.core.IKommaManager;
+import net.enilink.komma.core.IReference;
 
 public interface ISesameManager extends IKommaManager, SesamePropertyContext {
 	ISesameEntity createBean(Resource resource, Collection<URI> types, Model model);
@@ -31,7 +32,7 @@ public interface ISesameManager extends IKommaManager, SesamePropertyContext {
 
 	ISesameEntity find(Resource resource, Class<?>... concepts);
 
-	ISesameEntity findRestricted(Resource resource, Class<?>... concepts);
+	IReference findRestricted(Resource resource, Class<?>... concepts);
 
 	ContextAwareConnection getConnection();
 

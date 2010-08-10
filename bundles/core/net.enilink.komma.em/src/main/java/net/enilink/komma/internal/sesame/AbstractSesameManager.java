@@ -586,7 +586,13 @@ public abstract class AbstractSesameManager implements ISesameManager {
 	}
 
 	@Override
-	public ISesameEntity findRestricted(Resource resource, Class<?>... concepts) {
+	public IReference findRestricted(Resource resource, Class<?>... concepts) {
+		// if type is restricted to IReference then simply return the
+		// corresponding reference value
+		if (concepts.length == 1 && IReference.class.equals(concepts[0])) {
+			return ((SesameManagerFactory) getFactory()).getReference(resource);
+		}
+
 		List<URI> types = new ArrayList<URI>(concepts.length);
 		for (int i = 0; i < concepts.length; i++) {
 			types.add(mapper.findType(concepts[i]));
@@ -684,20 +690,19 @@ public abstract class AbstractSesameManager implements ISesameManager {
 			}
 			return bean;
 		}
-		
+
 		Object instance = literalManager.createObject((Literal) value);
 		if (type != null) {
 			if (instance == null) {
 				if (type.isPrimitive()) {
-					instance = ConversionUtil.convertValue(
-							type, 0, null);
+					instance = ConversionUtil.convertValue(type, 0, null);
 				}
 			} else if (!type.isAssignableFrom(ConversionUtil
 					.wrapperType(instance.getClass()))) {
 				// convert instance if actual type is not compatible
 				// with valueType
-				instance = ConversionUtil.convertValue(type,
-						instance, instance);
+				instance = ConversionUtil
+						.convertValue(type, instance, instance);
 			}
 		}
 		return instance;
