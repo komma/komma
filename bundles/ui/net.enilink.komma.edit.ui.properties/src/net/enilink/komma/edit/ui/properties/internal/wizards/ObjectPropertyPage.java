@@ -66,8 +66,8 @@ public class ObjectPropertyPage extends WizardPage implements
 
 		widget.createControl(parentComposite);
 
-		widget.getFilteredTree().getViewer().addSelectionChangedListener(
-				new ISelectionChangedListener() {
+		widget.getFilteredTree().getViewer()
+				.addSelectionChangedListener(new ISelectionChangedListener() {
 					@Override
 					public void selectionChanged(SelectionChangedEvent event) {
 						treeSelection = (IStructuredSelection) event
@@ -113,7 +113,7 @@ public class ObjectPropertyPage extends WizardPage implements
 		Set<IResource> individuals = new LinkedHashSet<IResource>();
 
 		for (IClass clazz : typeClasses) {
-			for (Iterator<IResource> it = clazz.getInstances(true).iterator(); it
+			for (Iterator<IResource> it = clazz.getInstances().iterator(); it
 					.hasNext();) {
 				IResource resource = it.next();
 				if (resource.isOntLanguageTerm()) {

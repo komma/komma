@@ -514,8 +514,9 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 		uriText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				if (resource.getURI() != null)
+				if (resource.getURI() != null) {
 					changeUri.setEnabled(true);
+				}
 			}
 		});
 
@@ -678,7 +679,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 	@Override
 	public boolean setEditorInput(Object input) {
-		if (input instanceof IObject) {
+		if (input == null || input instanceof IObject) {
 			resource = (IObject) input;
 			setStale(true);
 			return true;
@@ -687,7 +688,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	}
 
 	public void setInput(Object input) {
-		if (input instanceof IObject) {
+		if (input == null || input instanceof IObject) {
 			resource = (IObject) input;
 			setStale(true);
 		}

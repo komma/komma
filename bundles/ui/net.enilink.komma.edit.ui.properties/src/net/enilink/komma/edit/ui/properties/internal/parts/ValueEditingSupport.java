@@ -225,7 +225,6 @@ class ValueEditingSupport extends EditingSupport {
 		IResource subject = (IResource) stmt.getSubject();
 		Object object = stmt.getObject();
 		Object newObject = null;
-		;
 		if (value instanceof String) {
 			if (object instanceof IReference) {
 				IExtendedIterator<IResource> resources = getResourceProposals(

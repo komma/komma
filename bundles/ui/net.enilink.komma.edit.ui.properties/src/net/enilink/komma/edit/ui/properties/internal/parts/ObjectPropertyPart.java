@@ -166,8 +166,6 @@ public class ObjectPropertyPart extends AbstractEditingDomainPart {
 			height = height * 6;
 		}
 
-		
-
 		Rectangle trim = table.computeTrim(0, 0, 0, height);
 
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -212,7 +210,7 @@ public class ObjectPropertyPart extends AbstractEditingDomainPart {
 		Set<IResource> individuals = new LinkedHashSet<IResource>();
 
 		for (IClass clazz : classes) {
-			for (Iterator<IResource> it = clazz.getInstances(true).iterator(); it
+			for (Iterator<IResource> it = clazz.getInstances().iterator(); it
 					.hasNext();) {
 				IResource resource = it.next();
 				if (resource.isOntLanguageTerm()) {
@@ -282,7 +280,8 @@ public class ObjectPropertyPart extends AbstractEditingDomainPart {
 
 					@Override
 					protected IDialogSettings getDialogSettings() {
-						return KommaEditUIPlugin.getPlugin().getDialogSettings();
+						return KommaEditUIPlugin.getPlugin()
+								.getDialogSettings();
 					}
 
 					@Override
@@ -339,16 +338,17 @@ public class ObjectPropertyPart extends AbstractEditingDomainPart {
 					}
 
 					@Override
-							public ILabelProvider getLabelProvider() {
-								// TODO Auto-generated method stub
-								return null;
-							}
+					public ILabelProvider getLabelProvider() {
+						// TODO Auto-generated method stub
+						return null;
+					}
+
 					@Override
-							public ITreeContentProvider getTreeContentProvider() {
-								// TODO Auto-generated method stub
-								return null;
-							}
-					
+					public ITreeContentProvider getTreeContentProvider() {
+						// TODO Auto-generated method stub
+						return null;
+					}
+
 				};
 				dialog.getFilteredList().setListLabelProvider(labelProvider);// .createStyledCellLabelProvider());
 				dialog.getFilteredTree().setTreeLabelProvider(labelProvider);// .createStyledCellLabelProvider());
@@ -441,12 +441,10 @@ public class ObjectPropertyPart extends AbstractEditingDomainPart {
 				IStructuredSelection selection = (IStructuredSelection) tableViewer
 						.getSelection();
 				for (Object selected : selection.toArray()) {
-					resource
-							.removeProperty(
-									property,
-									(selected instanceof IStatement) ? ((IStatement) selected)
-											.getObject()
-											: selected);
+					resource.removeProperty(
+							property,
+							(selected instanceof IStatement) ? ((IStatement) selected)
+									.getObject() : selected);
 				}
 			}
 		};
@@ -496,8 +494,8 @@ public class ObjectPropertyPart extends AbstractEditingDomainPart {
 
 	@Override
 	public void refresh() {
-		Pair<Integer, Integer> cardinality = resource.getApplicableCardinality(
-				property);
+		Pair<Integer, Integer> cardinality = resource
+				.getApplicableCardinality(property);
 		minCardinality = cardinality.getFirst();
 		maxCardinality = cardinality.getSecond();
 
