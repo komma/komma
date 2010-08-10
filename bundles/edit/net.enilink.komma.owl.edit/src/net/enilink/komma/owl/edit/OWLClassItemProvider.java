@@ -24,6 +24,7 @@ import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
@@ -52,7 +53,7 @@ public class OWLClassItemProvider extends ReflectiveItemProvider {
 
 	@Override
 	protected void collectNewChildDescriptors(
-			Collection<Object> newChildDescriptors, Object object) {
+			ICollector<Object> newChildDescriptors, Object object) {
 		if (object instanceof IClass) {
 			newChildDescriptors.add(createChildParameter(
 					((IObject) object).getModel().resolve(
@@ -61,6 +62,7 @@ public class OWLClassItemProvider extends ReflectiveItemProvider {
 							.asList((IClass) ((IObject) object).getModel()
 									.resolve(OWL.TYPE_CLASS)), true)));
 		}
+		newChildDescriptors.done();
 	}
 
 	@Override

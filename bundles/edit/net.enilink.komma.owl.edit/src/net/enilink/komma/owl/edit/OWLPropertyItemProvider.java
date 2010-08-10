@@ -26,6 +26,7 @@ import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
@@ -57,11 +58,12 @@ public class OWLPropertyItemProvider extends ReflectiveItemProvider {
 
 	@Override
 	protected void collectNewChildDescriptors(
-			Collection<Object> newChildDescriptors, Object object) {
+			ICollector<Object> newChildDescriptors, Object object) {
 		if (object instanceof DatatypeProperty) {
 			newChildDescriptors.add(createChildParameter(
 					(IProperty) ((IObject) object).getModel().resolve(
-							subPropertyOf), new ChildDescriptor(Arrays
+							subPropertyOf),
+					new ChildDescriptor(Arrays
 							.asList((IClass) ((IObject) object).getModel()
 									.resolve(
 											new SesameReference(
@@ -73,14 +75,14 @@ public class OWLPropertyItemProvider extends ReflectiveItemProvider {
 							(IProperty) ((IObject) object).getModel().resolve(
 									subPropertyOf),
 							new ChildDescriptor(
-									Arrays
-											.asList((IClass) ((IObject) object)
-													.getModel()
-													.resolve(
-															new SesameReference(
-																	OWL.OBJECTPROPERTY))),
+									Arrays.asList((IClass) ((IObject) object)
+											.getModel()
+											.resolve(
+													new SesameReference(
+															OWL.OBJECTPROPERTY))),
 									true)));
 		}
+		newChildDescriptors.done();
 	}
 
 	@Override
@@ -207,8 +209,8 @@ public class OWLPropertyItemProvider extends ReflectiveItemProvider {
 				return UnexecutableCommand.INSTANCE;
 			}
 			removeCommand.add(createRemoveCommand(domain, (IObject) value,
-					((IObject) value).getModel().resolve(subPropertyOf), Arrays
-							.asList(commandParameter.getOwner())));
+					((IObject) value).getModel().resolve(subPropertyOf),
+					Arrays.asList(commandParameter.getOwner())));
 		}
 		return removeCommand.reduce();
 	}

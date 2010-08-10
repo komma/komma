@@ -16,6 +16,7 @@ import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.owl.Ontology;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
@@ -44,7 +45,8 @@ public class OWLResourceItemProvider extends ReflectiveItemProvider {
 
 	@Override
 	protected void collectNewChildDescriptors(
-			Collection<Object> newChildDescriptors, Object object) {
+			ICollector<Object> newChildDescriptors, Object object) {
+		newChildDescriptors.done();
 	}
 
 	protected Collection<IViewerNotification> addViewerNotifications(
