@@ -27,6 +27,7 @@ import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.INotifier;
 import net.enilink.komma.common.notify.NotificationFilter;
 import net.enilink.komma.common.notify.NotificationSupport;
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.domain.IEditingDomain;
 
@@ -272,10 +273,12 @@ public class ItemProviderDecorator implements
 	 * IEditingDomainItemProvider.getNewChildDescriptors} by delegating to
 	 * <code>(IEditingDomainItemProvider)</code>{@link #decoratedItemProvider}.
 	 */
-	public Collection<?> getNewChildDescriptors(Object object,
-			IEditingDomain editingDomain, Object sibling) {
-		return ((IEditingDomainItemProvider) decoratedItemProvider)
-				.getNewChildDescriptors(object, editingDomain, sibling);
+	public void getNewChildDescriptors(Object object,
+			IEditingDomain editingDomain, Object sibling,
+			ICollector<Object> descriptors) {
+		((IEditingDomainItemProvider) decoratedItemProvider)
+				.getNewChildDescriptors(object, editingDomain, sibling,
+						descriptors);
 	}
 
 	/**
@@ -347,7 +350,8 @@ public class ItemProviderDecorator implements
 	}
 
 	@SuppressWarnings("unchecked")
-	public void fireNotifications(Collection<? extends INotification> notifications) {
+	public void fireNotifications(
+			Collection<? extends INotification> notifications) {
 		if (adapterFactory instanceof INotificationBroadcaster<?>) {
 			INotificationBroadcaster<INotification> adapterFactoryChangeNotifier = (INotificationBroadcaster<INotification>) adapterFactory;
 			adapterFactoryChangeNotifier.fireNotifications(notifications);

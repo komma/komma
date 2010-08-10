@@ -32,6 +32,7 @@ import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CommandWrapper;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.common.util.Log;
 import net.enilink.komma.concepts.IProperty;
@@ -397,9 +398,10 @@ public class WrapperItemProvider implements IWrapperItemProvider {
 	 * return an empty list. Subclasses may override it to return something
 	 * else.
 	 */
-	public Collection<?> getNewChildDescriptors(Object object,
-			IEditingDomain editingDomain, Object sibling) {
-		return Collections.emptyList();
+	public void getNewChildDescriptors(Object object,
+			IEditingDomain editingDomain, Object sibling,
+			ICollector<Object> descriptors) {
+		descriptors.done();
 	}
 
 	/**
@@ -435,8 +437,8 @@ public class WrapperItemProvider implements IWrapperItemProvider {
 					.getProperty();
 			return createDragAndDropCommand(domain,
 					commandParameter.getOwner(), detail.location,
-					detail.operations, detail.operation, commandParameter
-							.getCollection());
+					detail.operations, detail.operation,
+					commandParameter.getCollection());
 		} else {
 			return UnexecutableCommand.INSTANCE;
 		}
@@ -620,8 +622,7 @@ public class WrapperItemProvider implements IWrapperItemProvider {
 	 */
 	protected IAdapterFactory getRootAdapterFactory() {
 		return adapterFactory instanceof IComposeableAdapterFactory ? ((IComposeableAdapterFactory) adapterFactory)
-				.getRootAdapterFactory()
-				: adapterFactory;
+				.getRootAdapterFactory() : adapterFactory;
 	}
 
 	/**

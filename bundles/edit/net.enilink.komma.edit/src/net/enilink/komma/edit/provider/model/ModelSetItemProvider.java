@@ -17,10 +17,10 @@
 package net.enilink.komma.edit.provider.model;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.KommaEditPlugin;
@@ -111,9 +111,10 @@ public class ModelSetItemProvider extends ItemProviderAdapter implements
 	}
 
 	@Override
-	public Collection<?> getNewChildDescriptors(Object object,
-			IEditingDomain editingDomain, Object sibling) {
-		return Collections.emptyList();
+	public void getNewChildDescriptors(Object object,
+			IEditingDomain editingDomain, Object sibling,
+			ICollector<Object> descriptors) {
+		descriptors.done();
 	}
 
 	/**
@@ -122,7 +123,7 @@ public class ModelSetItemProvider extends ItemProviderAdapter implements
 	 */
 	@Override
 	protected void collectNewChildDescriptors(
-			Collection<Object> newChildDescriptors, Object object) {
+			ICollector<Object> newChildDescriptors, Object object) {
 		super.collectNewChildDescriptors(newChildDescriptors, object);
 	}
 

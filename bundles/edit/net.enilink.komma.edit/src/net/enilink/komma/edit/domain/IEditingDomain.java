@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.ICommandStack;
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.command.IOverrideableCommand;
 import net.enilink.komma.model.IModel;
@@ -80,7 +81,7 @@ public interface IEditingDomain {
 	 * (non-null), the children should be as close to immediately following that
 	 * sibling as possible.
 	 */
-	Collection<?> getNewChildDescriptors(Object object, Object sibling);
+	void getNewChildDescriptors(Object object, Object sibling, ICollector<Object> descriptors);
 
 	/**
 	 * This returns the clipboard of the editing domain.

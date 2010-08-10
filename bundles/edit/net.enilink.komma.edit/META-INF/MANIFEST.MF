@@ -12,7 +12,8 @@ Export-Package: net.enilink.komma.edit,
  net.enilink.komma.edit.command,
  net.enilink.komma.edit.domain,
  net.enilink.komma.edit.provider,
- net.enilink.komma.edit.provider.model
+ net.enilink.komma.edit.provider.model,
+ net.enilink.komma.edit.util
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.commands,
  net.enilink.komma.common;visibility:=reexport,

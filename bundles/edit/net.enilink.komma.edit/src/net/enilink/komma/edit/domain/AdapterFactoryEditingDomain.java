@@ -35,6 +35,7 @@ import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.ICommandStack;
 import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.common.util.AbstractTreeIterator;
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.ITreeIterator;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.command.CopyToClipboardCommand;
@@ -57,7 +58,8 @@ import net.enilink.komma.core.URIImpl;
 
 /**
  * This class implements an editing domain by delegating to adapters that
- * implement {@link net.enilink.komma.edit.provider.IEditingDomainItemProvider}.
+ * implement
+ * {@link net.enilink.komma.edit.provider.IEditingDomainItemProvider}.
  */
 public class AdapterFactoryEditingDomain implements IEditingDomain,
 		IEditingDomain.Internal {
@@ -105,8 +107,8 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 	 * if it can't be determined. It is recommended that you always work
 	 * directly with an EditingDomain instance whenever possible. This is
 	 * implemented to checks if the object itself implements
-	 * {@link net.enilink.komma.edit.domain.IEditingDomainProvider} and returns
-	 * that result. Otherwise it checks if it is valid to call
+	 * {@link net.enilink.komma.edit.domain.IEditingDomainProvider} and
+	 * returns that result. Otherwise it checks if it is valid to call
 	 * {@link #getEditingDomainFor(org.eclipse.emf.ecore.EObject)
 	 * getEditingDomainFor(EObject)} and returns that result or null.
 	 * 
@@ -127,8 +129,9 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 					.getValue());
 		} else if (object instanceof IObject) {
 			return ((IEditingDomainProvider) ((IObject) object).getModel()
-					.getModelSet().adapters().getAdapter(
-							IEditingDomainProvider.class)).getEditingDomain();
+					.getModelSet().adapters()
+					.getAdapter(IEditingDomainProvider.class))
+					.getEditingDomain();
 		}
 		return null;
 	}
@@ -239,7 +242,8 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 	 * Create an instance from the adapter factory, the specialized command
 	 * stack, and the specialized resource set. If the resource set's context is
 	 * null, one will be created here; otherwise, the existing context should
-	 * implement {@link net.enilink.komma.edit.domain.IEditingDomainProvider}.
+	 * implement
+	 * {@link net.enilink.komma.edit.domain.IEditingDomainProvider}.
 	 */
 	public AdapterFactoryEditingDomain(IAdapterFactory adapterFactory,
 			ICommandStack commandStack, IModelSet modelSet) {
@@ -277,17 +281,17 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 		// If the owner parameter is set, we delegate to the owner's adapter
 		Object owner = commandParameter.getOwner();
 		if (commandClass == CopyToClipboardCommand.class) {
-			return new CopyToClipboardCommand(this, commandParameter
-					.getCollection());
+			return new CopyToClipboardCommand(this,
+					commandParameter.getCollection());
 		} else if (commandClass == PasteFromClipboardCommand.class) {
-			return new PasteFromClipboardCommand(this, commandParameter
-					.getOwner(), commandParameter.getProperty(),
-					commandParameter.getIndex());
+			return new PasteFromClipboardCommand(this,
+					commandParameter.getOwner(),
+					commandParameter.getProperty(), commandParameter.getIndex());
 		} else if (commandClass == CutToClipboardCommand.class) {
 			return new CutToClipboardCommand(this, RemoveCommand.create(this,
 					commandParameter.getOwner(),
-					commandParameter.getProperty(), commandParameter
-							.getCollection()));
+					commandParameter.getProperty(),
+					commandParameter.getCollection()));
 		} else if (commandClass == DeleteCommand.class) {
 			return new DeleteCommand(this, commandParameter.getCollection());
 		} else if (owner != null) {
@@ -307,8 +311,8 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 				ExtendedCompositeCommand removeCommand = new ExtendedCompositeCommand(
 						ExtendedCompositeCommand.MERGE_COMMAND_ALL);
 
-				List<Object> objects = new ArrayList<Object>(commandParameter
-						.getCollection());
+				List<Object> objects = new ArrayList<Object>(
+						commandParameter.getCollection());
 				while (!objects.isEmpty()) {
 					// We will iterate over the whole collection, removing some
 					// as we go.
@@ -348,7 +352,8 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 					} else if (object != null) {
 						// The parent is null, which implies a top-level
 						// removal, so create a self-removing command.
-						removeCommand.add(createCommand(RemoveCommand.class,
+						removeCommand.add(createCommand(
+								RemoveCommand.class,
 								new CommandParameter(object, null, Collections
 										.singleton(object))));
 					}
@@ -372,7 +377,8 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 				if (parent == null) {
 					return UnexecutableCommand.INSTANCE;
 				}
-				return createCommand(CreateChildCommand.class,
+				return createCommand(
+						CreateChildCommand.class,
 						new CommandParameter(parent, commandParameter
 								.getProperty(), commandParameter.getValue(),
 								commandParameter.getCollection(),
@@ -491,7 +497,8 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 	 * {@link net.enilink.komma.edit.provider.IEditingDomainItemProvider#getNewChildDescriptors
 	 * IEditingDomainItemProvider.getNewChildDescriptors}.
 	 */
-	public Collection<?> getNewChildDescriptors(Object object, Object sibling) {
+	public void getNewChildDescriptors(Object object, Object sibling,
+			ICollector<Object> descriptors) {
 		// If no object is specified, but an existing sibling is, the object is
 		// its parent.
 		if (object == null) {
@@ -499,16 +506,20 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 		}
 
 		if (object == null) {
-			return Collections.emptyList();
+			descriptors.done();
+			return;
 		}
 
 		// If there is an adapter of the correct type...
 		IEditingDomainItemProvider editingDomainItemProvider = (IEditingDomainItemProvider) adapterFactory
 				.adapt(object, IEditingDomainItemProvider.class);
 
-		return editingDomainItemProvider != null ? editingDomainItemProvider
-				.getNewChildDescriptors(object, this, sibling) : Collections
-				.emptyList();
+		if (editingDomainItemProvider != null) {
+			editingDomainItemProvider.getNewChildDescriptors(object, this,
+					sibling, descriptors);
+		} else {
+			descriptors.done();
+		}
 	}
 
 	/**

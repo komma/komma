@@ -19,20 +19,20 @@ package net.enilink.komma.edit.provider.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.openrdf.model.vocabulary.OWL;
-import org.openrdf.model.vocabulary.RDFS;
 
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
@@ -53,7 +53,6 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelAware;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.sesame.SesameReference;
 import net.enilink.komma.util.ISparqlConstants;
 
 /**
@@ -62,20 +61,11 @@ import net.enilink.komma.util.ISparqlConstants;
 public class ModelItemProvider extends ItemProviderAdapter implements
 		IEditingDomainItemProvider, IStructuredItemContentProvider,
 		ITreeItemContentProvider, IItemLabelProvider, IItemPropertySource {
-	static String QUERY_CLASSES = ISparqlConstants.PREFIX
-			+ "SELECT DISTINCT ?r WHERE {"
-			+ "?r a owl:Class "
-			+ "OPTIONAL {?r rdfs:subClassOf ?other "
-			+ "FILTER(!sameTerm(?r, ?other) && isIRI(?other) && !sameTerm(?other, owl:Thing) && !sameTerm(?other, rdfs:Resource))} "
-			+ "FILTER (!bound(?other) && isIRI(?r) && !sameTerm(?r, owl:Thing)) }";
 	static String QUERY_PROPERTIES = ISparqlConstants.PREFIX
 			+ "SELECT DISTINCT ?r WHERE {" + "?r a rdf:Property "
 			+ "OPTIONAL {?r rdfs:subPropertyOf ?other "
 			+ "FILTER(!sameTerm(?r, ?other) && isIRI(?other))} "
 			+ "FILTER (!bound(?other) && isIRI(?r)) }";
-	static String QUERY_INSTANCES = ISparqlConstants.PREFIX
-			+ "SELECT DISTINCT ?r WHERE {"
-			+ "?r a ?c . ?c a owl:Class . OPTIONAL {?other komma:contains ?r} FILTER (!bound(?other)) }";
 
 	class Instances extends ItemProvider implements IEditingDomainItemProvider,
 			IModelAware {
@@ -150,19 +140,17 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 		}
 
 		@Override
-		public Collection<CommandParameter> getNewChildDescriptors(
-				Object object, IEditingDomain editingDomain, Object sibling) {
+		public void getNewChildDescriptors(Object object,
+				IEditingDomain editingDomain, Object sibling,
+				ICollector<Object> descriptors) {
+			if (!(object instanceof Instances)) {
+				descriptors.done();
+				return;
+			}
 
-			if (!(object instanceof Instances))
-				return Collections.emptyList();
-
-			Collection<CommandParameter> newChildDescriptors = new ArrayList<CommandParameter>();
 			ChildDescriptor childDescription = new ChildDescriptor(null, true);
-
-			newChildDescriptors.add(new ChildParameter(null, null,
-					childDescription));
-
-			return newChildDescriptors;
+			descriptors.add(new ChildParameter(null, null, childDescription));
+			descriptors.done();
 		}
 
 		@Override
@@ -223,26 +211,26 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 	public Collection<?> getChildren(Object object) {
 		List<Object> children = new ArrayList<Object>();
 
-		List<IObject> classes = (List<IObject>) ((IModel) object).getManager()
-				.createQuery(QUERY_CLASSES).setIncludeInferred(true).evaluate()
-				.toList();
-		children.add(new ItemProvider(getRootAdapterFactory(), "Classes", URIImpl
-				.createURI(getResourceLocator().getImage(
+		List<IObject> classes = Arrays.asList((IObject) ((IModel) object)
+				.getManager().find(RDFS.TYPE_RESOURCE));
+
+		children.add(new ItemProvider(getRootAdapterFactory(), "Classes",
+				URIImpl.createURI(getResourceLocator().getImage(
 						"full/obj16/Classes.png").toString()), classes));
 
 		List<IObject> properties = (List<IObject>) ((IModel) object)
-				.getManager().createQuery(QUERY_PROPERTIES).setIncludeInferred(
-						true).evaluate().toList();
+				.getManager().createQuery(QUERY_PROPERTIES)
+				.setIncludeInferred(true).evaluate().toList();
 		children.add(new ItemProvider(getRootAdapterFactory(), "Properties",
 				URIImpl.createURI(getResourceLocator().getImage(
 						"full/obj16/Properties.png").toString()), properties));
 
-		List<IObject> instances = (List<IObject>) ((IModel) object)
-				.getManager().createQuery(QUERY_INSTANCES).setIncludeInferred(
-						true).evaluate().toList();
-		children.add(new Instances((IModel) object, getRootAdapterFactory(),
-				URIImpl.createURI(getResourceLocator().getImage(
-						"full/obj16/Instances.png").toString()), instances));
+		// List<IObject> instances = (List<IObject>) ((IModel) object)
+		// .getManager().createQuery(QUERY_INSTANCES)
+		// .setIncludeInferred(true).evaluate().toList();
+		// children.add(new Instances((IModel) object, getRootAdapterFactory(),
+		// URIImpl.createURI(getResourceLocator().getImage(
+		// "full/obj16/Instances.png").toString()), instances));
 
 		return children;
 	}
@@ -313,16 +301,16 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 	 */
 	@Override
 	protected void collectNewChildDescriptors(
-			Collection<Object> newChildDescriptors, Object object) {
+			ICollector<Object> newChildDescriptors, Object object) {
 		if (object instanceof Instances) {
 			newChildDescriptors.add(createChildParameter(
 					(IProperty) ((IObject) object).getModel().resolve(
-							new SesameReference(RDFS.SUBCLASSOF)),
+							RDFS.PROPERTY_SUBCLASSOF),
 					new ChildDescriptor(Arrays
 							.asList((IClass) ((IObject) object).getModel()
-									.resolve(new SesameReference(OWL.CLASS))),
-							true)));
+									.resolve(OWL.TYPE_CLASS)), true)));
 		}
+		newChildDescriptors.done();
 	}
 
 	/**

@@ -18,7 +18,6 @@ package net.enilink.komma.edit.provider;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.ICommand;
@@ -32,9 +31,11 @@ import net.enilink.komma.common.notify.NotificationChain;
 import net.enilink.komma.common.notify.NotificationSupport;
 import net.enilink.komma.common.notify.NotifyingList;
 import net.enilink.komma.common.notify.PropertyNotification;
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IList;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.provider.ItemProvider.ItemProviderNotifyingArrayList;
 import net.enilink.komma.model.IObject;
 
 /**
@@ -98,12 +99,12 @@ import net.enilink.komma.model.IObject;
  * //
  * final ItemProvider child11 = new ItemProvider(listeners, &quot;Child 1&quot;);
  * final ItemProvider child12 = new ItemProvider(listeners, &quot;Child 2&quot;);
- * final ItemProvider parent1 = new ItemProvider(listeners, &quot;Parent 1&quot;, Arrays
- * 		.asList(new Object[] { child11, child12 }));
+ * final ItemProvider parent1 = new ItemProvider(listeners, &quot;Parent 1&quot;,
+ * 		Arrays.asList(new Object[] { child11, child12 }));
  * final ItemProvider child21 = new ItemProvider(listeners, &quot;Child 1&quot;);
  * final ItemProvider child22 = new ItemProvider(listeners, &quot;Child 2&quot;);
- * final ItemProvider parent2 = new ItemProvider(listeners, &quot;Parent 2&quot;, Arrays
- * 		.asList(new Object[] { child21, child22 }));
+ * final ItemProvider parent2 = new ItemProvider(listeners, &quot;Parent 2&quot;,
+ * 		Arrays.asList(new Object[] { child21, child22 }));
  * final ItemProvider grandParent = new ItemProvider(listeners, &quot;Grand Parent&quot;,
  * 		Arrays.asList(new Object[] { parent1, parent2 }));
  * 
@@ -117,14 +118,16 @@ import net.enilink.komma.model.IObject;
  * if (contentViewer.isControlOkToUse()) {
  * 	contentViewer.getControl().getDisplay().asyncExec(new Runnable() {
  * 		public void run() {
- * 			// Use standard list modification that has the effect of producing a domain event notification.
+ * 			// Use standard list modification that has the effect of producing a
+ * 			// domain event notification.
  * 			//
  * 			parent1.getChildren().removeAll(
  * 					Arrays.asList(new Object[] { child11, child12 }));
  * 
  * 			contentViewer.getControl().getDisplay().asyncExec(new Runnable() {
  * 				public void run() {
- * 					// This also as the effect of producing a correct a domain event notification.
+ * 					// This also as the effect of producing a correct a domain
+ * 					// event notification.
  * 					//
  * 					parent2.setText(&quot;Parent 2!&quot;);
  * 				}
@@ -149,7 +152,8 @@ import net.enilink.komma.model.IObject;
  * ItemProviderAdapterFactory myItemProviderAdapterFactory = new ItemProviderAdapterFactory() {
  * 	public Adapter createCompanyAdapter() {
  * 		// This returns a new instance each time.
- * 		// The instance stores an injected child that in turn will have this original object's children as its children.
+ * 		// The instance stores an injected child that in turn will have this
+ * 		// original object's children as its children.
  * 		//
  * 		return new CompanyItemProvider(this) {
  * 			// Keep track of the new child added below company.
@@ -162,14 +166,15 @@ import net.enilink.komma.model.IObject;
  * 				if (injectedChild == null) {
  * 					injectedChild = (new ItemProvider(&quot;Injected Child&quot;) {
  * 						public Collection getChildren(Object o) {
- * 							// Return the department of the company. 
+ * 							// Return the department of the company.
  * 							// Note that we ignore o in favour of object.
  * 							//
  * 							return ((Company) object).getDepartment();
  * 						}
  * 
  * 						public boolean hasChildren(Object o) {
- * 							// You have to make sure you override this method to match the above.
+ * 							// You have to make sure you override this method to
+ * 							// match the above.
  * 							//
  * 							return !((Company) object).getDepartment()
  * 									.isEmpty();
@@ -181,7 +186,8 @@ import net.enilink.komma.model.IObject;
  * 			}
  * 
  * 			public boolean hasChildren(Object object) {
- * 				// You have to make sure you override this method to match the above.
+ * 				// You have to make sure you override this method to match the
+ * 				// above.
  * 				//
  * 				return true;
  * 			}
@@ -217,7 +223,8 @@ import net.enilink.komma.model.IObject;
  * 		if (departmentItemProvider == null) {
  * 			departmentItemProvider = new DepartmentItemProvider(this) {
  * 				public Object getParent(Object object) {
- * 					// Use the stateful adapter of the containing parent to determine the injected item.
+ * 					// Use the stateful adapter of the containing parent to
+ * 					// determine the injected item.
  * 					//
  * 					Company company = ((Department) object).getCompany();
  * 					ITreeItemContentProvider companyAdapter = (ITreeItemContentProvider) this.adapterFactory
@@ -941,9 +948,10 @@ public class ItemProvider extends NotificationSupport<INotification> implements
 	 * IEditingDomainItemProvider.getNewChildDescriptors}, returning an empty
 	 * list.
 	 */
-	public Collection<CommandParameter> getNewChildDescriptors(Object object,
-			IEditingDomain editingDomain, Object sibling) {
-		return Collections.emptyList();
+	public void getNewChildDescriptors(Object object,
+			IEditingDomain editingDomain, Object sibling,
+			ICollector<Object> descriptors) {
+		descriptors.done();
 	}
 
 	/**

@@ -56,6 +56,7 @@ import net.enilink.komma.common.notify.IPropertyNotification;
 import net.enilink.komma.common.notify.NotificationFilter;
 import net.enilink.komma.common.notify.NotificationSupport;
 import net.enilink.komma.common.util.ExtensibleList;
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IList;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
@@ -488,8 +489,8 @@ public class ItemProviderAdapter extends
 		public CommandResult getCommandResult() {
 			CommandResult result = getCommandResult();
 			if (result != null) {
-				return new CommandResult(result.getStatus(), wrapValues(result
-						.getReturnValue(), true));
+				return new CommandResult(result.getStatus(), wrapValues(
+						result.getReturnValue(), true));
 			}
 			return null;
 		}
@@ -522,8 +523,7 @@ public class ItemProviderAdapter extends
 			// If the adapter factory is composeable, we'll adapt using the
 			// root.
 			IAdapterFactory af = adapterFactory instanceof IComposeableAdapterFactory ? ((IComposeableAdapterFactory) adapterFactory)
-					.getRootAdapterFactory()
-					: adapterFactory;
+					.getRootAdapterFactory() : adapterFactory;
 
 			// Build list of wrapped children from the appropriate adapters.
 			for (Object owner : getOwners()) {
@@ -695,8 +695,8 @@ public class ItemProviderAdapter extends
 		}
 		targets.put(((IObject) target).getReference(), (IObject) target);
 
-		((IObject) target).getModel().getModelSet().addSubjectListener(
-				((IObject) target).getReference(), this);
+		((IObject) target).getModel().getModelSet()
+				.addSubjectListener(((IObject) target).getReference(), this);
 	}
 
 	/**
@@ -757,11 +757,15 @@ public class ItemProviderAdapter extends
 	 * implementation and then adding to the collection.
 	 */
 	protected void collectNewChildDescriptors(
-			Collection<Object> newChildDescriptors, Object object) {
+			ICollector<Object> newChildDescriptors, Object object) {
 		// Subclasses may override to add descriptors.
 		if (object instanceof IObject) {
 			for (IProperty property : ((IObject) object)
 					.getApplicableChildProperties()) {
+				if (newChildDescriptors.cancelled()) {
+					return;
+				}
+
 				if (((IObject) object).getApplicableCardinality(property)
 						.getSecond() > 0) {
 					Set<IClass> ranges = new HashSet<IClass>(property
@@ -791,7 +795,8 @@ public class ItemProviderAdapter extends
 					});
 
 					for (net.enilink.vocab.rdfs.Class rangeClass : rangeArray) {
-						newChildDescriptors.add(createChildParameter(property,
+						newChildDescriptors.add(createChildParameter(
+								property,
 								new ChildDescriptor(Arrays.asList(rangeClass),
 										childRequiresName((IObject) object,
 												property, rangeClass))));
@@ -837,8 +842,8 @@ public class ItemProviderAdapter extends
 			manager = ((IObject) owner).getKommaManager();
 		}
 
-		return manager.createNamed(name, childTypes
-				.toArray(new IReference[childTypes.size()]));
+		return manager.createNamed(name,
+				childTypes.toArray(new IReference[childTypes.size()]));
 	}
 
 	/**
@@ -889,67 +894,72 @@ public class ItemProviderAdapter extends
 					domain,
 					commandParameter.getOwnerObject(),
 					commandParameter.getProperty() != null ? (IReference) commandParameter
-							.getProperty()
-							: getSetProperty(commandParameter.getOwner(),
-									commandParameter.getValue()),
+							.getProperty() : getSetProperty(
+							commandParameter.getOwner(),
+							commandParameter.getValue()),
 					commandParameter.getValue(), commandParameter.getIndex());
 		} else if (commandClass == CopyCommand.class) {
-			result = createCopyCommand(domain, commandParameter
-					.getOwnerObject(), (CopyCommand.Helper) commandParameter
-					.getValue());
+			result = createCopyCommand(domain,
+					commandParameter.getOwnerObject(),
+					(CopyCommand.Helper) commandParameter.getValue());
 		} else if (commandClass == CreateCopyCommand.class) {
-			result = createCreateCopyCommand(domain, commandParameter
-					.getOwnerObject(), (CopyCommand.Helper) commandParameter
-					.getValue());
+			result = createCreateCopyCommand(domain,
+					commandParameter.getOwnerObject(),
+					(CopyCommand.Helper) commandParameter.getValue());
 		} else if (commandClass == InitializeCopyCommand.class) {
-			result = createInitializeCopyCommand(domain, commandParameter
-					.getOwnerObject(), (CopyCommand.Helper) commandParameter
-					.getValue());
+			result = createInitializeCopyCommand(domain,
+					commandParameter.getOwnerObject(),
+					(CopyCommand.Helper) commandParameter.getValue());
 		} else if (commandClass == RemoveCommand.class) {
 			if (commandParameter.getProperty() != null) {
-				result = createRemoveCommand(domain, commandParameter
-						.getOwnerObject(), (IProperty) commandParameter
-						.getProperty(), commandParameter.getCollection());
+				result = createRemoveCommand(domain,
+						commandParameter.getOwnerObject(),
+						(IProperty) commandParameter.getProperty(),
+						commandParameter.getCollection());
 			} else {
 				result = factorRemoveCommand(domain, commandParameter);
 			}
 		} else if (commandClass == AddCommand.class) {
 			if (commandParameter.getProperty() != null) {
-				result = createAddCommand(domain, commandParameter
-						.getOwnerObject(), (IProperty) commandParameter
-						.getProperty(), commandParameter.getCollection(),
+				result = createAddCommand(domain,
+						commandParameter.getOwnerObject(),
+						(IProperty) commandParameter.getProperty(),
+						commandParameter.getCollection(),
 						commandParameter.getIndex());
 			} else {
 				result = factorAddCommand(domain, commandParameter);
 			}
 		} else if (commandClass == MoveCommand.class) {
 			if (commandParameter.getProperty() != null) {
-				result = createMoveCommand(domain, commandParameter
-						.getOwnerObject(), (IProperty) commandParameter
-						.getProperty(), commandParameter.getValue(),
+				result = createMoveCommand(domain,
+						commandParameter.getOwnerObject(),
+						(IProperty) commandParameter.getProperty(),
+						commandParameter.getValue(),
 						commandParameter.getIndex());
 			} else {
 				result = factorMoveCommand(domain, commandParameter);
 			}
 		} else if (commandClass == ReplaceCommand.class) {
-			result = createReplaceCommand(domain, commandParameter
-					.getOwnerObject(), (IProperty) commandParameter
-					.getProperty(), (IObject) commandParameter.getValue(),
+			result = createReplaceCommand(domain,
+					commandParameter.getOwnerObject(),
+					(IProperty) commandParameter.getProperty(),
+					(IObject) commandParameter.getValue(),
 					commandParameter.getCollection());
 		} else if (commandClass == DragAndDropCommand.class) {
 			DragAndDropCommand.Detail detail = (DragAndDropCommand.Detail) commandParameter
 					.getProperty();
-			result = createDragAndDropCommand(domain, commandParameter
-					.getOwner(), detail.location, detail.operations,
-					detail.operation, commandParameter.getCollection());
+			result = createDragAndDropCommand(domain,
+					commandParameter.getOwner(), detail.location,
+					detail.operations, detail.operation,
+					commandParameter.getCollection());
 		} else if (commandClass == CreateChildCommand.class) {
 			CommandParameter newChildParameter = (CommandParameter) commandParameter
 					.getValue();
-			result = createCreateChildCommand(domain, commandParameter
-					.getOwnerObject(), (IProperty) newChildParameter
-					.getProperty(), newChildParameter.getValue(),
-					newChildParameter.getIndex(), commandParameter
-							.getCollection());
+			result = createCreateChildCommand(domain,
+					commandParameter.getOwnerObject(),
+					(IProperty) newChildParameter.getProperty(),
+					newChildParameter.getValue(), newChildParameter.getIndex(),
+					commandParameter.getCollection());
 		}
 
 		// If necessary, get a command that replaces unwrapped values by their
@@ -1144,8 +1154,10 @@ public class ItemProviderAdapter extends
 
 		if (oldTargets != null) {
 			for (IObject otherTarget : oldTargets.values()) {
-				otherTarget.getModel().getModelSet().removeSubjectListener(
-						otherTarget.getReference(), this);
+				otherTarget
+						.getModel()
+						.getModelSet()
+						.removeSubjectListener(otherTarget.getReference(), this);
 			}
 		}
 
@@ -1196,8 +1208,8 @@ public class ItemProviderAdapter extends
 		}
 
 		final IObject object = commandParameter.getOwnerObject();
-		final List<Object> list = new ArrayList<Object>(commandParameter
-				.getCollection());
+		final List<Object> list = new ArrayList<Object>(
+				commandParameter.getCollection());
 		int index = commandParameter.getIndex();
 
 		CompositeCommand addCommand = new CompositeCommand();
@@ -1368,8 +1380,8 @@ public class ItemProviderAdapter extends
 
 		final IObject object = commandParameter.getOwnerObject();
 
-		final List<Object> list = new ArrayList<Object>(commandParameter
-				.getCollection());
+		final List<Object> list = new ArrayList<Object>(
+				commandParameter.getCollection());
 
 		// do nothing if owner is null
 		if (object == null) {
@@ -1848,14 +1860,36 @@ public class ItemProviderAdapter extends
 	 * <code>CommandParameter</code> with a multi-valued feature, to ensure that
 	 * the new child object gets added in the right position.
 	 */
-	public Collection<?> getNewChildDescriptors(Object object,
-			IEditingDomain editingDomain, Object sibling) {
+	public void getNewChildDescriptors(Object object,
+			IEditingDomain editingDomain, Object sibling,
+			final ICollector<Object> descriptors) {
 		if (object instanceof IObject) {
 			IObject iObject = (IObject) object;
 
 			// Build the collection of new child descriptors.
-			Collection<Object> newChildDescriptors = new ArrayList<Object>();
-			collectNewChildDescriptors(newChildDescriptors, object);
+			final Collection<Object> newChildDescriptors = new ArrayList<Object>();
+			collectNewChildDescriptors(new ICollector<Object>() {
+				@Override
+				public void add(Iterable<Object> elements) {
+					for (Object element : elements) {
+						add(element);
+					}
+				}
+
+				@Override
+				public void add(Object element) {
+					newChildDescriptors.add(element);
+				}
+
+				@Override
+				public boolean cancelled() {
+					return descriptors.cancelled();
+				}
+
+				@Override
+				public void done() {
+				}
+			}, object);
 
 			// Add child descriptors contributed by extenders.
 			if (adapterFactory instanceof IChildCreationExtender) {
@@ -1942,9 +1976,9 @@ public class ItemProviderAdapter extends
 					}
 				}
 			}
-			return newChildDescriptors;
+			descriptors.add(newChildDescriptors);
 		}
-		return Collections.emptyList();
+		descriptors.done();
 	}
 
 	/**
@@ -2144,8 +2178,9 @@ public class ItemProviderAdapter extends
 	 */
 	protected String getString(String key, String s0, boolean translate) {
 		IResourceLocator resourceLocator = getResourceLocator();
-		return resourceLocator.getString(key, new Object[] { resourceLocator
-				.getString(s0, translate) }, translate);
+		return resourceLocator.getString(key,
+				new Object[] { resourceLocator.getString(s0, translate) },
+				translate);
 	}
 
 	/**
@@ -2163,9 +2198,9 @@ public class ItemProviderAdapter extends
 	protected String getString(String key, String s0, String s1,
 			boolean translate) {
 		IResourceLocator resourceLocator = getResourceLocator();
-		return resourceLocator.getString(key, new Object[] {
-				resourceLocator.getString(s0, translate),
-				resourceLocator.getString(s1, translate) }, translate);
+		return resourceLocator.getString(key,
+				new Object[] { resourceLocator.getString(s0, translate),
+						resourceLocator.getString(s1, translate) }, translate);
 	}
 
 	/**
@@ -2561,8 +2596,8 @@ public class ItemProviderAdapter extends
 			if (notification instanceof IStatementNotification) {
 				IStatementNotification stmtNotification = (IStatementNotification) notification;
 				IProperty property = (IProperty) childrenStore.getOwner()
-						.getModel().resolve(
-								(IReference) stmtNotification.getPredicate());
+						.getModel()
+						.resolve((IReference) stmtNotification.getPredicate());
 
 				// ensure that cached data is discarded
 				childrenStore.getOwner().refresh(property);
@@ -2618,8 +2653,10 @@ public class ItemProviderAdapter extends
 							Object newValue = propertyNotification
 									.getNewValue();
 							adjustWrapperIndices(children, index, 1);
-							children.add(index, wrap(childrenStore.getOwner(),
-									property, newValue, index));
+							children.add(
+									index,
+									wrap(childrenStore.getOwner(), property,
+											newValue, index));
 						}
 						break;
 					}

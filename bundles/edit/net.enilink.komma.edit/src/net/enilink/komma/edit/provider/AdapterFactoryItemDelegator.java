@@ -23,6 +23,7 @@ import java.util.List;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.domain.IEditingDomain;
 
@@ -380,8 +381,7 @@ public class AdapterFactoryItemDelegator implements IEditingDomainItemProvider,
 		// Either delegate the call or return nothing.
 		//
 		return structuredItemContentProvider != null ? structuredItemContentProvider
-				.getElements(object)
-				: Collections.emptyList();
+				.getElements(object) : Collections.emptyList();
 	}
 
 	/**
@@ -446,8 +446,9 @@ public class AdapterFactoryItemDelegator implements IEditingDomainItemProvider,
 	 * be added under the specified object in the editing domain, following the
 	 * specified sibling as closely as possible (if non-null).
 	 */
-	public Collection<?> getNewChildDescriptors(Object object,
-			IEditingDomain editingDomain, Object sibling) {
+	public void getNewChildDescriptors(Object object,
+			IEditingDomain editingDomain, Object sibling,
+			ICollector<Object> descriptors) {
 		// Get the adapter from the factory.
 		//
 		IEditingDomainItemProvider editingDomainItemProvider = (IEditingDomainItemProvider) adapterFactory
@@ -455,9 +456,12 @@ public class AdapterFactoryItemDelegator implements IEditingDomainItemProvider,
 
 		// Either delegate the call or return nothing.
 		//
-		return editingDomainItemProvider != null ? editingDomainItemProvider
-				.getNewChildDescriptors(object, editingDomain, sibling)
-				: Collections.emptyList();
+		if (editingDomainItemProvider != null) {
+			editingDomainItemProvider.getNewChildDescriptors(object,
+					editingDomain, sibling, descriptors);
+		} else {
+			descriptors.done();
+		}
 	}
 
 	/**

@@ -38,6 +38,7 @@ import net.enilink.komma.common.notify.INotifier;
 import net.enilink.komma.common.notify.IPropertyNotification;
 import net.enilink.komma.common.notify.NotificationFilter;
 import net.enilink.komma.common.notify.NotificationSupport;
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.command.DragAndDropCommand;
 import net.enilink.komma.edit.command.ICommandActionDelegate;
@@ -154,8 +155,7 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	@Override
 	public Collection<?> getElements(Object object) {
 		return delegateItemProvider instanceof IStructuredItemContentProvider ? ((IStructuredItemContentProvider) delegateItemProvider)
-				.getElements(getDelegateValue())
-				: Collections.emptyList();
+				.getElements(getDelegateValue()) : Collections.emptyList();
 	}
 
 	/**
@@ -169,8 +169,8 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	public Collection<?> getChildren(Object object) {
 		updateChildren();
 
-		Collection<Object> result = new ArrayList<Object>(delegateChildren
-				.size());
+		Collection<Object> result = new ArrayList<Object>(
+				delegateChildren.size());
 		for (Object delegateChild : delegateChildren) {
 			result.add(childrenMap.get(delegateChild));
 		}
@@ -188,8 +188,7 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 		if (delegateItemProvider instanceof ITreeItemContentProvider) {
 			boolean changed = false;
 			Set<Object> oldDelegateChildren = delegateChildren != null ? new HashSet<Object>(
-					delegateChildren)
-					: Collections.emptySet();
+					delegateChildren) : Collections.emptySet();
 			delegateChildren = ((ITreeItemContentProvider) delegateItemProvider)
 					.getChildren(getDelegateValue());
 
@@ -252,8 +251,7 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	@Override
 	public boolean hasChildren(Object object) {
 		return delegateItemProvider instanceof ITreeItemContentProvider ? ((ITreeItemContentProvider) delegateItemProvider)
-				.hasChildren(getDelegateValue())
-				: false;
+				.hasChildren(getDelegateValue()) : false;
 	}
 
 	/**
@@ -262,8 +260,7 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	@Override
 	public String getText(Object object) {
 		return delegateItemProvider instanceof IItemLabelProvider ? ((IItemLabelProvider) delegateItemProvider)
-				.getText(getDelegateValue())
-				: null;
+				.getText(getDelegateValue()) : null;
 	}
 
 	/**
@@ -272,8 +269,7 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	@Override
 	public Object getImage(Object object) {
 		return delegateItemProvider instanceof IItemLabelProvider ? ((IItemLabelProvider) delegateItemProvider)
-				.getImage(getDelegateValue())
-				: null;
+				.getImage(getDelegateValue()) : null;
 	}
 
 	/**
@@ -282,8 +278,7 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	@Override
 	public Object getFont(Object object) {
 		return delegateItemProvider instanceof IItemFontProvider ? ((IItemFontProvider) delegateItemProvider)
-				.getFont(getDelegateValue())
-				: null;
+				.getFont(getDelegateValue()) : null;
 	}
 
 	/**
@@ -293,8 +288,7 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	@Override
 	public Object getForeground(Object object) {
 		return delegateItemProvider instanceof IItemColorProvider ? ((IItemColorProvider) delegateItemProvider)
-				.getForeground(getDelegateValue())
-				: null;
+				.getForeground(getDelegateValue()) : null;
 	}
 
 	/**
@@ -304,8 +298,7 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	@Override
 	public Object getBackground(Object object) {
 		return delegateItemProvider instanceof IItemColorProvider ? ((IItemColorProvider) delegateItemProvider)
-				.getBackground(getDelegateValue())
-				: null;
+				.getBackground(getDelegateValue()) : null;
 	}
 
 	/**
@@ -333,8 +326,7 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	 */
 	public Object getFont(Object object, int columnIndex) {
 		return delegateItemProvider instanceof ITableItemFontProvider ? ((ITableItemFontProvider) delegateItemProvider)
-				.getFont(getDelegateValue(), columnIndex)
-				: getFont(object);
+				.getFont(getDelegateValue(), columnIndex) : getFont(object);
 	}
 
 	/**
@@ -367,8 +359,8 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 			if (delegateItemProvider instanceof IItemPropertySource) {
 				List<IItemPropertyDescriptor> l = ((IItemPropertySource) delegateItemProvider)
 						.getPropertyDescriptors(getDelegateValue());
-				propertyDescriptors = new ArrayList<IItemPropertyDescriptor>(l
-						.size());
+				propertyDescriptors = new ArrayList<IItemPropertyDescriptor>(
+						l.size());
 
 				for (IItemPropertyDescriptor desc : l) {
 					propertyDescriptors
@@ -388,8 +380,7 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	@Override
 	public Object getEditableValue(Object object) {
 		return delegateItemProvider instanceof IItemPropertySource ? ((IItemPropertySource) delegateItemProvider)
-				.getEditableValue(getDelegateValue())
-				: null;
+				.getEditableValue(getDelegateValue()) : null;
 	}
 
 	/**
@@ -397,12 +388,16 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	 * descriptors.
 	 */
 	@Override
-	public Collection<?> getNewChildDescriptors(Object object,
-			IEditingDomain editingDomain, Object sibling) {
-		return delegateItemProvider instanceof IEditingDomainItemProvider ? ((IEditingDomainItemProvider) delegateItemProvider)
-				.getNewChildDescriptors(getDelegateValue(), editingDomain,
-						sibling)
-				: Collections.emptyList();
+	public void getNewChildDescriptors(Object object,
+			IEditingDomain editingDomain, Object sibling,
+			ICollector<Object> descriptors) {
+		if (delegateItemProvider instanceof IEditingDomainItemProvider) {
+			((IEditingDomainItemProvider) delegateItemProvider)
+					.getNewChildDescriptors(getDelegateValue(), editingDomain,
+							sibling, descriptors);
+		} else {
+			descriptors.done();
+		}
 	}
 
 	/**
@@ -422,8 +417,8 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 					.getProperty();
 			return createDragAndDropCommand(domain,
 					commandParameter.getOwner(), detail.location,
-					detail.operations, detail.operation, commandParameter
-							.getCollection());
+					detail.operations, detail.operation,
+					commandParameter.getCollection());
 		}
 
 		if (delegateItemProvider instanceof IEditingDomainItemProvider) {
@@ -436,8 +431,8 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 			if (commandClass == SetCommand.class) {
 				Object feature = commandParameter.getProperty();
 				result = SetCommand.create(domain, commandOwner, feature,
-						commandParameter.getValue(), commandParameter
-								.getIndex());
+						commandParameter.getValue(),
+						commandParameter.getIndex());
 
 				// A set command without a feature sets the value of this
 				// wrapper, hence replacing it with a new wrapper. So,
@@ -485,8 +480,8 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 
 		@Override
 		public Collection<?> getAffectedObjects() {
-			List<Object> result = new ArrayList<Object>(super
-					.getAffectedObjects());
+			List<Object> result = new ArrayList<Object>(
+					super.getAffectedObjects());
 			updateChildren();
 
 			for (ListIterator<Object> i = result.listIterator(); i.hasNext();) {
@@ -523,7 +518,8 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 		 * 
 		 * @exception ClassCastException
 		 *                If the specified command does not implement
-		 *                {@link net.enilink.komma.common.command.ICommand}.
+		 *                {@link net.enilink.komma.common.command.ICommand}
+		 *                .
 		 */
 		public AffectedObjectsWrappingCommandActionDelegate(
 				ICommandActionDelegate command) {
@@ -555,7 +551,8 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	}
 
 	@SuppressWarnings("unchecked")
-	public void fireNotifications(Collection<? extends INotification> notifications) {
+	public void fireNotifications(
+			Collection<? extends INotification> notifications) {
 		if (adapterFactory instanceof INotificationBroadcaster) {
 			INotificationBroadcaster adapterFactoryChangeNotifier = (INotificationBroadcaster) adapterFactory;
 			adapterFactoryChangeNotifier.fireNotifications(notifications);
