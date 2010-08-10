@@ -73,7 +73,6 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 	 * This is used to queue viewer notifications and refresh viewers based on
 	 * them.
 	 * 
-	 * @since 2.2.0
 	 */
 	protected ViewerRefresh viewerRefresh;
 
@@ -145,8 +144,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 
 		// Either delegate the call or return nothing.
 		return (structuredItemContentProvider != null ? structuredItemContentProvider
-				.getElements(object)
-				: Collections.EMPTY_LIST).toArray();
+				.getElements(object) : Collections.EMPTY_LIST).toArray();
 	}
 
 	/**
@@ -271,9 +269,6 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 		Viewer viewer;
 		List<IViewerNotification> notifications;
 
-		/**
-		 * @since 2.2.0
-		 */
 		public ViewerRefresh(Viewer viewer) {
 			this.viewer = viewer;
 		}
@@ -288,7 +283,6 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 		 * @return whether the queue has been made non-empty, which would
 		 *         indicate that the <code>ViewerRefresh</code> needs to be
 		 *         {@link Display#asyncExec scheduled} on the event queue
-		 * @since 2.2.0
 		 */
 		public synchronized boolean addNotification(
 				IViewerNotification notification) {
@@ -303,8 +297,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 
 			if (viewer instanceof StructuredViewer) {
 				for (Iterator<IViewerNotification> i = notifications.iterator(); i
-						.hasNext()
-						&& notification != null;) {
+						.hasNext() && notification != null;) {
 					IViewerNotification old = i.next();
 					IViewerNotification merged = merge(old, notification);
 					if (merged == old) {
@@ -331,7 +324,6 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 		 * 
 		 * @return a single notification that is equivalent to the two
 		 *         parameters, or null if they are non-duplicative
-		 * @since 2.2.0
 		 */
 		protected IViewerNotification merge(IViewerNotification n1,
 				IViewerNotification n2) {
@@ -341,7 +333,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 			// 3. refresh element with update
 			// 4. refresh element (if necessary)
 			// 5. update element
-			// 
+			//
 			if (n1.getElement() == null && n1.isLabelUpdate()) {
 				return n1;
 			} else if (n2.getElement() == null && n2.isLabelUpdate()) {
@@ -399,9 +391,6 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 			}
 		}
 
-		/**
-		 * @since 2.2.0
-		 */
 		protected void refresh(IViewerNotification notification) {
 			Object element = notification.getElement();
 
@@ -417,8 +406,8 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 
 				if (element != null) {
 					if (notification.isContentRefresh()) {
-						structuredViewer.refresh(element, notification
-								.isLabelUpdate());
+						structuredViewer.refresh(element,
+								notification.isLabelUpdate());
 					} else if (notification.isLabelUpdate()) {
 						structuredViewer.update(element, null);
 					}

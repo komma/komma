@@ -15,68 +15,26 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.eclipse.jface.viewers.AbstractTableViewer;
+import org.eclipse.jface.viewers.ILazyContentProvider;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.SWT;
 
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 
 public class IndividualsContentProvider extends ModelContentProvider implements
-		IStructuredContentProvider {
-	protected StructuredViewer viewer;
-
+		IStructuredContentProvider, ILazyContentProvider {
 	protected Set<IClass> classes = new HashSet<IClass>();
 
-	@Override
-	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		classes.clear();
-		if (newInput instanceof IClass) {
-			classes.add((IClass) newInput);
-		} else if (newInput != null && newInput.getClass().isArray()) {
-			Object[] array = (Object[]) newInput;
-			for (Object element : array) {
-				classes.add((IClass) element);
-			}
-		}
+	protected IReference[] instanceReferences;
 
-		IModel newOntModel = null;
-		if (!classes.isEmpty()) {
-			newOntModel = ((IObject) classes.iterator().next()).getModel();
-		}
-
-		super.inputChanged(viewer, this.model, newOntModel);
-	}
-
-	public Object[] getElements(Object inputElement) {
-		if (!classes.isEmpty()) {
-			Collection<Object> individuals = new LinkedHashSet<Object>();
-			for (IClass ontClass : classes) {
-				individuals.addAll(ontClass.getInstances(true));
-			}
-
-			return individuals.toArray();
-		}
-		return new Object[0];
-	}
-
-	@Override
-	protected void internalInputChanged(Viewer viewer, Object oldInput,
-			Object newInput) {
-		if (viewer instanceof StructuredViewer) {
-			this.viewer = (StructuredViewer) viewer;
-		} else {
-			this.viewer = null;
-		}
-	}
-
-	@Override
-	protected boolean shouldRegisterListener(Viewer viewer) {
-		return this.viewer != null && !classes.isEmpty();
-	}
+	protected AbstractTableViewer viewer;
 
 	@Override
 	protected boolean addedStatement(IStatement stmt,
@@ -87,6 +45,60 @@ public class IndividualsContentProvider extends ModelContentProvider implements
 			return false;
 		}
 		return true;
+	}
+
+	public Object[] getElements(Object inputElement) {
+		if (!classes.isEmpty()) {
+			Collection<Object> instances = new LinkedHashSet<Object>();
+			for (IClass clazz : classes) {
+				instances.addAll(clazz.getInstances());
+			}
+
+			return instances.toArray();
+		}
+		return new Object[0];
+	}
+
+	@Override
+	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+		instanceReferences = null;
+		classes.clear();
+		if (newInput instanceof IClass) {
+			classes.add((IClass) newInput);
+		} else if (newInput != null && newInput.getClass().isArray()) {
+			Object[] array = (Object[]) newInput;
+			for (Object element : array) {
+				classes.add((IClass) element);
+			}
+		}
+
+		IModel newModel = null;
+		if (!classes.isEmpty()) {
+			newModel = ((IObject) classes.iterator().next()).getModel();
+		}
+
+		super.inputChanged(viewer, this.model, newModel);
+	}
+
+	@Override
+	protected void internalInputChanged(Viewer viewer, Object oldInput,
+			Object newInput) {
+		if (viewer instanceof AbstractTableViewer) {
+			this.viewer = (AbstractTableViewer) viewer;
+		} else {
+			this.viewer = null;
+		}
+
+		// check if viewer is virtual
+		if ((viewer.getControl().getStyle() & SWT.VIRTUAL) != 0) {
+			Collection<IReference> instances = new LinkedHashSet<IReference>();
+			for (IClass clazz : classes) {
+				instances.addAll(clazz.getInstancesAsReferences());
+			}
+			instanceReferences = instances.toArray(new IReference[instances
+					.size()]);
+			this.viewer.setItemCount(instanceReferences.length);
+		}
 	}
 
 	@Override
@@ -101,5 +113,17 @@ public class IndividualsContentProvider extends ModelContentProvider implements
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	protected boolean shouldRegisterListener(Viewer viewer) {
+		return this.viewer != null && !classes.isEmpty();
+	}
+
+	@Override
+	public void updateElement(int index) {
+		if (index < instanceReferences.length) {
+			viewer.replace(this.model.resolve(instanceReferences[index]), index);
+		}
 	}
 }
