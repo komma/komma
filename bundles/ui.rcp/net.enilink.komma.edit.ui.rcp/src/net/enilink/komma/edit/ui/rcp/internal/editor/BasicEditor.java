@@ -1,6 +1,7 @@
 package net.enilink.komma.edit.ui.rcp.internal.editor;
 
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
@@ -20,6 +21,7 @@ import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.rcp.KommaEditUIRCP;
 import net.enilink.komma.edit.ui.rcp.editor.TabbedPropertySheetPageSupport;
+import net.enilink.komma.edit.ui.views.IViewerMenuSupport;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelCore;
@@ -33,7 +35,8 @@ import net.enilink.komma.workbench.ProjectModelSetSupport;
  * This is an example of a basic model editor.
  * 
  */
-public class BasicEditor extends KommaMultiPageEditor {
+public class BasicEditor extends KommaMultiPageEditor implements
+		IViewerMenuSupport {
 	/**
 	 * This is the viewer that shadows the selection in the content outline. The
 	 * parent relation must be correctly defined for this to work.
@@ -168,5 +171,10 @@ public class BasicEditor extends KommaMultiPageEditor {
 				getEditorSupport().updateProblemIndication();
 			}
 		});
+	}
+
+	@Override
+	public void createContextMenuFor(StructuredViewer viewer) {
+		getEditorSupport().createContextMenuFor(viewer);
 	}
 }
