@@ -26,6 +26,7 @@ import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
@@ -57,7 +58,7 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 
 	@Override
 	protected void collectNewChildDescriptors(
-			Collection<Object> newChildDescriptors, Object object) {
+			ICollector<Object> newChildDescriptors, Object object) {
 		if (object instanceof DatatypeProperty) {
 			newChildDescriptors.add(createChildParameter(
 					(IProperty) ((IObject) object).getModel().resolve(
@@ -75,6 +76,7 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 											new SesameReference(
 													OWL.OBJECTPROPERTY)))));
 		}
+		newChildDescriptors.done();
 	}
 
 	@Override
@@ -201,8 +203,8 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 				return UnexecutableCommand.INSTANCE;
 			}
 			removeCommand.add(createRemoveCommand(domain, (IObject) value,
-					((IObject) value).getModel().resolve(subPropertyOf), Arrays
-							.asList(commandParameter.getOwner())));
+					((IObject) value).getModel().resolve(subPropertyOf),
+					Arrays.asList(commandParameter.getOwner())));
 		}
 		return removeCommand.reduce();
 	}
