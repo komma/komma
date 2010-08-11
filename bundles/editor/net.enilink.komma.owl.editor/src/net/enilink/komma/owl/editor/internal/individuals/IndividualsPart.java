@@ -19,6 +19,7 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
@@ -43,9 +44,10 @@ import net.enilink.komma.model.IObject;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
 
 public class IndividualsPart extends AbstractEditingDomainPart {
-	private TableViewer tableViewer;
+	private StructuredViewer viewer;
 	private IAdapterFactory adapterFactory;
-	Action deleteItemAction, addItemAction, editItemAction;
+	private IClass input;
+	Action deleteItemAction, addItemAction;
 
 	@Override
 	public void createContents(Composite parent) {
@@ -55,30 +57,38 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 	}
 
 	private void createIndividualsPart(Composite parent) {
-		Table table = getWidgetFactory().createTable(parent, SWT.V_SCROLL);
+		viewer = createViewer(parent);
 
-		tableViewer = new TableViewer(table);
-		tableViewer.setComparator(new ObjectComparator());
-		tableViewer.setContentProvider(new IndividualsContentProvider());
-		tableViewer
-				.addSelectionChangedListener(new ISelectionChangedListener() {
-					@Override
-					public void selectionChanged(SelectionChangedEvent event) {
-						getForm().fireSelectionChanged(IndividualsPart.this,
-								event.getSelection());
-					}
-				});
-		tableViewer
-				.addSelectionChangedListener(new ISelectionChangedListener() {
-					public void selectionChanged(SelectionChangedEvent event) {
-						if (deleteItemAction != null)
-							deleteItemAction.setEnabled(!event.getSelection()
-									.isEmpty());
-						if (editItemAction != null)
-							editItemAction.setEnabled(!event.getSelection()
-									.isEmpty());
-					}
-				});
+		viewer.setComparator(new ObjectComparator());
+		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				getForm().fireSelectionChanged(IndividualsPart.this,
+						event.getSelection());
+			}
+		});
+		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent event) {
+				if (deleteItemAction != null) {
+					deleteItemAction
+							.setEnabled(!event.getSelection().isEmpty());
+				}
+			}
+		});
+	}
+
+	protected StructuredViewer createViewer(Composite parent) {
+		Table table = getWidgetFactory().createTable(parent,
+				SWT.V_SCROLL | SWT.VIRTUAL);
+
+		viewer = new TableViewer(table);
+		viewer.setContentProvider(new IndividualsContentProvider());
+
+		return viewer;
+	}
+
+	protected StructuredViewer getViewer() {
+		return viewer;
 	}
 
 	public void createActions() {
@@ -99,18 +109,6 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 								.getImage(IEditUIPropertiesImages.ADD)));
 		toolBarManager.add(addItemAction);
 
-		editItemAction = new Action("Edit") {
-			public void run() {
-				editItem();
-			}
-		};
-		editItemAction.setImageDescriptor(ExtendedImageRegistry.getInstance()
-				.getImageDescriptor(
-						KommaEditUIPropertiesPlugin.INSTANCE
-								.getImage(IEditUIPropertiesImages.EDIT)));
-		editItemAction.setEnabled(false);
-		toolBarManager.add(editItemAction);
-
 		deleteItemAction = new Action("Remove") {
 			public void run() {
 				deleteItem();
@@ -125,11 +123,11 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 	}
 
 	void addItem() {
-		Object type = tableViewer.getInput();
+		Object type = viewer.getInput();
 		if (type instanceof IClass) {
 			final IClass parent = (IClass) type;
-			NewObjectWizard wizard = new NewObjectWizard(((IObject) parent)
-					.getModel()) {
+			NewObjectWizard wizard = new NewObjectWizard(
+					((IObject) parent).getModel()) {
 				@Override
 				public boolean performFinish() {
 					final String resourceName = getObjectName();
@@ -141,23 +139,20 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 											IProgressMonitor progressMonitor,
 											IAdaptable info)
 											throws ExecutionException {
-										final IResource individual = parent
-												.newInstance(model.getURI()
-														.appendFragment(
-																resourceName));
+										final IResource individual = parent.newInstance(model
+												.getURI().appendFragment(
+														resourceName));
 
 										getShell().getDisplay().asyncExec(
 												new Runnable() {
 													@Override
 													public void run() {
-														tableViewer
-																.setSelection(new StructuredSelection(
-																		individual));
+														viewer.setSelection(new StructuredSelection(
+																individual));
 													}
 												});
 
-										return CommandResult
-												.newOKCommandResult(individual);
+										return CommandResult.newOKCommandResult(individual);
 									}
 								}, null, null);
 					} catch (ExecutionException e) {
@@ -184,9 +179,7 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 				protected CommandResult doExecuteWithResult(
 						IProgressMonitor progressMonitor, IAdaptable info)
 						throws ExecutionException {
-
-					final Object selected = ((IStructuredSelection) tableViewer
-							.getSelection()).getFirstElement();
+					final Object selected = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
 
 					if (selected instanceof IResource) {
 						((IResource) selected).getKommaManager().remove(
@@ -194,9 +187,8 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 						getShell().getDisplay().asyncExec(new Runnable() {
 							@Override
 							public void run() {
-								tableViewer
-										.setSelection(new StructuredSelection(
-												selected));
+								viewer.setSelection(new StructuredSelection(
+										selected));
 							}
 						});
 						return CommandResult.newOKCommandResult(selected);
@@ -211,7 +203,7 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 
 	@Override
 	public boolean setFocus() {
-		if (tableViewer != null && tableViewer.getTable().setFocus()) {
+		if (viewer != null && viewer.getControl().setFocus()) {
 			return true;
 		}
 		return super.setFocus();
@@ -219,15 +211,15 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 
 	public void reveal(IResource resource) {
 		if (resource instanceof IObject) {
-			tableViewer.setInput(resource);
+			viewer.setInput(resource);
 			refresh();
 		}
 	}
 
 	@Override
 	public boolean setEditorInput(Object input) {
-		if (input instanceof IClass) {
-			tableViewer.setInput(input);
+		if (input == null || input instanceof IClass) {
+			this.input = (IClass) input;
 			setStale(true);
 			return true;
 		}
@@ -240,12 +232,20 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 		if (adapterFactory == null || !adapterFactory.equals(newAdapterFactory)) {
 			adapterFactory = newAdapterFactory;
 
-			tableViewer.setLabelProvider(new AdapterFactoryLabelProvider(
-					getAdapterFactory()));
-
-			createContextMenuFor(tableViewer);
+			adapterFactoryChanged();
 		}
 
-		tableViewer.refresh();
+		setInputToViewer(viewer, input);
+	}
+
+	protected void setInputToViewer(StructuredViewer viewer, IClass input) {
+		viewer.setInput(input);
+	}
+
+	protected void adapterFactoryChanged() {
+		viewer.setLabelProvider(new AdapterFactoryLabelProvider(
+				getAdapterFactory()));
+
+		createContextMenuFor(viewer);
 	}
 }

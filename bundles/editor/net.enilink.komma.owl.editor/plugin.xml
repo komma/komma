@@ -66,6 +66,12 @@
          id="net.enilink.komma.owl.editor.views.DatatypePropertiesView"
          name="Datatype Properties">
    </view>
+   <view
+         class="net.enilink.komma.owl.editor.internal.individuals.InstanceTreeView"
+         id="net.enilink.komma.owl.editor.views.InstanceTreeView"
+         name="Instance Tree"
+         restorable="true">
+   </view>
 </extension>
 <extension
       point="org.eclipse.ui.perspectives">

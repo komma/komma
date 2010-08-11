@@ -127,18 +127,18 @@ public class ClassesPart extends AbstractEditingDomainPart {
 									final IEntity entity = model
 											.getManager()
 											.createNamed(
-													model
-															.getURI()
+													model.getURI()
 															.appendFragment(
 																	resourceName),
 													OWL.TYPE_CLASS);
 									if (treeViewer.getSelection() != null)
-										entity.getKommaManager().setProperty(
-												RDFS.PROPERTY_SUBCLASSOF
-														.toString(),
-												(Object) treeViewer
-														.getSelection());
-									//TODO: Typauswahl
+										entity.getKommaManager()
+												.setProperty(
+														RDFS.PROPERTY_SUBCLASSOF
+																.toString(),
+														(Object) treeViewer
+																.getSelection());
+									// TODO: Typauswahl
 
 									getShell().getDisplay().asyncExec(
 											new Runnable() {
@@ -174,8 +174,7 @@ public class ClassesPart extends AbstractEditingDomainPart {
 						IProgressMonitor progressMonitor, IAdaptable info)
 						throws ExecutionException {
 
-					final Object selected = ((IStructuredSelection) treeViewer
-							.getSelection()).getFirstElement();
+					final Object selected = ((IStructuredSelection) treeViewer.getSelection()).getFirstElement();
 
 					if (selected instanceof IResource) {
 						((IResource) selected).getKommaManager().remove(
@@ -237,7 +236,8 @@ public class ClassesPart extends AbstractEditingDomainPart {
 			}
 
 			treeViewer.setInput(new Object[] { model.getManager().find(
-					OWL.TYPE_THING) });
+					RDFS.TYPE_RESOURCE //
+					) });
 		} else if (adapterFactory != null) {
 			treeViewer.setInput(new Object[0]);
 		}
