@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Literal Converters
+Bundle-SymbolicName: net.enilink.komma.literals
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: net.enilink.komma.core,
+ net.enilink.vocab.rdfs,
+ net.enilink.komma.lib.sesame
+Import-Package: org.slf4j
