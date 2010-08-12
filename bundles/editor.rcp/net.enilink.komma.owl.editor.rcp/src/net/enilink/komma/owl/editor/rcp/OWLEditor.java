@@ -17,7 +17,6 @@ import net.enilink.komma.model.base.ModelSetFactory;
 import net.enilink.komma.owl.editor.IModelProvider;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
 import net.enilink.komma.owl.editor.internal.classes.ClassesPage;
-import net.enilink.komma.owl.editor.internal.individuals.IndividualsPage;
 import net.enilink.komma.owl.editor.internal.ontology.OntologyPage;
 import net.enilink.komma.owl.editor.internal.properties.DatatypePropertiesPage;
 import net.enilink.komma.owl.editor.internal.properties.ObjectPropertiesPage;
@@ -39,7 +38,6 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport,
 	protected ObjectPropertiesPage objectPropertiesPage;
 	protected OtherPropertiesPage otherPropertiesPage;
 	protected DatatypePropertiesPage datatypePropertiesPage;
-	protected IndividualsPage individualsPage;
 
 	public OWLEditor() {
 		ontologyPage = new OntologyPage(this);
@@ -47,7 +45,6 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport,
 		objectPropertiesPage = new ObjectPropertiesPage(this);
 		otherPropertiesPage = new OtherPropertiesPage(this);
 		datatypePropertiesPage = new DatatypePropertiesPage(this);
-		individualsPage = new IndividualsPage(this);
 	}
 
 	protected void addPages() {
@@ -60,7 +57,6 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport,
 			addPage(objectPropertiesPage);
 			addPage(datatypePropertiesPage);
 			addPage(otherPropertiesPage);
-			addPage(individualsPage);
 
 			getSite().getShell().getDisplay().asyncExec(new Runnable() {
 				public void run() {
