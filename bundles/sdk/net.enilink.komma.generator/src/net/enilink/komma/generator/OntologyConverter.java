@@ -65,7 +65,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import net.enilink.composition.properties.sesame.SesameLiteralManager;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.URIFactory;
@@ -109,6 +108,7 @@ import net.enilink.komma.generator.support.ClassPropertySupport;
 import net.enilink.komma.generator.support.CodePropertySupport;
 import net.enilink.komma.generator.support.ConceptSupport;
 import net.enilink.komma.generator.support.OntologySupport;
+import net.enilink.komma.literals.LiteralConverter;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.sesame.DecoratingSesameManagerFactory;
@@ -441,10 +441,9 @@ public class OntologyConverter implements IApplication {
 		}
 		ValueFactory valueFactory = new ValueFactoryImpl(
 				repository.getURIFactory(), repository.getLiteralFactory());
-		SesameLiteralManager manager = new SesameLiteralManager(valueFactory,
-				valueFactory);
-		manager.setClassLoader(cl);
-		createOntology(beans, manager, rdfOutputFile);
+		LiteralConverter literalConverter = new LiteralConverter();
+		literalConverter.setClassLoader(cl);
+		createOntology(beans, literalConverter, rdfOutputFile);
 	}
 
 	/**
@@ -597,13 +596,13 @@ public class OntologyConverter implements IApplication {
 	}
 
 	private void createOntology(List<Class<?>> beans,
-			SesameLiteralManager manager, File output) throws Exception {
+			LiteralConverter literalConverter, File output) throws Exception {
 		RDFFormat format = formatForFileName(output.getName());
 		Writer out = new FileWriter(output);
 		try {
 			RepositoryConnection conn = repository.getConnection();
 			OwlGenerator gen = new OwlGenerator();
-			gen.setLiteralManager(manager);
+			gen.setLiteralConverter(literalConverter);
 			for (Map.Entry<String, String> e : packages.entrySet()) {
 				String namespace = e.getKey();
 				String pkgName = e.getValue();

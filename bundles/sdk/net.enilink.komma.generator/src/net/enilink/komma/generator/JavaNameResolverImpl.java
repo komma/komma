@@ -35,18 +35,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.mappers.RoleMapper;
-import net.enilink.composition.properties.sesame.SesameLiteralManager;
 import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.Repository;
@@ -55,13 +51,19 @@ import org.openrdf.result.NamespaceResult;
 import org.openrdf.result.Result;
 import org.openrdf.result.TupleResult;
 import org.openrdf.store.StoreException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import net.enilink.vocab.rdf.RDF;
+import net.enilink.komma.literals.LiteralConverter;
 import net.enilink.komma.core.URI;
 
 public class JavaNameResolverImpl implements JavaNameResolver {
+	private final Logger log = LoggerFactory.getLogger(JavaNameResolver.class);
+
 	private static final String FILTER_REGEX_PATTERN = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
 			+ "SELECT ?thing\n"
 			+ "WHERE { ?thing rdf:type ?type .\n"
@@ -79,7 +81,8 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 
 	private RoleMapper<org.openrdf.model.URI> roles;
 
-	private SesameLiteralManager literals;
+	@Inject
+	private LiteralConverter literalConverter;
 
 	private ClassLoaderPackages cl;
 
@@ -104,11 +107,6 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 
 	public JavaNameResolverImpl(ClassLoader cl) {
 		this.cl = new ClassLoaderPackages(cl);
-	}
-
-	@Inject
-	public void setLiteralManager(SesameLiteralManager literals) {
-		this.literals = literals;
 	}
 
 	@Inject
@@ -165,24 +163,14 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 		if (prefix == null || prefix.length() == 0) {
 			prefixes.remove(namespace);
 		} else {
-			// replace characters which are not allowed in Java identifiers
-			Matcher m = Pattern.compile("[-]+(.?)").matcher(prefix);
-			if (m.find()) {
-				StringBuffer sb = new StringBuffer();
-				do {
-					m.appendReplacement(sb, m.group(1) != null ? m.group(1).toUpperCase() : "");
-				} while (m.find());
-				m.appendTail(sb);
-				
-				prefix = sb.toString();
-			}
-			prefixes.put(namespace, prefix);
+			prefixes.put(namespace, enc(prefix));
 		}
 	}
 
 	public URI getType(URI name) {
-		if (aliases.containsKey(name))
+		if (aliases.containsKey(name)) {
 			return aliases.get(name);
+		}
 		return name;
 	}
 
@@ -194,10 +182,12 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 			Class<?> javaClass = findJavaClass(name);
 			if (javaClass != null) {
 				// TODO support n-dimension arrays
-				if (javaClass.isArray())
+				if (javaClass.isArray()) {
 					return javaClass.getComponentType().getName() + "[]";
-				if (javaClass.getPackage() != null)
+				}
+				if (javaClass.getPackage() != null) {
 					return javaClass.getName();
+				}
 			}
 		}
 		String pkg = getPackageName(name);
@@ -211,17 +201,21 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 	public String getMethodName(URI name) {
 		String ns = name.namespace().toString();
 		String localPart = name.localPart();
-		if (prefixes.containsKey(ns))
+		if (prefixes.containsKey(ns)) {
 			return prefixes.get(ns) + initcap(localPart);
+		}
 		return enc(localPart);
 	}
 
 	public String getPackageName(URI uri) {
-		if (packages.containsKey(uri.namespace().toString()))
+		if (packages.containsKey(uri.namespace().toString())) {
 			return packages.get(uri.namespace().toString());
+		}
 		Class<?> javaClass = findJavaClass(uri);
-		if (javaClass == null || javaClass.getPackage() == null)
+		if (javaClass == null || javaClass.getPackage() == null) {
+			log.error("Unable to determine Java class for {}", uri);
 			return null;
+		}
 		return javaClass.getPackage().getName();
 	}
 
@@ -236,8 +230,9 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 	public String getPluralPropertyName(URI name) {
 		String ns = name.namespace().toString();
 		String localPart = name.localPart();
-		if (prefixes.containsKey(ns))
+		if (prefixes.containsKey(ns)) {
 			return prefixes.get(ns) + plural(initcap(localPart));
+		}
 		return plural(enc(localPart));
 	}
 
@@ -250,31 +245,43 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 	}
 
 	private String enc(String str) {
-		if (str.length() == 0)
-			return "";
+		if (str.length() == 0) {
+			return "_";
+		}
 		char[] name = str.toCharArray();
 		StringBuffer sb = new StringBuffer(name.length);
 		for (int i = 0; i < name.length; i++) {
 			if (name[i] == '-' || name[i] == '.') {
 				name[i + 1] = Character.toUpperCase(name[i + 1]);
-			} else {
+			} else if ('A' <= name[i] && name[i] <= 'Z' || 'a' <= name[i]
+					&& name[i] <= 'z') {
 				sb.append(name[i]);
+			} else if (i > 0 && '0' <= name[i] && name[i] <= '9') {
+				sb.append(name[i]);
+			} else if ('*' == name[i]) {
+				sb.append("Star");
+			} else if ('#' == name[i]) {
+				sb.append("Hash");
+			} else {
+				sb.append('_');
 			}
 		}
 		return sb.toString();
 	}
 
 	private Class<?> findJavaClass(URI uri) {
-		if (uri.equals(net.enilink.komma.core.URIImpl
-				.createURI(RDF.NAMESPACE + "XMLLiteral")))
-			return literals.findClass(asSesameURI(uri));
+		if (uri.equals(RDF.TYPE_XMLLITERAL)) {
+			return literalConverter.findClass(uri);
+		}
 		Class<?> klass = findBeanClassName(uri);
-		if (klass != null)
+		if (klass != null) {
 			return klass;
+		}
 		klass = findLoadedMethod(uri);
-		if (klass != null)
+		if (klass != null) {
 			return klass;
-		return literals.findClass(asSesameURI(uri));
+		}
+		return literalConverter.findClass(uri);
 	}
 
 	private Class<?> findBeanClassName(URI uri) {

@@ -45,7 +45,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.properties.sesame.SesameLiteralManager;
 import org.openrdf.model.BNode;
 import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.LiteralFactory;
@@ -65,6 +64,8 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 
+import net.enilink.komma.common.util.URIUtil;
+import net.enilink.komma.literals.LiteralConverter;
 import net.enilink.komma.core.KommaException;
 
 /**
@@ -75,7 +76,7 @@ import net.enilink.komma.core.KommaException;
  * 
  */
 public class OwlGenerator {
-	private SesameLiteralManager lc;
+	private LiteralConverter lc;
 
 	private Map<String, String> namespaces = new HashMap<String, String>();
 
@@ -92,7 +93,7 @@ public class OwlGenerator {
 	private ValueFactory valueFactory = new ValueFactoryImpl(bnodeFactory,
 			uriFactory, literalFactory);
 
-	public void setLiteralManager(SesameLiteralManager lc) {
+	public void setLiteralConverter(LiteralConverter lc) {
 		this.lc = lc;
 	}
 
@@ -116,8 +117,8 @@ public class OwlGenerator {
 			URI domain = createURI(info.getBeanDescriptor().getBeanClass());
 			for (PropertyDescriptor desc : info.getPropertyDescriptors()) {
 				if (desc.getReadMethod() != null
-						&& !desc.getReadMethod().getDeclaringClass().equals(
-								Object.class)) {
+						&& !desc.getReadMethod().getDeclaringClass()
+								.equals(Object.class)) {
 					handleBeanProperty(domain, desc);
 				}
 			}
@@ -249,8 +250,8 @@ public class OwlGenerator {
 			Iri ann = desc.getReadMethod().getAnnotation(Iri.class);
 			uri = uriFactory.createURI(ann.value());
 		} else if (domain.getNamespace().equals("java:")) {
-			uri = uriFactory.createURI(domain.stringValue() + "#", desc
-					.getName());
+			uri = uriFactory.createURI(domain.stringValue() + "#",
+					desc.getName());
 		} else {
 			uri = uriFactory.createURI(domain.getNamespace(), desc.getName());
 		}
@@ -393,8 +394,8 @@ public class OwlGenerator {
 				list = rest;
 				handleStatement(list, RDF.TYPE, RDF.LIST);
 			}
-			handleStatement(list, RDF.FIRST, literalFactory.createLiteral(
-					label, datatype));
+			handleStatement(list, RDF.FIRST,
+					literalFactory.createLiteral(label, datatype));
 		}
 		if (list != null) {
 			handleStatement(list, RDF.REST, RDF.NIL);
@@ -408,10 +409,12 @@ public class OwlGenerator {
 		if (range.equals(String.class))
 			return XMLSchema.STRING;
 		try {
-			URI datatype = lc.findDatatype(range);
-			if (datatype.getNamespace().equals("java:"))
+			net.enilink.komma.core.URI datatype = lc
+					.findDatatype(range);
+			if (datatype.scheme().equals("java")) {
 				return null;
-			return datatype;
+			}
+			return URIUtil.toSesameUri(datatype);
 		} catch (KommaException e) {
 			return null;
 		}

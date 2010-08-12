@@ -10,7 +10,8 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.lib.sesame,
  net.enilink.vocab.rdfs,
  net.enilink.vocab.owl,
- net.enilink.composition.properties.sesame,
+ net.enilink.komma.swiftowlim,
+ net.enilink.komma.literals,
  org.eclipse.jdt.core;resolution:=optional
 Bundle-ClassPath: lib/commons-cli-1.1.jar,
  .
