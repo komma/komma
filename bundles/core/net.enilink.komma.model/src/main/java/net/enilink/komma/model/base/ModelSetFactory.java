@@ -128,7 +128,7 @@ public class ModelSetFactory implements IModelSetFactory {
 	@Override
 	public IModelSet createModelSet(IGraph configuration) {
 		ISesameManager metaDataManager = createMetaDataManager();
-		metaDataManager.add(configuration.iterator());
+		metaDataManager.add(configuration);
 
 		List<IReference> types = new ArrayList<IReference>();
 		for (URI type : modelSetTypes) {
