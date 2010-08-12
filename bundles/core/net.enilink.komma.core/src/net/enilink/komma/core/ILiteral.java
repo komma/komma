@@ -10,8 +10,8 @@
  *******************************************************************************/
 package net.enilink.komma.core;
 
-/** shameless plug */
-public interface ILiteral {
+/** Interface to represent RDF literals. */
+public interface ILiteral extends IValue {
 
 	/**
 	 * Gets some value of this literal.
@@ -19,22 +19,22 @@ public interface ILiteral {
 	 * @return The literal's value as-is.
 	 */
 	Object getValue();
-	
+
 	/**
 	 * Gets the label of this literal.
 	 * 
 	 * @return The literal's label.
 	 */
 	String getLabel();
-	
+
 	/**
 	 * Gets the datatype for this literal.
 	 * 
-	 * @return The datatype for this literal, or <tt>null</tt> if it doesn't have
-	 *         one.
+	 * @return The datatype for this literal, or <tt>null</tt> if it doesn't
+	 *         have one.
 	 */
 	URI getDatatype();
-	
+
 	/**
 	 * Gets the language tag for this literal, normalized to lower case.
 	 * 
@@ -42,5 +42,5 @@ public interface ILiteral {
 	 *         have one.
 	 */
 	String getLanguage();
-	
+
 }

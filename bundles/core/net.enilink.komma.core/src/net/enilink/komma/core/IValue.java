@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010 Fraunhofer IWU and others.
+ * Copyright (c) 2010 Fraunhofer IWU and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,12 +10,7 @@
  *******************************************************************************/
 package net.enilink.komma.core;
 
-/**
- * Represents a reference to a resource.
- * 
- * This is simply a value-object and does not implement any behavior.
- * 
- */
-public interface IReference extends IValue {
-	URI getURI();
+/** Interface to represent arbitrary RDF values. */
+public interface IValue {
+
 }
