@@ -96,6 +96,7 @@ import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.InferencingCapability;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.LockModeType;
@@ -583,7 +584,9 @@ public abstract class AbstractSesameManager implements ISesameManager {
 	public IReference findRestricted(Resource resource, Class<?>... concepts) {
 		// if type is restricted to IReference then simply return the
 		// corresponding reference value
-		if (concepts.length == 1 && IReference.class.equals(concepts[0])) {
+		if (concepts.length == 1
+				&& (IValue.class.equals(concepts[0]) || IReference.class
+						.equals(concepts[0]))) {
 			return ((SesameManagerFactory) getFactory()).getReference(resource);
 		}
 
@@ -687,7 +690,7 @@ public abstract class AbstractSesameManager implements ISesameManager {
 		Object instance = literalConverter.createObject(literal.getLabel(),
 				datatype);
 		if (type != null) {
-			if (ILiteral.class.equals(type)) {
+			if (IValue.class.equals(type) || ILiteral.class.equals(type)) {
 				instance = createLiteral(value, datatype, literal.getLanguage());
 			} else if (instance == null) {
 				if (type.isPrimitive()) {

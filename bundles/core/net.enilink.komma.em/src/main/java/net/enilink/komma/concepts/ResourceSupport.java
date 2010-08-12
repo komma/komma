@@ -19,17 +19,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import net.enilink.composition.properties.komma.KommaPropertySet;
 import net.enilink.composition.traits.Behaviour;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.store.StoreException;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
+import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.UniqueExtendedIterator;
 import net.enilink.vocab.owl.FunctionalProperty;
@@ -40,13 +34,10 @@ import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IResultDescriptor;
 import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.Statement;
-import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.sesame.ISesameEntity;
-import net.enilink.komma.sesame.ISesameManager;
 import net.enilink.komma.sesame.ISesameResourceAware;
-import net.enilink.komma.sesame.iterators.SesameIterator;
 import net.enilink.komma.util.KommaUtil;
 import net.enilink.komma.util.Pair;
 
@@ -185,34 +176,8 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	}
 
 	@Override
-	public void addProperty(IReference property, IResource obj) {
-		try {
-			getSesameManager().getConnection().add(getSesameResource(),
-					(URI) getSesameResource(property), getSesameResource(obj));
-		} catch (StoreException e) {
-			throw new KommaException(e);
-		}
-	}
-
-	@Override
-	public void addProperty(IReference property, Object obj)
-			throws KommaException {
-		if (obj instanceof Value) {
-			addProperty(property, (Value) obj);
-		} else {
-			addProperty(property, getSesameManager().getValue(obj));
-		}
-	}
-
-	@Override
-	public void addProperty(IReference property, Value obj)
-			throws KommaException {
-		try {
-			getSesameManager().getConnection().add(getSesameResource(),
-					(URI) getSesameResource(property), obj);
-		} catch (StoreException e) {
-			throw new KommaException(e);
-		}
+	public void addProperty(IReference property, Object obj) {
+		getKommaManager().add(new Statement(this, property, obj));
 	}
 
 	private PropertyInfo ensurePropertyInfo(IReference property) {
@@ -227,8 +192,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	public Object get(IReference property) {
 		PropertyInfo propertyInfo = ensurePropertyInfo(property);
 		if (propertyInfo.isSingle()) {
-			return ensurePropertyInfo(property).getPropertySet()
-					.getSingle();
+			return ensurePropertyInfo(property).getPropertySet().getSingle();
 		}
 		return ensurePropertyInfo(property).getPropertySet();
 	}
@@ -347,36 +311,14 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	}
 
 	@Override
-	public IExtendedIterator<?> getPropertyValues(IReference property,
+	public IExtendedIterator<IValue> getPropertyValues(IReference property,
 			boolean includeInferred) {
-		try {
-			TupleQuery query = getSesameManager().getConnection()
-					.prepareTupleQuery(SELECT_PROPERTY_OBJECTS);
-			query.setBinding("subj", getSesameResource());
-			query.setBinding("pred",
-					property != null ? getSesameResource(property) : null);
-			query.setIncludeInferred(includeInferred);
-
-			return new SesameIterator<BindingSet, Object>(query.evaluate()) {
-				@Override
-				protected Object convert(BindingSet value) throws Exception {
-					Value object = value.getValue("obj");
-					if (object instanceof Resource) {
-						return getSesameManager().getInstance(object, null);
-					} else {
-						net.enilink.komma.core.URI uri = (((Literal) object)
-								.getDatatype() != null) ? URIImpl
-								.createURI(((Literal) object).getDatatype()
-										.toString()) : null;
-						return getKommaManager().createLiteral(
-								getSesameManager().getInstance(object, null),
-								uri, ((Literal) object).getLanguage());
-					}
-				}
-			};
-		} catch (Exception e) {
-			throw new KommaException(e);
-		}
+		IQuery<IValue> query = getKommaManager().createQuery(
+				SELECT_PROPERTY_OBJECTS).bindResultType(IValue.class);
+		query.setParameter("subj", this);
+		query.setParameter("pred", property);
+		query.setIncludeInferred(includeInferred);
+		return query.evaluate();
 	}
 
 	@Override
@@ -390,72 +332,35 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	}
 
 	@Override
-	public boolean hasProperty(IReference property, IResource obj,
-			boolean includeInferred) {
-		try {
-			return getSesameManager().getConnection().hasMatch(
-					getSesameResource(), (URI) getSesameResource(property),
-					getSesameResource(obj), includeInferred);
-		} catch (StoreException e) {
-			throw new KommaException(e);
-		}
-	}
-
-	@Override
 	public boolean hasProperty(IReference property, Object obj,
 			boolean includeInferred) {
-		return hasProperty(property, obj, includeInferred);
-	}
-
-	@Override
-	public boolean hasProperty(IReference property, Value obj,
-			boolean includeInferred) {
-		try {
-			return getSesameManager().getConnection().hasMatch(
-					getSesameResource(), (URI) getSesameResource(property),
-					obj, includeInferred);
-		} catch (StoreException e) {
-			throw new KommaException(e);
-		}
+		return getKommaManager().createQuery("ASK {?s ?p ?o}")
+				.setParameter("s", this).setParameter("p", property)
+				.setParameter("o", obj).setIncludeInferred(includeInferred)
+				.getBooleanResult();
 	}
 
 	protected IExtendedIterator<IStatement> internalGetPropertyStmts(
 			final IEntity property, final boolean includeInferred) {
-		try {
-			TupleQuery query = getSesameManager().getConnection()
-					.prepareTupleQuery(
-							property != null ? SELECT_PROPERTY_OBJECTS
-									: SELECT_PROPERTIES_AND_OBJECTS);
-			query.setBinding("subj", getSesameResource());
-			query.setBinding("pred",
-					property != null ? getSesameResource(property) : null);
-			query.setIncludeInferred(includeInferred);
+		IQuery<?> query = getKommaManager().createQuery(
+				property != null ? SELECT_PROPERTY_OBJECTS
+						: SELECT_PROPERTIES_AND_OBJECTS);
+		query.setParameter("subj", this);
+		query.setParameter("pred", property);
+		query.setIncludeInferred(includeInferred);
+		query.bindResultType(property != null ? 0 : 1, IValue.class);
 
-			final ISesameManager manager = getSesameManager();
-			return new SesameIterator<BindingSet, IStatement>(query.evaluate()) {
-				@Override
-				protected IStatement convert(BindingSet value) throws Exception {
-					Object object = value.getValue("obj");
-					if (object instanceof Resource) {
-						object = manager.getInstance((Resource) object, null);
-					} else {
-						net.enilink.komma.core.URI uri = (((Literal) object)
-								.getDatatype() != null) ? URIImpl
-								.createURI(((Literal) object).getDatatype()
-										.toString()) : null;
-						object = manager.createLiteral(
-								manager.getInstance((Value) object, null), uri,
-								((Literal) object).getLanguage());
-					}
+		return new ConvertingIterator<Object, IStatement>(query.evaluate()) {
+			@Override
+			protected IStatement convert(Object value) {
+				if (value instanceof Object[]) {
+					Object[] values = (Object[]) value;
 					return new Statement(getBehaviourDelegate(),
-							property != null ? property : (IEntity) manager
-									.getInstance(value.getValue("pred"), null),
-							object, includeInferred);
+							(IReference) values[0], values[1]);
 				}
-			};
-		} catch (Exception e) {
-			throw new KommaException(e);
-		}
+				return new Statement(getBehaviourDelegate(), property, value);
+			}
+		};
 	}
 
 	@Override
@@ -467,16 +372,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public boolean isPropertySet(IReference property, boolean includeInferred) {
-		try {
-			return getSesameManager()
-					.getConnection()
-					.hasMatch(
-							getSesameResource(),
-							(URI) ((ISesameResourceAware) property)
-									.getSesameResource(), null, includeInferred);
-		} catch (StoreException e) {
-			throw new KommaException(e);
-		}
+		return hasProperty(property, null, includeInferred);
 	}
 
 	public void refresh(IReference property) {
@@ -488,43 +384,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public void removeProperty(IReference property) {
-		try {
-			getSesameManager().getConnection().removeMatch(getSesameResource(),
-					(URI) getSesameResource(property), null);
-		} catch (StoreException e) {
-			throw new KommaException(e);
-		}
-	}
-
-	@Override
-	public void removeProperty(IReference property, IResource obj) {
-		try {
-			getSesameManager().getConnection().removeMatch(getSesameResource(),
-					(URI) getSesameResource(property), getSesameResource(obj));
-		} catch (StoreException e) {
-			throw new KommaException(e);
-		}
-	}
-
-	@Override
-	public void removeProperty(IReference property, Object obj)
-			throws KommaException {
-		if (obj instanceof Value) {
-			removeProperty(property, (Value) obj);
-		} else {
-			removeProperty(property, getSesameManager().getValue(obj));
-		}
-	}
-
-	@Override
-	public void removeProperty(IReference property, Value obj)
-			throws KommaException {
-		try {
-			getSesameManager().getConnection().removeMatch(getSesameResource(),
-					(URI) getSesameResource(property), obj);
-		} catch (StoreException e) {
-			throw new KommaException(e);
-		}
+		getKommaManager().remove(new Statement(this, property, null));
 	}
 
 	@SuppressWarnings("unchecked")

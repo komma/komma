@@ -12,21 +12,17 @@ package net.enilink.komma.concepts;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.cache.annotations.Cacheable;
-import org.openrdf.model.Value;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.rdfs.Resource;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IValue;
 import net.enilink.komma.util.Pair;
 
 @Iri("http://www.w3.org/2000/01/rdf-schema#Resource")
 public interface IResource extends Resource {
-	void addProperty(IReference property, IResource obj);
-
 	void addProperty(IReference property, Object obj);
-
-	void addProperty(IReference property, Value obj);
 
 	@Cacheable
 	Pair<Integer, Integer> getApplicableCardinality(IReference property);
@@ -48,7 +44,7 @@ public interface IResource extends Resource {
 	@Cacheable(key = "urn:komma:directClasses")
 	IExtendedIterator<IClass> getDirectClasses();
 
-	IExtendedIterator<?> getPropertyValues(IReference property,
+	IExtendedIterator<IValue> getPropertyValues(IReference property,
 			boolean includeInferred);
 
 	IExtendedIterator<IStatement> getPropertyStatements(IReference property,
@@ -56,22 +52,13 @@ public interface IResource extends Resource {
 
 	boolean hasApplicableProperty(IReference property);
 
-	boolean hasProperty(IReference property, IResource obj,
-			boolean includeInferred);
-
 	boolean hasProperty(IReference property, Object obj, boolean includeInferred);
-
-	boolean hasProperty(IReference property, Value obj, boolean includeInferred);
 
 	boolean isOntLanguageTerm();
 
 	boolean isPropertySet(IReference property, boolean includeInferred);
 
-	void removeProperty(IReference property, IResource obj);
-
 	void removeProperty(IReference property, Object obj);
-
-	void removeProperty(IReference property, Value obj);
 
 	void removeProperty(IReference property);
 
