@@ -42,11 +42,7 @@ import org.slf4j.LoggerFactory;
 public class TypeMapper<T> implements Cloneable {
 	private final Logger logger = LoggerFactory.getLogger(TypeMapper.class);
 
-	private Map<Class<?>, T> types;
-
-	public TypeMapper() {
-		types = new ConcurrentHashMap<Class<?>, T>(256);
-	}
+	private Map<Class<?>, T> types = new ConcurrentHashMap<Class<?>, T>(256);
 
 	public TypeMapper<T> clone() {
 		try {
