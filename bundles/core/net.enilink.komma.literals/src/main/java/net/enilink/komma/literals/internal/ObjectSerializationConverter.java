@@ -59,7 +59,6 @@ public class ObjectSerializationConverter<T> implements IConverter<T> {
 	private URI datatype;
 
 	public ObjectSerializationConverter(Class<T> type) {
-		super();
 		this.type = type;
 		this.datatype = URIImpl.createURI("java:" + type.getName());
 	}

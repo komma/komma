@@ -174,6 +174,8 @@ public class LiteralConverter implements Cloneable {
 				}
 			}
 		}
+		injector.injectMembers(converter);
+		
 		IConverter<?> o = converters.putIfAbsent(name, converter);
 		if (o != null) {
 			converter = (IConverter<T>) o;

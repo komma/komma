@@ -48,8 +48,6 @@ public class BigIntegerConverter implements IConverter<BigInteger> {
 	@Inject
 	private ILiteralFactory lf;
 
-	private URI datatype;
-
 	public String getJavaClassName() {
 		return BigInteger.class.getName();
 	}
@@ -59,7 +57,7 @@ public class BigIntegerConverter implements IConverter<BigInteger> {
 	}
 
 	public void setDatatype(URI dt) {
-		if (!dt.equals(datatype))
+		if (!dt.equals(getDatatype()))
 			throw new IllegalArgumentException(dt.toString());
 	}
 
@@ -68,7 +66,7 @@ public class BigIntegerConverter implements IConverter<BigInteger> {
 	}
 
 	public ILiteral serialize(BigInteger object) {
-		return lf.createLiteral(object, object.toString(), datatype, null);
+		return lf.createLiteral(object, object.toString(), getDatatype(), null);
 	}
 
 }

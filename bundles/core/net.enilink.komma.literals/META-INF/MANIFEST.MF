@@ -8,3 +8,4 @@ Require-Bundle: net.enilink.komma.core,
  net.enilink.vocab.rdfs,
  net.enilink.komma.lib.sesame
 Import-Package: org.slf4j
+Export-Package: net.enilink.komma.literals
