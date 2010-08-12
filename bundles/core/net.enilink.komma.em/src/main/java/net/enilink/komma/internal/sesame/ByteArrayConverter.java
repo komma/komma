@@ -11,27 +11,27 @@
 package net.enilink.komma.internal.sesame;
 
 import org.apache.commons.codec.binary.Base64;
-import net.enilink.composition.properties.sesame.converters.Marshall;
-import org.openrdf.model.Literal;
-import org.openrdf.model.LiteralFactory;
-import org.openrdf.model.URI;
-import org.openrdf.model.vocabulary.XMLSchema;
 
-public class ByteArrayMarshall implements Marshall<byte[]> {
-	private LiteralFactory lf;
+import com.google.inject.Inject;
 
-	public ByteArrayMarshall(LiteralFactory lf) {
-		this.lf = lf;
-	}
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
+import net.enilink.komma.literals.IConverter;
+import net.enilink.komma.core.ILiteral;
+import net.enilink.komma.core.ILiteralFactory;
+import net.enilink.komma.core.URI;
+
+public class ByteArrayConverter implements IConverter<byte[]> {
+	@Inject
+	private ILiteralFactory lf;
 
 	@Override
-	public byte[] deserialize(Literal literal) {
-		return Base64.decodeBase64(literal.stringValue().getBytes());
+	public byte[] deserialize(String label) {
+		return Base64.decodeBase64(label.getBytes());
 	}
 
 	@Override
 	public URI getDatatype() {
-		return XMLSchema.BASE64BINARY;
+		return XMLSCHEMA.TYPE_BASE64BINARY;
 	}
 
 	@Override
@@ -40,14 +40,14 @@ public class ByteArrayMarshall implements Marshall<byte[]> {
 	}
 
 	@Override
-	public Literal serialize(byte[] data) {
-		return lf.createLiteral(new String(Base64.encodeBase64(data)),
-				getDatatype());
+	public ILiteral serialize(byte[] data) {
+		return lf.createLiteral(data, new String(Base64.encodeBase64(data)),
+				getDatatype(), null);
 	}
 
 	@Override
 	public void setDatatype(URI datatype) {
-		if (!datatype.equals(XMLSchema.BASE64BINARY)) {
+		if (!datatype.equals(getDatatype())) {
 			throw new IllegalArgumentException(datatype.toString());
 		}
 	}

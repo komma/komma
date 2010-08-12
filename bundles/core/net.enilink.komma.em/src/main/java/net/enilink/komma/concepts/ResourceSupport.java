@@ -17,8 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.enilink.composition.properties.sesame.PropertySetModifier;
-import net.enilink.composition.properties.sesame.SesamePropertySet;
+import net.enilink.composition.properties.komma.KommaPropertySet;
 import net.enilink.composition.traits.Behaviour;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -34,7 +33,6 @@ import com.google.inject.Injector;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.UniqueExtendedIterator;
 import net.enilink.vocab.owl.FunctionalProperty;
-import net.enilink.komma.common.util.URIUtil;
 import net.enilink.komma.internal.sesame.behaviours.OrderedSesamePropertySet;
 import net.enilink.komma.results.ResultDescriptor;
 import net.enilink.komma.core.IEntity;
@@ -56,7 +54,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		IResource, Behaviour<IResource> {
 	class PropertyInfo {
 		private IReference property;
-		private SesamePropertySet<Object> sesamePropertySet;
+		private KommaPropertySet<Object> propertySet;
 		private boolean single;
 
 		PropertyInfo(IReference property) {
@@ -72,26 +70,23 @@ public abstract class ResourceSupport extends BehaviorBase implements
 			}
 		}
 
-		SesamePropertySet<Object> getSesamePropertySet() {
-			if (sesamePropertySet != null) {
-				return sesamePropertySet;
+		KommaPropertySet<Object> getPropertySet() {
+			if (propertySet != null) {
+				return propertySet;
 			}
-
-			PropertySetModifier modifier = new PropertySetModifier(
-					URIUtil.toSesameUri(property.getURI()));
 
 			if (property instanceof IProperty
 					&& ((IProperty) property).isOrderedContainment()) {
-				sesamePropertySet = new OrderedSesamePropertySet<Object>(
-						(ISesameEntity) getBehaviourDelegate(), modifier);
+				propertySet = new OrderedSesamePropertySet<Object>(
+						(ISesameEntity) getBehaviourDelegate(), property);
 			} else {
-				sesamePropertySet = new SesamePropertySet<Object>(
-						(ISesameEntity) getBehaviourDelegate(), modifier);
+				propertySet = new KommaPropertySet<Object>(
+						(ISesameEntity) getBehaviourDelegate(), property);
 			}
 
-			injector.injectMembers(sesamePropertySet);
+			injector.injectMembers(propertySet);
 
-			return sesamePropertySet;
+			return propertySet;
 		}
 
 		boolean isSingle() {
@@ -232,10 +227,10 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	public Object get(IReference property) {
 		PropertyInfo propertyInfo = ensurePropertyInfo(property);
 		if (propertyInfo.isSingle()) {
-			return ensurePropertyInfo(property).getSesamePropertySet()
+			return ensurePropertyInfo(property).getPropertySet()
 					.getSingle();
 		}
-		return ensurePropertyInfo(property).getSesamePropertySet();
+		return ensurePropertyInfo(property).getPropertySet();
 	}
 
 	@Override
@@ -338,7 +333,8 @@ public abstract class ResourceSupport extends BehaviorBase implements
 			final IReference property, boolean includeInferred) {
 		IEntity propertyEntity = (property instanceof IEntity) ? (IEntity) property
 				: (IEntity) getSesameManager().getInstance(
-						((ISesameResourceAware) property).getSesameResource(), null);
+						((ISesameResourceAware) property).getSesameResource(),
+						null);
 
 		IExtendedIterator<IStatement> stmts = internalGetPropertyStmts(
 				propertyEntity, false);
@@ -373,8 +369,8 @@ public abstract class ResourceSupport extends BehaviorBase implements
 								.createURI(((Literal) object).getDatatype()
 										.toString()) : null;
 						return getKommaManager().createLiteral(
-								getSesameManager().getInstance(object, null), uri,
-								((Literal) object).getLanguage());
+								getSesameManager().getInstance(object, null),
+								uri, ((Literal) object).getLanguage());
 					}
 				}
 			};
@@ -454,8 +450,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 					return new Statement(getBehaviourDelegate(),
 							property != null ? property : (IEntity) manager
 									.getInstance(value.getValue("pred"), null),
-							object,
-							includeInferred);
+							object, includeInferred);
 				}
 			};
 		} catch (Exception e) {
@@ -487,7 +482,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	public void refresh(IReference property) {
 		PropertyInfo propertyInfo = getPropertyInfo(property);
 		if (propertyInfo != null) {
-			propertyInfo.getSesamePropertySet().refresh();
+			propertyInfo.getPropertySet().refresh();
 		}
 	}
 
@@ -538,16 +533,16 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		boolean functional = propertyInfo.isSingle();
 
 		if (value == null) {
-			propertyInfo.getSesamePropertySet().clear();
+			propertyInfo.getPropertySet().clear();
 		} else if (!functional && value instanceof Collection<?>) {
 			if (value instanceof Set<?>) {
-				propertyInfo.getSesamePropertySet().setAll((Set<Object>) value);
+				propertyInfo.getPropertySet().setAll((Set<Object>) value);
 			} else {
-				propertyInfo.getSesamePropertySet().setAll(
+				propertyInfo.getPropertySet().setAll(
 						(new HashSet<Object>((Collection<?>) value)));
 			}
 		} else {
-			propertyInfo.getSesamePropertySet().setSingle(value);
+			propertyInfo.getPropertySet().setSingle(value);
 		}
 	}
 }

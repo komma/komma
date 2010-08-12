@@ -17,23 +17,18 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.RandomAccess;
 
-import net.enilink.composition.properties.sesame.CloseableIterator;
-import net.enilink.composition.properties.sesame.PropertySetModifier;
-import net.enilink.composition.properties.sesame.SesamePropertySet;
+import net.enilink.composition.properties.komma.KommaPropertySet;
 import net.enilink.composition.properties.traits.Refreshable;
-import org.openrdf.model.Statement;
-import org.openrdf.store.StoreException;
 
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.komma.concepts.CONCEPTS;
 import net.enilink.komma.concepts.IResource;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.sesame.ISesameEntity;
-import net.enilink.komma.sesame.iterators.SesameIterator;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.util.IPartialOrderProvider;
 import net.enilink.komma.util.LinearExtension;
 
-public class OrderedSesamePropertySet<E> extends SesamePropertySet<E> implements
+public class OrderedSesamePropertySet<E> extends KommaPropertySet<E> implements
 		List<E>, RandomAccess, Cloneable, Refreshable {
 	private List<E> internalList = new AbstractList<E>() {
 		@Override
@@ -141,8 +136,7 @@ public class OrderedSesamePropertySet<E> extends SesamePropertySet<E> implements
 		}
 	};
 
-	public OrderedSesamePropertySet(ISesameEntity bean,
-			PropertySetModifier property) {
+	public OrderedSesamePropertySet(IReference bean, IReference property) {
 		super(bean, property);
 	}
 
@@ -162,9 +156,8 @@ public class OrderedSesamePropertySet<E> extends SesamePropertySet<E> implements
 		return internalList.addAll(index, c);
 	}
 
-	protected CloseableIterator<E> createElementsIterator() {
-		class ElementsIterator extends WrappedIterator<E> implements
-				CloseableIterator<E> {
+	protected IExtendedIterator<E> createElementsIterator() {
+		class ElementsIterator extends WrappedIterator<E> {
 			E current;
 			int index = -1;
 			List<E> list;
@@ -196,30 +189,20 @@ public class OrderedSesamePropertySet<E> extends SesamePropertySet<E> implements
 	private final List<E> ensureCache() {
 		List<E> list = getCache();
 		if (list == null) {
-			try {
-				final List<E> values = new SesameIterator<Statement, E>(
-						getStatements()) {
-					@Override
-					protected E convert(Statement stmt) {
-						return createInstance(stmt);
-					}
-				}.toList();
+			final List<E> values = createElementsIterator().toList();
 
-				list = new LinearExtension<E>(new IPartialOrderProvider<E>() {
-					@Override
-					public Collection<E> getElements() {
-						return values;
-					}
+			list = new LinearExtension<E>(new IPartialOrderProvider<E>() {
+				@Override
+				public Collection<E> getElements() {
+					return values;
+				}
 
-					@Override
-					public Collection<E> getSuccessors(E element) {
-						return getPrecedes(element);
-					}
-				}).createLinearExtension(new ArrayList<E>());
-				setCache(list);
-			} catch (StoreException e) {
-				throw new KommaException(e);
-			}
+				@Override
+				public Collection<E> getSuccessors(E element) {
+					return getPrecedes(element);
+				}
+			}).createLinearExtension(new ArrayList<E>());
+			setCache(list);
 		}
 		return list;
 	}

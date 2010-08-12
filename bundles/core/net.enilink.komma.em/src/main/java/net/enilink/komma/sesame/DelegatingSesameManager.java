@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.enilink.composition.mappers.RoleMapper;
-import net.enilink.composition.properties.sesame.ObjectQuery;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -56,7 +55,7 @@ public class DelegatingSesameManager implements ISesameManager {
 	}
 
 	@Override
-	public void add(Iterator<? extends IStatement> statements) {
+	public void add(Iterable<? extends IStatement> statements) {
 		delegate.add(statements);
 	}
 
@@ -199,11 +198,6 @@ public class DelegatingSesameManager implements ISesameManager {
 	}
 
 	@Override
-	public Object getDelegate() {
-		return delegate.getDelegate();
-	}
-
-	@Override
 	public IKommaManagerFactory getFactory() {
 		return delegate.getFactory();
 	}
@@ -221,11 +215,6 @@ public class DelegatingSesameManager implements ISesameManager {
 	@Override
 	public Object getInstance(Value value, Class<?> type) {
 		return delegate.getInstance(value, type);
-	}
-
-	@Override
-	public String getLanguage() {
-		return delegate.getLanguage();
 	}
 
 	@Override
@@ -326,11 +315,6 @@ public class DelegatingSesameManager implements ISesameManager {
 	}
 
 	@Override
-	public ObjectQuery prepareObjectQuery(String query, String baseURI) {
-		return delegate.prepareObjectQuery(query, baseURI);
-	}
-
-	@Override
 	public void refresh(Object entity) {
 		delegate.refresh(entity);
 	}
@@ -358,7 +342,7 @@ public class DelegatingSesameManager implements ISesameManager {
 	}
 
 	@Override
-	public void remove(Iterator<? extends IStatement> statements) {
+	public void remove(Iterable<? extends IStatement> statements) {
 		delegate.remove(statements);
 	}
 

@@ -47,7 +47,8 @@ import net.enilink.komma.sesame.iterators.SesameIterator;
  * @author James Leigh
  * @author Ken Wenzel
  */
-public class SesameProjectedTupleResult extends SesameIterator<BindingSet, Object> {
+public class SesameProjectedTupleResult extends
+		SesameIterator<BindingSet, Object> {
 	private List<String> bindings;
 
 	private ISesameManager manager;
@@ -58,8 +59,8 @@ public class SesameProjectedTupleResult extends SesameIterator<BindingSet, Objec
 
 	private ResultInfo[] resultInfos;
 
-	public SesameProjectedTupleResult(ISesameManager manager, TupleResult result,
-			int maxResults, ResultInfo[] resultInfos) {
+	public SesameProjectedTupleResult(ISesameManager manager,
+			TupleResult result, int maxResults, ResultInfo[] resultInfos) {
 		super(result);
 		try {
 			bindings = result.getBindingNames();
@@ -77,24 +78,23 @@ public class SesameProjectedTupleResult extends SesameIterator<BindingSet, Objec
 		if (value == null) {
 			return null;
 		}
-		if (resultInfos != null && value instanceof Resource) {
-			Object result;
-			if (resultInfos[0].typeRestricted) {
-				result = manager.findRestricted((Resource) value,
-						resultInfos[0].types);
-			} else {
-				result = manager.find((Resource) value, resultInfos[0].types);
+		if (resultInfos != null) {
+			if (value instanceof Resource) {
+				if (resultInfos[0].typeRestricted) {
+					return manager.findRestricted((Resource) value,
+							resultInfos[0].types);
+				} else {
+					return manager.find((Resource) value, resultInfos[0].types);
+				}
+			} else if (resultInfos[0].typeRestricted) {
+				return manager.getInstance(value, resultInfos[0].types[0]);
 			}
-			// if (bindings.size() > 1) {
-			// bindValues(result, solution);
-			// }
-			return result;
 		}
 		return manager.getInstance(value, null);
 	}
 
 	// private Map<Class<?>, List<Method>> useBindingsMap;
-	//	
+	//
 	// private void bindValues(Object object, BindingSet solution) {
 	// List<Method> bindMethods = useBindingsMap != null ? useBindingsMap
 	// .get(object.getClass()) : null;

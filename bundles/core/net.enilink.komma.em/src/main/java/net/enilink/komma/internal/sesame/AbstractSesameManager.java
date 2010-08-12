@@ -52,14 +52,10 @@ import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.cache.annotations.Cacheable;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.properties.PropertySet;
-import net.enilink.composition.properties.sesame.ConversionUtil;
-import net.enilink.composition.properties.sesame.ObjectQuery;
-import net.enilink.composition.properties.sesame.SesameLiteralManager;
-import net.enilink.composition.properties.sesame.SesameTypeManager;
+import net.enilink.composition.properties.komma.ConversionUtil;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.composition.traits.Behaviour;
-import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
@@ -76,9 +72,7 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
-import org.openrdf.result.Result;
 import org.openrdf.result.TupleResult;
-import org.openrdf.result.impl.ResultImpl;
 import org.openrdf.store.StoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +87,7 @@ import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.util.URIUtil;
+import net.enilink.komma.literals.LiteralConverter;
 import net.enilink.komma.core.FlushModeType;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IKommaManager;
@@ -133,10 +128,10 @@ public abstract class AbstractSesameManager implements ISesameManager {
 	@Inject
 	protected Injector injector;
 
-	private String language;
+	@Inject
+	private LiteralConverter literalConverter;
 
-	private SesameLiteralManager literalManager;
-
+	@Inject
 	private Locale locale;
 
 	final Logger logger = LoggerFactory.getLogger(AbstractSesameManager.class);
@@ -156,11 +151,13 @@ public abstract class AbstractSesameManager implements ISesameManager {
 	private SesameTypeManager typeManager;
 
 	@Override
-	public void add(Iterator<? extends IStatement> statements) {
+	public void add(Iterable<? extends IStatement> statements) {
 		try {
+			Iterator<? extends IStatement> it = statements.iterator();
+
 			RepositoryConnection conn = getConnection();
-			while (statements.hasNext()) {
-				IStatement stmt = statements.next();
+			while (it.hasNext()) {
+				IStatement stmt = it.next();
 
 				conn.add(getResource(stmt.getSubject()),
 						(URI) getResource(stmt.getPredicate()),
@@ -388,14 +385,11 @@ public abstract class AbstractSesameManager implements ISesameManager {
 
 	public ILiteral createLiteral(Object value,
 			net.enilink.komma.core.URI datatype, String language) {
-		if (datatype != null) {
-			// let datatype take precedence if set, cannot set both
-			return new net.enilink.komma.common.util.Literal(value,
-					datatype);
-		} else {
+		if (datatype == null && language != null) {
 			return new net.enilink.komma.common.util.Literal(value,
 					language);
 		}
+		return literalConverter.createLiteral(value, datatype);
 	}
 
 	public <T> T createNamed(net.enilink.komma.core.URI uri,
@@ -612,11 +606,6 @@ public abstract class AbstractSesameManager implements ISesameManager {
 	}
 
 	@Override
-	public Object getDelegate() {
-		return this;
-	}
-
-	@Override
 	public SesameManagerFactory getFactory() {
 		return factory;
 	}
@@ -691,9 +680,16 @@ public abstract class AbstractSesameManager implements ISesameManager {
 			return bean;
 		}
 
-		Object instance = literalManager.createObject((Literal) value);
+		Literal literal = (Literal) value;
+		net.enilink.komma.core.URI datatype = literal.getDatatype() == null ? null
+				: net.enilink.komma.core.URIImpl.createURI(literal
+						.getDatatype().toString());
+		Object instance = literalConverter.createObject(literal.getLabel(),
+				datatype);
 		if (type != null) {
-			if (instance == null) {
+			if (ILiteral.class.equals(type)) {
+				instance = createLiteral(value, datatype, literal.getLanguage());
+			} else if (instance == null) {
 				if (type.isPrimitive()) {
 					instance = ConversionUtil.convertValue(type, 0, null);
 				}
@@ -715,11 +711,6 @@ public abstract class AbstractSesameManager implements ISesameManager {
 			instances.add(getInstance(values.next(), type, model));
 		}
 		return instances;
-	}
-
-	@Override
-	public String getLanguage() {
-		return language;
 	}
 
 	@Override
@@ -853,28 +844,36 @@ public abstract class AbstractSesameManager implements ISesameManager {
 
 	@Override
 	public Value getValue(Object instance) {
+		if (instance == null) {
+			return null;
+		}
+
 		Resource resource = getResource(instance);
 		if (resource != null) {
 			return resource;
 		}
 
-		URI datatype = null;
 		if (instance instanceof ILiteral) {
 			ILiteral literal = (ILiteral) instance;
-			datatype = literal.getDatatype() != null ? URIUtil
-					.toSesameUri(((ILiteral) instance).getDatatype()) : null;
 			instance = literal.getValue();
 
-			if (datatype != null) {
-				return literalManager.createLiteral(literal.getLabel(),
-						datatype);
+			if (literal.getDatatype() != null) {
+				getConnection().getValueFactory().createLiteral(
+						literal.getLabel(),
+						URIUtil.toSesameUri(literal.getDatatype()));
 			}
-			return literalManager.createLiteral(literal.getLabel(),
-					literal.getLanguage());
+			return getConnection().getValueFactory().createLiteral(
+					literal.getLabel(), literal.getLanguage());
 		}
 		Class<?> type = instance.getClass();
-		if (literalManager.isDatatype(type)) {
-			return literalManager.createLiteral(instance, datatype);
+		if (literalConverter.isDatatype(type)) {
+			ILiteral literal = literalConverter.createLiteral(instance, null);
+
+			net.enilink.komma.core.URI datatype = literal
+					.getDatatype();
+			return getConnection().getValueFactory().createLiteral(
+					literal.getLabel(),
+					datatype == null ? null : URIUtil.toSesameUri(datatype));
 		}
 		synchronized (merged) {
 			if (merged.containsKey(instance)) {
@@ -885,7 +884,8 @@ public abstract class AbstractSesameManager implements ISesameManager {
 			return getValue(merge(instance));
 		}
 
-		return literalManager.createLiteral(String.valueOf(instance),
+		return getConnection().getValueFactory().createLiteral(
+				String.valueOf(instance),
 				URIUtil.toSesameUri(XMLSCHEMA.TYPE_STRING));
 	}
 
@@ -1084,40 +1084,6 @@ public abstract class AbstractSesameManager implements ISesameManager {
 		merge(bean);
 	}
 
-	@Override
-	public ObjectQuery prepareObjectQuery(String queryStr, String baseURI) {
-		final SesameQuery<?> query = createQuery(queryStr);
-
-		return new ObjectQuery() {
-			@Override
-			public void close() {
-				query.close();
-			}
-
-			@Override
-			public Result<?> evaluate() throws StoreException {
-				return new ResultImpl<Object>((Cursor<?>) query.evaluate());
-			}
-
-			@Override
-			@SuppressWarnings("unchecked")
-			public <T> Result<T> evaluate(Class<T> resultType)
-					throws StoreException {
-				return new ResultImpl<T>((Cursor<T>) query.evaluate(resultType));
-			}
-
-			@Override
-			public void setBinding(String name, Object value) {
-				query.setParameter(name, value);
-			}
-
-			@Override
-			public void setIncludeInferred(boolean includeInferred) {
-				query.setIncludeInferred(true);
-			}
-		};
-	}
-
 	public void refresh(Object entity) {
 		if (entity instanceof Refreshable) {
 			((Refreshable) entity).refresh();
@@ -1146,11 +1112,13 @@ public abstract class AbstractSesameManager implements ISesameManager {
 	}
 
 	@Override
-	public void remove(Iterator<? extends IStatement> statements) {
+	public void remove(Iterable<? extends IStatement> statements) {
 		try {
+			Iterator<? extends IStatement> it = statements.iterator();
+
 			RepositoryConnection conn = getConnection();
-			while (statements.hasNext()) {
-				IStatement stmt = statements.next();
+			while (it.hasNext()) {
+				IStatement stmt = it.next();
 
 				conn.removeMatch(getResource(stmt.getSubject()),
 						(URI) getResource(stmt.getPredicate()),
@@ -1230,20 +1198,6 @@ public abstract class AbstractSesameManager implements ISesameManager {
 
 	@Override
 	public void setFlushMode(FlushModeType mode) {
-	}
-
-	@Inject
-	protected void setLiteralManager(SesameLiteralManager literalManager) {
-		this.literalManager = literalManager;
-	}
-
-	@Inject
-	public void setLocale(Locale locale) {
-		this.locale = locale;
-		if (locale != null) {
-			String lang = locale.toString().replace('_', '-');
-			language = lang.toLowerCase();
-		}
 	}
 
 	@Inject

@@ -13,7 +13,6 @@ package net.enilink.komma.sesame;
 import java.util.Collection;
 
 import net.enilink.composition.mappers.RoleMapper;
-import net.enilink.composition.properties.sesame.SesamePropertyContext;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -23,8 +22,9 @@ import org.openrdf.repository.contextaware.ContextAwareConnection;
 import net.enilink.komma.core.IKommaManager;
 import net.enilink.komma.core.IReference;
 
-public interface ISesameManager extends IKommaManager, SesamePropertyContext {
-	ISesameEntity createBean(Resource resource, Collection<URI> types, Model model);
+public interface ISesameManager extends IKommaManager {
+	ISesameEntity createBean(Resource resource, Collection<URI> types,
+			Model model);
 
 	<T> T create(Resource resource, Class<T> concept, Class<?>... concepts);
 

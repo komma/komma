@@ -51,10 +51,7 @@ import net.enilink.composition.mappers.TypeFactory;
 import net.enilink.composition.properties.PropertyMapper;
 import net.enilink.composition.properties.PropertySetDescriptorFactory;
 import net.enilink.composition.properties.behaviours.PropertyMapperProcessor;
-import net.enilink.composition.properties.sesame.SesameLiteralManager;
-import net.enilink.composition.properties.sesame.SesamePropertyContext;
-import net.enilink.composition.properties.sesame.SesamePropertySetDescriptorFactory;
-import net.enilink.composition.properties.sesame.converters.Marshall;
+import net.enilink.composition.properties.komma.KommaPropertySetDescriptorFactory;
 import net.enilink.composition.properties.sparql.SparqlBehaviourMethodProcessor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -78,17 +75,23 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 
+import net.enilink.komma.common.util.Literal;
 import net.enilink.komma.common.util.URIUtil;
 import net.enilink.komma.internal.sesame.AbstractSesameManager;
-import net.enilink.komma.internal.sesame.ByteArrayMarshall;
+import net.enilink.komma.internal.sesame.ByteArrayConverter;
 import net.enilink.komma.internal.sesame.DecoratingSesameManager;
 import net.enilink.komma.internal.sesame.SesameEntitySupport;
 import net.enilink.komma.internal.sesame.repository.LoaderRepository;
 import net.enilink.komma.internal.sesame.roles.RoleClassLoader;
+import net.enilink.komma.literals.IConverter;
+import net.enilink.komma.literals.LiteralConverter;
 import net.enilink.komma.core.IKommaManager;
 import net.enilink.komma.core.IKommaManagerFactory;
+import net.enilink.komma.core.ILiteral;
+import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.URIImpl;
 
 /**
  * Creates SesameManagers.
@@ -177,7 +180,7 @@ public abstract class SesameManagerFactory implements IKommaManagerFactory {
 					new TypeLiteral<Class<? extends PropertySetDescriptorFactory>>() {
 					})
 					.toInstance(
-							(Class<? extends PropertySetDescriptorFactory>) SesamePropertySetDescriptorFactory.class);
+							(Class<? extends PropertySetDescriptorFactory>) KommaPropertySetDescriptorFactory.class);
 		}
 
 		@Provides
@@ -227,13 +230,6 @@ public abstract class SesameManagerFactory implements IKommaManagerFactory {
 
 		@Provides
 		@Singleton
-		protected SesamePropertyContext providePropertyContext(
-				IKommaManager manager) {
-			return (SesamePropertyContext) manager;
-		}
-
-		@Provides
-		@Singleton
 		protected KommaModule provideKommaModule() {
 			return module;
 		}
@@ -246,25 +242,48 @@ public abstract class SesameManagerFactory implements IKommaManagerFactory {
 
 		@Provides
 		@Singleton
-		protected SesameLiteralManager provideLiteralManager(Injector injector,
+		protected LiteralConverter provideLiteralManager(Injector injector,
 				TypeFactory<URI> typeFactory, RepositoryConnection connection) {
-			SesameLiteralManager literalManager = new SesameLiteralManager(
-					connection.getValueFactory(), connection.getValueFactory());
+			LiteralConverter literalManager = new LiteralConverter();
 			injector.injectMembers(literalManager);
 
 			for (KommaModule.Association e : module.getDatatypes()) {
 				literalManager.addDatatype(e.getJavaClass(),
-						typeFactory.createType(e.getRdfType()));
+						URIImpl.createURI(e.getRdfType()));
 			}
 
-			// record additional marshall for Base64 encoded byte arrays
-			Marshall<?> marshall = new ByteArrayMarshall(getRepository()
-					.getLiteralFactory());
-			literalManager
-					.recordMarshall(marshall.getJavaClassName(), marshall);
-			literalManager.recordType(byte[].class, marshall.getDatatype());
+			// record additional converter for Base64 encoded byte arrays
+			IConverter<?> converter = new ByteArrayConverter();
+			literalManager.registerConverter(converter.getJavaClassName(),
+					converter);
+			literalManager.recordType(byte[].class, converter.getDatatype());
 
 			return literalManager;
+		}
+
+		@Provides
+		@Singleton
+		protected ILiteralFactory provideLiteralFactory() {
+			return new ILiteralFactory() {
+				@Override
+				public ILiteral createLiteral(Object value, String label,
+						net.enilink.komma.core.URI datatype,
+						String language) {
+					if (datatype != null) {
+						// let datatype take precedence if set, cannot set both
+						return new Literal(value, datatype);
+					} else {
+						return new Literal(value, language);
+					}
+				}
+
+				@Override
+				public ILiteral createLiteral(String label,
+						net.enilink.komma.core.URI datatype,
+						String language) {
+					return createLiteral(label, label, datatype, language);
+				}
+			};
 		}
 
 		@Provides

@@ -63,6 +63,7 @@ import net.enilink.komma.internal.sesame.iterators.SesameProjectedTupleResult;
 import net.enilink.komma.internal.sesame.iterators.SesameTupleResult;
 import net.enilink.komma.core.FlushModeType;
 import net.enilink.komma.core.IQuery;
+import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.LockModeType;
 import net.enilink.komma.core.NoResultException;
@@ -153,7 +154,7 @@ public class SesameQuery<R> extends QueryBase<IQuery<R>> implements IQuery<R> {
 						(TupleResult) result, max, resultInfos);
 			}
 		} else if (result instanceof GraphResult) {
-			if (resultType == null) {
+			if (resultType == null || IStatement.class.equals(resultType)) {
 				iter = new SesameGraphResult(manager, (GraphResult) result, max);
 			} else {
 				iter = new SesameProjectedGraphResult(manager,
@@ -343,8 +344,10 @@ public class SesameQuery<R> extends QueryBase<IQuery<R>> implements IQuery<R> {
 		if (value == null) {
 			setBinding(name, null);
 		} else {
-			setBinding(name, value instanceof Value ? (Value) value : manager
-					.getValue(value));
+			setBinding(
+					name,
+					value instanceof Value ? (Value) value : manager
+							.getValue(value));
 		}
 		return this;
 	}
