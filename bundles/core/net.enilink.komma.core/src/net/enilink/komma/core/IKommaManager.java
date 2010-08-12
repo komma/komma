@@ -37,7 +37,7 @@ public interface IKommaManager {
 	 * @throws KommaException
 	 *             thrown if there is an error while adding the statements
 	 */
-	void add(Iterator<? extends IStatement> statements);
+	void add(Iterable<? extends IStatement> statements);
 
 	/**
 	 * Clear the persistence context, causing all managed entities to become
@@ -224,13 +224,6 @@ public interface IKommaManager {
 	 *             if the flush fails
 	 */
 	void flush();
-
-	/**
-	 * Return the underlying provider object for the EntityManager, if
-	 * available. The result of this method is implementation specific. The
-	 * unwrap method is to be preferred for new applications.
-	 */
-	Object getDelegate();
 
 	/**
 	 * Return the factory for the entity manager.
@@ -587,7 +580,7 @@ public interface IKommaManager {
 	 * @throws KommaException
 	 *             thrown if there is an error while removing the statements
 	 */
-	void remove(Iterator<? extends IStatement> statements);
+	void remove(Iterable<? extends IStatement> statements);
 
 	/**
 	 * Unregisters an {@link IEntityDecorator decorator}

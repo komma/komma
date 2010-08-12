@@ -10,58 +10,37 @@
  *******************************************************************************/
 package net.enilink.komma.core;
 
+import java.util.Collections;
+import java.util.Iterator;
 
-public class Statement implements IStatement {
+public class Statement implements IStatement, Iterable<IStatement> {
+	private IReference context;
+	private boolean inferred;
 	private Object obj;
 	private IReference pred;
 	private IReference subj;
-	private IReference context;
-	private boolean inferred;
 
 	public Statement(IReference subj, IReference pred, Object obj) {
 		this(subj, pred, obj, null, false);
 	}
-	
-	public Statement(IReference subj, IReference pred, Object obj, IReference context) {
+
+	public Statement(IReference subj, IReference pred, Object obj,
+			boolean inferred) {
+		this(subj, pred, obj, null, inferred);
+	}
+
+	public Statement(IReference subj, IReference pred, Object obj,
+			IReference context) {
 		this(subj, pred, obj, context, false);
 	}
 
-	public Statement(IReference subj, IReference pred, Object obj, boolean inferred) {
-		this(subj, pred, obj, null, inferred);
-	}
-	
-	public Statement(IReference subj, IReference pred, Object obj, IReference context, boolean inferred) {
+	public Statement(IReference subj, IReference pred, Object obj,
+			IReference context, boolean inferred) {
 		this.subj = subj;
 		this.pred = pred;
 		this.obj = obj;
 		this.context = context;
 		this.inferred = inferred;
-	}
-
-	@Override
-	public Object getObject() {
-		return obj;
-	}
-
-	@Override
-	public IReference getPredicate() {
-		return pred;
-	}
-
-	@Override
-	public IReference getSubject() {
-		return subj;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((context == null) ? 0 : context.hashCode());
-		result = prime * result + ((obj == null) ? 0 : obj.hashCode());
-		result = prime * result + ((pred == null) ? 0 : pred.hashCode());
-		result = prime * result + ((subj == null) ? 0 : subj.hashCode());
-		return result;
 	}
 
 	@Override
@@ -100,16 +79,47 @@ public class Statement implements IStatement {
 	public IReference getContext() {
 		return context;
 	}
-	
+
+	@Override
+	public Object getObject() {
+		return obj;
+	}
+
+	@Override
+	public IReference getPredicate() {
+		return pred;
+	}
+
+	@Override
+	public IReference getSubject() {
+		return subj;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((context == null) ? 0 : context.hashCode());
+		result = prime * result + ((obj == null) ? 0 : obj.hashCode());
+		result = prime * result + ((pred == null) ? 0 : pred.hashCode());
+		result = prime * result + ((subj == null) ? 0 : subj.hashCode());
+		return result;
+	}
+
 	@Override
 	public boolean isInferred() {
 		return inferred;
 	}
 
 	@Override
+	public Iterator<IStatement> iterator() {
+		return Collections.<IStatement> singleton(this).iterator();
+	}
+
+	@Override
 	public String toString() {
-		return new StringBuilder("[").append(getSubject()).append(", ").append(
-				getPredicate()).append(", ").append(getObject()).append("]")
-				.toString();
+		return new StringBuilder("[").append(getSubject()).append(", ")
+				.append(getPredicate()).append(", ").append(getObject())
+				.append("]").toString();
 	}
 }
