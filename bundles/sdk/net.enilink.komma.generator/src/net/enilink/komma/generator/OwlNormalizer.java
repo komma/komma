@@ -74,6 +74,7 @@ import net.enilink.vocab.owl.Ontology;
 import net.enilink.vocab.owl.Thing;
 import net.enilink.vocab.rdf.Property;
 import net.enilink.vocab.rdfs.Datatype;
+import net.enilink.komma.common.util.URIUtil;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.KommaException;
@@ -253,7 +254,9 @@ public class OwlNormalizer {
 				}
 			}
 			if (!found) {
-				Class res = manager.create(RDFS.RESOURCE, Class.class);
+				Class res = manager.createNamed(
+						net.enilink.vocab.rdfs.RDFS.TYPE_RESOURCE,
+						Class.class);
 				p.getRdfsDomains().add(res);
 			}
 		}
@@ -262,12 +265,14 @@ public class OwlNormalizer {
 	private URI createLocalClass(URI obj, Ontology ont) throws StoreException {
 		String localName = obj.getLocalName();
 		String prefix = findPrefix(ont);
-		if (prefix != null)
+		if (prefix != null) {
 			localName = initcap(prefix) + initcap(localName);
+		}
 		URI nc = getURIFactory().createURI(findNamespace(ont), localName);
 		aliases.put(nc, obj);
 		if (obj.equals(RDFS.RESOURCE)) {
-			Class base = manager.create(nc, Class.class);
+			Class base = manager.createNamed(URIImpl.createURI(nc.toString()),
+					Class.class);
 			base.getRdfsIsDefinedBy().add(ont);
 			addBaseClass(base, Class.class);
 		}
@@ -299,8 +304,8 @@ public class OwlNormalizer {
 					if (c.getOwlOneOf() == null) {
 						c.setOwlOneOf(e.getOwlOneOf());
 					} else if (!e.getOwlOneOf().equals(c.getOwlOneOf())) {
-						java.util.List<Object> list = new ArrayList<Object>(e
-								.getOwlOneOf());
+						java.util.List<Object> list = new ArrayList<Object>(
+								e.getOwlOneOf());
 						list.removeAll(c.getOwlOneOf());
 						c.getOwlOneOf().addAll(list);
 					}
@@ -309,8 +314,8 @@ public class OwlNormalizer {
 					if (c.getOwlUnionOf() == null) {
 						c.setOwlUnionOf(e.getOwlUnionOf());
 					} else if (!e.getOwlUnionOf().equals(c.getOwlUnionOf())) {
-						java.util.List<Class> list = new ArrayList<Class>(e
-								.getOwlUnionOf());
+						java.util.List<Class> list = new ArrayList<Class>(
+								e.getOwlUnionOf());
 						list.removeAll(c.getOwlUnionOf());
 						c.getOwlUnionOf().addAll(list);
 					}
@@ -636,7 +641,7 @@ public class OwlNormalizer {
 				for (IEntity bean : unionOf) {
 					Resource ofValue = ((ISesameEntity) bean)
 							.getSesameResource();
-					Class of = manager.create(ofValue, Class.class);
+					Class of = manager.designateEntity(bean, Class.class);
 					if (bean instanceof Datatype && bean.getURI() != null) {
 						// don't use anonymous class for datatypes
 						rename(clazz, bean.getURI());
@@ -650,8 +655,8 @@ public class OwlNormalizer {
 						conn.add(nc, RDF.TYPE, OWL.CLASS);
 						conn.add(nc, RDFS.SUBCLASSOF, ofValue);
 						conn.add(nc, RDFS.SUBCLASSOF, clazzValue);
-						conn.add(nc, RDFS.ISDEFINEDBY, ((ISesameEntity) ont)
-								.getSesameResource());
+						conn.add(nc, RDFS.ISDEFINEDBY,
+								((ISesameEntity) ont).getSesameResource());
 						renameClass(conn, (URI) ofValue, nc);
 					}
 				}
@@ -819,8 +824,8 @@ public class OwlNormalizer {
 			sb.append(and);
 		}
 		sb.setLength(sb.length() - and.length());
-		return rename(clazz, URIImpl.createURI(namespace).appendFragment(
-				sb.toString()));
+		return rename(clazz,
+				URIImpl.createURI(namespace).appendFragment(sb.toString()));
 	}
 
 	private void renameClass(ContextAwareConnection conn, URI obj, URI nc)
@@ -844,7 +849,8 @@ public class OwlNormalizer {
 			stmts.close();
 		}
 		if (obj.equals(RDFS.RESOURCE)) {
-			Class base = manager.create(nc, Class.class);
+			Class base = manager.createNamed(URIImpl.createURI(nc.toString()),
+					Class.class);
 			addBaseClass(base, Class.class);
 		}
 	}
