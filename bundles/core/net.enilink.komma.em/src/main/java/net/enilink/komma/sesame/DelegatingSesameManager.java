@@ -100,12 +100,6 @@ public class DelegatingSesameManager implements ISesameManager {
 	}
 
 	@Override
-	public <T> T create(Resource resource, Class<T> concept,
-			Class<?>... concepts) {
-		return delegate.create(resource, concept, concepts);
-	}
-
-	@Override
 	public ISesameEntity createBean(Resource resource, Collection<URI> types,
 			Model model) {
 		return delegate.createBean(resource, types, model);
@@ -159,11 +153,6 @@ public class DelegatingSesameManager implements ISesameManager {
 	@Override
 	public ISesameEntity find(IReference reference) {
 		return (ISesameEntity) delegate.find(reference);
-	}
-
-	@Override
-	public ISesameEntity find(Resource resource) {
-		return delegate.find(resource);
 	}
 
 	@Override
@@ -364,16 +353,6 @@ public class DelegatingSesameManager implements ISesameManager {
 	@Override
 	public <T> T rename(T bean, net.enilink.komma.core.URI uri) {
 		return delegate.rename(bean, uri);
-	}
-
-	@Override
-	public <T> T rename(T bean, Resource dest) {
-		return delegate.rename(bean, dest);
-	}
-
-	@Override
-	public void setConnection(ContextAwareConnection connection) {
-		delegate.setConnection(connection);
 	}
 
 	@Override

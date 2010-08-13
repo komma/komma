@@ -86,7 +86,7 @@ public class SesameProjectedTupleResult extends
 				} else {
 					return manager.find((Resource) value, resultInfos[0].types);
 				}
-			} else if (resultInfos[0].typeRestricted) {
+			} else {
 				return manager.getInstance(value, resultInfos[0].types[0]);
 			}
 		}

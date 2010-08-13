@@ -95,6 +95,7 @@ import net.enilink.komma.core.IKommaTransaction;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IReferenceable;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.InferencingCapability;
@@ -105,6 +106,7 @@ import net.enilink.komma.sesame.ISesameEntity;
 import net.enilink.komma.sesame.ISesameManager;
 import net.enilink.komma.sesame.ISesameResourceAware;
 import net.enilink.komma.sesame.SesameManagerFactory;
+import net.enilink.komma.sesame.SesameReference;
 import net.enilink.komma.sesame.iterators.SesameIterator;
 import net.enilink.komma.util.RESULTS;
 
@@ -308,7 +310,6 @@ public abstract class AbstractSesameManager implements ISesameManager {
 		return createNamed(null, concepts);
 	}
 
-	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T create(Resource resource, Class<T> concept,
 			Class<?>... concepts) {
@@ -535,20 +536,20 @@ public abstract class AbstractSesameManager implements ISesameManager {
 	}
 
 	@Override
-	public ISesameEntity find(Resource resource) {
-		return createBean(resource, null, null);
-	}
-
-	@Override
 	public ISesameEntity find(Resource resource, Class<?>... concepts) {
 		Set<URI> types = new LinkedHashSet<URI>(concepts.length);
 		for (int i = 0; i < concepts.length; i++) {
-			URI type = mapper.findType(concepts[i]);
+			Class<?> concept = concepts[i];
+			if (IValue.class.equals(concepts[i])
+					|| IReference.class.equals(concepts[i])) {
+				continue;
+			}
+
+			URI type = mapper.findType(concept);
 			if (type != null) {
 				types.add(type);
 			} else {
-				logger.warn("Unknown rdf type for concept class: "
-						+ concepts[i]);
+				logger.warn("Unknown rdf type for concept class: " + concept);
 			}
 		}
 		try {
@@ -690,8 +691,9 @@ public abstract class AbstractSesameManager implements ISesameManager {
 		Object instance = literalConverter.createObject(literal.getLabel(),
 				datatype);
 		if (type != null) {
-			if (IValue.class.equals(type) || ILiteral.class.equals(type)) {
-				instance = createLiteral(value, datatype, literal.getLanguage());
+			if (IValue.class.isAssignableFrom(type)) {
+				instance = createLiteral(instance, datatype,
+						literal.getLanguage());
 			} else if (instance == null) {
 				if (type.isPrimitive()) {
 					instance = ConversionUtil.convertValue(type, 0, null);
@@ -858,25 +860,25 @@ public abstract class AbstractSesameManager implements ISesameManager {
 
 		if (instance instanceof ILiteral) {
 			ILiteral literal = (ILiteral) instance;
-			instance = literal.getValue();
 
 			if (literal.getDatatype() != null) {
-				getConnection().getValueFactory().createLiteral(
+				return getConnection().getValueFactory().createLiteral(
 						literal.getLabel(),
 						URIUtil.toSesameUri(literal.getDatatype()));
+			} else {
+				return getConnection().getValueFactory().createLiteral(
+						literal.getLabel(), literal.getLanguage());
 			}
-			return getConnection().getValueFactory().createLiteral(
-					literal.getLabel(), literal.getLanguage());
 		}
+
 		Class<?> type = instance.getClass();
 		if (literalConverter.isDatatype(type)) {
 			ILiteral literal = literalConverter.createLiteral(instance, null);
 
-			net.enilink.komma.core.URI datatype = literal
-					.getDatatype();
 			return getConnection().getValueFactory().createLiteral(
 					literal.getLabel(),
-					datatype == null ? null : URIUtil.toSesameUri(datatype));
+					literal.getDatatype() == null ? null : URIUtil
+							.toSesameUri(literal.getDatatype()));
 		}
 		synchronized (merged) {
 			if (merged.containsKey(instance)) {
@@ -1173,18 +1175,19 @@ public abstract class AbstractSesameManager implements ISesameManager {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T rename(T bean, net.enilink.komma.core.URI uri) {
-		Resource after = resourceManager.createResource(uri);
-		return rename(bean, after);
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public <T> T rename(T bean, Resource dest) {
 		Resource before = getResourceOrFail(bean);
-		resourceManager.renameResource(before, dest);
-		return (T) createBean(dest, null, null);
+		Resource after = resourceManager.createResource(uri);
+		resourceManager.renameResource(before, after);
+
+		T newBean = (T) createBean(after, null, null);
+		((ISesameManagerAware) bean)
+				.initSesameReference((SesameReference) ((IReferenceable) newBean)
+						.getReference());
+
+		return newBean;
 	}
 
 	@Inject
@@ -1192,7 +1195,6 @@ public abstract class AbstractSesameManager implements ISesameManager {
 		this.classResolver = classResolver;
 	}
 
-	@Override
 	@Inject
 	public void setConnection(ContextAwareConnection connection) {
 		this.conn = connection;

@@ -18,7 +18,6 @@ import org.openrdf.model.Resource;
 import net.enilink.komma.core.IEntityDecorator;
 import net.enilink.komma.sesame.ISesameEntity;
 import net.enilink.komma.sesame.ISesameResourceAware;
-import net.enilink.komma.sesame.SesameReference;
 
 public class EagerCachingSesameManager extends DecoratingSesameManager {
 	@SuppressWarnings("unchecked")
@@ -37,30 +36,21 @@ public class EagerCachingSesameManager extends DecoratingSesameManager {
 	@Override
 	protected ISesameEntity createBeanForClass(Resource resource, Class<?> type) {
 		Object bean = resource2Bean.get(resource);
-		if (bean == null) { // TODO check this behaviour
-			// || !bean.getClass().equals(type)) {
-			// Object oldBean = bean;
-			// Class<?> oldType = bean == null ? null : bean.getClass();
-			// if (oldType != null) {
-			// Set<Class> newItfs = new HashSet<Class>(Arrays.asList(type
-			// .getInterfaces()));
-			// newItfs.removeAll(Arrays.asList(oldType.getInterfaces()));
-			// System.out.println(Arrays.asList(newItfs));
-			// }
+		if (bean == null || !bean.getClass().equals(type)) {
+			Object oldBean = bean;
 			bean = super.createBeanForClass(resource, type);
+
 			resource2Bean.put(resource, bean);
 		}
 
 		return (ISesameEntity) bean;
 	}
 
-	@Override
-	public <T> T rename(T bean, Resource dest) {
+	public <T> T rename(T bean, net.enilink.komma.core.URI uri) {
 		resource2Bean.remove(((ISesameResourceAware) bean).getSesameResource());
-
-		resource2Bean.put(dest, bean);
-		SesameReference reference = getFactory().getReference(dest);
-		((ISesameManagerAware) bean).initSesameReference(reference);
-		return super.rename(bean, dest);
+		T newBean = super.rename(bean, uri);
+		resource2Bean.put(((ISesameResourceAware) newBean).getSesameResource(),
+				bean);
+		return newBean;
 	}
 }

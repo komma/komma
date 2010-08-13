@@ -78,14 +78,18 @@ public class SesameTupleResult extends SesameIterator<BindingSet, Object[]> {
 			Value value = sol.getValue(bindings.get(i));
 			if (value == null) {
 				result[i] = null;
-			} else if (resultInfos != null && i < resultInfos.length
-					&& value instanceof Resource) {
-				if (resultInfos[i].typeRestricted) {
-					result[0] = manager.findRestricted((Resource) value,
-							resultInfos[i].types);
+			} else if (resultInfos != null && i < resultInfos.length) {
+				if (value instanceof Resource) {
+					if (resultInfos[i].typeRestricted) {
+						result[i] = manager.findRestricted((Resource) value,
+								resultInfos[i].types);
+					} else {
+						result[i] = manager.find((Resource) value,
+								resultInfos[i].types);
+					}
 				} else {
-					result[0] = manager.find((Resource) value,
-							resultInfos[i].types);
+					result[i] = manager.getInstance(value,
+							resultInfos[i].types[0]);
 				}
 			} else {
 				result[i] = manager.getInstance(value, null);

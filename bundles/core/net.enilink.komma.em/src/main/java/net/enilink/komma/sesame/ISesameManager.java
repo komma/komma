@@ -26,10 +26,6 @@ public interface ISesameManager extends IKommaManager {
 	ISesameEntity createBean(Resource resource, Collection<URI> types,
 			Model model);
 
-	<T> T create(Resource resource, Class<T> concept, Class<?>... concepts);
-
-	ISesameEntity find(Resource resource);
-
 	ISesameEntity find(Resource resource, Class<?>... concepts);
 
 	IReference findRestricted(Resource resource, Class<?>... concepts);
@@ -41,8 +37,4 @@ public interface ISesameManager extends IKommaManager {
 	RoleMapper<URI> getRoleMapper();
 
 	Value getValue(Object instance);
-
-	<T> T rename(T bean, Resource dest);
-
-	void setConnection(ContextAwareConnection connection);
 }

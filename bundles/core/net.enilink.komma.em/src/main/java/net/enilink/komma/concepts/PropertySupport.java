@@ -294,13 +294,13 @@ public abstract class PropertySupport extends BehaviorBase implements
 					+ "	?restriction owl:onProperty ?p ."
 					+ "	{?restriction owl:allValuesFrom ?r} UNION {?restriction owl:someValuesFrom ?r} ."
 					+ "	OPTIONAL {"
-					+ "		?c rdfs:subClassOf [ owl:onProperty ?subP; owl:allValuesFrom ?otherR ] . " // 
+					+ "		?c rdfs:subClassOf [ owl:onProperty ?subP; owl:allValuesFrom ?otherR ] . " //
 					+ "		?subP rdfs:subPropertyOf ?p ."
 					+ "		?otherR rdfs:subClassOf ?r" //
 					+ "		FILTER (isIRI(?otherR) && (?subP != ?p || ?otherR != ?r))" //
 					+ "	}" //
 					+ "	OPTIONAL {"
-					+ "		?c rdfs:subClassOf [ owl:onProperty ?subP; owl:someValueFrom ?otherR ] . " // 
+					+ "		?c rdfs:subClassOf [ owl:onProperty ?subP; owl:someValueFrom ?otherR ] . " //
 					+ "		?subP rdfs:subPropertyOf ?p ."
 					+ "		?otherR rdfs:subClassOf ?r" //
 					+ "		FILTER (isIRI(?otherR) && (?subP != ?p || ?otherR != ?r))" //
@@ -313,8 +313,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 					+ "}";
 
 			return subject.getKommaManager().createQuery(query)
-					.setParameter("o", subject)
-					.setParameter("p", this)
+					.setParameter("o", subject).setParameter("p", this)
 					.evaluate(IClass.class);
 		}
 
@@ -397,8 +396,8 @@ public abstract class PropertySupport extends BehaviorBase implements
 			return hasListRange();
 		}
 		if (subject != null) {
-			if (((IResource) getBehaviourDelegate().getKommaManager().find(
-					subject)).getApplicableCardinality(getBehaviourDelegate())
+			if (((IResource) getKommaManager().find(subject))
+					.getApplicableCardinality(getBehaviourDelegate())
 					.getSecond() <= 1) {
 				return hasListRange();
 			}
