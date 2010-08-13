@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.eclipse.core.runtime.Platform;
 import org.openrdf.repository.Repository;
@@ -33,9 +34,12 @@ import org.openrdf.sail.memory.MemoryStore;
 import org.openrdf.store.StoreException;
 import org.osgi.framework.Bundle;
 
+import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.util.URIUtil;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelSetFactory;
@@ -137,8 +141,42 @@ public class ModelSetFactory implements IModelSetFactory {
 		types.add(MODELS.CLASS_MODELSET);
 		types.add(RDFS.TYPE_RESOURCE);
 
-		IModelSet modelSet = (IModelSet) metaDataManager.create(types
-				.toArray(new IReference[types.size()]));
+		IModelSet modelSet = null;
+
+		// check if a model set is setup by configuration
+		IExtendedIterator<IModelSet> it = null;
+		try {
+			it = metaDataManager.findAll(IModelSet.class);
+			if (it.hasNext()) {
+				modelSet = it.next();
+			}
+		} finally {
+			it.close();
+		}
+
+		if (modelSet != null) {
+			// if a model set already exists, then simply add the additional
+			// types
+			try {
+				metaDataManager.getTransaction().begin();
+
+				@SuppressWarnings("unchecked")
+				Set<Object> rdfTypes = (Set<Object>) ((IResource) modelSet)
+						.get(RDF.PROPERTY_TYPE);
+				rdfTypes.addAll(types);
+
+				metaDataManager.getTransaction().commit();
+			} catch (Exception e) {
+				metaDataManager.getTransaction().rollback();
+				throw new KommaException(e);
+			}
+		}
+
+		if (modelSet == null) {
+			// create a model set if not found
+			modelSet = (IModelSet) metaDataManager.create(types
+					.toArray(new IReference[types.size()]));
+		}
 		// modelSetResource.setPersistent(isPersistent());
 		return modelSet;
 	}
