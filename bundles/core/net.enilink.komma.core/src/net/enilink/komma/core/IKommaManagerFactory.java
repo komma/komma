@@ -28,12 +28,9 @@
  */
 package net.enilink.komma.core;
 
-import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.inject.AbstractModule;
 
 /**
  * Factory interface to create IKommaManagers.
@@ -73,15 +70,6 @@ public interface IKommaManagerFactory {
 	 * @return A new KommaManager.
 	 */
 	IKommaManager createKommaManager(Locale locale);
-
-	/**
-	 * Creates modules for composition by guice .
-	 * 
-	 * @param locale
-	 *            Maybe null to indicate no localization.
-	 * @return Composition modules
-	 */
-	Collection<AbstractModule> createGuiceModules(Locale locale);
 
 	/**
 	 * Get the properties and associated values that are in effect for the
