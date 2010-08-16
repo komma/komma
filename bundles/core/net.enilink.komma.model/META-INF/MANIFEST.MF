@@ -21,3 +21,4 @@ Require-Bundle: net.enilink.komma;visibility:=reexport,
  org.junit;resolution:=optional
 DynamicImport-Package: *
 Bundle-ActivationPolicy: lazy
+Import-Package: com.google.inject;version="2.0.0"
