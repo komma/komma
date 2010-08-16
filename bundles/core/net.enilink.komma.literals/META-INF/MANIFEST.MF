@@ -7,5 +7,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: net.enilink.komma.core,
  net.enilink.vocab.rdfs,
  net.enilink.komma.lib.sesame
-Import-Package: org.slf4j
+Import-Package: com.google.inject;version="2.0.0",
+ org.slf4j
 Export-Package: net.enilink.komma.literals
