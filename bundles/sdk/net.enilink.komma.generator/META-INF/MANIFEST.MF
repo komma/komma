@@ -15,7 +15,11 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.core;resolution:=optional
 Bundle-ClassPath: lib/commons-cli-1.1.jar,
  .
-Import-Package: org.eclipse.core.resources,
+Import-Package: com.google.inject;version="2.0.0",
+ com.google.inject.binder;version="2.0.0",
+ com.google.inject.multibindings;version="2.0.0",
+ com.google.inject.name;version="2.0.0",
+ org.eclipse.core.resources,
  org.eclipse.emf.codegen.merge.java,
  org.eclipse.emf.codegen.merge.java.facade,
  org.eclipse.emf.codegen.merge.java.facade.ast,
