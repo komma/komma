@@ -396,7 +396,9 @@ public abstract class SesameManagerFactory implements IKommaManagerFactory {
 		opened = false;
 	}
 
-	@Override
+	/**
+	 * Creates modules for dependency injection with Guice.
+	 */
 	public Collection<AbstractModule> createGuiceModules(Locale locale) {
 		if (!opened) {
 			throw new IllegalStateException("SesameManagerFactory is closed");
