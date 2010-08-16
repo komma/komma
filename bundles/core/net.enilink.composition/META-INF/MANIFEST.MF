@@ -4,14 +4,7 @@ Bundle-Name: Composition
 Bundle-SymbolicName: net.enilink.composition
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: com.google.inject;version="2.0.0",
- com.google.inject.binder;version="2.0.0",
- com.google.inject.matcher;version="2.0.0",
- com.google.inject.multibindings;version="2.0.0",
- com.google.inject.name;version="2.0.0",
- com.google.inject.spi;version="2.0.0",
- com.google.inject.util;version="2.0.0",
- net.enilink.composition,
+Export-Package: net.enilink.composition,
  net.enilink.composition.annotations,
  net.enilink.composition.asm,
  net.enilink.composition.asm.meta,
@@ -23,7 +16,10 @@ Export-Package: com.google.inject;version="2.0.0",
  net.enilink.composition.test,
  net.enilink.composition.traits,
  net.enilink.composition.vocabulary
-Import-Package: org.objectweb.asm;version="3.2.0",
+Import-Package: com.google.inject;version="2.0.0",
+ com.google.inject.binder;version="2.0.0",
+ com.google.inject.multibindings;version="2.0.0",
+ org.objectweb.asm;version="3.2.0",
  org.objectweb.asm.commons;version="3.2.0",
  org.objectweb.asm.signature;version="3.2.0",
  org.objectweb.asm.tree;version="3.2.0",
@@ -31,7 +27,4 @@ Import-Package: org.objectweb.asm;version="3.2.0",
  org.objectweb.asm.util;version="3.2.0",
  org.objectweb.asm.xml;version="3.2.0",
  org.slf4j
-Bundle-ClassPath: .,
- lib/guice-2.0.jar,
- lib/guice-multibindings-2.0.jar,
- lib/aopalliance.jar
+Bundle-ClassPath: .
