@@ -10,7 +10,6 @@ Export-Package: net.enilink.komma.edit.ui.properties,
  net.enilink.komma.edit.ui.properties.internal.wizards;x-friends:="net.enilink.komma.edit.ui.properties.tabbed"
 Import-Package: org.eclipse.core.commands
 Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.rap.ui.views;resolution:=optional,
  net.enilink.komma,
  net.enilink.komma.edit.ui,
  net.enilink.commons.ui,
