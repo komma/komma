@@ -16,11 +16,7 @@ Export-Package: net.enilink.komma.common.ui,
  net.enilink.komma.common.ui.viewer
 Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.common,
- org.eclipse.ui;resolution:=optional,
- org.eclipse.ui.ide;resolution:=optional,
- org.eclipse.rap.ui;resolution:=optional,
- org.eclipse.rap.ui.views;resolution:=optional,
  org.eclipse.core.resources;resolution:=optional,
  net.enilink.komma.core,
- net.enilink.commons.ui
+ net.enilink.commons.ui;visibility:=reexport
 Bundle-ActivationPolicy: lazy
