@@ -5,10 +5,6 @@ Bundle-SymbolicName: net.enilink.komma.sparql.ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.ui;resolution:=optional,
- org.eclipse.ui.forms;resolution:=optional,
- org.eclipse.rap.ui;resolution:=optional,
- org.eclipse.rap.ui.forms;resolution:=optional,
  net.enilink.commons.util,
  net.enilink.commons.ui,
  net.enilink.komma,
