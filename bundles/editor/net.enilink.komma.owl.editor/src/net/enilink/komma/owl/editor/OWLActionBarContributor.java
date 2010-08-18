@@ -219,4 +219,12 @@ public class OWLActionBarContributor extends EditingDomainActionBarContributor
 		}
 	}
 
+	@Override
+	public void dispose() {
+		if (createChildActionContributor != null) {
+			createChildActionContributor.dispose();
+			createChildActionContributor = null;
+		}
+		super.dispose();
+	}
 }
