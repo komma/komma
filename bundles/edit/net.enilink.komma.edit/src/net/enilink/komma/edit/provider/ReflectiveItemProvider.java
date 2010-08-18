@@ -121,6 +121,26 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 		return viewerNotifications;
 	}
 
+	/**
+	 * This should not be implemented as anonymous inner class to prevent
+	 * referencing the item provider instance.
+	 * 
+	 * Example: Storing an instance of this class in a global image registry can
+	 * lead to memory leaks if item provider instances are referenced.
+	 */
+	static class ComposedCreateChildImage extends ComposedImage {
+		public ComposedCreateChildImage(Collection<?> images) {
+			super(images);
+		}
+
+		@Override
+		public List<Point> getDrawPoints(Size size) {
+			List<Point> result = super.getDrawPoints(size);
+			result.get(1).x = size.width - 7;
+			return result;
+		}
+	}
+
 	@Override
 	public Object getCreateChildImage(Object owner, Object property,
 			Object childDescription, Collection<?> selection) {
@@ -157,14 +177,7 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 				images.add(itemLabelProvider.getImage(childType));
 				images.add(KommaEditPlugin.INSTANCE
 						.getImage("full/ovr16/CreateChild"));
-				return new ComposedImage(images) {
-					@Override
-					public List<Point> getDrawPoints(Size size) {
-						List<Point> result = super.getDrawPoints(size);
-						result.get(1).x = size.width - 7;
-						return result;
-					}
-				};
+				return new ComposedCreateChildImage(images);
 			}
 		}
 		return super.getCreateChildImage(owner, property, childType, selection);
