@@ -67,7 +67,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 				stmt.getSubject(), stmt.getPredicate());
 		PropertyNode existing = subjectPredicateToNode.get(subjectPredicate);
 		if (existing != null) {
-			if (!added && !existing.hasMultipleStatements()) {
+			if (!added) {
 				postRefresh(runnables);
 				return false;
 			}
@@ -111,14 +111,14 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 			IExtendedIterator<IProperty> result = ((IEntity) inputElement)
 					.getKommaManager().createQuery(SELECT_PROPERTIES)
 					.setParameter("resource", (IEntity) inputElement)
-					.setIncludeInferred(includeInferred).evaluate(
-							IProperty.class);
+					.setIncludeInferred(includeInferred)
+					.evaluate(IProperty.class);
 
 			Map<Pair<IReference, IReference>, PropertyNode> nodes = new LinkedHashMap<Pair<IReference, IReference>, PropertyNode>();
 			for (IProperty property : result) {
 				Pair<IReference, IReference> subjectPredicate = new Pair<IReference, IReference>(
-						((IEntity) inputElement).getReference(), property
-								.getReference());
+						((IEntity) inputElement).getReference(),
+						property.getReference());
 				PropertyNode node = subjectPredicateToNode
 						.get(subjectPredicate);
 				if (node == null) {
