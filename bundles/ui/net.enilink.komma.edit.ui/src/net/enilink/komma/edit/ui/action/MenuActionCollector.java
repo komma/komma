@@ -87,6 +87,7 @@ abstract public class MenuActionCollector<T> extends CollectorJob<T> {
 		for (IMenuManager menuManager : menuManagers) {
 			depopulateManager(menuManager, actions);
 		}
+		selection = null;
 	}
 
 	@Override

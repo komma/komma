@@ -2,10 +2,12 @@ package net.enilink.komma.edit.ui.views;
 
 import java.util.Set;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
@@ -19,6 +21,7 @@ import net.enilink.commons.ui.editor.IEditorPart;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.util.PartListener2Adapter;
 import net.enilink.komma.model.IModel;
+import net.enilink.komma.core.IValue;
 
 public class AbstractEditingDomainView extends ViewPart implements
 		IContributedContentsView {
@@ -49,6 +52,16 @@ public class AbstractEditingDomainView extends ViewPart implements
 					&& selection instanceof IStructuredSelection) {
 				Object selected = ((IStructuredSelection) selection)
 						.getFirstElement();
+
+				// allow arbitrary selections to be adapted to IValue objects
+				if (selected != null && !(selected instanceof IValue)) {
+					Object adapter = Platform.getAdapterManager().getAdapter(
+							selected, IValue.class);
+					if (adapter != null) {
+						selected = adapter;
+					}
+				}
+
 				if (editorForm.setInput(selected)) {
 					editorForm.refreshStale();
 				}
@@ -161,6 +174,8 @@ public class AbstractEditingDomainView extends ViewPart implements
 			}
 		}
 		if (editPart != null) {
+			selectionProvider.setSelection(StructuredSelection.EMPTY);
+
 			editorForm.setInput(null);
 			editPart.setInput(this.model);
 			editorForm.refreshStale();
@@ -183,6 +198,14 @@ public class AbstractEditingDomainView extends ViewPart implements
 		} else if (part instanceof IEditingDomainProvider) {
 			this.part = part;
 			setEditingDomainProvider((IEditingDomainProvider) part);
+		} else if (part != null) {
+			IEditingDomainProvider provider = (IEditingDomainProvider) part
+					.getAdapter(IEditingDomainProvider.class);
+			if (provider != null
+					&& !provider.equals(this.editingDomainProvider)) {
+				this.part = part;
+				setEditingDomainProvider(provider);
+			}
 		}
 	}
 

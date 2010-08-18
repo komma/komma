@@ -50,80 +50,18 @@ public class CreateChildrenActionContributor {
 		menuManager.insertBefore(contributionId, createSiblingMenuManager);
 	}
 
-	/**
-	 * This populates the pop-up menu before it appears.
-	 */
-	public void menuAboutToShow(IMenuManager menuManager, String contributionId) {
-		MenuManager submenuManager = null;
-
-		submenuManager = new MenuManager(
-				KommaEditUIPlugin.INSTANCE
-						.getString("_UI_CreateChild_menu_item"));
-		newChildCollector.addMenuManager(submenuManager);
-		menuManager.insertBefore(contributionId, submenuManager);
-
-		submenuManager = new MenuManager(
-				KommaEditUIPlugin.INSTANCE
-						.getString("_UI_CreateSibling_menu_item"));
-		newSiblingCollector.addMenuManager(submenuManager);
-		menuManager.insertBefore(contributionId, submenuManager);
+	public void dispose() {
+		disposeCollectors();
 	}
 
-	/**
-	 * This implements
-	 * {@link org.eclipse.jface.viewers.ISelectionChangedListener}, handling
-	 * {@link org.eclipse.jface.viewers.SelectionChangedEvent}s by querying for
-	 * the children and siblings that can be added to the selected object and
-	 * updating the menus accordingly.
-	 */
-	public void selectionChanged(final IWorkbenchPart part,
-			final IEditingDomain domain, ISelection selection) {
+	protected void disposeCollectors() {
 		if (newChildCollector != null) {
 			newChildCollector.dispose();
+			newChildCollector = null;
 		}
 		if (newSiblingCollector != null) {
 			newSiblingCollector.dispose();
-		}
-
-		// Query the new selection for appropriate new child/sibling descriptors
-		if (selection instanceof IStructuredSelection
-				&& ((IStructuredSelection) selection).size() == 1) {
-			final Object object = ((IStructuredSelection) selection)
-					.getFirstElement();
-
-			newChildCollector = new MenuActionCollector<Object>(
-					"Prepare create child actions", selection) {
-				protected IStatus run(IProgressMonitor monitor) {
-					domain.getNewChildDescriptors(object, null, this);
-					return Status.OK_STATUS;
-				}
-
-				@Override
-				protected Collection<IAction> generateActions(
-						Collection<Object> descriptors) {
-					return generateCreateChildActions(part, descriptors,
-							selection);
-				}
-			};
-			newChildCollector.addMenuManager(createChildMenuManager);
-			newChildCollector.schedule();
-
-			newSiblingCollector = new MenuActionCollector<Object>(
-					"Prepare create silbing actions", selection) {
-				protected IStatus run(IProgressMonitor monitor) {
-					domain.getNewChildDescriptors(null, object, this);
-					return Status.OK_STATUS;
-				}
-
-				@Override
-				protected Collection<IAction> generateActions(
-						Collection<Object> descriptors) {
-					return generateCreateSiblingActions(part, descriptors,
-							selection);
-				}
-			};
-			newSiblingCollector.addMenuManager(createSiblingMenuManager);
-			newSiblingCollector.schedule();
+			newSiblingCollector = null;
 		}
 	}
 
@@ -161,5 +99,75 @@ public class CreateChildrenActionContributor {
 			}
 		}
 		return actions;
+	}
+
+	/**
+	 * This populates the pop-up menu before it appears.
+	 */
+	public void menuAboutToShow(IMenuManager menuManager, String contributionId) {
+		MenuManager submenuManager = null;
+
+		submenuManager = new MenuManager(
+				KommaEditUIPlugin.INSTANCE
+						.getString("_UI_CreateChild_menu_item"));
+		newChildCollector.addMenuManager(submenuManager);
+		menuManager.insertBefore(contributionId, submenuManager);
+
+		submenuManager = new MenuManager(
+				KommaEditUIPlugin.INSTANCE
+						.getString("_UI_CreateSibling_menu_item"));
+		newSiblingCollector.addMenuManager(submenuManager);
+		menuManager.insertBefore(contributionId, submenuManager);
+	}
+
+	/**
+	 * This implements
+	 * {@link org.eclipse.jface.viewers.ISelectionChangedListener}, handling
+	 * {@link org.eclipse.jface.viewers.SelectionChangedEvent}s by querying for
+	 * the children and siblings that can be added to the selected object and
+	 * updating the menus accordingly.
+	 */
+	public void selectionChanged(final IWorkbenchPart part,
+			final IEditingDomain domain, ISelection selection) {
+		// Query the new selection for appropriate new child/sibling descriptors
+		if (selection instanceof IStructuredSelection
+				&& ((IStructuredSelection) selection).size() == 1) {
+			final Object object = ((IStructuredSelection) selection)
+					.getFirstElement();
+
+			newChildCollector = new MenuActionCollector<Object>(
+					"Prepare create child actions", selection) {
+				@Override
+				protected Collection<IAction> generateActions(
+						Collection<Object> descriptors) {
+					return generateCreateChildActions(part, descriptors,
+							selection);
+				}
+
+				protected IStatus run(IProgressMonitor monitor) {
+					domain.getNewChildDescriptors(object, null, this);
+					return Status.OK_STATUS;
+				}
+			};
+			newChildCollector.addMenuManager(createChildMenuManager);
+			newChildCollector.schedule();
+
+			newSiblingCollector = new MenuActionCollector<Object>(
+					"Prepare create silbing actions", selection) {
+				@Override
+				protected Collection<IAction> generateActions(
+						Collection<Object> descriptors) {
+					return generateCreateSiblingActions(part, descriptors,
+							selection);
+				}
+
+				protected IStatus run(IProgressMonitor monitor) {
+					domain.getNewChildDescriptors(null, object, this);
+					return Status.OK_STATUS;
+				}
+			};
+			newSiblingCollector.addMenuManager(createSiblingMenuManager);
+			newSiblingCollector.schedule();
+		}
 	}
 }

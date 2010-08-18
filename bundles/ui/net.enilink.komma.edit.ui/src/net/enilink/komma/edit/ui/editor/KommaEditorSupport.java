@@ -716,6 +716,12 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 		if (contentOutlinePage != null) {
 			contentOutlinePage.dispose();
 		}
+
+		if (modelSet != null) {
+			modelSet.dispose();
+
+			modelSet = null;
+		}
 	}
 
 	/**

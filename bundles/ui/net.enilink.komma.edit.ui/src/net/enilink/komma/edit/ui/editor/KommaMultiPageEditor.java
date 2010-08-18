@@ -35,14 +35,12 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 
 	protected abstract KommaEditorSupport<? extends KommaMultiPageEditor> createEditorSupport();
 
-	/**
-	 * <!-- begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 * @generated
-	 */
 	@Override
 	public void dispose() {
-		editorSupport.dispose();
+		if (editorSupport != null) {
+			editorSupport.dispose();
+			editorSupport = null;
+		}
 
 		super.dispose();
 	}

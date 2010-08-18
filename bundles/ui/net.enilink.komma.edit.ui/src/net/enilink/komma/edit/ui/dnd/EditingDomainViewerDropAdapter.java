@@ -16,6 +16,7 @@
  */
 package net.enilink.komma.edit.ui.dnd;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -96,7 +97,7 @@ public class EditingDomainViewerDropAdapter extends DropTargetAdapter {
 	/**
 	 * This is the domain in which drag and drop commands will be executed.
 	 */
-	protected IEditingDomain domain;
+	protected WeakReference<IEditingDomain> domainReference;
 
 	/**
 	 * This is the collection of source objects being dragged.
@@ -133,7 +134,7 @@ public class EditingDomainViewerDropAdapter extends DropTargetAdapter {
 	 */
 	public EditingDomainViewerDropAdapter(IEditingDomain domain, Viewer viewer) {
 		this.viewer = viewer;
-		this.domain = domain;
+		this.domainReference = new WeakReference<IEditingDomain>(domain);
 	}
 
 	/**
@@ -206,44 +207,52 @@ public class EditingDomainViewerDropAdapter extends DropTargetAdapter {
 	 */
 	@Override
 	public void drop(DropTargetEvent event) {
-		// A command was created if the source was available early, and the
-		// information used to create it was cached...
-		//
-		if (dragAndDropCommandInformation != null) {
-			// Recreate the command.
-			//
-			command = dragAndDropCommandInformation.createCommand();
-		} else {
-			// Otherwise, the source should be available now as event.data, and
-			// we
-			// can create the command.
-			//
-			source = extractDragSource(event.data);
-			Object target = extractDropTarget(event.item);
-			command = DragAndDropCommand.create(domain, target,
-					getLocation(event), event.operations, originalOperation,
-					source);
-		}
+		IEditingDomain domain = domainReference.get();
 
-		// If the command can execute...
-		//
-		if (command.canExecute()) {
-			// Execute it.
+		if (domain != null) {
+			// A command was created if the source was available early, and the
+			// information used to create it was cached...
 			//
-			try {
-				domain.getCommandStack().execute(command,
-						new NullProgressMonitor(), null);
-			} catch (ExecutionException e) {
-				Log.log(KommaEditUIPlugin.getPlugin(), new Status(
-						IStatus.ERROR, KommaEditUIPlugin.PLUGIN_ID,
-						EditUIStatusCodes.ACTION_FAILURE, String.valueOf(e
-								.getMessage()), e));
+			if (dragAndDropCommandInformation != null) {
+				// Recreate the command.
+				//
+				command = dragAndDropCommandInformation.createCommand();
+			} else {
+				// Otherwise, the source should be available now as event.data,
+				// and
+				// we
+				// can create the command.
+				//
+				source = extractDragSource(event.data);
+				Object target = extractDropTarget(event.item);
+				command = DragAndDropCommand.create(domain, target,
+						getLocation(event), event.operations,
+						originalOperation, source);
+			}
+
+			// If the command can execute...
+			//
+			if (command.canExecute()) {
+				// Execute it.
+				//
+				try {
+					domain.getCommandStack().execute(command,
+							new NullProgressMonitor(), null);
+				} catch (ExecutionException e) {
+					Log.log(KommaEditUIPlugin.getPlugin(),
+							new Status(IStatus.ERROR,
+									KommaEditUIPlugin.PLUGIN_ID,
+									EditUIStatusCodes.ACTION_FAILURE, String
+											.valueOf(e.getMessage()), e));
+				}
+			} else {
+				// Otherwise, let's call the whole thing off.
+				//
+				event.detail = DND.DROP_NONE;
+				command.dispose();
 			}
 		} else {
-			// Otherwise, let's call the whole thing off.
-			//
 			event.detail = DND.DROP_NONE;
-			command.dispose();
 		}
 
 		// Clean up the state.
@@ -291,8 +300,12 @@ public class EditingDomainViewerDropAdapter extends DropTargetAdapter {
 		//
 		boolean valid = false;
 
+		IEditingDomain domain = domainReference.get();
+		if (domain == null) {
+			return;
+		}
+
 		// If we don't have a previous cached command...
-		//
 		if (command == null) {
 			// We'll need to keep track of the information we use to create the
 			// command, so that we can recreate it in drop.

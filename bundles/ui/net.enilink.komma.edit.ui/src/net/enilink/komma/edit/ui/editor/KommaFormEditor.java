@@ -33,7 +33,10 @@ public abstract class KommaFormEditor extends FormEditor implements
 
 	@Override
 	public void dispose() {
-		editorSupport.dispose();
+		if (editorSupport != null) {
+			editorSupport.dispose();
+			editorSupport = null;
+		}
 
 		super.dispose();
 	}
@@ -89,6 +92,9 @@ public abstract class KommaFormEditor extends FormEditor implements
 	 * and for supporting {@link org.eclipse.emf.edit.ui.action.CommandAction}.
 	 */
 	public IEditingDomain getEditingDomain() {
+		if (editorSupport == null) {
+			return null;
+		}
 		return editorSupport.getEditingDomain();
 	}
 
