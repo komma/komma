@@ -15,6 +15,7 @@
 
 package net.enilink.komma.workbench;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +40,7 @@ import net.enilink.komma.workbench.internal.KommaWorkbenchPlugin;
 public class ModelSetWorkbenchSynchronizer implements IResourceChangeListener {
 	protected IProject project;
 
-	protected IModelSet modelSet;
+	protected WeakReference<IModelSet> modelSetReference;
 
 	/** Extenders that will be notified after a pre build resource change */
 	protected List<ISynchronizerExtender> extenders;
@@ -58,7 +59,7 @@ public class ModelSetWorkbenchSynchronizer implements IResourceChangeListener {
 	 * @since 1.0.0
 	 */
 	public ModelSetWorkbenchSynchronizer(IModelSet modelSet, IProject project) {
-		this.modelSet = modelSet;
+		this.modelSetReference = new WeakReference<IModelSet>(modelSet);
 		this.project = project;
 		if (modelSet != null && modelSet instanceof IProjectModelSet) {
 			((IProjectModelSet) modelSet).setSynchronizer(this);
@@ -145,6 +146,7 @@ public class ModelSetWorkbenchSynchronizer implements IResourceChangeListener {
 	protected void release() {
 		if (KommaWorkbenchPlugin.isActivated()) {
 			try {
+				IModelSet modelSet = modelSetReference.get();
 				if (modelSet instanceof IProjectModelSet) {
 					((IProjectModelSet) modelSet).release();
 				}

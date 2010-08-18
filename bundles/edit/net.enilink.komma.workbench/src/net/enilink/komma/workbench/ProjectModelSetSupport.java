@@ -14,26 +14,15 @@
  */
 package net.enilink.komma.workbench;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.resources.IProject;
-import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.traits.Behaviour;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.base.CompoundURIMapRuleSet;
 import net.enilink.komma.workbench.internal.KommaWorkbenchContextFactory;
 
 public abstract class ProjectModelSetSupport implements IProjectModelSet,
 		Behaviour<IModelSet> {
-	private final static Logger log = LoggerFactory
-			.getLogger(ProjectModelSetSupport.class);
-
 	private IProject project;
 	protected ModelSetWorkbenchSynchronizer synchronizer;
 
@@ -55,38 +44,12 @@ public abstract class ProjectModelSetSupport implements IProjectModelSet,
 		return synchronizer;
 	}
 
-	@Iri(MODELS.NAMESPACE + "isReleasing")
-	public abstract boolean isReleasing();
-
-	public void release() {
-		setReleasing(true);
+	public void dispose() {
 		if (synchronizer != null) {
 			synchronizer.dispose();
 		}
 		synchronizer = null;
-		removeAndUnloadAllModels();
 		setProject(null);
-	}
-
-	protected void removeAndUnloadAllModels() {
-		boolean caughtException = false;
-		if (getModels().isEmpty()) {
-			return;
-		}
-		List<IModel> models = new ArrayList<IModel>(getModels());
-		getModels().clear();
-		for (IModel model : models) {
-			try {
-				model.unload();
-			} catch (RuntimeException ex) {
-				log.error("Error while unloading model", ex);
-				caughtException = true;
-			}
-		}
-		if (caughtException) {
-			throw new RuntimeException(
-					"Exception(s) unloading resources - check log files"); //$NON-NLS-1$
-		}
 	}
 
 	/**
@@ -98,17 +61,18 @@ public abstract class ProjectModelSetSupport implements IProjectModelSet,
 	public void setProject(IProject project) {
 		this.project = project;
 
-		KommaWorkbenchContextFactory.INSTANCE.createSynchronizer(
-				getBehaviourDelegate(), project);
+		if (project != null) {
+			KommaWorkbenchContextFactory.INSTANCE.createSynchronizer(
+					getBehaviourDelegate(), project);
 
-		getURIConverter().setURIMapRules(
-				new CompoundURIMapRuleSet(KommaWorkbenchContextFactory.INSTANCE
-						.createKommaContext(getProject(), null)
-						.getURIConverter().getURIMapRules(), getURIConverter()
-						.getURIMapRules()));
+			getURIConverter().setURIMapRules(
+					new CompoundURIMapRuleSet(
+							KommaWorkbenchContextFactory.INSTANCE
+									.createKommaContext(getProject(), null)
+									.getURIConverter().getURIMapRules(),
+							getURIConverter().getURIMapRules()));
+		}
 	}
-
-	public abstract void setReleasing(boolean releasing);
 
 	/**
 	 * Sets the synchronizer.
