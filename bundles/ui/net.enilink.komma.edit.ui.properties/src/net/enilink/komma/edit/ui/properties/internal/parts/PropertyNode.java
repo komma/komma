@@ -21,6 +21,7 @@ import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.Statement;
 
 /**
  * Tree node that represents the values of a given property for a given resource
@@ -29,6 +30,8 @@ import net.enilink.komma.core.IStatement;
  * @author Ken Wenzel
  */
 public class PropertyNode {
+	private static IStatement EMPTY_STATEMENT = new Statement(null, null, null);
+
 	private IStatement firstStatement;
 	private Boolean hasMultipleStatements;
 	private boolean includeInferred;
@@ -89,6 +92,7 @@ public class PropertyNode {
 			} else {
 				IExtendedIterator<IStatement> stmtIt = getStatementIterator();
 				if (!stmtIt.hasNext()) {
+					firstStatement = EMPTY_STATEMENT;
 					hasMultipleStatements = false;
 					return null;
 				}
