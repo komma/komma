@@ -88,7 +88,10 @@ public class PropertyNode {
 				getChildren();
 			} else {
 				IExtendedIterator<IStatement> stmtIt = getStatementIterator();
-
+				if (!stmtIt.hasNext()) {
+					hasMultipleStatements = false;
+					return null;
+				}
 				firstStatement = stmtIt.next();
 				hasMultipleStatements = stmtIt.hasNext();
 
