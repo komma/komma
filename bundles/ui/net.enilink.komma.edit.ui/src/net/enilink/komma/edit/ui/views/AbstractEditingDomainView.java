@@ -163,9 +163,16 @@ public class AbstractEditingDomainView extends ViewPart implements
 
 	protected void setEditingDomainProvider(
 			IEditingDomainProvider editingDomainProvider) {
+		IEditingDomainProvider lastProvider = this.editingDomainProvider;
+
 		this.editingDomainProvider = editingDomainProvider;
+
 		if (editingDomainProvider == null) {
 			this.model = null;
+		} else if (lastProvider != null
+				&& lastProvider.getEditingDomain().equals(
+						editingDomainProvider.getEditingDomain())) {
+			return;
 		} else {
 			Set<IModel> models = editingDomainProvider.getEditingDomain()
 					.getModelSet().getModels();
@@ -198,11 +205,10 @@ public class AbstractEditingDomainView extends ViewPart implements
 		} else if (part instanceof IEditingDomainProvider) {
 			this.part = part;
 			setEditingDomainProvider((IEditingDomainProvider) part);
-		} else if (part != null) {
+		} else if (part != null && part instanceof IEditorPart) {
 			IEditingDomainProvider provider = (IEditingDomainProvider) part
 					.getAdapter(IEditingDomainProvider.class);
-			if (provider != null
-					&& !provider.equals(this.editingDomainProvider)) {
+			if (provider != null) {
 				this.part = part;
 				setEditingDomainProvider(provider);
 			}
