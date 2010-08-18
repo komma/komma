@@ -49,6 +49,10 @@ public class CachingSesameManager extends DecoratingSesameManager implements
 
 	@Override
 	public void close() {
+		if (cache != null) {
+			cache.stop();
+			cache = null;
+		}
 		changeTracker.removeChangeListener(this);
 		super.close();
 	}

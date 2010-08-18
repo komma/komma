@@ -356,9 +356,10 @@ public abstract class ResourceSupport extends BehaviorBase implements
 				if (value instanceof Object[]) {
 					Object[] values = (Object[]) value;
 					return new Statement(getBehaviourDelegate(),
-							(IReference) values[0], values[1]);
+							(IReference) values[0], values[1], includeInferred);
 				}
-				return new Statement(getBehaviourDelegate(), property, value);
+				return new Statement(getBehaviourDelegate(), property, value,
+						includeInferred);
 			}
 		};
 	}
