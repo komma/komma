@@ -13,5 +13,5 @@ package net.enilink.komma.internal.model;
 import net.enilink.komma.model.IModel;
 
 public interface IModelAware {
-	public void initModel(IModel model);
+	void initModel(IModel model);
 }

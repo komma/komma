@@ -27,6 +27,8 @@ import org.openrdf.model.Resource;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.event.NotifyingRepository;
 import org.openrdf.store.StoreException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.adapter.AdapterSet;
@@ -84,6 +86,9 @@ import net.enilink.komma.util.KommaUtil;
 public abstract class AbstractModelSetSupport implements IModelSet,
 		ISesameModelSet, IModelSet.Internal, ModelSet,
 		INotificationBroadcaster<INotification>, Behaviour<IModelSet> {
+	private final static Logger log = LoggerFactory
+			.getLogger(AbstractModelSetSupport.class);
+
 	/**
 	 * The registered adapter factories.
 	 * 
@@ -279,9 +284,8 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 
 	@Override
 	public void dispose() {
-		for (IModel model : getModels()) {
-			model.unload();
-		}
+		removeAndUnloadAllModels();
+
 		if (dataRepositoryConnection != null) {
 			try {
 				dataRepositoryConnection.close();
@@ -297,6 +301,35 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 				KommaCore.log(e);
 			}
 			dataRepository = null;
+		}
+		if (metaDataRepository != null) {
+			try {
+				metaDataRepository.shutDown();
+			} catch (StoreException e) {
+				KommaCore.log(e);
+			}
+			metaDataRepository = null;
+		}
+	}
+
+	protected void removeAndUnloadAllModels() {
+		if (metaDataRepository == null || getModels().isEmpty()) {
+			return;
+		}
+		List<IModel> models = new ArrayList<IModel>(getModels());
+		getModels().clear();
+		boolean caughtException = false;
+		for (IModel model : models) {
+			try {
+				model.unload();
+			} catch (RuntimeException ex) {
+				log.error("Error while unloading model", ex);
+				caughtException = true;
+			}
+		}
+		if (caughtException) {
+			throw new RuntimeException(
+					"Exception(s) unloading resources - check log files"); //$NON-NLS-1$
 		}
 	}
 
@@ -453,8 +486,9 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 					IModel.Factory.Registry defaultModelFactoryRegistry = ModelCore
 							.getDefault().getModelFactoryRegistry();
 
-					return convert(getFactory(uri, defaultModelFactoryRegistry
-							.getProtocolToFactoryMap(),
+					return convert(getFactory(uri,
+							defaultModelFactoryRegistry
+									.getProtocolToFactoryMap(),
 							defaultModelFactoryRegistry
 									.getExtensionToFactoryMap(),
 							defaultModelFactoryRegistry
@@ -502,7 +536,7 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 	}
 
 	@Override
-	public RepositoryConnection getSharedRepositoyConnection() {
+	public synchronized RepositoryConnection getSharedRepositoyConnection() {
 		if (dataRepositoryConnection == null) {
 			try {
 				dataRepositoryConnection = getRepository().getConnection();
@@ -586,16 +620,14 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 		}
 
 		Exception cause = exception instanceof IModel.IOWrappedException ? (Exception) exception
-				.getCause()
-				: exception;
+				.getCause() : exception;
 		DiagnosticWrappedException wrappedException = new DiagnosticWrappedException(
 				cause);
 
 		if (model.getErrors().isEmpty()) {
 			model.getErrors()
-					.add(
-							exception instanceof IModel.IDiagnostic ? (IModel.IDiagnostic) exception
-									: wrappedException);
+					.add(exception instanceof IModel.IDiagnostic ? (IModel.IDiagnostic) exception
+							: wrappedException);
 		}
 
 		throw wrappedException;

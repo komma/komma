@@ -90,7 +90,7 @@ public abstract class MemoryModelSetSupport extends AbstractModelSetSupport {
 				conn = owlRepository.getConnection();
 				for (String name : bundles) {
 					URL url = FileLocator.find(Platform.getBundle(name),
-							new Path("META-INF/org.openrdf.elmo.ontologies"),
+							new Path("META-INF/org.openrdf.ontologies"),
 							Collections.emptyMap());
 					if (url != null) {
 						URL resolvedUrl = FileLocator.resolve(url);

@@ -130,8 +130,8 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 				}
 
 				if (prefix != null && prefix.trim().length() > 0) {
-					conn.setNamespace(prefix, URIUtil.modelUriToNamespace(uri
-							.toString()));
+					conn.setNamespace(prefix,
+							URIUtil.modelUriToNamespace(uri.toString()));
 				}
 
 				conn.add(modelUri, OWL.IMPORTS, URIUtil.toSesameUri(uri),
@@ -161,8 +161,8 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	@Override
 	public KommaModule getModule() {
 		if (module == null) {
-			module = new KommaModule(AbstractModelSupport.class
-					.getClassLoader());
+			module = new KommaModule(
+					AbstractModelSupport.class.getClassLoader());
 
 			KommaModule modelSetModule = getModelSet().getModule();
 			if (modelSetModule != null) {
@@ -208,8 +208,8 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 						} catch (Throwable e) {
 							KommaCore.logErrorStatus(
 									"Error while loading import: "
-											+ importedModelUri, new Status(
-											IStatus.WARNING,
+											+ importedModelUri,
+									new Status(IStatus.WARNING,
 											ModelCore.PLUGIN_ID, 0, e
 													.getMessage(), e));
 						}
@@ -498,8 +498,8 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 					}
 				}
 
-				conn.removeMatch(modelUri, OWL.IMPORTS, URIUtil
-						.toSesameUri(importedOnt));
+				conn.removeMatch(modelUri, OWL.IMPORTS,
+						URIUtil.toSesameUri(importedOnt));
 
 				if (!isActive) {
 					manager.getTransaction().commit();
