@@ -1993,12 +1993,7 @@ public class ItemProviderAdapter extends
 			return null;
 		}
 
-		IObject iObject = (IObject) object;
-		Object result = iObject.getContainer();
-		if (result == null) {
-			result = iObject.getModel();
-		}
-		return result;
+		return ((IObject) object).getContainer();
 	}
 
 	/**
