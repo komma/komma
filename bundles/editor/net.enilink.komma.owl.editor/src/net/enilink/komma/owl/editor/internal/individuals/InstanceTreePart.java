@@ -49,7 +49,7 @@ public class InstanceTreePart extends IndividualsPart {
 
 			if (children != null && index < children.length) {
 				((TreeViewer) viewer).replace(parent, index, children[index]);
-				((TreeViewer) viewer).setHasChildren(parent, true);
+				updateChildCount(children[index], 0);
 			}
 		}
 

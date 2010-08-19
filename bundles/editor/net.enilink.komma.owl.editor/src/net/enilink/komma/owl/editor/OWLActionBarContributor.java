@@ -221,6 +221,10 @@ public class OWLActionBarContributor extends EditingDomainActionBarContributor
 
 	@Override
 	public void dispose() {
+		if (selectionProvider != null) {
+			selectionProvider.removeSelectionChangedListener(this);
+			selectionProvider = null;
+		}
 		if (createChildActionContributor != null) {
 			createChildActionContributor.dispose();
 			createChildActionContributor = null;
