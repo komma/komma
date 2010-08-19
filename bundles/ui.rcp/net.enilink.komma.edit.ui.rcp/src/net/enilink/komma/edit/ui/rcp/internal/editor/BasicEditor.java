@@ -5,8 +5,10 @@ import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IFileEditorInput;
@@ -15,8 +17,8 @@ import net.enilink.komma.common.ui.ViewerPane;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.edit.ui.celleditor.AdapterFactoryTreeEditor;
 import net.enilink.komma.edit.ui.editor.IPropertySheetPageSupport;
-import net.enilink.komma.edit.ui.editor.KommaEditorSupport;
 import net.enilink.komma.edit.ui.editor.KommaMultiPageEditor;
+import net.enilink.komma.edit.ui.editor.KommaMultiPageEditorSupport;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.rcp.KommaEditUIRCP;
@@ -52,8 +54,8 @@ public class BasicEditor extends KommaMultiPageEditor implements
 	}
 
 	@Override
-	protected KommaEditorSupport<? extends KommaMultiPageEditor> createEditorSupport() {
-		return new KommaEditorSupport<BasicEditor>(this) {
+	protected KommaMultiPageEditorSupport<? extends KommaMultiPageEditor> createEditorSupport() {
+		return new KommaMultiPageEditorSupport<BasicEditor>(this) {
 			@Override
 			protected IResourceLocator getResourceLocator() {
 				return KommaEditUIRCP.INSTANCE;
