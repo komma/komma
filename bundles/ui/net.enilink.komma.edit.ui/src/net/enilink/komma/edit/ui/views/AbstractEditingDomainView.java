@@ -103,9 +103,12 @@ public class AbstractEditingDomainView extends ViewPart implements
 				}
 				if (IEditingDomainProvider.class.equals(adapter)) {
 					return editingDomainProvider;
-				} else if (IViewerMenuSupport.class.equals(adapter)
-						&& part instanceof IViewerMenuSupport) {
-					return (IViewerMenuSupport) part;
+				} else if (IViewerMenuSupport.class.equals(adapter)) {
+					if (part instanceof IViewerMenuSupport) {
+						return (IViewerMenuSupport) part;
+					} else if (part != null) {
+						return part.getAdapter(IViewerMenuSupport.class);
+					}
 				}
 				return null;
 			}
@@ -162,18 +165,21 @@ public class AbstractEditingDomainView extends ViewPart implements
 	}
 
 	protected void setEditingDomainProvider(
-			IEditingDomainProvider editingDomainProvider) {
+			IEditingDomainProvider editingDomainProvider, IWorkbenchPart part) {
 		IEditingDomainProvider lastProvider = this.editingDomainProvider;
 
 		this.editingDomainProvider = editingDomainProvider;
 
 		if (editingDomainProvider == null) {
+			this.part = null;
 			this.model = null;
 		} else if (lastProvider != null
 				&& lastProvider.getEditingDomain().equals(
 						editingDomainProvider.getEditingDomain())) {
 			return;
 		} else {
+			this.part = part;
+			
 			Set<IModel> models = editingDomainProvider.getEditingDomain()
 					.getModelSet().getModels();
 			if (!models.isEmpty()) {
@@ -200,17 +206,14 @@ public class AbstractEditingDomainView extends ViewPart implements
 
 	protected void setWorkbenchPart(final IWorkbenchPart part) {
 		if (part == null) {
-			this.part = null;
-			setEditingDomainProvider(null);
+			setEditingDomainProvider(null, null);
 		} else if (part instanceof IEditingDomainProvider) {
-			this.part = part;
-			setEditingDomainProvider((IEditingDomainProvider) part);
-		} else if (part != null && part instanceof IEditorPart) {
+			setEditingDomainProvider((IEditingDomainProvider) part, part);
+		} else if (part != null) {
 			IEditingDomainProvider provider = (IEditingDomainProvider) part
 					.getAdapter(IEditingDomainProvider.class);
 			if (provider != null) {
-				this.part = part;
-				setEditingDomainProvider(provider);
+				setEditingDomainProvider(provider, part);
 			}
 		}
 	}

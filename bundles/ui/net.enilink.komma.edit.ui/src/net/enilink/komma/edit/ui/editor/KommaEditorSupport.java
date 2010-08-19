@@ -45,22 +45,18 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSource;
 import org.eclipse.swt.dnd.DropTarget;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -78,7 +74,6 @@ import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationFilter;
 import net.enilink.komma.common.ui.EclipseUtil;
 import net.enilink.komma.common.ui.MarkerHelper;
-import net.enilink.komma.common.ui.editor.ProblemEditorPart;
 import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.IResourceLocator;
@@ -86,7 +81,6 @@ import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.EditingDomainCommandStack;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.provider.AdapterFactoryItemDelegator;
 import net.enilink.komma.edit.provider.ComposedAdapterFactory;
@@ -118,19 +112,19 @@ import net.enilink.komma.core.URIImpl;
 /**
  * This is a base class for a multi-page model editor.
  */
-public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISupportedEditor>
-		implements IEditingDomainProvider, IMenuListener, IAdaptable {
+public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
+		IEditingDomainProvider, IMenuListener, IAdaptable {
 	class EditorSelectionProvider extends PostSelectionProviderAdapter {
-		/**
-		 * This listens to which ever viewer is active.
-		 */
-		protected ISelectionChangedListener selectionChangedListener;
-
 		/**
 		 * This keeps track of the selection of the editor as a whole.
 		 * 
 		 */
 		protected ISelection editorSelection = StructuredSelection.EMPTY;
+
+		/**
+		 * This listens to which ever viewer is active.
+		 */
+		protected ISelectionChangedListener selectionChangedListener;
 
 		/**
 		 * This keeps track of the active selection provider.
@@ -145,6 +139,10 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 		@Override
 		public ISelection getSelection() {
 			return editorSelection;
+		}
+
+		public ISelectionProvider getSelectionProvider() {
+			return selectionProvider;
 		}
 
 		/**
@@ -230,58 +228,48 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 				runnable.run();
 			}
 		}
-
-		public ISelectionProvider getSelectionProvider() {
-			return selectionProvider;
-		}
 	};
 
 	/**
-	 * Resources that have been changed since last activation. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
+	 * Resources that have been changed since last activation.
 	 * 
 	 */
 	protected Collection<IModel> changedModels = new ArrayList<IModel>();
 
+	protected ICommandStackListener commandStackListener;
+
 	/**
-	 * This is the content outline page. <!-- begin-user-doc --> <!--
-	 * end-user-doc -->
+	 * This is the content outline page.
 	 * 
 	 */
 	protected IContentOutlinePage contentOutlinePage;
 
 	/**
-	 * This is a kludge... <!-- begin-user-doc --> <!-- end-user-doc -->
+	 * This is a kludge...
 	 * 
 	 */
 	protected IStatusLineManager contentOutlineStatusLineManager;
 
 	/**
-	 * This is the content outline page's viewer. <!-- begin-user-doc --> <!--
-	 * end-user-doc -->
+	 * This is the content outline page's viewer.
 	 * 
 	 */
 	protected TreeViewer contentOutlineViewer;
 
 	/**
 	 * This keeps track of the editing domain that is used to track all changes
-	 * to the model. <!-- begin-user-doc --> <!-- end-user-doc -->
+	 * to the model.
 	 * 
 	 */
-	protected AdapterFactoryEditingDomain editingDomain;
-
-	protected ComposedAdapterFactory ownedAdapterFactory;
+	private AdapterFactoryEditingDomain editingDomain;
 
 	protected E editor;
-
-	protected ICommandStackListener commandStackListener;
 
 	protected EditorSelectionProvider editorSelectionProvider = new EditorSelectionProvider();
 
 	/**
 	 * The MarkerHelper is responsible for creating workspace resource markers
-	 * presented in Eclipse's Problems View. <!-- begin-user-doc --> <!--
-	 * end-user-doc -->
+	 * presented in Eclipse's Problems View.
 	 * 
 	 */
 	protected MarkerHelper markerHelper = new EditUIMarkerHelper();
@@ -291,17 +279,17 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	protected IModelSet modelSet;
 
 	/**
-	 * Map to store the diagnostic associated with a resource. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
+	 * Map to store the diagnostic associated with a resource.
 	 * 
 	 */
 	protected Map<IModel, Diagnostic> modelToDiagnosticMap = new LinkedHashMap<IModel, Diagnostic>();
 
 	protected IOperationHistory operationHistory;
 
+	protected ComposedAdapterFactory ownedAdapterFactory;
+
 	/**
-	 * This listens for when the outline becomes active <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+	 * This listens for when the outline becomes active.
 	 * 
 	 */
 	protected IPartListener partListener = new IPartListener() {
@@ -325,8 +313,10 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 				// support associated views
 				IEditingDomainProvider provider = (IEditingDomainProvider) p
 						.getAdapter(IEditingDomainProvider.class);
-				if (provider != null && editingDomain != null
-						&& editingDomain.equals(provider.getEditingDomain())) {
+				if (provider != null
+						&& getEditingDomain() != null
+						&& getEditingDomain().equals(
+								provider.getEditingDomain())) {
 					getActionBarContributor().setActiveEditor(editor);
 
 					editorSelectionProvider.setSelectionProvider(p.getSite()
@@ -354,7 +344,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 
 	/**
 	 * Adapter used to update the problem indication when resources are demanded
-	 * loaded. <!-- begin-user-doc --> <!-- end-user-doc -->
+	 * loaded.
 	 * 
 	 */
 	protected INotificationListener<INotification> problemIndicationListener = new INotificationListener<INotification>() {
@@ -410,15 +400,13 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	protected IPropertySheetPageSupport propertySheetPageSupport;
 
 	/**
-	 * Resources that have been removed since last activation. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
+	 * Resources that have been removed since last activation.
 	 * 
 	 */
 	protected Collection<IModel> removedModels = new ArrayList<IModel>();
 
 	/**
-	 * This listens for workspace changes. <!-- begin-user-doc --> <!--
-	 * end-user-doc -->
+	 * This listens for workspace changes.
 	 * 
 	 */
 	protected IResourceChangeListener resourceChangeListener = new IResourceChangeListener() {
@@ -427,7 +415,8 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 			try {
 				class ResourceDeltaVisitor implements IResourceDeltaVisitor {
 					protected Collection<IModel> changedModels = new ArrayList<IModel>();
-					protected IModelSet modelSet = editingDomain.getModelSet();
+					protected IModelSet modelSet = getEditingDomain()
+							.getModelSet();
 					protected Collection<IModel> removedModels = new ArrayList<IModel>();
 
 					public Collection<IModel> getChangedModels() {
@@ -494,15 +483,13 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	};
 
 	/**
-	 * Resources that have been saved. <!-- begin-user-doc --> <!-- end-user-doc
-	 * -->
+	 * Resources that have been saved.
 	 * 
 	 */
 	protected Collection<IModel> savedModels = new ArrayList<IModel>();
 
 	/**
-	 * Controls whether the problem indication should be updated. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
+	 * Controls whether the problem indication should be updated.
 	 * 
 	 */
 	protected boolean updateProblemIndication = true;
@@ -513,8 +500,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 
 	/**
 	 * Returns a diagnostic describing the errors and warnings listed in the
-	 * resource and the specified exception (if any). <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+	 * resource and the specified exception (if any).
 	 * 
 	 */
 	public Diagnostic analyzeModelProblems(IModel model, Exception exception) {
@@ -538,8 +524,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 
 	/**
 	 * This creates a context menu for the viewer and adds a listener as well
-	 * registering the menu for extension. <!-- begin-user-doc --> <!--
-	 * end-user-doc -->
+	 * registering the menu for extension.
 	 * 
 	 */
 	public void createContextMenuFor(StructuredViewer viewer) {
@@ -581,7 +566,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 			target.dispose();
 		}
 		viewer.addDropSupport(dndOperations, transfers,
-				new EditingDomainViewerDropAdapter(editingDomain, viewer));
+				new EditingDomainViewerDropAdapter(getEditingDomain(), viewer));
 	}
 
 	/**
@@ -595,13 +580,13 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 				|| !resourceURI.scheme().toLowerCase().startsWith("http")) {
 			InputStream in = null;
 			try {
-				in = editingDomain.getModelSet().getURIConverter()
+				in = getEditingDomain().getModelSet().getURIConverter()
 						.createInputStream(resourceURI);
 
 				String ontology = ModelUtil.findOntology(in,
 						resourceURI.toString());
 				if (ontology != null) {
-					editingDomain
+					getEditingDomain()
 							.getModelSet()
 							.getURIConverter()
 							.getURIMapRules()
@@ -628,10 +613,12 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 		Exception exception = null;
 		try {
 			// Load the model through the editing domain.
-			model = editingDomain.getModelSet().getModel(resourceURI, true);
+			model = getEditingDomain().getModelSet()
+					.getModel(resourceURI, true);
 		} catch (Exception e) {
 			exception = e;
-			model = editingDomain.getModelSet().getModel(resourceURI, false);
+			model = getEditingDomain().getModelSet().getModel(resourceURI,
+					false);
 		}
 
 		Diagnostic diagnostic = analyzeModelProblems(model, exception);
@@ -642,7 +629,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 
 		model.getManager();
 
-		editingDomain.getModelSet().addMetaDataListener(
+		getEditingDomain().getModelSet().addMetaDataListener(
 				problemIndicationListener);
 	}
 
@@ -686,10 +673,6 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 		};
 	}
 
-	/**
-	 * <!-- begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 */
 	public void dispose() {
 		updateProblemIndication = false;
 
@@ -698,11 +681,15 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 
 		editor.getSite().getPage().removePartListener(partListener);
 
-		editingDomain.getCommandStack().removeCommandStackListener(
-				commandStackListener);
+		if (getEditingDomain() != null) {
+			getEditingDomain().getCommandStack().removeCommandStackListener(
+					commandStackListener);
 
-		editingDomain.getModelSet().removeMetaDataListener(
-				problemIndicationListener);
+			getEditingDomain().getModelSet().removeMetaDataListener(
+					problemIndicationListener);
+
+			setEditingDomain(null);
+		}
 
 		if (ownedAdapterFactory != null) {
 			ownedAdapterFactory.dispose();
@@ -726,7 +713,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 
 	/**
 	 * This is for implementing {@link IEditorPart} and simply saves the model
-	 * file. <!-- begin-user-doc --> <!-- end-user-doc -->
+	 * file.
 	 * 
 	 */
 	public void doSave(IProgressMonitor progressMonitor) {
@@ -740,8 +727,10 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 			@Override
 			public void run(IProgressMonitor monitor) {
 				// Save the resources to the file system.
-				for (IModel model : editingDomain.getModelSet().getModels()) {
-					if (model.isModified() && !editingDomain.isReadOnly(model)) {
+				for (IModel model : getEditingDomain().getModelSet()
+						.getModels()) {
+					if (model.isModified()
+							&& !getEditingDomain().isReadOnly(model)) {
 						try {
 							model.save(saveOptions);
 							savedModels.add(model);
@@ -765,7 +754,8 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 					false, saveRunnable);
 
 			// Refresh the necessary state.
-			((BasicCommandStack) editingDomain.getCommandStack()).saveIsDone();
+			((BasicCommandStack) getEditingDomain().getCommandStack())
+					.saveIsDone();
 			editor.firePropertyChange(IEditorPart.PROP_DIRTY);
 		} catch (Exception exception) {
 			// Something went wrong that shouldn't.
@@ -789,12 +779,9 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 		}
 	}
 
-	/**
-	 * <!-- begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 */
 	protected void doSaveAs(URI uri, IEditorInput editorInput) {
-		editingDomain.getModelSet().getModels().iterator().next().setURI(uri);
+		getEditingDomain().getModelSet().getModels().iterator().next()
+				.setURI(uri);
 		editor.setInputWithNotify(editorInput);
 		editor.setPartName(editorInput.getName());
 		IProgressMonitor progressMonitor = getActionBars()
@@ -804,26 +791,17 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 		doSave(progressMonitor);
 	}
 
-	/**
-	 * <!-- begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 */
 	public EditingDomainActionBarContributor getActionBarContributor() {
 		return (EditingDomainActionBarContributor) editor.getEditorSite()
 				.getActionBarContributor();
 	}
 
-	/**
-	 * <!-- begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 */
 	public IActionBars getActionBars() {
 		return getActionBarContributor().getActionBars();
 	}
 
 	/**
-	 * This is how the framework determines which interfaces we implement. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
+	 * This is how the framework determines which interfaces we implement.
 	 * 
 	 */
 	@SuppressWarnings("rawtypes")
@@ -848,18 +826,13 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 		return null;
 	}
 
-	/**
-	 * <!-- begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 */
 	public IAdapterFactory getAdapterFactory() {
-		return ((AdapterFactoryEditingDomain) editingDomain)
+		return ((AdapterFactoryEditingDomain) getEditingDomain())
 				.getAdapterFactory();
 	}
 
 	/**
-	 * This accesses a cached version of the content outliner. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
+	 * This accesses a cached version of the content outliner.
 	 * 
 	 */
 	public IContentOutlinePage getContentOutlinePage() {
@@ -880,15 +853,16 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 					contentOutlineViewer
 							.setLabelProvider(new AdapterFactoryLabelProvider(
 									getAdapterFactory()));
-					contentOutlineViewer.setInput(editingDomain.getModelSet());
+					contentOutlineViewer.setInput(getEditingDomain()
+							.getModelSet());
 
 					// Make sure our popups work.
 					createContextMenuFor(contentOutlineViewer);
 
-					if (!editingDomain.getModelSet().getModels().isEmpty()) {
+					if (!getEditingDomain().getModelSet().getModels().isEmpty()) {
 						// Select the root object in the view.
 						contentOutlineViewer.setSelection(
-								new StructuredSelection(editingDomain
+								new StructuredSelection(getEditingDomain()
 										.getModelSet().getModels().iterator()
 										.next()), true);
 					}
@@ -931,11 +905,22 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	 * {@link IEditingDomainProvider} interface. This is important for
 	 * implementing the static methods of {@link AdapterFactoryEditingDomain}
 	 * and for supporting {@link org.eclipse.emf.edit.ui.action.CommandAction}.
-	 * <!-- begin-user-doc --> <!-- end-user-doc -->
 	 * 
 	 */
-	public IEditingDomain getEditingDomain() {
+	public AdapterFactoryEditingDomain getEditingDomain() {
 		return editingDomain;
+	}
+
+	protected AdapterFactoryEditingDomain getExistingEditingDomain(
+			IModelSet modelSet) {
+		IEditingDomainProvider provider = (IEditingDomainProvider) modelSet
+				.adapters().getAdapter(IEditingDomainProvider.class);
+
+		if (provider != null) {
+			return (AdapterFactoryEditingDomain) provider.getEditingDomain();
+		}
+
+		return null;
 	}
 
 	public IModel getModel() {
@@ -953,8 +938,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	}
 
 	/**
-	 * This looks up a string in the plugin's plugin.properties file. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
+	 * This looks up a string in the plugin's plugin.properties file.
 	 * 
 	 */
 	public String getString(String key) {
@@ -962,18 +946,13 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	}
 
 	/**
-	 * This looks up a string in plugin.properties, making a substitution. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
+	 * This looks up a string in plugin.properties, making a substitution.
 	 * 
 	 */
 	public String getString(String key, Object s1) {
 		return getResourceLocator().getString(key, new Object[] { s1 });
 	}
 
-	/**
-	 * <!-- begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 */
 	public void gotoMarker(IMarker marker) {
 		try {
 			if (marker.getType().equals(IValidator.MARKER)) {
@@ -981,12 +960,12 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 						IValidator.URI_ATTRIBUTE, null);
 				if (uriAttribute != null) {
 					URI uri = URIImpl.createURI(uriAttribute);
-					IObject object = editingDomain.getModelSet().getObject(uri,
-							true);
+					IObject object = getEditingDomain().getModelSet()
+							.getObject(uri, true);
 					if (object != null) {
 						editorSelectionProvider
 								.setSelectionToViewer(Collections
-										.singleton(editingDomain
+										.singleton(getEditingDomain()
 												.getWrapper(object)));
 					}
 				}
@@ -997,16 +976,15 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	}
 
 	/**
-	 * Handles activation of the editor or it's associated views. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
+	 * Handles activation of the editor or it's associated views.
 	 * 
 	 */
 	protected void handleActivate() {
-		handlePageChange();
+		handlePageChange(0);
 
 		// Recompute the read only state.
-		if (editingDomain.getModelToReadOnlyMap() != null) {
-			editingDomain.getModelToReadOnlyMap().clear();
+		if (getEditingDomain().getModelToReadOnlyMap() != null) {
+			getEditingDomain().getModelToReadOnlyMap().clear();
 
 			// Refresh any actions that may become enabled or disabled.
 			editorSelectionProvider.setSelection(editorSelectionProvider
@@ -1030,16 +1008,16 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	}
 
 	/**
-	 * Handles what to do with changed models on activation. <!-- begin-user-doc
-	 * --> <!-- end-user-doc -->
+	 * Handles what to do with changed models on activation.
 	 * 
 	 */
 	protected void handleChangedModels() {
 		if (!changedModels.isEmpty() && (!isDirty() || handleDirtyConflict())) {
 			if (isDirty()) {
-				changedModels.addAll(editingDomain.getModelSet().getModels());
+				changedModels.addAll(getEditingDomain().getModelSet()
+						.getModels());
 			}
-			editingDomain.getCommandStack().flush();
+			getEditingDomain().getCommandStack().flush();
 
 			updateProblemIndication = false;
 			for (IModel model : changedModels) {
@@ -1068,7 +1046,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 
 	/**
 	 * This deals with how we want selection in the outliner to affect the other
-	 * views. <!-- begin-user-doc --> <!-- end-user-doc -->
+	 * views.
 	 * 
 	 */
 	public void handleContentOutlineSelection(ISelection selection) {
@@ -1076,8 +1054,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	}
 
 	/**
-	 * Shows a dialog that asks if conflicting changes should be discarded. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
+	 * Shows a dialog that asks if conflicting changes should be discarded.
 	 * 
 	 */
 	protected boolean handleDirtyConflict() {
@@ -1086,25 +1063,18 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 				getString("_WARN_FileConflict"));
 	}
 
-	/**
-	 * If there is just one page in the multi-page editor part, this hides the
-	 * single tab at the bottom. <!-- begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 */
-	public void hideTabs() {
-		if (editor.getPageCount() <= 1) {
-			editor.setPageText(0, "");
-			if (editor.getContainer() instanceof CTabFolder) {
-				((CTabFolder) editor.getContainer()).setTabHeight(1);
-				Point point = editor.getContainer().getSize();
-				editor.getContainer().setSize(point.x, point.y + 6);
-			}
+	public void handlePageChange(Object activeEditor) {
+		if (activeEditor instanceof ISelectionProvider) {
+			editorSelectionProvider
+					.setSelectionProvider((ISelectionProvider) activeEditor);
+		}
+		if (contentOutlinePage != null) {
+			handleContentOutlineSelection(contentOutlinePage.getSelection());
 		}
 	}
 
 	/**
-	 * This is called during startup. <!-- begin-user-doc --> <!-- end-user-doc
-	 * -->
+	 * This is called during startup.
 	 * 
 	 */
 	public void init() {
@@ -1118,8 +1088,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	}
 
 	/**
-	 * This sets up the editing domain for the model editor. <!-- begin-user-doc
-	 * --> <!-- end-user-doc -->
+	 * This sets up the editing domain for the model editor.
 	 * 
 	 */
 	protected void initializeEditingDomain() {
@@ -1127,9 +1096,9 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 		modelSet = createModelSet();
 		initializeModelSet(modelSet);
 
-		editingDomain = getExistingEditingDomain(modelSet);
+		setEditingDomain(getExistingEditingDomain(modelSet));
 
-		if (editingDomain == null) {
+		if (getEditingDomain() == null) {
 			// Create an adapter factory that yields item providers.
 			ownedAdapterFactory = new ComposedAdapterFactory(
 					ComposedAdapterFactory.IDescriptor.IRegistry.INSTANCE) {
@@ -1178,11 +1147,11 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 			// executed.
 			EditingDomainCommandStack commandStack = new EditingDomainCommandStack();
 
-			editingDomain = new AdapterFactoryEditingDomain(
-					ownedAdapterFactory, commandStack, modelSet);
-			commandStack.setEditingDomain(editingDomain);
-			editingDomain
-					.setModelToReadOnlyMap(new java.util.WeakHashMap<IModel, Boolean>());
+			setEditingDomain(new AdapterFactoryEditingDomain(
+					ownedAdapterFactory, commandStack, modelSet));
+			commandStack.setEditingDomain(getEditingDomain());
+			getEditingDomain().setModelToReadOnlyMap(
+					new java.util.WeakHashMap<IModel, Boolean>());
 		}
 
 		// Add a listener to set the most recent command's affected objects to
@@ -1190,26 +1159,27 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 
 		commandStackListener = new ICommandStackListener() {
 			public void commandStackChanged(final EventObject event) {
-				editor.getContainer().getDisplay().asyncExec(new Runnable() {
-					public void run() {
-						editor.firePropertyChange(IEditorPart.PROP_DIRTY);
+				editor.getEditorSite().getShell().getDisplay()
+						.asyncExec(new Runnable() {
+							public void run() {
+								editor.firePropertyChange(IEditorPart.PROP_DIRTY);
 
-						// Try to select the affected objects.
-						ICommand mostRecentCommand = ((ICommandStack) event
-								.getSource()).getMostRecentCommand();
-						if (mostRecentCommand != null) {
-							editorSelectionProvider
-									.setSelectionToViewer(mostRecentCommand
-											.getAffectedObjects());
-						}
-						if (propertySheetPageSupport != null) {
-							propertySheetPageSupport.refresh();
-						}
-					}
-				});
+								// Try to select the affected objects.
+								ICommand mostRecentCommand = ((ICommandStack) event
+										.getSource()).getMostRecentCommand();
+								if (mostRecentCommand != null) {
+									editorSelectionProvider
+											.setSelectionToViewer(mostRecentCommand
+													.getAffectedObjects());
+								}
+								if (propertySheetPageSupport != null) {
+									propertySheetPageSupport.refresh();
+								}
+							}
+						});
 			}
 		};
-		editingDomain.getCommandStack().addCommandStackListener(
+		getEditingDomain().getCommandStack().addCommandStackListener(
 				commandStackListener);
 
 		propertySheetPageSupport = createPropertySheetPageSupport();
@@ -1218,31 +1188,18 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	protected void initializeModelSet(IModelSet modelSet) {
 	}
 
-	protected AdapterFactoryEditingDomain getExistingEditingDomain(
-			IModelSet modelSet) {
-		IEditingDomainProvider provider = (IEditingDomainProvider) modelSet
-				.adapters().getAdapter(IEditingDomainProvider.class);
-
-		if (provider != null) {
-			return (AdapterFactoryEditingDomain) provider.getEditingDomain();
-		}
-
-		return null;
-	}
-
 	/**
 	 * This is for implementing {@link IEditorPart} and simply tests the command
-	 * stack. <!-- begin-user-doc --> <!-- end-user-doc -->
+	 * stack.
 	 * 
 	 */
 	public boolean isDirty() {
-		return ((BasicCommandStack) editingDomain.getCommandStack())
+		return ((BasicCommandStack) getEditingDomain().getCommandStack())
 				.isSaveNeeded();
 	}
 
 	/**
-	 * This always returns true because it is not currently supported. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
+	 * This always returns true because it is not currently supported.
 	 * 
 	 */
 	public boolean isSaveAsAllowed() {
@@ -1251,30 +1208,25 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 
 	/**
 	 * This implements {@link org.eclipse.jface.action.IMenuListener} to help
-	 * fill the context menus with contributions from the Edit menu. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
+	 * fill the context menus with contributions from the Edit menu.
 	 * 
 	 */
 	public void menuAboutToShow(IMenuManager menuManager) {
-		((IMenuListener) editor.getEditorSite().getActionBarContributor())
-				.menuAboutToShow(menuManager);
-	}
-
-	public void handlePageChange() {
-		Object activeEditor = editor.getSelectedPage();
-		if (activeEditor instanceof ISelectionProvider) {
-			editorSelectionProvider
-					.setSelectionProvider((ISelectionProvider) activeEditor);
-		}
-		if (contentOutlinePage != null) {
-			handleContentOutlineSelection(contentOutlinePage.getSelection());
+		IEditorActionBarContributor actionBarContributor = editor
+				.getEditorSite().getActionBarContributor();
+		if (actionBarContributor instanceof IMenuListener) {
+			((IMenuListener) actionBarContributor).menuAboutToShow(menuManager);
 		}
 	}
 
-	/**
-	 * <!-- begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 */
+	protected void setEditingDomain(AdapterFactoryEditingDomain editingDomain) {
+		this.editingDomain = editingDomain;
+	}
+
+	public void setSelectionProvider(ISelectionProvider selectionProvider) {
+		editorSelectionProvider.setSelectionProvider(selectionProvider);
+	}
+
 	public void setStatusLineManager(ISelection selection) {
 		IStatusLineManager statusLineManager = editorSelectionProvider
 				.getSelectionProvider() != null
@@ -1313,8 +1265,7 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	}
 
 	/**
-	 * Returns whether the outline view should be presented to the user. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
+	 * Returns whether the outline view should be presented to the user.
 	 * 
 	 */
 	protected boolean showOutlineView() {
@@ -1322,63 +1273,23 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 	}
 
 	/**
-	 * If there is more than one page in the multi-page editor part, this shows
-	 * the tabs at the bottom. <!-- begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 */
-	public void showTabs() {
-		if (editor.getPageCount() > 1) {
-			editor.setPageText(0, getString("_UI_SelectionPage_label"));
-			if (editor.getContainer() instanceof CTabFolder) {
-				((CTabFolder) editor.getContainer()).setTabHeight(SWT.DEFAULT);
-				Point point = editor.getContainer().getSize();
-				editor.getContainer().setSize(point.x, point.y - 6);
-			}
-		}
-	}
-
-	/**
 	 * Updates the problems indication with the information described in the
-	 * specified diagnostic. <!-- begin-user-doc --> <!-- end-user-doc -->
+	 * specified diagnostic.
 	 * 
 	 */
 	public void updateProblemIndication() {
 		if (updateProblemIndication) {
 			BasicDiagnostic diagnostic = new BasicDiagnostic(Diagnostic.OK,
 					"net.enilink.komma.edit.ui.editor", 0, null,
-					new Object[] { editingDomain.getModelSet() });
+					new Object[] { getEditingDomain().getModelSet() });
 			for (Diagnostic childDiagnostic : modelToDiagnosticMap.values()) {
 				if (childDiagnostic.getSeverity() != Diagnostic.OK) {
 					diagnostic.add(childDiagnostic);
 				}
 			}
 
-			int lastEditorPage = editor.getPageCount() - 1;
-			if (lastEditorPage >= 0
-					&& editor.getEditor(lastEditorPage) instanceof ProblemEditorPart) {
-				((ProblemEditorPart) editor.getEditor(lastEditorPage))
-						.setDiagnostic(diagnostic);
-				if (diagnostic.getSeverity() != Diagnostic.OK) {
-					editor.setActivePage(lastEditorPage);
-				}
-			} else if (diagnostic.getSeverity() != Diagnostic.OK) {
-				ProblemEditorPart problemEditorPart = new ProblemEditorPart();
-				problemEditorPart.setDiagnostic(diagnostic);
-				problemEditorPart.setMarkerHelper(markerHelper);
-				try {
-					editor.addPage(++lastEditorPage, problemEditorPart,
-							editor.getEditorInput());
-					editor.setPageText(lastEditorPage,
-							problemEditorPart.getPartName());
-					editor.setActivePage(lastEditorPage);
-					showTabs();
-				} catch (PartInitException exception) {
-					KommaEditUIPlugin.INSTANCE.log(exception);
-				}
-			}
-
-			if (markerHelper.hasMarkers(editingDomain.getModelSet())) {
-				markerHelper.deleteMarkers(editingDomain.getModelSet());
+			if (markerHelper.hasMarkers(getEditingDomain().getModelSet())) {
+				markerHelper.deleteMarkers(getEditingDomain().getModelSet());
 				if (diagnostic.getSeverity() != Diagnostic.OK) {
 					try {
 						markerHelper.createMarkers(diagnostic);
@@ -1388,9 +1299,5 @@ public abstract class KommaEditorSupport<E extends MultiPageEditorPart & ISuppor
 				}
 			}
 		}
-	}
-
-	public void setSelectionProvider(ISelectionProvider selectionProvider) {
-		editorSelectionProvider.setSelectionProvider(selectionProvider);
 	}
 }

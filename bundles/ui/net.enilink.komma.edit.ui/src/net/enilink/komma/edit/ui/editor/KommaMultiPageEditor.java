@@ -20,8 +20,9 @@ import net.enilink.komma.edit.domain.IEditingDomainProvider;
  * This is a base class for a multi-page model editor.
  */
 public abstract class KommaMultiPageEditor extends MultiPageEditorPart
-		implements IEditingDomainProvider, IMenuListener, ISupportedEditor {
-	private KommaEditorSupport<? extends KommaMultiPageEditor> editorSupport;
+		implements IEditingDomainProvider, IMenuListener,
+		ISupportedMultiPageEditor {
+	private KommaMultiPageEditorSupport<? extends KommaMultiPageEditor> editorSupport;
 
 	/**
 	 * This creates a model editor.
@@ -33,7 +34,7 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 		editorSupport = createEditorSupport();
 	}
 
-	protected abstract KommaEditorSupport<? extends KommaMultiPageEditor> createEditorSupport();
+	protected abstract KommaMultiPageEditorSupport<? extends KommaMultiPageEditor> createEditorSupport();
 
 	@Override
 	public void dispose() {
@@ -47,9 +48,7 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 
 	/**
 	 * This is for implementing {@link IEditorPart} and simply saves the model
-	 * file. <!-- begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 * @generated
+	 * file.
 	 */
 	@Override
 	public void doSave(IProgressMonitor progressMonitor) {
@@ -57,10 +56,7 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 	}
 
 	/**
-	 * This also changes the editor's input. <!-- begin-user-doc --> <!--
-	 * end-user-doc -->
-	 * 
-	 * @generated
+	 * This also changes the editor's input.
 	 */
 	@Override
 	public void doSaveAs() {
@@ -68,10 +64,7 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 	}
 
 	/**
-	 * This is here for the listener to be able to call it. <!-- begin-user-doc
-	 * --> <!-- end-user-doc -->
-	 * 
-	 * @generated
+	 * This is here for the listener to be able to call it.
 	 */
 	@Override
 	public void firePropertyChange(int action) {
@@ -84,10 +77,7 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 	}
 
 	/**
-	 * This is how the framework determines which interfaces we implement. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 * @generated
+	 * This is how the framework determines which interfaces we implement.
 	 */
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -114,9 +104,6 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 	 * {@link IEditingDomainProvider} interface. This is important for
 	 * implementing the static methods of {@link AdapterFactoryEditingDomain}
 	 * and for supporting {@link org.eclipse.emf.edit.ui.action.CommandAction}.
-	 * <!-- begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 * @generated
 	 */
 	public IEditingDomain getEditingDomain() {
 		return editorSupport.getEditingDomain();
@@ -126,7 +113,7 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 		return super.getEditor(pageIndex);
 	}
 
-	protected KommaEditorSupport<? extends KommaMultiPageEditor> getEditorSupport() {
+	protected KommaMultiPageEditorSupport<? extends KommaMultiPageEditor> getEditorSupport() {
 		return editorSupport;
 	}
 
@@ -139,10 +126,7 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 	}
 
 	/**
-	 * This is called during startup. <!-- begin-user-doc --> <!-- end-user-doc
-	 * -->
-	 * 
-	 * @generated
+	 * This is called during startup.
 	 */
 	@Override
 	public void init(IEditorSite site, IEditorInput editorInput)
@@ -156,21 +140,13 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 
 	/**
 	 * This is for implementing {@link IEditorPart} and simply tests the command
-	 * stack. <!-- begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 * @generated
+	 * stack.
 	 */
 	@Override
 	public boolean isDirty() {
 		return editorSupport.isDirty();
 	}
 
-	/**
-	 * This always returns true because it is not currently supported. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
-	 * 
-	 * @generated
-	 */
 	@Override
 	public boolean isSaveAsAllowed() {
 		return editorSupport.isSaveAsAllowed();
@@ -178,10 +154,8 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 
 	/**
 	 * This implements {@link org.eclipse.jface.action.IMenuListener} to help
-	 * fill the context menus with contributions from the Edit menu. <!--
-	 * begin-user-doc --> <!-- end-user-doc -->
+	 * fill the context menus with contributions from the Edit menu.
 	 * 
-	 * @generated
 	 */
 	public void menuAboutToShow(IMenuManager menuManager) {
 		editorSupport.menuAboutToShow(menuManager);
@@ -190,7 +164,7 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 	@Override
 	protected void pageChange(int newPageIndex) {
 		super.pageChange(newPageIndex);
-		editorSupport.handlePageChange();
+		editorSupport.handlePageChange(newPageIndex);
 	}
 
 	public void setActivePage(int pageIndex) {

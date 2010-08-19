@@ -155,7 +155,7 @@ public abstract class KommaFormEditor extends FormEditor implements
 	@Override
 	protected void pageChange(int newPageIndex) {
 		super.pageChange(newPageIndex);
-		editorSupport.handlePageChange();
+		editorSupport.handlePageChange(newPageIndex);
 	}
 
 	public void setActivePage(int pageIndex) {
