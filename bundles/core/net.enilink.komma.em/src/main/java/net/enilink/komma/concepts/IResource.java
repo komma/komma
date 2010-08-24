@@ -22,6 +22,9 @@ import net.enilink.komma.util.Pair;
 
 @Iri("http://www.w3.org/2000/01/rdf-schema#Resource")
 public interface IResource extends Resource {
+	@Iri("http://enilink.net/vocab/komma#image")
+	java.net.URI getImage();
+
 	void addProperty(IReference property, Object obj);
 
 	@Cacheable
