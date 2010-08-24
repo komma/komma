@@ -185,8 +185,9 @@ class SparqlPart extends AbstractEditorPart {
 						for (String columnName : columnNames) {
 							Binding binding = bindingSet.getBinding(columnName);
 							if (binding != null) {
-								values[i++] = binding.getValue();
+								values[i] = binding.getValue();
 							}
+							i++;
 						}
 
 						data.add(values);
