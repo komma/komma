@@ -110,7 +110,7 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 		data.append("[");
 		bNode.getBNodePropertyList().accept(this, data);
 		data.append("]");
-		return bNode.getPropertyList().accept(this, data);
+		return data;
 	}
 
 	@Override
