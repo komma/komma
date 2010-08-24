@@ -39,8 +39,7 @@ public abstract class ObjectSupport extends BehaviorBase implements IObject,
 			+ "	{" //
 			+ "		?otherProperty rdfs:domain ?class ." //
 			+ "	} UNION {" //
-			+ "		?class rdfs:subClassOf ?restriction ."
-			+ "		?restriction owl:onProperty ?otherProperty" //
+			+ "		?class rdfs:subClassOf [owl:onProperty ?otherProperty]"
 			+ "	}" //
 			+ "	FILTER (?property != ?otherProperty)" //
 			+ "}" //
