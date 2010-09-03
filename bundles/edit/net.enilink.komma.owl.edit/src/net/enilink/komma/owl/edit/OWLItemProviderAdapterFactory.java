@@ -44,23 +44,24 @@ public class OWLItemProviderAdapterFactory extends
 	protected Collection<IClass> getTypes(Object object) {
 		// classes
 		if (object instanceof IClass) {
-			return Arrays.asList((IClass) ((IObject) object).getModel()
-					.getManager().find(OWL.TYPE_CLASS));
+			return Arrays.asList(((IObject) object).getModel().getManager()
+					.find(OWL.TYPE_CLASS, IClass.class));
 		}
 		if (object instanceof DatatypeProperty) {
-			return Arrays.asList((IClass) ((IObject) object).getModel()
-					.getManager().find(OWL.TYPE_DATATYPEPROPERTY));
+			return Arrays.asList(((IObject) object).getModel().getManager()
+					.find(OWL.TYPE_DATATYPEPROPERTY, IClass.class));
 		}
 		if (object instanceof ObjectProperty) {
-			return Arrays.asList((IClass) ((IObject) object).getModel()
-					.getManager().find(OWL.TYPE_OBJECTPROPERTY));
+			return Arrays.asList(((IObject) object).getModel().getManager()
+					.find(OWL.TYPE_OBJECTPROPERTY, IClass.class));
 		}
 		if (object instanceof AnnotationProperty) {
-			return Arrays.asList((IClass) ((IObject) object).getModel()
-					.getManager().find(OWL.TYPE_ANNOTATIONPROPERTY));
+			return Arrays.asList(((IObject) object).getModel().getManager()
+					.find(OWL.TYPE_ANNOTATIONPROPERTY, IClass.class));
 		}
 		// others
-		Set<IClass> classes = ((IObject) object).getDirectNamedClasses().toSet();
+		Set<IClass> classes = ((IObject) object).getDirectNamedClasses()
+				.toSet();
 		return classes;
 	}
 
