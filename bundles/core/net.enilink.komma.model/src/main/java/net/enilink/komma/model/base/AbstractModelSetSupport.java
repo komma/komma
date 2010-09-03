@@ -38,6 +38,8 @@ import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationSupport;
+import net.enilink.komma.common.util.URIUtil;
+import net.enilink.komma.internal.model.concepts.Model;
 import net.enilink.komma.internal.model.concepts.ModelSet;
 import net.enilink.komma.internal.model.event.NamespaceNotification;
 import net.enilink.komma.internal.model.event.StatementNotification;
@@ -203,6 +205,19 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 		if (modelFactory != null) {
 			IModel result = modelFactory.createModel(getBehaviourDelegate(),
 					uri);
+
+			if (isPersistent()) {
+				try {
+					// check if model is already loaded
+					if (getSharedRepositoyConnection().hasMatch(null, null,
+							null, false, URIUtil.toSesameUri(uri))) {
+						((Model) result).setModelLoaded(true);
+					}
+				} catch (StoreException e) {
+					throw new KommaException(e);
+				}
+			}
+
 			getModels().add(result);
 			return result;
 		} else {

@@ -10,23 +10,18 @@
  *******************************************************************************/
 package net.enilink.komma.model.mem;
 
-import org.openrdf.model.impl.URIImpl;
-
 import net.enilink.vocab.owl.OWL;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.sesame.SesameReference;
 
 public class MemoryModelFactory implements IModel.Factory {
 	@Override
 	public IModel createModel(IModelSet modelSet, URI uri) {
-		IModel model = (IModel) modelSet.getMetaDataManager().createNamed(
-				uri,
-				new SesameReference(new URIImpl(MODELS.NAMESPACE
-						+ "MemoryModel")), MODELS.CLASS_MODEL,
-				OWL.TYPE_ONTOLOGY);
+		IModel model = (IModel) modelSet.getMetaDataManager().createNamed(uri,
+				MODELS.NAMESPACE_URI.appendFragment("MemoryModel"),
+				MODELS.CLASS_MODEL, OWL.TYPE_ONTOLOGY);
 		((IModel.Internal) model).internalSetModelSet(modelSet);
 		return model;
 	}

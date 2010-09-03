@@ -20,6 +20,7 @@ import net.enilink.composition.annotations.Iri;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Statement;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.event.base.NotifyingRepositoryConnectionWrapper;
 import org.openrdf.result.Result;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -44,10 +45,19 @@ public abstract class MemoryModelSupport extends AbstractModelSupport {
 			setModelLoading(true);
 
 			conn = getRepository().getConnection();
+
+			// ensure that the underlying add(...) method is used
+			RepositoryConnection delegate = conn;
+			while (delegate instanceof NotifyingRepositoryConnectionWrapper) {
+				delegate = ((NotifyingRepositoryConnectionWrapper) conn)
+						.getDelegate();
+			}
+
 			if (in != null && in.available() > 0) {
-				conn
-						.add(in, modelUri.stringValue(), RDFFormat.RDFXML,
-								modelUri);
+				conn.begin();
+				delegate.add(in, modelUri.stringValue(), RDFFormat.RDFXML,
+						modelUri);
+				conn.commit();
 			}
 		} catch (IOException e) {
 			throw new KommaException("Cannot access RDF data", e);
@@ -61,9 +71,17 @@ public abstract class MemoryModelSupport extends AbstractModelSupport {
 
 			if (conn != null) {
 				try {
-					conn.close();
+					if (!conn.isAutoCommit()) {
+						conn.rollback();
+					}
 				} catch (StoreException e) {
 					KommaCore.log(e);
+				} finally {
+					try {
+						conn.close();
+					} catch (StoreException e) {
+						KommaCore.log(e);
+					}
 				}
 			}
 		}
@@ -84,8 +102,8 @@ public abstract class MemoryModelSupport extends AbstractModelSupport {
 				conn = getRepository().getConnection();
 
 				for (Namespace namespace : conn.getNamespaces().asList()) {
-					rdfWriter.handleNamespace(namespace.getPrefix(), namespace
-							.getName());
+					rdfWriter.handleNamespace(namespace.getPrefix(),
+							namespace.getName());
 				}
 
 				Result<Statement> stmts = conn.match(null, null, null, false,
