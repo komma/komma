@@ -9,10 +9,7 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.commons.util,
  org.eclipse.ui;resolution:=optional;visibility:=reexport,
  org.eclipse.ui.forms;resolution:=optional;visibility:=reexport,
- org.eclipse.ui.ide;resolution:=optional;visibility:=reexport,
- org.eclipse.rap.ui;resolution:=optional;visibility:=reexport,
- org.eclipse.rap.ui.forms;resolution:=optional;visibility:=reexport,
- org.eclipse.rap.ui.views;resolution:=optional;visibility:=reexport
+ org.eclipse.ui.ide;resolution:=optional;visibility:=reexport
 Export-Package: net.enilink.commons.ui,
  net.enilink.commons.ui.dialogs,
  net.enilink.commons.ui.editor,
