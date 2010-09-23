@@ -22,3 +22,4 @@ Export-Package: net.enilink.komma.edit.ui.rcp.commands,
  net.enilink.komma.edit.ui.rcp.editor
 Bundle-Activator: net.enilink.komma.edit.ui.rcp.KommaEditUIRCP$Implementation
 Bundle-ActivationPolicy: lazy
+Import-Package: com.google.inject
