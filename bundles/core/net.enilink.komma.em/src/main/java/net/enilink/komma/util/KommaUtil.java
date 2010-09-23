@@ -37,6 +37,7 @@ import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IOntology;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
+import net.enilink.komma.concepts.KommaConcepts;
 import net.enilink.komma.concepts.OntologySupport;
 import net.enilink.komma.concepts.PropertySupport;
 import net.enilink.komma.concepts.ResourceSupport;
@@ -57,7 +58,10 @@ public class KommaUtil implements ISparqlConstants {
 				.getBundleMetaInfLocations("net.enilink.vocab.owl")
 				.andThen(
 						KommaUtil
-								.getBundleMetaInfLocations("net.enilink.vocab.rdfs"))) {
+								.getBundleMetaInfLocations("net.enilink.vocab.rdfs"))
+				.andThen(
+						KommaUtil
+								.getBundleMetaInfLocations(KommaConcepts.PLUGIN_ID))) {
 			module.addLibrary(url);
 		}
 
