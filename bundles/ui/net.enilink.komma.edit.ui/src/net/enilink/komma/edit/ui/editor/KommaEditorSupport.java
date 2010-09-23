@@ -64,6 +64,9 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.BasicCommandStack;
 import net.enilink.komma.common.command.ICommand;
@@ -287,6 +290,9 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 	protected IOperationHistory operationHistory;
 
 	protected ComposedAdapterFactory ownedAdapterFactory;
+
+	@Inject
+	protected Injector injector;
 
 	/**
 	 * This listens for when the outline becomes active.
@@ -1141,6 +1147,10 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 					return defaultAdapterFactory;
 				}
 			};
+
+			if (injector != null) {
+				injector.injectMembers(ownedAdapterFactory);
+			}
 
 			// Create the command stack that will notify this editor as commands
 			// are
