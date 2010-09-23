@@ -9,6 +9,7 @@
     xmlns:komma="http://enilink.net/vocab/komma#"
   xml:base="http://enilink.net/vocab/komma">
   <owl:Ontology rdf:about=""/>
+  <owl:Class rdf:about="#Connection"/>
   <owl:Class rdf:ID="LiteralKeyValueMap">
     <rdfs:subClassOf>
       <owl:Class rdf:ID="Map"/>
