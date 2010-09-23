@@ -27,6 +27,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
@@ -139,6 +142,9 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 	 * interface.
 	 */
 	protected ComposedAdapterFactory parentAdapterFactory;
+	
+	@Inject
+	protected Injector injector;
 
 	/**
 	 * Comparator to sort classes according to their "semantic" level.
@@ -358,6 +364,9 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 					.getDescriptor(types);
 			if (descriptor != null) {
 				result = descriptor.createAdapterFactory();
+				if (null != injector) {
+					injector.injectMembers(result);
+				}
 				addAdapterFactory(result);
 			}
 		}
