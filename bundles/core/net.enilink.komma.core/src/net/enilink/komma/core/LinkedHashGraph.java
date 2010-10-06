@@ -30,8 +30,7 @@ import net.enilink.commons.iterator.FilterIterator;
  * @author James Leigh
  */
 @SuppressWarnings("unchecked")
-public class LinkedHashGraph extends AbstractSet<IStatement> implements
-		IGraph {
+public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 
 	private static final long serialVersionUID = -9161104123818983614L;
 
@@ -101,8 +100,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 
 	@Override
 	public boolean add(IStatement st) {
-		return add(st.getSubject(), st.getPredicate(), st.getObject(), st
-				.getContext());
+		return add(st.getSubject(), st.getPredicate(), st.getObject(),
+				st.getContext());
 	}
 
 	public boolean add(IReference subj, IReference pred, Object obj,
@@ -275,8 +274,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 			@Override
 			public boolean contains(Object o) {
 				if (o instanceof IReference || o == null) {
-					return LinkedHashGraph.this.contains(subj, pred,
-							obj, (IReference) o);
+					return LinkedHashGraph.this.contains(subj, pred, obj,
+							(IReference) o);
 				}
 				return false;
 			}
@@ -340,8 +339,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 			@Override
 			public boolean remove(Object o) {
 				if (o instanceof Object) {
-					return LinkedHashGraph.this.remove(subj, pred,
-							(Object) o, contexts);
+					return LinkedHashGraph.this.remove(subj, pred, (Object) o,
+							contexts);
 				}
 				return false;
 			}
@@ -355,8 +354,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 				if (contains(obj)) {
 					return false;
 				}
-				return LinkedHashGraph.this.add(subj, pred, obj,
-						contexts);
+				return LinkedHashGraph.this.add(subj, pred, obj, contexts);
 			}
 
 			@Override
@@ -412,8 +410,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 				if (contains(pred)) {
 					return false;
 				}
-				return LinkedHashGraph.this.add(subj, pred, obj,
-						contexts);
+				return LinkedHashGraph.this.add(subj, pred, obj, contexts);
 			}
 
 			@Override
@@ -445,8 +442,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 			@Override
 			public boolean contains(Object o) {
 				if (o instanceof IReference) {
-					return LinkedHashGraph.this.contains((IReference) o,
-							pred, obj, contexts);
+					return LinkedHashGraph.this.contains((IReference) o, pred,
+							obj, contexts);
 				}
 				return false;
 			}
@@ -454,8 +451,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 			@Override
 			public boolean remove(Object o) {
 				if (o instanceof IReference) {
-					return LinkedHashGraph.this.remove((IReference) o,
-							pred, obj, contexts);
+					return LinkedHashGraph.this.remove((IReference) o, pred,
+							obj, contexts);
 				}
 				return false;
 			}
@@ -469,8 +466,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 				if (contains(subj)) {
 					return false;
 				}
-				return LinkedHashGraph.this.add(subj, pred, obj,
-						contexts);
+				return LinkedHashGraph.this.add(subj, pred, obj, contexts);
 			}
 
 			@Override
@@ -536,8 +532,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 		return new GraphIterator(iter, set);
 	}
 
-	boolean matches(IStatement st, IReference subj, IReference pred, Object obj,
-			IReference... contexts) {
+	boolean matches(IStatement st, IReference subj, IReference pred,
+			Object obj, IReference... contexts) {
 		if (subj != null && !subj.equals(st.getSubject())) {
 			return false;
 		}
@@ -803,7 +799,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 					"Statement is filtered out of view: " + st);
 		}
 
-		public boolean add(IReference s, IReference p, Object o, IReference... c) {
+		public boolean add(IReference s, IReference p, Object o,
+				IReference... c) {
 			if (!accept(s, p, o, c)) {
 				throw new IllegalArgumentException(
 						"Statement is filtered out of view");
@@ -839,7 +836,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 			}
 		}
 
-		public boolean remove(IReference s, IReference p, Object o, IReference... c) {
+		public boolean remove(IReference s, IReference p, Object o,
+				IReference... c) {
 			if (!accept(s, p, o, c)) {
 				return false;
 			}
@@ -858,7 +856,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 			return LinkedHashGraph.this.remove(s, p, o, c);
 		}
 
-		public boolean contains(IReference s, IReference p, Object o, IReference... c) {
+		public boolean contains(IReference s, IReference p, Object o,
+				IReference... c) {
 			if (!accept(s, p, o, c)) {
 				return false;
 			}
@@ -877,7 +876,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 			return LinkedHashGraph.this.contains(s, p, o, c);
 		}
 
-		public IGraph filter(IReference s, IReference p, Object o, IReference... c) {
+		public IGraph filter(IReference s, IReference p, Object o,
+				IReference... c) {
 			if (!accept(s, p, o, c)) {
 				return emptyGraph();
 			}
@@ -992,7 +992,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 			return matches(st, subj, pred, obj, contexts);
 		}
 
-		private boolean accept(IReference s, IReference p, Object o, IReference... c) {
+		private boolean accept(IReference s, IReference p, Object o,
+				IReference... c) {
 			if (subj != null && !subj.equals(s)) {
 				return false;
 			}
@@ -1215,7 +1216,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 		}
 	}
 
-	class GraphStatement implements IStatement {
+	class GraphStatement extends StatementBase {
 
 		private static final long serialVersionUID = 2200404772364346279L;
 
@@ -1226,11 +1227,12 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 		GraphNode<Object> obj;
 
 		GraphNode<IReference> ctx;
-		
+
 		boolean isInferred;
 
-		public GraphStatement(GraphNode<IReference> subj, GraphNode<IReference> pred,
-				GraphNode<Object> obj, GraphNode<IReference> ctx, boolean isInferred) {
+		public GraphStatement(GraphNode<IReference> subj,
+				GraphNode<IReference> pred, GraphNode<Object> obj,
+				GraphNode<IReference> ctx, boolean isInferred) {
 			assert subj != null;
 			assert pred != null;
 			assert obj != null;
@@ -1257,7 +1259,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 		public IReference getContext() {
 			return ctx.getObject();
 		}
-		
+
 		@Override
 		public boolean isInferred() {
 			return isInferred;
@@ -1265,11 +1267,12 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements
 	}
 
 	class PatternIterator<S extends IStatement> extends FilterIterator<S> {
-		public PatternIterator(Iterator<S> iter, final IReference subj, final IReference pred,
-				final Object obj, final IReference... contexts) {
+		public PatternIterator(Iterator<S> iter, final IReference subj,
+				final IReference pred, final Object obj,
+				final IReference... contexts) {
 			super(new Filter<S>() {
 				IReference[] ctxs = notNull(contexts);
-				
+
 				public boolean accept(S st) {
 					return matches(st, subj, pred, obj, ctxs);
 				}

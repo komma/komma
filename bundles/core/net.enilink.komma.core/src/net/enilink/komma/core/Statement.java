@@ -13,7 +13,8 @@ package net.enilink.komma.core;
 import java.util.Collections;
 import java.util.Iterator;
 
-public class Statement implements IStatement, Iterable<IStatement> {
+public class Statement extends StatementBase implements IStatement,
+		Iterable<IStatement> {
 	private IReference context;
 	private boolean inferred;
 	private Object obj;
@@ -44,38 +45,6 @@ public class Statement implements IStatement, Iterable<IStatement> {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (!(obj instanceof Statement))
-			return false;
-		Statement other = (Statement) obj;
-		if (context == null) {
-			if (other.context != null)
-				return false;
-		} else if (!context.equals(other.context))
-			return false;
-		if (this.obj == null) {
-			if (other.obj != null)
-				return false;
-		} else if (!this.obj.equals(other.obj))
-			return false;
-		if (pred == null) {
-			if (other.pred != null)
-				return false;
-		} else if (!pred.equals(other.pred))
-			return false;
-		if (subj == null) {
-			if (other.subj != null)
-				return false;
-		} else if (!subj.equals(other.subj))
-			return false;
-		return true;
-	}
-
-	@Override
 	public IReference getContext() {
 		return context;
 	}
@@ -96,17 +65,6 @@ public class Statement implements IStatement, Iterable<IStatement> {
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((context == null) ? 0 : context.hashCode());
-		result = prime * result + ((obj == null) ? 0 : obj.hashCode());
-		result = prime * result + ((pred == null) ? 0 : pred.hashCode());
-		result = prime * result + ((subj == null) ? 0 : subj.hashCode());
-		return result;
-	}
-
-	@Override
 	public boolean isInferred() {
 		return inferred;
 	}
@@ -114,12 +72,5 @@ public class Statement implements IStatement, Iterable<IStatement> {
 	@Override
 	public Iterator<IStatement> iterator() {
 		return Collections.<IStatement> singleton(this).iterator();
-	}
-
-	@Override
-	public String toString() {
-		return new StringBuilder("[").append(getSubject()).append(", ")
-				.append(getPredicate()).append(", ").append(getObject())
-				.append("]").toString();
 	}
 }
