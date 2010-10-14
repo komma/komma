@@ -57,5 +57,8 @@
       <modelBehaviour
             class="net.enilink.komma.model.IModel">
       </modelBehaviour>
+      <modelBehaviour
+            class="net.enilink.komma.model.sesame.RemoteModelSetSupport">
+      </modelBehaviour>
    </extension>
 </plugin>

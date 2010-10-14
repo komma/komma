@@ -565,6 +565,14 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 	private ReferenceMap resource2Reference = new ReferenceMap(
 			ReferenceMap.WEAK, ReferenceMap.WEAK);
 
+	private IReference[] getSharedReferences(Object[] resources) {
+		IReference[] references = new IReference[resources.length];
+		for (int i = 0; i < resources.length; i++) {
+			references[i++] = getSharedReference(resources[i++]);
+		}
+		return references;
+	}
+
 	public IReference getSharedReference(Object resource) {
 		synchronized (resource2Reference) {
 			IReference reference = (IReference) resource2Reference
@@ -796,7 +804,8 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 								getSharedReference(stmtChange.getSubject()),
 								getSharedReference(stmtChange.getPredicate()),
 								object instanceof Resource ? getSharedReference((Resource) object)
-										: object, stmtChange.getContexts()));
+										: object,
+								getSharedReferences(stmtChange.getContexts())));
 			}
 		}
 		return notifications;

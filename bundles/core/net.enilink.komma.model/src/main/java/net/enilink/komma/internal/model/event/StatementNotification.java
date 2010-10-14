@@ -12,8 +12,6 @@ package net.enilink.komma.internal.model.event;
 
 import java.util.Arrays;
 
-import org.openrdf.model.Resource;
-
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.event.IStatementNotification;
@@ -24,7 +22,7 @@ public class StatementNotification implements IStatementNotification {
 
 	private boolean add;
 
-	private Resource[] ctx;
+	private IReference[] ctx;
 
 	private Object obj;
 
@@ -33,7 +31,7 @@ public class StatementNotification implements IStatementNotification {
 	private IReference subj;
 
 	public StatementNotification(IModelSet modelSet, boolean add,
-			IReference subj, IReference pred, Object obj, Resource... ctx) {
+			IReference subj, IReference pred, Object obj, IReference... ctx) {
 		this.modelSet = modelSet;
 		this.add = add;
 		this.subj = subj;
@@ -71,7 +69,7 @@ public class StatementNotification implements IStatementNotification {
 		return true;
 	}
 
-	public Resource[] getContexts() {
+	public IReference[] getContexts() {
 		return ctx;
 	}
 
