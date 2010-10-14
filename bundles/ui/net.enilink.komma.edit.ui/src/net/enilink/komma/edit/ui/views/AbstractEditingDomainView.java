@@ -5,7 +5,6 @@ import java.util.Set;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.layout.FillLayout;
@@ -49,7 +48,8 @@ public class AbstractEditingDomainView extends ViewPart implements
 		@Override
 		public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 			if (part != AbstractEditingDomainView.this
-					&& selection instanceof IStructuredSelection) {
+					&& selection instanceof IStructuredSelection
+					&& !selection.equals(selectionProvider.getSelection())) {
 				Object selected = ((IStructuredSelection) selection)
 						.getFirstElement();
 
@@ -69,6 +69,28 @@ public class AbstractEditingDomainView extends ViewPart implements
 		}
 	}
 
+	private class SelectionProvider extends SelectionProviderAdapter {
+		@Override
+		public void setSelection(ISelection selection) {
+			// try to propagate selection to interested parts
+			if (selection instanceof IStructuredSelection) {
+				Object selected = ((IStructuredSelection) selection)
+						.getFirstElement();
+				if (editorForm.setInput(selected)) {
+					// input was accepted, selection changed events are
+					// automatically triggered by the respective part
+					return;
+				}
+			}
+			// input was not accepted by any part, so we can't do anything
+		}
+
+		public void setInternalSelection(ISelection selection) {
+			// set selection without propagating to other parts
+			super.setSelection(selection);
+		}
+	}
+
 	private AbstractEditingDomainPart editPart;
 
 	private EditorForm editorForm;
@@ -77,7 +99,7 @@ public class AbstractEditingDomainView extends ViewPart implements
 
 	private IEditingDomainProvider editingDomainProvider;
 
-	private ISelectionProvider selectionProvider = new SelectionProviderAdapter();
+	private SelectionProvider selectionProvider = new SelectionProvider();
 
 	protected IWorkbenchPart part;
 
@@ -91,7 +113,7 @@ public class AbstractEditingDomainView extends ViewPart implements
 			@Override
 			public void fireSelectionChanged(IEditorPart firingPart,
 					final ISelection selection) {
-				selectionProvider.setSelection(selection);
+				selectionProvider.setInternalSelection(selection);
 				super.fireSelectionChanged(firingPart, selection);
 			}
 
@@ -179,7 +201,7 @@ public class AbstractEditingDomainView extends ViewPart implements
 			return;
 		} else {
 			this.part = part;
-			
+
 			Set<IModel> models = editingDomainProvider.getEditingDomain()
 					.getModelSet().getModels();
 			if (!models.isEmpty()) {
@@ -187,7 +209,7 @@ public class AbstractEditingDomainView extends ViewPart implements
 			}
 		}
 		if (editPart != null) {
-			selectionProvider.setSelection(StructuredSelection.EMPTY);
+			selectionProvider.setInternalSelection(StructuredSelection.EMPTY);
 
 			editorForm.setInput(null);
 			editPart.setInput(this.model);

@@ -697,6 +697,12 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 			setEditingDomain(null);
 		}
 
+		if (editorSelectionProvider != null) {
+			// ensure that selection listener is removed
+			editorSelectionProvider.setSelectionProvider(null);
+			editorSelectionProvider = null;
+		}
+
 		if (ownedAdapterFactory != null) {
 			ownedAdapterFactory.dispose();
 			ownedAdapterFactory = null;
