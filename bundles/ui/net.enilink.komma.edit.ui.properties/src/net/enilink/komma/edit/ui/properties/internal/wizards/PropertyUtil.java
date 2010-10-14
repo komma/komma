@@ -9,15 +9,26 @@ import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.command.AddCommand;
 import net.enilink.komma.edit.command.RemoveCommand;
+import net.enilink.komma.edit.command.SetCommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.util.Pair;
 
 public class PropertyUtil {
 	public static IStatus addProperty(IEditingDomain editingDomain,
 			IResource subject, IProperty predicate, Object object) {
-		ICommand setCommand = AddCommand.create(editingDomain, subject,
-				predicate, object);
+		Pair<Integer, Integer> cardinality = subject
+				.getApplicableCardinality(predicate);
+		ICommand addCommand;
+		if (cardinality.getSecond() != 1) {
+			addCommand = AddCommand.create(editingDomain, subject, predicate,
+					object);
+		} else {
+			addCommand = SetCommand.create(editingDomain, subject, predicate,
+					object);
+		}
+
 		try {
-			return editingDomain.getCommandStack().execute(setCommand, null,
+			return editingDomain.getCommandStack().execute(addCommand, null,
 					null);
 		} catch (ExecutionException e) {
 			return Status.CANCEL_STATUS;
