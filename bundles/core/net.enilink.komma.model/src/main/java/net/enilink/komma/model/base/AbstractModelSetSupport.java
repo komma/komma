@@ -566,9 +566,12 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 			ReferenceMap.WEAK, ReferenceMap.WEAK);
 
 	private IReference[] getSharedReferences(Object[] resources) {
+		if (resources == null) {
+			return null;
+		}
 		IReference[] references = new IReference[resources.length];
 		for (int i = 0; i < resources.length; i++) {
-			references[i++] = getSharedReference(resources[i++]);
+			references[i] = getSharedReference(resources[i]);
 		}
 		return references;
 	}
