@@ -38,7 +38,7 @@ import net.enilink.komma.concepts.CONCEPTS;
  * 
  */
 @Iri(CONCEPTS.NAMESPACE + "KeyValueMap")
-public abstract class KeyValueMap extends AbstractSesameMap {
+public abstract class KeyValueMap extends AbstractRDFMap {
 	@Override
 	protected URI getUri4Key() {
 		return URIUtil.toSesameUri(CONCEPTS.PROPERTY_KEY);

@@ -13,8 +13,6 @@ package net.enilink.komma.concepts;
 import java.util.Collection;
 
 import net.enilink.composition.traits.Behaviour;
-import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.QueryLanguage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -270,13 +268,12 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 
 	public boolean hasDeclaredProperties(boolean includeInferred) {
 		try {
-			BooleanQuery query = getSesameManager().getConnection()
-					.prepareBooleanQuery(QueryLanguage.SPARQL,
-							HAS_DECLARED_PROPERTIES);
-			query.setBinding("class", getSesameResource());
+			IQuery<?> query = getKommaManager().createQuery(
+					HAS_DECLARED_PROPERTIES);
+			query.setParameter("class", this);
 			query.setIncludeInferred(includeInferred);
 
-			return query.evaluate().asBoolean();
+			return query.getBooleanResult();
 		} catch (Exception e) {
 			throw new KommaException(e);
 		}

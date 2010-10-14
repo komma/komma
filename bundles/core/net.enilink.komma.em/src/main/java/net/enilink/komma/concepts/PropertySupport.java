@@ -117,7 +117,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 		}
 
 		IQuery<?> query = getKommaManager().createQuery(IS_CONTAINMENT);
-		query.setParameter("property", getSesameResource());
+		query.setParameter("property", this);
 		query.setIncludeInferred(true);
 
 		return query.getBooleanResult();
@@ -178,7 +178,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 		}
 
 		IQuery<?> query = getKommaManager().createQuery(IS_ORDERED_CONTAINMENT);
-		query.setParameter("property", getSesameResource());
+		query.setParameter("property", this);
 		query.setIncludeInferred(true);
 
 		return query.getBooleanResult();

@@ -37,7 +37,6 @@ import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.sesame.ISesameEntity;
-import net.enilink.komma.sesame.ISesameResourceAware;
 import net.enilink.komma.util.KommaUtil;
 import net.enilink.komma.util.Pair;
 
@@ -296,9 +295,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	public IExtendedIterator<IStatement> getPropertyStatements(
 			final IReference property, boolean includeInferred) {
 		IEntity propertyEntity = (property instanceof IEntity) ? (IEntity) property
-				: (IEntity) getSesameManager().getInstance(
-						((ISesameResourceAware) property).getSesameResource(),
-						null);
+				: getKommaManager().find(property);
 
 		IExtendedIterator<IStatement> stmts = internalGetPropertyStmts(
 				propertyEntity, false);

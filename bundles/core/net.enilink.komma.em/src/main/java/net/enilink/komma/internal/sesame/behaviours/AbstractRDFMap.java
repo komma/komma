@@ -28,7 +28,6 @@
  */
 package net.enilink.komma.internal.sesame.behaviours;
 
-import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -67,7 +66,7 @@ import net.enilink.komma.sesame.iterators.SesameIterator;
 /**
  * 
  */
-public abstract class AbstractSesameMap extends AbstractMap<Object, Object>
+public abstract class AbstractRDFMap extends java.util.AbstractMap<Object, Object>
 		implements java.util.Map<Object, Object>, Refreshable, Mergeable,
 		Behaviour<ISesameEntity> {
 
@@ -158,8 +157,8 @@ public abstract class AbstractSesameMap extends AbstractMap<Object, Object>
 			elements = new Stack<Entry>();
 
 			IExtendedIterator<Value> values = getStatements(
-					getBehaviourDelegate().getSesameResource(), URIUtil
-							.toSesameUri(CONCEPTS.PROPERTY_ENTRY), null);
+					getBehaviourDelegate().getSesameResource(),
+					URIUtil.toSesameUri(CONCEPTS.PROPERTY_ENTRY), null);
 			while (values.hasNext()) {
 				Value v = values.next();
 
@@ -285,8 +284,8 @@ public abstract class AbstractSesameMap extends AbstractMap<Object, Object>
 		IEntity mapEntry = manager.create(manager.find(CONCEPTS.TYPE_MAPENTRY));
 
 		// Entry zu Map zuordnen
-		addStatement(getBehaviourDelegate().getSesameResource(), URIUtil
-				.toSesameUri(CONCEPTS.PROPERTY_ENTRY),
+		addStatement(getBehaviourDelegate().getSesameResource(),
+				URIUtil.toSesameUri(CONCEPTS.PROPERTY_ENTRY),
 				((ISesameResourceAware) mapEntry).getSesameResource());
 
 		// Key
@@ -316,8 +315,8 @@ public abstract class AbstractSesameMap extends AbstractMap<Object, Object>
 					QueryLanguage.SPARQL, SELECT_ENTRY_BY_KEY);
 			tupleQuery.setBinding("resource", getBehaviourDelegate()
 					.getSesameResource());
-			tupleQuery.setBinding("key", ((ISesameManager) manager)
-					.getValue(key));
+			tupleQuery.setBinding("key",
+					((ISesameManager) manager).getValue(key));
 
 			queryResult = tupleQuery.evaluate();
 
@@ -335,7 +334,7 @@ public abstract class AbstractSesameMap extends AbstractMap<Object, Object>
 		return result;
 	}
 
-	private AbstractSesameMap.Entry getEntryAsSesameMapEntry(Object key)
+	private AbstractRDFMap.Entry getEntryAsSesameMapEntry(Object key)
 			throws Exception {
 		Value v = getEntry(key);
 		return createMapEntry(v);
@@ -369,7 +368,6 @@ public abstract class AbstractSesameMap extends AbstractMap<Object, Object>
 
 	@Override
 	public Object remove(Object key) {
-
 		Value entry = null;
 
 		Object result = get(key);
@@ -390,8 +388,8 @@ public abstract class AbstractSesameMap extends AbstractMap<Object, Object>
 	}
 
 	private void removeEntry(Value entry) {
-		removeStatements(getBehaviourDelegate().getSesameResource(), URIUtil
-				.toSesameUri(CONCEPTS.PROPERTY_ENTRY), (Resource) entry);
+		removeStatements(getBehaviourDelegate().getSesameResource(),
+				URIUtil.toSesameUri(CONCEPTS.PROPERTY_ENTRY), (Resource) entry);
 		removeStatements((Resource) entry, getUri4Key(), null);
 		removeStatements((Resource) entry, getUri4Value(), null);
 		_size--;
@@ -399,18 +397,15 @@ public abstract class AbstractSesameMap extends AbstractMap<Object, Object>
 
 	@Override
 	public boolean containsKey(Object key) {
-
 		try {
 			if (getEntry(key) == null) {
 				return false;
 			} else {
 				return true;
 			}
-
 		} catch (Exception e) {
 			return false;
 		}
-
 	}
 
 	@Override
@@ -418,8 +413,8 @@ public abstract class AbstractSesameMap extends AbstractMap<Object, Object>
 		Value entry = null;
 
 		IExtendedIterator<Value> values = getStatements(getBehaviourDelegate()
-				.getSesameResource(), URIUtil
-				.toSesameUri(CONCEPTS.PROPERTY_ENTRY), null);
+				.getSesameResource(),
+				URIUtil.toSesameUri(CONCEPTS.PROPERTY_ENTRY), null);
 		while (values.hasNext()) {
 			entry = values.next();
 			removeEntry(entry);
@@ -438,7 +433,7 @@ public abstract class AbstractSesameMap extends AbstractMap<Object, Object>
 		Object keyObj = ((ISesameManager) manager).getInstance(key, null);
 		Object valueObj = ((ISesameManager) manager).getInstance(value, null);
 
-		Entry entry = (Entry) new AbstractSesameMap.Entry(keyObj, valueObj);
+		Entry entry = (Entry) new AbstractRDFMap.Entry(keyObj, valueObj);
 		return entry;
 	}
 }

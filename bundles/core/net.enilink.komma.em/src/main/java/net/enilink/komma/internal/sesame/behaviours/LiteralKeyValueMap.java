@@ -17,7 +17,7 @@ import net.enilink.komma.common.util.URIUtil;
 import net.enilink.komma.concepts.CONCEPTS;
 
 @Iri(CONCEPTS.NAMESPACE + "LiteralKeyValueMap")
-public abstract class LiteralKeyValueMap extends AbstractSesameMap {
+public abstract class LiteralKeyValueMap extends AbstractRDFMap {
 	@Override
 	protected URI getUri4Key() {
 		return URIUtil.toSesameUri(CONCEPTS.PROPERTY_KEYDATA);

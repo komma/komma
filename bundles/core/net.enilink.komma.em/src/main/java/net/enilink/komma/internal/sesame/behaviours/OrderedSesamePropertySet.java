@@ -189,7 +189,7 @@ public class OrderedSesamePropertySet<E> extends KommaPropertySet<E> implements
 	private final List<E> ensureCache() {
 		List<E> list = getCache();
 		if (list == null) {
-			final List<E> values = createElementsIterator().toList();
+			final List<E> values = super.createElementsIterator().toList();
 
 			list = new LinearExtension<E>(new IPartialOrderProvider<E>() {
 				@Override
