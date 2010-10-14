@@ -31,6 +31,7 @@ import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.SimpleCommand;
+import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
@@ -202,6 +203,14 @@ public class ClassesPart extends AbstractEditingDomainPart {
 			return true;
 		}
 		return super.setFocus();
+	}
+
+	@Override
+	public boolean setEditorInput(Object input) {
+		if (input instanceof IClass && treeViewer != null) {
+			treeViewer.setSelection(new StructuredSelection(input), true);
+		}
+		return super.setEditorInput(input);
 	}
 
 	@Override

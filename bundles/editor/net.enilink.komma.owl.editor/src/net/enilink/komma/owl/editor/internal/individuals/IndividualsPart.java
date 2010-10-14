@@ -42,6 +42,7 @@ import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
+import net.enilink.komma.core.IReference;
 
 public class IndividualsPart extends AbstractEditingDomainPart {
 	private StructuredViewer viewer;
@@ -222,6 +223,10 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 			this.input = (IClass) input;
 			setStale(true);
 			return true;
+		} else if (input instanceof IReference) {
+			if (viewer != null) {
+				viewer.setSelection(new StructuredSelection(input), true);
+			}
 		}
 		return false;
 	}
