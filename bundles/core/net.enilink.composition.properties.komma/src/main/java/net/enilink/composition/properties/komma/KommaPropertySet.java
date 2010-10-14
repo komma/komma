@@ -181,7 +181,8 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 		return new ConvertingIterator<E, E>(
 				valueType == null ? (IExtendedIterator<E>) query.evaluate()
 						: query.evaluate(valueType)) {
-			private List<E> list = new ArrayList<E>(getCacheLimit());
+			private List<E> list = new ArrayList<E>(Math.min(10,
+					getCacheLimit()));
 			private E current;
 
 			@Override
