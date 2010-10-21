@@ -259,8 +259,8 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 
 		for (final IClass resourceClass : classes) {
 			result = adaptEntityClass(target, type, typesCache, seenNamespaces,
-					seenClasses, resourceClass.getDirectNamedSuperClasses()
-							.toList());
+					seenClasses, sort(resourceClass
+							.getDirectNamedSuperClasses().toList()));
 			if (result != null) {
 				break;
 			}
