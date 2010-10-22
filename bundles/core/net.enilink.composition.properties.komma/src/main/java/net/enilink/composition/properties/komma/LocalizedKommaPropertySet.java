@@ -81,6 +81,11 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 				values.clear();
 			values.add(literal);
 			score = 1;
+		} else if (l != null && l.startsWith("en") && score <= 1) {
+			if (score < 1)
+				values.clear();
+			values.add(literal);
+			score = 1;
 		} else if (l == null) {
 			if (score < 0)
 				values.clear();
