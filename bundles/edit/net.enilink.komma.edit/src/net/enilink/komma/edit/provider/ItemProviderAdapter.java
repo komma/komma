@@ -2029,7 +2029,7 @@ public class ItemProviderAdapter extends
 
 			if (object instanceof IObject) {
 				for (IProperty property : ((IObject) object)
-						.getApplicableProperties()) {
+						.getRelevantProperties()) {
 					itemPropertyDescriptors.add(createItemPropertyDescriptor(
 							adapterFactory, this, ModelUtil.getLabel(property),
 							"", property, true, false, true, null, null, null));

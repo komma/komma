@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,16 +29,13 @@ import java.util.Set;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.rdf.RDF;
-import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.vocab.xmlschema.XMLSCHEMA;
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.NotificationSupport;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IResource;
+import net.enilink.komma.edit.provider.ComposedAdapterFactory.IDescriptor;
 import net.enilink.komma.core.URI;
 
 /**
@@ -142,41 +138,9 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 	 * interface.
 	 */
 	protected ComposedAdapterFactory parentAdapterFactory;
-	
+
 	@Inject
 	protected Injector injector;
-
-	/**
-	 * Comparator to sort classes according to their "semantic" level.
-	 */
-	protected Comparator<IClass> classComparator = new Comparator<IClass>() {
-		URI[] defaultNamespaces = { XMLSCHEMA.NAMESPACE_URI, RDF.NAMESPACE_URI,
-				RDFS.NAMESPACE_URI, OWL.NAMESPACE_URI };
-
-		@Override
-		public int compare(IClass a, IClass b) {
-			URI aUri = a.getURI();
-			URI bUri = b.getURI();
-			if (aUri == null) {
-				if (bUri != null) {
-					return 1;
-				}
-				return 0;
-			} else if (bUri == null) {
-				return -1;
-			}
-			return getRank(bUri.namespace()) - getRank(aUri.namespace());
-		}
-
-		int getRank(URI namespace) {
-			for (int i = 0; i < defaultNamespaces.length; i++) {
-				if (namespace.equals(defaultNamespaces[i])) {
-					return i;
-				}
-			}
-			return defaultNamespaces.length + 1;
-		}
-	};
 
 	public ComposedAdapterFactory() {
 		super();
@@ -430,7 +394,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 	 * @return
 	 */
 	private Collection<? extends IClass> sort(List<IClass> classes) {
-		Collections.sort(classes, classComparator);
+		Collections.sort(classes, IResource.RANK_COMPARATOR);
 		return classes;
 	}
 
