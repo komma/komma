@@ -84,6 +84,7 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport,
 
 				IModelSet modelSet = new ModelSetFactory(module,
 						URIImpl.createURI(MODELS.NAMESPACE +
+						// "RemoteModelSet" //
 						// "MemoryModelSet" //
 								"OwlimModelSet" //
 						), URIImpl.createURI(MODELS.NAMESPACE
