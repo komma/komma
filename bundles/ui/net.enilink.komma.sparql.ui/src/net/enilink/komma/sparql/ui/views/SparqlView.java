@@ -141,8 +141,9 @@ public class SparqlView extends ViewPart {
 					if (tabItem.getData("nr")
 							.equals(tabFolder.getData("maxNr"))) {
 						if (tabFolder.getItemCount() > 0) {
-							tabFolder
-									.setData("maxNr", tabFolder.getItem(
+							tabFolder.setData(
+									"maxNr",
+									tabFolder.getItem(
 											tabFolder.getItemCount() - 1)
 											.getData("nr"));
 						} else {
@@ -187,9 +188,17 @@ public class SparqlView extends ViewPart {
 	}
 
 	private void setWorkbenchPart(final IWorkbenchPart part) {
+		IEditingDomainProvider provider = null;
 		if (part instanceof IEditingDomainProvider) {
-			final IModelSet modelSet = ((IEditingDomainProvider) part)
-					.getEditingDomain().getModelSet();
+			provider = (IEditingDomainProvider) part;
+		} else {
+			provider = (IEditingDomainProvider) part
+					.getAdapter(IEditingDomainProvider.class);
+		}
+
+		if (provider != null) {
+			final IModelSet modelSet = provider.getEditingDomain()
+					.getModelSet();
 			QueryPage queryPage = null;
 			if (modelSet != null) {
 				queryPage = modelSetToQueryPage.get(modelSet);
