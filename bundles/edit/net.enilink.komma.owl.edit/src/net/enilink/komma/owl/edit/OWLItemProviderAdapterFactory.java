@@ -17,6 +17,7 @@ import net.enilink.vocab.owl.Class;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.owl.ObjectProperty;
+import net.enilink.vocab.rdfs.Resource;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.provider.ReflectiveItemProviderAdapterFactory;
@@ -47,17 +48,19 @@ public class OWLItemProviderAdapterFactory extends
 			return Arrays.asList(((IObject) object).getModel().getManager()
 					.find(OWL.TYPE_CLASS, IClass.class));
 		}
+		if (object instanceof AnnotationProperty) {
+			return Arrays.asList(((IObject) object).getModel().getManager()
+					.find(OWL.TYPE_ANNOTATIONPROPERTY, IClass.class));
+		}
 		if (object instanceof DatatypeProperty) {
 			return Arrays.asList(((IObject) object).getModel().getManager()
 					.find(OWL.TYPE_DATATYPEPROPERTY, IClass.class));
 		}
+		System.err.println(Arrays.toString(object.getClass().getInterfaces()));
+		System.err.println(Arrays.toString(((Resource)object).getRdfTypes().toArray()));
 		if (object instanceof ObjectProperty) {
 			return Arrays.asList(((IObject) object).getModel().getManager()
 					.find(OWL.TYPE_OBJECTPROPERTY, IClass.class));
-		}
-		if (object instanceof AnnotationProperty) {
-			return Arrays.asList(((IObject) object).getModel().getManager()
-					.find(OWL.TYPE_ANNOTATIONPROPERTY, IClass.class));
 		}
 		// others
 		Set<IClass> classes = ((IObject) object).getDirectNamedClasses()
