@@ -155,8 +155,8 @@ public class PropertySelectionPage extends WizardPage {
 			throws CoreException {
 		if (showAllProperties) {
 			if (allProperties == null) {
-				allProperties = context.subject.getKommaManager().findAll(
-						Property.class).toList();
+				allProperties = context.subject.getKommaManager()
+						.findAll(Property.class).toList();
 			}
 
 			for (Property prop : allProperties) {
@@ -164,8 +164,8 @@ public class PropertySelectionPage extends WizardPage {
 			}
 		} else {
 			if (applicableProperties == null) {
-				applicableProperties = context.subject
-						.getApplicableProperties().toList();
+				applicableProperties = context.subject.getRelevantProperties()
+						.toList();
 			}
 
 			for (IProperty prop : applicableProperties) {
@@ -199,5 +199,13 @@ public class PropertySelectionPage extends WizardPage {
 				return labelA.compareTo(labelB);
 			}
 		};
+	}
+
+	@Override
+	public void dispose() {
+		if (labelProvider != null) {
+			labelProvider.dispose();
+			labelProvider = null;
+		}
 	}
 }

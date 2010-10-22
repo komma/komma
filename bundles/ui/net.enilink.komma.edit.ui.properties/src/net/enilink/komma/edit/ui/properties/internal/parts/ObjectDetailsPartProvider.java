@@ -20,8 +20,7 @@ import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
 
-public abstract class ObjectDetailsPartProvider implements
-		IEditorPartProvider {
+public abstract class ObjectDetailsPartProvider implements IEditorPartProvider {
 	class Key {
 		IResource resource;
 		Collection<IClass> classes;
@@ -64,18 +63,15 @@ public abstract class ObjectDetailsPartProvider implements
 		if (classes == null) {
 			return null;
 		} else {
-			// Collection<OntProperty> properties = OntUtil
-			// .getUserProperties(((Key) key).resource);
-
 			Collection<IProperty> properties = ((Key) key).resource
-					.getApplicableProperties().toList();
+					.getRelevantProperties().toList();
 
 			return createEditorPart(classes, properties);
 		}
 	}
 
-	abstract protected IEditorPart createEditorPart(
-			Collection<IClass> classes, Collection<IProperty> properties);
+	abstract protected IEditorPart createEditorPart(Collection<IClass> classes,
+			Collection<IProperty> properties);
 
 	public Object getPartKey(Object object) {
 		if (object instanceof IResource) {
