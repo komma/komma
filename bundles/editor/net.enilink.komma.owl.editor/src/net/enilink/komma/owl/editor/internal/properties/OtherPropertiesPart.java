@@ -25,23 +25,22 @@ public class OtherPropertiesPart extends AbstractPropertiesPart {
 	@Override
 	public void refresh() {
 		super.refresh();
-		
+
 		if (model != null) {
 			IQuery<?> query = model
 					.getOntology()
 					.getKommaManager()
 					.createQuery(
 							ISparqlConstants.PREFIX
-									+ " SELECT DISTINCT ?r WHERE {"
-									+ " ?r a rdf:Property ."
-									+ " OPTIONAL { ?r rdfs:subPropertyOf ?other"
-									+ " FILTER (?r != ?other && isIRI(?other))} "
-									+ " OPTIONAL { ?p a owl:DatatypeProperty . "
-									+ " FILTER (?r = ?p ) . }"
-									+ " OPTIONAL { ?p a owl:ObjectProperty ."
-									+ " FILTER (?r = ?p ) .	}"
-									+ " FILTER (!bound(?p)) ."
-									+ " FILTER (!bound(?other) && isIRI(?r)) }");
+									+ "SELECT DISTINCT ?p WHERE {"
+									+ "?p a [rdfs:subClassOf rdf:Property] ."
+									+ "OPTIONAL {?p rdfs:subPropertyOf ?other ."
+									+ "FILTER (?p != ?other && isIRI(?other))} "
+									+ "OPTIONAL {"
+									+ "		?p a ?type . ?type rdfs:subClassOf rdf:Property ."
+									+ " 	FILTER (?type = owl:AnnotationProperty || ?type != rdf:Property && !regex(str(?type), 'http://www.w3.org/2002/07/owl#'))"
+									+ "}"
+									+ "FILTER (bound(?type) && !bound(?other) && isIRI(?p)) }");
 
 			treeViewer.setInput(query.evaluate(IProperty.class).toList()
 					.toArray());
