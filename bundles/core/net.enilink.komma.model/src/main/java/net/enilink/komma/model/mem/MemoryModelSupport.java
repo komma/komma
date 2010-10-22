@@ -94,10 +94,12 @@ public abstract class MemoryModelSupport extends AbstractModelSupport {
 		RDFXMLWriter rdfWriter = new RDFXMLWriter(new OutputStreamWriter(os,
 				"UTF-8"));
 		try {
+			org.openrdf.model.URI modelUri = URIUtil.toSesameUri(getURI());
+			rdfWriter.setBaseURI(modelUri.toString());
+
 			rdfWriter.startRDF();
 			RepositoryConnection conn = null;
 
-			org.openrdf.model.URI modelUri = URIUtil.toSesameUri(getURI());
 			try {
 				conn = getRepository().getConnection();
 

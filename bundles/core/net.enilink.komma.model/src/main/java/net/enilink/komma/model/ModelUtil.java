@@ -12,6 +12,8 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 
+import net.enilink.vocab.rdf.Property;
+import net.enilink.vocab.rdfs.Class;
 import net.enilink.vocab.rdfs.Resource;
 import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
@@ -29,8 +31,8 @@ public class ModelUtil {
 			Resource resource = (Resource) element;
 
 			String label = null;
-			if (!(resource instanceof IObject && ((IObject) resource)
-					.isOntLanguageTerm())) {
+			if (!(resource instanceof Class || resource instanceof Property || resource instanceof IObject
+					&& ((IObject) resource).isOntLanguageTerm())) {
 				label = resource.getRdfsLabel();
 			}
 			if (label != null) {
