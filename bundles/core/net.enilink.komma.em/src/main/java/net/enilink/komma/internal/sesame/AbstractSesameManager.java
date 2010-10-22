@@ -337,28 +337,32 @@ public abstract class AbstractSesameManager implements ISesameManager {
 			}
 		}
 
-		IEntity bean = createBean(resource, null, null);
+		IEntity bean = createBean(resource, null, false, null);
 		assert assertConceptsRecorded(bean, combine(concept, concepts));
 		return (T) bean;
 	}
 
 	@SuppressWarnings("unchecked")
 	public ISesameEntity createBean(Resource resource, Collection<URI> types,
-			Model model) {
+			boolean restrictTypes, Model model) {
 		try {
-			if (types == null || types.isEmpty()) {
+			Collection<URI> entityTypes = new ArrayList<URI>();
+			if (!restrictTypes) {
 				if (model != null) {
-					types = (Collection<URI>) (Collection<?>) model.filter(
-							resource, RDF.TYPE, null).objects();
+					entityTypes.addAll((Collection<URI>) (Collection<?>) model
+							.filter(resource, RDF.TYPE, null).objects());
 				}
 
-				if (types == null || types.isEmpty()) {
-					types = typeManager.getTypes(resource);
+				if (entityTypes.isEmpty()) {
+					entityTypes.addAll(typeManager.getTypes(resource));
 				}
+			}
+			if (types != null) {
+				entityTypes.addAll(types);
 			}
 
 			ISesameEntity bean = createBeanForClass(resource,
-					classResolver.resolveComposite(types));
+					classResolver.resolveComposite(entityTypes));
 			if (model != null) {
 				initializeBean(bean, model);
 			}
@@ -419,7 +423,7 @@ public abstract class AbstractSesameManager implements ISesameManager {
 		} catch (StoreException e) {
 			throw new KommaException(e);
 		}
-		return createBean(resource, null, null);
+		return createBean(resource, null, false, null);
 	}
 
 	public SesameQuery<?> createQuery(String query) {
@@ -506,7 +510,7 @@ public abstract class AbstractSesameManager implements ISesameManager {
 			}
 		}
 
-		IEntity bean = createBean(resource, types, null);
+		IEntity bean = createBean(resource, types, false, null);
 		assert assertConceptsRecorded(bean, concepts);
 		return (T) bean;
 	}
@@ -552,12 +556,7 @@ public abstract class AbstractSesameManager implements ISesameManager {
 				logger.warn("Unknown rdf type for concept class: " + concept);
 			}
 		}
-		try {
-			types.addAll(typeManager.getTypes(resource));
-		} catch (StoreException e) {
-			throw new KommaException(e);
-		}
-		return createBean(resource, types, null);
+		return createBean(resource, types, false, null);
 	}
 
 	public <T> IExtendedIterator<T> findAll(final Class<T> concept) {
@@ -595,7 +594,7 @@ public abstract class AbstractSesameManager implements ISesameManager {
 		for (int i = 0; i < concepts.length; i++) {
 			types.add(mapper.findType(concepts[i]));
 		}
-		return createBean(resource, types, null);
+		return createBean(resource, types, true, null);
 	}
 
 	@Override
@@ -655,24 +654,18 @@ public abstract class AbstractSesameManager implements ISesameManager {
 
 	protected Object getInstance(Value value, Class<?> type, Model model) {
 		if (value instanceof Resource) {
-			Collection<URI> types = Collections.emptyList();
+			Collection<URI> types = null;
 			if (type != null) {
 				URI typeUri = mapper.findType(type);
 				if (typeUri != null) {
 					// ensure that specified type is added as role to resulting
 					// object
-					types = new ArrayList<URI>();
-					types.add(typeUri);
-
-					try {
-						types.addAll(typeManager.getTypes((Resource) value));
-					} catch (StoreException e) {
-						throw new KommaException(e);
-					}
+					types = Collections.singleton(typeUri);
 				}
 			}
 
-			ISesameEntity bean = createBean((Resource) value, types, model);
+			ISesameEntity bean = createBean((Resource) value, types, false,
+					model);
 			if (logger.isDebugEnabled()) {
 				try {
 					if (!getConnection().hasMatch((Resource) value, null, null))
@@ -1066,7 +1059,7 @@ public abstract class AbstractSesameManager implements ISesameManager {
 				for (URI type : types) {
 					typeManager.addType(resource, type);
 				}
-				Object result = createBean(resource, types, null);
+				Object result = createBean(resource, types, false, null);
 				if (result instanceof Mergeable) {
 					((Mergeable) result).merge(bean);
 				}
@@ -1182,7 +1175,7 @@ public abstract class AbstractSesameManager implements ISesameManager {
 		Resource after = resourceManager.createResource(uri);
 		resourceManager.renameResource(before, after);
 
-		T newBean = (T) createBean(after, null, null);
+		T newBean = (T) createBean(after, null, false, null);
 		((ISesameManagerAware) bean)
 				.initSesameReference((SesameReference) ((IReferenceable) newBean)
 						.getReference());

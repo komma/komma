@@ -149,8 +149,8 @@ public class CachingSesameManagerFactory extends DecoratingSesameManagerFactory 
 						Fqn fqn = Fqn.fromElements(
 								((ISesameResourceAware) entity)
 										.getSesameResource(), property);
-						Object value = treeCache.get(fqn, Arrays
-								.asList(parameters));
+						Object value = treeCache.get(fqn,
+								Arrays.asList(parameters));
 
 						boolean isIterator = value instanceof IteratorList;
 

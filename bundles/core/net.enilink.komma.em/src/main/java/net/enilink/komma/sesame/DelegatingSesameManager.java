@@ -101,8 +101,8 @@ public class DelegatingSesameManager implements ISesameManager {
 
 	@Override
 	public ISesameEntity createBean(Resource resource, Collection<URI> types,
-			Model model) {
-		return delegate.createBean(resource, types, model);
+			boolean restrictTypes, Model model) {
+		return delegate.createBean(resource, types, false, model);
 	}
 
 	@Override

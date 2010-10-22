@@ -58,7 +58,7 @@ public class CachingSesameManager extends DecoratingSesameManager implements
 	}
 
 	public ISesameEntity createBean(Resource resource, Collection<URI> types,
-			Model model) {
+			boolean restrictTypes, Model model) {
 		Object element = cache.get(Fqn.fromElements(resource), "");
 		if (element != null) {
 			if (model != null) {
@@ -66,8 +66,11 @@ public class CachingSesameManager extends DecoratingSesameManager implements
 			}
 			return (ISesameEntity) element;
 		}
-		ISesameEntity entity = super.createBean(resource, types, model);
-		cache.put(Fqn.fromElements(resource), "", entity);
+		ISesameEntity entity = super.createBean(resource, types, restrictTypes,
+				model);
+		if (! restrictTypes) {
+			cache.put(Fqn.fromElements(resource), "", entity);
+		}
 		return entity;
 	}
 

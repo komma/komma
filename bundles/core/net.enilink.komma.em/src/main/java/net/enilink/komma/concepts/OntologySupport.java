@@ -16,15 +16,24 @@ import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.owl.ObjectProperty;
+import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.util.ISparqlConstants;
 
 public abstract class OntologySupport extends BehaviorBase implements IOntology {
-	private static final String SELECT_PROPERTIES(String type) {
-		return ISparqlConstants.PREFIX + "SELECT DISTINCT ?r WHERE {" + "?r a "
-				+ type + " OPTIONAL {?r rdfs:subPropertyOf ?other "
-				+ "FILTER(?r != ?other && isIRI(?other))} "
-				+ "FILTER (!bound(?other) && isIRI(?r)) }";
+	private static final String SELECT_PROPERTIES() {
+		return ISparqlConstants.PREFIX //
+				+ "SELECT DISTINCT ?p WHERE {" //
+				+ "?p a ?propertyType ." //
+				+ "OPTIONAL {" //
+				+ "		?p a ?otherType . ?otherType rdfs:subClassOf ?propertyType " //
+				+ "		FILTER (?propertyType = owl:ObjectProperty && ?otherType != ?propertyType && ?otherType != rdf:Property)" //
+				+ "}" //
+				+ "OPTIONAL {" //
+				+ "		?p rdfs:subPropertyOf ?other " //
+				+ "		FILTER(?p != ?other && isIRI(?other))" //
+				+ "} " //
+				+ "FILTER (!bound(?otherType) && !bound(?other) && isIRI(?p)) }";
 	}
 
 	@Override
@@ -35,23 +44,22 @@ public abstract class OntologySupport extends BehaviorBase implements IOntology 
 
 	@Override
 	public IExtendedIterator<IProperty> getRootProperties() {
-		IQuery<?> query = getKommaManager().createQuery(
-				SELECT_PROPERTIES("rdf:Property"));
+		IQuery<?> query = getKommaManager().createQuery(SELECT_PROPERTIES())
+				.setParameter("propertyType", RDF.TYPE_PROPERTY);
 		return query.evaluate(IProperty.class);
 	}
 
 	@Override
 	public IExtendedIterator<IProperty> getRootObjectProperties() {
-		IQuery<?> query = getKommaManager().createQuery(
-				SELECT_PROPERTIES("owl:ObjectProperty"));
-		return query.evaluateRestricted(IProperty.class, ObjectProperty.class);
+		IQuery<?> query = getKommaManager().createQuery(SELECT_PROPERTIES())
+				.setParameter("propertyType", OWL.TYPE_OBJECTPROPERTY);
+		return query.evaluate(IProperty.class, ObjectProperty.class);
 	}
 
 	@Override
 	public IExtendedIterator<IProperty> getRootDatatypeProperties() {
-		IQuery<?> query = getKommaManager().createQuery(
-				SELECT_PROPERTIES("owl:DatatypeProperty"));
-		return query
-				.evaluateRestricted(IProperty.class, DatatypeProperty.class);
+		IQuery<?> query = getKommaManager().createQuery(SELECT_PROPERTIES())
+				.setParameter("propertyType", OWL.TYPE_DATATYPEPROPERTY);
+		return query.evaluate(IProperty.class, DatatypeProperty.class);
 	}
 }

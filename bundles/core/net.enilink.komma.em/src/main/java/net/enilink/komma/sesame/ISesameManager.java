@@ -24,7 +24,7 @@ import net.enilink.komma.core.IReference;
 
 public interface ISesameManager extends IKommaManager {
 	ISesameEntity createBean(Resource resource, Collection<URI> types,
-			Model model);
+			boolean restrictTypes, Model model);
 
 	ISesameEntity find(Resource resource, Class<?>... concepts);
 

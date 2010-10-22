@@ -144,6 +144,19 @@ public abstract class ResourceSupport extends BehaviorBase implements
 			+ "{ ?resource a ?class ." // given resource has type class
 			+ "{{?property rdfs:domain ?class} UNION" //
 			+ "{?class rdfs:subClassOf ?restriction . ?restriction owl:onProperty ?property}}" //
+
+			// exclude properties that can not be applied to
+			// the actual types of the subject
+			// + "OPTIONAL {" //
+			// + "		?property rdfs:domain ?someDomain ." //
+			// + "		OPTIONAL {"
+			// + " 		?subject a ?someDomain ."
+			// + " 		?subject a ?matchDummy ."
+			// + "		}"
+			// + "		FILTER (! bound(?matchDummy))"
+			// + "}"
+			// + "FILTER (! bound(?someDomain))"
+
 			+ "}} ORDER BY ?property";
 
 	private static final String SELECT_PROPERTIES_AND_OBJECTS = PREFIX //
@@ -163,8 +176,11 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		return PREFIX //
 				+ "SELECT ?class WHERE {" //
 				+ "?resource a ?class ." //
-				+ "OPTIONAL {?resource a ?otherClass . ?otherClass rdfs:subClassOf ?class FILTER ("
-				+ (named ? "isIRI(?otherClass) && " : "")
+				+ "OPTIONAL {?resource a ?otherClass . ?otherClass rdfs:subClassOf ?class "
+				+ "		OPTIONAL {?class rdfs:subClassOf ?otherClass . ?class rdfs:subClassOf ?dummy}"
+				+ "FILTER (" //
+				+ (named ? "isIRI(?otherClass) && " : "") //
+				+ "!bound(?dummy) && " //
 				+ "?otherClass != ?class)}" //
 				+ "OPTIONAL {?resource a ?otherClass . FILTER ("
 				+ (named ? "isIRI(?otherClass) && " : "")
@@ -223,10 +239,10 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	}
 
 	@Override
-	public IExtendedIterator<IProperty> getApplicableProperties() {
+	public IExtendedIterator<IProperty> getRelevantProperties() {
 		IQuery<?> query = getKommaManager().createQuery(
 				SELECT_APPLICABLE_PROPERTIES);
-		query.setParameter("resource", getBehaviourDelegate());
+		query.setParameter("resource", this);
 
 		return query.evaluate(IProperty.class);
 	}

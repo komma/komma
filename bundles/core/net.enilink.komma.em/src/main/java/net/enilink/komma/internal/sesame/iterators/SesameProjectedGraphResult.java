@@ -78,7 +78,7 @@ public class SesameProjectedGraphResult extends NiceIterator<Object> {
 	}
 
 	protected Object convert(Resource resource) {
-		return manager.createBean(resource, null, resultModel);
+		return manager.createBean(resource, null, false, resultModel);
 	}
 
 	@Override
