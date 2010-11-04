@@ -135,6 +135,9 @@ public class CreateChildrenActionContributor {
 			final Object object = ((IStructuredSelection) selection)
 					.getFirstElement();
 
+			// dispose current collectors
+			disposeCollectors();
+
 			newChildCollector = new MenuActionCollector<Object>(
 					"Prepare create child actions", selection) {
 				@Override
