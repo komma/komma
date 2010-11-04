@@ -13,6 +13,7 @@ package net.enilink.komma.parser.sparql.tree.visitor;
 import java.util.Iterator;
 import java.util.List;
 
+import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.parser.sparql.SparqlParser;
 import net.enilink.komma.parser.sparql.tree.BNode;
 import net.enilink.komma.parser.sparql.tree.BNodePropertyList;
@@ -164,7 +165,7 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 		}
 		constructQuery.getDataset().accept(this, data);
 		dedent();
-		
+
 		data.append(newLine()).append("} WHERE ");
 		constructQuery.getGraph().accept(this, data);
 
@@ -231,13 +232,14 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 	@Override
 	public StringBuilder genericLiteral(GenericLiteral genericLiteral,
 			StringBuilder data) {
-		data.append("\"").append(
-				genericLiteral.getLabel().replaceAll("\"", "\\\""))
+		data.append("\"")
+				.append(genericLiteral.getLabel().replaceAll("\"", "\\\""))
 				.append("\"");
 		if (genericLiteral.getLanguage() != null) {
 			data.append("@").append(genericLiteral.getLanguage());
 		} else if (genericLiteral.getDatatype() != null) {
-			data.append("^^<").append(genericLiteral.getDatatype()).append(">");
+			data.append("^^");
+			genericLiteral.getDatatype().accept(this, data);
 		}
 		return data;
 	}
@@ -308,8 +310,8 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 	@Override
 	public StringBuilder limitModifier(LimitModifier limitModifier,
 			StringBuilder data) {
-		return data.append(newLine()).append("LIMIT ").append(
-				limitModifier.getLimit());
+		return data.append(newLine()).append("LIMIT ")
+				.append(limitModifier.getLimit());
 	}
 
 	@Override
@@ -385,8 +387,8 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 	@Override
 	public StringBuilder offsetModifier(OffsetModifier offsetModifier,
 			StringBuilder data) {
-		return data.append(newLine()).append("OFFSET ").append(
-				offsetModifier.getOffset());
+		return data.append(newLine()).append("OFFSET ")
+				.append(offsetModifier.getOffset());
 	}
 
 	@Override
@@ -436,8 +438,8 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 			prologue.getBase().accept(this, data);
 		}
 		for (PrefixDecl prefixDecl : prologue.getPrefixDecls()) {
-			data.append(newLine()).append("PREFIX ").append(
-					prefixDecl.getPrefix()).append(":");
+			data.append(newLine()).append("PREFIX ")
+					.append(prefixDecl.getPrefix()).append(":");
 			prefixDecl.getIri().accept(this, data);
 		}
 		return data;
@@ -455,7 +457,14 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 				data.append(", ");
 			} else {
 				data.append(" ");
-				pattern.getPredicate().accept(this, data).append(" ");
+				if (pattern.getPredicate() instanceof IriRef
+						&& ((IriRef) pattern.getPredicate()).getIri().equals(
+								RDF.PROPERTY_TYPE.toString())) {
+					data.append("a");
+				} else {
+					pattern.getPredicate().accept(this, data);
+				}
+				data.append(" ");
 			}
 			pattern.getObject().accept(this, data);
 

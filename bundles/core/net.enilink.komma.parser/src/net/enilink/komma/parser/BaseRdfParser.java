@@ -7,6 +7,7 @@ import net.enilink.komma.parser.sparql.tree.BNode;
 import net.enilink.komma.parser.sparql.tree.BooleanLiteral;
 import net.enilink.komma.parser.sparql.tree.DoubleLiteral;
 import net.enilink.komma.parser.sparql.tree.GenericLiteral;
+import net.enilink.komma.parser.sparql.tree.GraphNode;
 import net.enilink.komma.parser.sparql.tree.IntegerLiteral;
 import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.QName;
@@ -18,19 +19,18 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 				language != null ? language.trim() : null);
 	}
 
-	public GenericLiteral createTypedLiteral(String label, String datatype) {
-		return new GenericLiteral(label.trim(), datatype != null ? datatype
-				.trim() : null, null);
+	public GenericLiteral createTypedLiteral(String label, GraphNode datatype) {
+		return new GenericLiteral(label.trim(), datatype, null);
 	}
 
 	public Rule RdfLiteral() {
-		return Sequence(String(), Optional(FirstOf(LANGTAG(), Sequence("^^",
-				IriRef()))), //
+		return Sequence(
+				String(),
+				Optional(FirstOf(LANGTAG(), Sequence("^^", IriRef()))), //
 				set(node("O/F/S/IriRef") != null ? //
 				createTypedLiteral((String) value("String"),
-						text("O/F/S/IriRef"))
-						: createLiteral((String) value("String"),
-								text("O/F/LANGTAG")) //
+						(GraphNode) value("O/F/S/IriRef")) : createLiteral(
+						(String) value("String"), text("O/F/LANGTAG")) //
 				));
 	}
 
@@ -104,10 +104,13 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	public Rule IRI_REF() {
-		return Sequence(LESS_NO_COMMENT(), ZeroOrMore(Sequence(TestNot(FirstOf(
-				LESS_NO_COMMENT(), Ch('>'), Ch('"'), Ch('{'), Ch('}'), Ch('|'),
-				Ch('^'), Ch('\\'), Ch('`'), CharRange('\u0000', '\u0020'))),
-				Any())), '>', set(new IriRef(text("Z").trim())));
+		return Sequence(
+				LESS_NO_COMMENT(),
+				ZeroOrMore(Sequence(
+						TestNot(FirstOf(LESS_NO_COMMENT(), Ch('>'), Ch('"'),
+								Ch('{'), Ch('}'), Ch('|'), Ch('^'), Ch('\\'),
+								Ch('`'), CharRange('\u0000', '\u0020'))), Any())),
+				'>', set(new IriRef(text("Z").trim())));
 	}
 
 	public Rule BLANK_NODE_LABEL() {
@@ -115,9 +118,11 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	public Rule LANGTAG() {
-		return Sequence(Ch('@'), OneOrMore(PN_CHARS_BASE()),
-				ZeroOrMore(Sequence('-', OneOrMore(Sequence(PN_CHARS_BASE(),
-						DIGIT())))), WS());
+		return Sequence(
+				Ch('@'),
+				OneOrMore(PN_CHARS_BASE()),
+				ZeroOrMore(Sequence('-',
+						OneOrMore(Sequence(PN_CHARS_BASE(), DIGIT())))), WS());
 	}
 
 	public Rule INTEGER() {
@@ -127,16 +132,18 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	public Rule DECIMAL() {
-		return Sequence(FirstOf(Sequence(OneOrMore(DIGIT()), '.',
-				ZeroOrMore(DIGIT())), Sequence('.', OneOrMore(DIGIT()))), WS(), //
+		return Sequence(
+				FirstOf(Sequence(OneOrMore(DIGIT()), '.', ZeroOrMore(DIGIT())),
+						Sequence('.', OneOrMore(DIGIT()))), WS(), //
 				set(new DoubleLiteral(Double.parseDouble((text(""))))));
 	}
 
 	public Rule DOUBLE() {
-		return Sequence(FirstOf(Sequence(OneOrMore(DIGIT()), '.',
-				ZeroOrMore(DIGIT()), EXPONENT()), Sequence('.',
-				OneOrMore(DIGIT()), EXPONENT()), Sequence(OneOrMore(DIGIT()),
-				EXPONENT())), WS(), //
+		return Sequence(
+				FirstOf(Sequence(OneOrMore(DIGIT()), '.', ZeroOrMore(DIGIT()),
+						EXPONENT()),
+						Sequence('.', OneOrMore(DIGIT()), EXPONENT()),
+						Sequence(OneOrMore(DIGIT()), EXPONENT())), WS(), //
 				set(new DoubleLiteral(Double.parseDouble(text("")))));
 	}
 
@@ -176,34 +183,50 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	public Rule STRING_LITERAL1() {
-		return Sequence(Ch('\''), ZeroOrMore(FirstOf(Sequence(TestNot(FirstOf(
-				Ch('\''), Ch('\\'), Ch('\n'), Ch('\r'))), Any()), ECHAR())),
+		return Sequence(
+				Ch('\''),
+				ZeroOrMore(FirstOf(
+						Sequence(
+								TestNot(FirstOf(Ch('\''), Ch('\\'), Ch('\n'),
+										Ch('\r'))), Any()), ECHAR())),
 				set(text("Z").replaceAll("\\'", "'")), Ch('\''), WS());
 	}
 
 	public Rule STRING_LITERAL2() {
-		return Sequence(Ch('"'), ZeroOrMore(FirstOf(Sequence(TestNot(FirstOf(
-				Ch('"'), Ch('\\'), Ch('\n'), Ch('\r'))), Any()), ECHAR())),
+		return Sequence(
+				Ch('"'),
+				ZeroOrMore(FirstOf(
+						Sequence(
+								TestNot(FirstOf(Ch('"'), Ch('\\'), Ch('\n'),
+										Ch('\r'))), Any()), ECHAR())),
 				set(text("Z").replaceAll("\\\"", "\"")), Ch('"'), WS());
 	}
 
 	public Rule STRING_LITERAL_LONG1() {
-		return Sequence(String("'''"), ZeroOrMore(Sequence(Optional(FirstOf(
-				String("''"), Ch('\''))), FirstOf(Sequence(TestNot(FirstOf(
-				Ch('\''), Ch('\\'))), Any()), ECHAR()))), set(text("Z")
-				.replaceAll("\\'", "'")), String("'''"), WS());
+		return Sequence(
+				String("'''"),
+				ZeroOrMore(Sequence(
+						Optional(FirstOf(String("''"), Ch('\''))),
+						FirstOf(Sequence(TestNot(FirstOf(Ch('\''), Ch('\\'))),
+								Any()), ECHAR()))),
+				set(text("Z").replaceAll("\\'", "'")), String("'''"), WS());
 	}
 
 	public Rule STRING_LITERAL_LONG2() {
-		return Sequence(String("\"\"\""), ZeroOrMore(Sequence(Optional(FirstOf(
-				String("\"\""), Ch('\"'))), FirstOf(Sequence(TestNot(FirstOf(
-				Ch('\"'), Ch('\\'))), Any()), ECHAR()))), set(text("Z")
-				.replaceAll("\\\"", "\"")), String("\"\"\""), WS());
+		return Sequence(
+				String("\"\"\""),
+				ZeroOrMore(Sequence(
+						Optional(FirstOf(String("\"\""), Ch('\"'))),
+						FirstOf(Sequence(TestNot(FirstOf(Ch('\"'), Ch('\\'))),
+								Any()), ECHAR()))),
+				set(text("Z").replaceAll("\\\"", "\"")), String("\"\"\""), WS());
 	}
 
 	public Rule ECHAR() {
-		return Sequence(Ch('\\'), FirstOf(Ch('t'), Ch('b'), Ch('n'), Ch('r'),
-				Ch('f'), Ch('\\'), Ch('"'), Ch('\'')));
+		return Sequence(
+				Ch('\\'),
+				FirstOf(Ch('t'), Ch('b'), Ch('n'), Ch('r'), Ch('f'), Ch('\\'),
+						Ch('"'), Ch('\'')));
 	}
 
 	public Rule PN_CHARS_U() {
@@ -211,19 +234,22 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	public Rule PN_CHARS() {
-		return FirstOf('-', DIGIT(), PN_CHARS_U(), Ch('\u00B7'), CharRange(
-				'\u0300', '\u036F'), CharRange('\u203F', '\u2040'));
+		return FirstOf('-', DIGIT(), PN_CHARS_U(), Ch('\u00B7'),
+				CharRange('\u0300', '\u036F'), CharRange('\u203F', '\u2040'));
 	}
 
 	public Rule PN_PREFIX() {
-		return Sequence(PN_CHARS_BASE(), Optional(ZeroOrMore(FirstOf(
-				PN_CHARS(), Sequence('.', PN_CHARS())))));
+		return Sequence(
+				PN_CHARS_BASE(),
+				Optional(ZeroOrMore(FirstOf(PN_CHARS(),
+						Sequence('.', PN_CHARS())))));
 	}
 
 	public Rule PN_LOCAL() {
-		return Sequence(FirstOf(PN_CHARS_U(), DIGIT()),
-				Optional(ZeroOrMore(FirstOf(PN_CHARS(), Sequence('.',
-						PN_CHARS())))), WS());
+		return Sequence(
+				FirstOf(PN_CHARS_U(), DIGIT()),
+				Optional(ZeroOrMore(FirstOf(PN_CHARS(),
+						Sequence('.', PN_CHARS())))), WS());
 	}
 
 	public Rule PN_CHARS_BASE() {

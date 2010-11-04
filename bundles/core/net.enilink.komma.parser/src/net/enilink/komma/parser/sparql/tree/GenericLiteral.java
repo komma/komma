@@ -14,23 +14,23 @@ import net.enilink.komma.parser.sparql.tree.visitor.Visitor;
 
 public class GenericLiteral extends Literal {
 	protected String label;
-	protected String datatype;
+	protected GraphNode datatype;
 	protected String language;
 
-	public GenericLiteral(String label, String datatype, String language) {
+	public GenericLiteral(String label, GraphNode datatype, String language) {
 		this.label = label;
 		this.datatype = datatype;
 		this.language = language;
 	}
-	
+
 	public String getLabel() {
 		return label;
 	}
-	
-	public String getDatatype() {
+
+	public GraphNode getDatatype() {
 		return datatype;
 	}
-	
+
 	public String getLanguage() {
 		return language;
 	}
