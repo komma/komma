@@ -47,7 +47,7 @@ public class HierarchicalRoleMapper<T> implements Cloneable {
 
 	private SimpleRoleMapper<T> simpleRoleMapper = new SimpleRoleMapper<T>();
 
-	private Map<Class<?>, Set<Class<?>>> subclasses = new HashMap<Class<?>, Set<Class<?>>>(
+	private Map<Class<?>, Set<Class<?>>> subClasses = new HashMap<Class<?>, Set<Class<?>>>(
 			256);
 
 	public HierarchicalRoleMapper<T> clone() {
@@ -58,7 +58,7 @@ public class HierarchicalRoleMapper<T> implements Cloneable {
 			cloned.directMapper = directMapper.clone();
 			cloned.typeMapper = typeMapper.clone();
 			cloned.simpleRoleMapper = simpleRoleMapper.clone();
-			cloned.subclasses = clone(subclasses);
+			cloned.subClasses = clone(subClasses);
 			return cloned;
 		} catch (CloneNotSupportedException e) {
 			throw new AssertionError(e);
@@ -109,7 +109,7 @@ public class HierarchicalRoleMapper<T> implements Cloneable {
 			throw new CompositionException("Concept not registered: "
 					+ role.getSimpleName());
 		rdfTypes.add(type);
-		Set<Class<?>> subset = subclasses.get(role);
+		Set<Class<?>> subset = subClasses.get(role);
 		if (subset == null)
 			return rdfTypes;
 		for (Class<?> c : subset) {
@@ -158,28 +158,28 @@ public class HierarchicalRoleMapper<T> implements Cloneable {
 	}
 
 	/**
-	 * Record the class hierarchy of the concept to looks subclasses of related
+	 * Record the class hierarchy of the concept to lookup subclasses of related
 	 * subject types.
 	 * 
 	 * @param concept
 	 */
 	private void recordClassHierarchy(Class<?> concept) {
-		for (Class<?> sup : concept.getInterfaces()) {
-			Set<Class<?>> set = subclasses.get(sup);
+		for (Class<?> face : concept.getInterfaces()) {
+			Set<Class<?>> set = subClasses.get(face);
 			if (set == null)
-				subclasses.put(sup, set = new HashSet<Class<?>>());
+				subClasses.put(face, set = new HashSet<Class<?>>());
 			if (set.add(concept)) {
-				recordClassHierarchy(sup);
+				recordClassHierarchy(face);
 			}
 		}
-		Class<?> sup = concept.getSuperclass();
-		if (sup != null) {
-			Set<Class<?>> set = subclasses.get(sup);
+		Class<?> superClass = concept.getSuperclass();
+		if (superClass != null) {
+			Set<Class<?>> set = subClasses.get(superClass);
 			if (set == null) {
-				subclasses.put(sup, set = new HashSet<Class<?>>());
+				subClasses.put(superClass, set = new HashSet<Class<?>>());
 			}
 			if (set.add(concept)) {
-				recordClassHierarchy(sup);
+				recordClassHierarchy(superClass);
 			}
 		}
 	}
@@ -187,30 +187,28 @@ public class HierarchicalRoleMapper<T> implements Cloneable {
 	private Set<Class<?>> getSuperRoles(Class<?> role) {
 		Set<Class<?>> superRoles = new HashSet<Class<?>>();
 		for (Class<?> sup : role.getInterfaces()) {
-			Set<Class<?>> sr = getSuperRoles(sup);
-			addRelatedRoles(sr, sup, superRoles);
+			addRelatedRoles(getSuperRoles(sup), sup, superRoles);
 		}
 		Class<?> sup = role.getSuperclass();
 		if (sup != null) {
-			Set<Class<?>> sr = getSuperRoles(sup);
-			addRelatedRoles(sr, sup, superRoles);
+			addRelatedRoles(getSuperRoles(sup), sup, superRoles);
 		}
 		return superRoles;
 	}
 
 	private void addRolesInSubclasses(Class<?> role, Set<Class<?>> newRoles) {
-		Set<Class<?>> subset = subclasses.get(role);
+		Set<Class<?>> subset = subClasses.get(role);
 		if (subset == null)
 			return; // no subclasses
 		for (Class<?> sub : subset) {
 			Set<Class<?>> subRoles = new HashSet<Class<?>>();
-			subRoles = addRelatedRoles(newRoles, sub, subRoles);
+			addRelatedRoles(newRoles, sub, subRoles);
 			addRolesInSubclasses(sub, subRoles);
 		}
 	}
 
-	private Set<Class<?>> addRelatedRoles(Set<Class<?>> existing,
-			Class<?> role, Set<Class<?>> roles) {
+	private void addRelatedRoles(Set<Class<?>> existing, Class<?> role,
+			Set<Class<?>> roles) {
 		roles.addAll(existing);
 		Set<T> set = directMapper.getDirectTypes(role);
 		if (set != null) {
@@ -224,6 +222,5 @@ public class HierarchicalRoleMapper<T> implements Cloneable {
 				rolesForType.clear();
 			}
 		}
-		return roles;
 	}
 }

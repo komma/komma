@@ -71,7 +71,7 @@ public class AsmUtils {
 		ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 		classNode.accept(classWriter);
 
-		// printClass(classWriter.toByteArray());
+//		 printClass(classWriter.toByteArray());
 		verifyClass(classNode, definer, classWriter.toByteArray());
 
 		Class<?> newClass = definer.defineClass(classNode.name

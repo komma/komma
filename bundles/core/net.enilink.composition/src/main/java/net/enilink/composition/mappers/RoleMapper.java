@@ -18,21 +18,21 @@ public interface RoleMapper<T> {
 
 	void addConcept(Class<?> role, T type) throws ConfigException;
 
-	RoleMapper<T> clone();
-
 	T findAnnotation(Class<?> type);
 
 	String findAnnotationString(Class<?> type);
 
-	void findIndividualRoles(T instance, Collection<Class<?>> classes);
+	Collection<Class<?>> findIndividualRoles(T instance,
+			Collection<Class<?>> classes);
 
 	Class<?> findInterfaceConcept(T uri);
 
-	void findRoles(Collection<T> types, Collection<Class<?>> roles);
+	Collection<Class<?>> findRoles(Collection<T> types,
+			Collection<Class<?>> roles);
 
-	Collection<Class<?>> findRoles(T type);
+	Collection<Class<?>> findRoles(T type, Collection<Class<?>> roles);
 
-	Collection<T> findSubTypes(Class<?> role, Collection<T> rdfTypes);
+	Collection<T> findSubTypes(Class<?> role, Collection<T> subTypes);
 
 	T findType(Class<?> concept);
 

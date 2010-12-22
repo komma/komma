@@ -54,7 +54,8 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
-	private static Logger logger = LoggerFactory.getLogger(DefaultRoleMapper.class);
+	private static Logger logger = LoggerFactory
+			.getLogger(DefaultRoleMapper.class);
 
 	private Map<Class<?>, T> annotations = new HashMap<Class<?>, T>();
 	private Map<Class<?>, Class<?>> complements = new ConcurrentHashMap<Class<?>, Class<?>>();
@@ -70,8 +71,11 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		roleMapper.setTypeFactory(typeFactory);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.enilink.composition.mappers.RoleMapper#addAnnotation(java.lang.Class)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.enilink.composition.mappers.RoleMapper#addAnnotation(java.lang.Class)
 	 */
 	@Override
 	public void addAnnotation(Class<?> annotation) {
@@ -82,16 +86,23 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		addAnnotation(annotation, typeFactory.createType(uri));
 	}
 
-	/* (non-Javadoc)
-	 * @see net.enilink.composition.mappers.RoleMapper#addAnnotation(java.lang.Class, T)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.enilink.composition.mappers.RoleMapper#addAnnotation(java.lang.Class,
+	 * T)
 	 */
 	@Override
 	public void addAnnotation(Class<?> annotation, T uri) {
 		annotations.put(annotation, uri);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.enilink.composition.mappers.RoleMapper#addBehaviour(java.lang.Class)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.enilink.composition.mappers.RoleMapper#addBehaviour(java.lang.Class)
 	 */
 	@Override
 	public void addBehaviour(Class<?> role) throws ConfigException {
@@ -118,8 +129,12 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 					+ " must implement a concept or mapped explicitly");
 	}
 
-	/* (non-Javadoc)
-	 * @see net.enilink.composition.mappers.RoleMapper#addBehaviour(java.lang.Class, T)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.enilink.composition.mappers.RoleMapper#addBehaviour(java.lang.Class,
+	 * T)
 	 */
 	@Override
 	public void addBehaviour(Class<?> role, T type) throws ConfigException {
@@ -127,16 +142,22 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		recordRole(role, null, type, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.enilink.composition.mappers.RoleMapper#addConcept(java.lang.Class)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.enilink.composition.mappers.RoleMapper#addConcept(java.lang.Class)
 	 */
 	@Override
 	public void addConcept(Class<?> role) throws ConfigException {
 		recordRole(role, role, null, true);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.enilink.composition.mappers.RoleMapper#addConcept(java.lang.Class, T)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.enilink.composition.mappers.RoleMapper#addConcept(java.lang.Class, T)
 	 */
 	@Override
 	public void addConcept(Class<?> role, T type) throws ConfigException {
@@ -193,7 +214,9 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.enilink.composition.mappers.RoleMapper#clone()
 	 */
 	@Override
@@ -238,7 +261,7 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 
 	private Collection<Class<?>> findAllRoles(T type) {
 		Set<Class<?>> set = new HashSet<Class<?>>();
-		for (Class<?> role : findRoles(type)) {
+		for (Class<?> role : findRoles(type, new HashSet<Class<?>>())) {
 			if (set.add(role)) {
 				addInterfaces(set, role.getSuperclass());
 				addInterfaces(set, role.getInterfaces());
@@ -247,16 +270,24 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		return set;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.enilink.composition.mappers.RoleMapper#findAnnotation(java.lang.Class)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.enilink.composition.mappers.RoleMapper#findAnnotation(java.lang.Class
+	 * )
 	 */
 	@Override
 	public T findAnnotation(Class<?> type) {
 		return annotations.get(type);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.enilink.composition.mappers.RoleMapper#findAnnotationString(java.lang.Class)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.enilink.composition.mappers.RoleMapper#findAnnotationString(java.
+	 * lang.Class)
 	 */
 	@Override
 	public String findAnnotationString(Class<?> type) {
@@ -274,19 +305,26 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.enilink.composition.mappers.RoleMapper#findIndividualRoles(T, java.util.Collection)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.enilink.composition.mappers.RoleMapper#findIndividualRoles(T,
+	 * java.util.Collection)
 	 */
 	@Override
-	public void findIndividualRoles(T instance, Collection<Class<?>> classes) {
+	public Collection<Class<?>> findIndividualRoles(T instance,
+			Collection<Class<?>> classes) {
 		List<Class<?>> list = instances.get(instance);
 		if (list != null) {
 			classes.addAll(list);
 		}
 		matches.findRoles(typeFactory.toString(instance), classes);
+		return classes;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.enilink.composition.mappers.RoleMapper#findInterfaceConcept(T)
 	 */
 	@Override
@@ -312,39 +350,52 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.enilink.composition.mappers.RoleMapper#findRoles(java.util.Collection, java.util.Collection)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.enilink.composition.mappers.RoleMapper#findRoles(java.util.Collection
+	 * , java.util.Collection)
 	 */
 	@Override
-	public void findRoles(Collection<T> types, Collection<Class<?>> roles) {
+	public Collection<Class<?>> findRoles(Collection<T> types,
+			Collection<Class<?>> roles) {
 		roleMapper.findRoles(types, roles);
 		for (T type : types) {
 			matches.findRoles(typeFactory.toString(type), roles);
 		}
 		findAdditionalRoles(roles);
+		return roles;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.enilink.composition.mappers.RoleMapper#findRoles(T)
 	 */
 	@Override
-	public Collection<Class<?>> findRoles(T type) {
-		Collection<Class<?>> roles = new ArrayList<Class<?>>();
+	public Collection<Class<?>> findRoles(T type, Collection<Class<?>> roles) {
 		roleMapper.findRoles(type, roles);
 		matches.findRoles(typeFactory.toString(type), roles);
 		findAdditionalRoles(roles);
 		return roles;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.enilink.composition.mappers.RoleMapper#findSubTypes(java.lang.Class, java.util.Collection)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.enilink.composition.mappers.RoleMapper#findSubTypes(java.lang.Class,
+	 * java.util.Collection)
 	 */
 	@Override
 	public Collection<T> findSubTypes(Class<?> role, Collection<T> rdfTypes) {
 		return roleMapper.findSubTypes(role, rdfTypes);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.enilink.composition.mappers.RoleMapper#findType(java.lang.Class)
 	 */
 	@Override
@@ -365,8 +416,11 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		return role.isAnnotationPresent(Iri.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.enilink.composition.mappers.RoleMapper#isIndividualRolesPresent(T)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.enilink.composition.mappers.RoleMapper#isIndividualRolesPresent(T)
 	 */
 	@Override
 	public boolean isIndividualRolesPresent(T instance) {
@@ -374,7 +428,9 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 				&& instances.containsKey(instance);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.enilink.composition.mappers.RoleMapper#isRecordedConcept(T)
 	 */
 	@Override
@@ -434,8 +490,9 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 						complements.put(role, concept);
 						recorded = true;
 					} else {
-						for (Class<?> concept : findRoles(typeFactory
-								.createType((String) value))) {
+						for (Class<?> concept : findRoles(
+								typeFactory.createType((String) value),
+								new HashSet<Class<?>>())) {
 							complements.put(role, concept);
 							recorded = true;
 						}
@@ -449,8 +506,9 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 							recordRole(concept, concept, null, true);
 							ofs.add(concept);
 						} else {
-							ofs.addAll(findRoles(typeFactory
-									.createType((String) v)));
+							ofs.addAll(findRoles(
+									typeFactory.createType((String) v),
+									new HashSet<Class<?>>()));
 						}
 					}
 					intersections.put(role, ofs);
@@ -463,8 +521,9 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 							recordRole(concept, concept, null, true);
 							recorded |= recordRole(role, concept, null, true);
 						} else {
-							for (Class<?> concept : findRoles(typeFactory
-									.createType(((String) v)))) {
+							for (Class<?> concept : findRoles(
+									typeFactory.createType((String) v),
+									new HashSet<Class<?>>())) {
 								if (!role.equals(concept)) {
 									recorded |= recordRole(role, concept, null,
 											true);

@@ -15,7 +15,7 @@ import java.lang.reflect.Method;
 import org.objectweb.asm.Type;
 
 /**
- * Represents a mutable method that nows its owner class.
+ * Represents a mutable method that knows its owner class.
  * 
  * @author Ken Wenzel
  *

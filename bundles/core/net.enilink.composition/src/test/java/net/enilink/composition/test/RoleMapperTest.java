@@ -11,6 +11,7 @@
 package net.enilink.composition.test;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 import org.junit.Assert;
 import net.enilink.composition.annotations.Iri;
@@ -33,9 +34,7 @@ public class RoleMapperTest extends CompositionTestCase {
 		getRoleMapper().addConcept(SubDisplay.class);
 		getRoleMapper().addBehaviour(DisplaySupport.class, "urn:test:Display");
 
-		Assert
-				.assertTrue(findRoles("urn:test:Display").contains(
-						Display.class));
+		Assert.assertTrue(findRoles("urn:test:Display").contains(Display.class));
 		Assert.assertTrue(findRoles("urn:test:Display").contains(
 				DisplaySupport.class));
 		Assert.assertTrue(findRoles("urn:test:SubDisplay").contains(
@@ -52,9 +51,7 @@ public class RoleMapperTest extends CompositionTestCase {
 		getRoleMapper().addConcept(Display.class);
 		getRoleMapper().addConcept(SubDisplay.class);
 
-		Assert
-				.assertTrue(findRoles("urn:test:Display").contains(
-						Display.class));
+		Assert.assertTrue(findRoles("urn:test:Display").contains(Display.class));
 		Assert.assertTrue(findRoles("urn:test:Display").contains(
 				DisplaySupport.class));
 		Assert.assertTrue(findRoles("urn:test:SubDisplay").contains(
@@ -71,9 +68,7 @@ public class RoleMapperTest extends CompositionTestCase {
 		getRoleMapper().addBehaviour(DisplaySupport.class, "urn:test:Display");
 		getRoleMapper().addConcept(SubDisplay.class);
 
-		Assert
-				.assertTrue(findRoles("urn:test:Display").contains(
-						Display.class));
+		Assert.assertTrue(findRoles("urn:test:Display").contains(Display.class));
 		Assert.assertTrue(findRoles("urn:test:Display").contains(
 				DisplaySupport.class));
 		Assert.assertTrue(findRoles("urn:test:SubDisplay").contains(
@@ -90,9 +85,7 @@ public class RoleMapperTest extends CompositionTestCase {
 		getRoleMapper().addConcept(Display.class);
 		getRoleMapper().addBehaviour(DisplaySupport.class, "urn:test:Display");
 
-		Assert
-				.assertTrue(findRoles("urn:test:Display").contains(
-						Display.class));
+		Assert.assertTrue(findRoles("urn:test:Display").contains(Display.class));
 		Assert.assertTrue(findRoles("urn:test:Display").contains(
 				DisplaySupport.class));
 		Assert.assertTrue(findRoles("urn:test:SubDisplay").contains(
@@ -109,9 +102,7 @@ public class RoleMapperTest extends CompositionTestCase {
 		getRoleMapper().addConcept(SubDisplay.class);
 		getRoleMapper().addConcept(Display.class);
 
-		Assert
-				.assertTrue(findRoles("urn:test:Display").contains(
-						Display.class));
+		Assert.assertTrue(findRoles("urn:test:Display").contains(Display.class));
 		Assert.assertTrue(findRoles("urn:test:Display").contains(
 				DisplaySupport.class));
 		Assert.assertTrue(findRoles("urn:test:SubDisplay").contains(
@@ -128,9 +119,7 @@ public class RoleMapperTest extends CompositionTestCase {
 		getRoleMapper().addBehaviour(DisplaySupport.class, "urn:test:Display");
 		getRoleMapper().addConcept(Display.class);
 
-		Assert
-				.assertTrue(findRoles("urn:test:Display").contains(
-						Display.class));
+		Assert.assertTrue(findRoles("urn:test:Display").contains(Display.class));
 		Assert.assertTrue(findRoles("urn:test:Display").contains(
 				DisplaySupport.class));
 		Assert.assertTrue(findRoles("urn:test:SubDisplay").contains(
@@ -142,7 +131,7 @@ public class RoleMapperTest extends CompositionTestCase {
 	}
 
 	private Collection<Class<?>> findRoles(String uri) {
-		return getRoleMapper().findRoles(uri);
+		return getRoleMapper().findRoles(uri, new HashSet<Class<?>>());
 	}
 
 	@Override
