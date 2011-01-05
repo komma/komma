@@ -14,15 +14,14 @@ import java.util.Map;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
-import org.openrdf.repository.RepositoryConnection;
 
 import net.enilink.komma.common.adapter.IAdapterSet;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.INotifier;
 import net.enilink.komma.common.util.WrappedException;
+import net.enilink.komma.ds.change.IDataSourceChangeTracker;
 import net.enilink.komma.model.base.AbstractModelSetSupport;
-import net.enilink.komma.repository.change.IRepositoryChangeTracker;
 import net.enilink.komma.core.IKommaManager;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaModule;
@@ -178,9 +177,9 @@ public interface IModelSet extends INotifier<INotification> {
 	 * contained by a resource, the following is <code>true</code>.
 	 * 
 	 * <pre>
-	 * eObject == eObject.eResource().getResourceSet().getEObject(
-	 * 		EcoreUtil.getURI(eObject), false)
-	 *</pre>
+	 * eObject == eObject.eResource().getResourceSet()
+	 * 		.getEObject(EcoreUtil.getURI(eObject), false)
+	 * </pre>
 	 * 
 	 * </p>
 	 * <p>
@@ -207,13 +206,11 @@ public interface IModelSet extends INotifier<INotification> {
 	IObject getObject(URI uri, boolean loadOnDemand);
 
 	/**
-	 * Returns tracker for changes made to the underlying repository
-	 * 
-	 * @see {@link #getRepository()}
+	 * Returns tracker for changes made to the underlying data repository.
 	 * 
 	 * @return the change tracker
 	 */
-	IRepositoryChangeTracker getRepositoryChangeTracker();
+	IDataSourceChangeTracker getDataChangeTracker();
 
 	/**
 	 * Returns the converter used to normalize URIs and to open streams.
@@ -268,8 +265,6 @@ public interface IModelSet extends INotifier<INotification> {
 	IAdapterSet adapters();
 
 	public interface Internal extends IModelSet {
-		RepositoryConnection getSharedRepositoyConnection();
-
 		IReference getSharedReference(Object resource);
 	}
 }

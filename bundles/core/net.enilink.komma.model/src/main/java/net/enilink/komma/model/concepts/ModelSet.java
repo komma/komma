@@ -8,13 +8,30 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-/** 
- * 
- * @generated 
- */
-@Iri("http://enilink.net/vocab/komma/models#")
-package net.enilink.komma.internal.model.concepts;
+package net.enilink.komma.model.concepts;
 
 import net.enilink.composition.annotations.Iri;
 
+import net.enilink.komma.core.IEntity;
 
+/**
+ * 
+ * @generated
+ */
+@Iri("http://enilink.net/vocab/komma/models#ModelSet")
+public interface ModelSet extends IEntity {
+	/**
+	 * Returns whether a model or model set is persistent.
+	 * 
+	 * @generated
+	 */
+	@Iri("http://enilink.net/vocab/komma/models#persistent")
+	boolean isPersistent();
+
+	/**
+	 * Returns whether a model or model set is persistent.
+	 * 
+	 * @generated
+	 */
+	void setPersistent(boolean persistent);
+}

@@ -10,11 +10,13 @@
  *******************************************************************************/
 package net.enilink.komma.model.change;
 
+import java.util.List;
+
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotifier;
+import net.enilink.komma.ds.change.IDataSourceChange;
+import net.enilink.komma.ds.change.IDataSourceChangeListener;
 import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.repository.change.IRepositoryChange;
-import net.enilink.komma.repository.change.IRepositoryChangeListener;
 
 /**
  * A change recorder for the tree contents of a collection of EObjects. It
@@ -22,7 +24,7 @@ import net.enilink.komma.repository.change.IRepositoryChangeListener;
  * change model} representing the changes needed to reverse (undo) all the model
  * changes made while recording.
  */
-public class ChangeRecorder implements IRepositoryChangeListener {
+public class ChangeRecorder implements IDataSourceChangeListener {
 	protected ChangeDescription changeDescription;
 
 	protected IModelSet modelSet;
@@ -37,7 +39,7 @@ public class ChangeRecorder implements IRepositoryChangeListener {
 
 	protected void addListener() {
 		if (modelSet != null) {
-			modelSet.getRepositoryChangeTracker().addChangeListener(this);
+			modelSet.getDataChangeTracker().addChangeListener(this);
 		}
 	}
 
@@ -128,14 +130,14 @@ public class ChangeRecorder implements IRepositoryChangeListener {
 
 	protected void removeListener() {
 		if (modelSet != null) {
-			modelSet.getRepositoryChangeTracker().removeChangeListener(this);
+			modelSet.getDataChangeTracker().removeChangeListener(this);
 		}
 	}
 
 	@Override
-	public void repositoryChanged(IRepositoryChange... changes) {
+	public void dataSourceChanged(List<IDataSourceChange> changes) {
 		if (isRecording() && !isPaused()) {
-			for (IRepositoryChange change : changes) {
+			for (IDataSourceChange change : changes) {
 				changeDescription.add(change);
 			}
 		}

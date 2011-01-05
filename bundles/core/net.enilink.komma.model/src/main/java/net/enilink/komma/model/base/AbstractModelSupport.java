@@ -15,59 +15,45 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import net.enilink.composition.traits.Behaviour;
-import org.openrdf.model.Namespace;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Value;
-import org.openrdf.model.vocabulary.OWL;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.contextaware.ContextAwareConnection;
-import org.openrdf.repository.event.NotifyingRepository;
-import org.openrdf.result.ModelResult;
-import org.openrdf.store.StoreException;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Injector;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 
+import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
-import net.enilink.komma.common.util.URIUtil;
 import net.enilink.komma.concepts.IOntology;
 import net.enilink.komma.internal.model.IModelAware;
-import net.enilink.komma.internal.model.concepts.Model;
+import net.enilink.komma.manager.KommaManagerFactory;
+import net.enilink.komma.manager.SharedKommaManager;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.ModelCore;
-import net.enilink.komma.model.sesame.ISesameModelSet;
-import net.enilink.komma.repository.change.IRepositoryChangeTracker;
+import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
+import net.enilink.komma.core.IKommaManager;
+import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.sesame.CachingSesameManagerFactory;
-import net.enilink.komma.sesame.DecoratingSesameManagerFactory;
-import net.enilink.komma.sesame.DelegatingSesameManager;
-import net.enilink.komma.sesame.ISesameManager;
-import net.enilink.komma.sesame.SesameReference;
 
 public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 		INotificationBroadcaster<INotification>, Model, Behaviour<IModel> {
@@ -94,9 +80,8 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 		}
 	}
 
-	private ISesameManager manager;
-
-	private DecoratingSesameManagerFactory managerFactory;
+	@Inject
+	protected KommaManagerFactory managerFactory;
 
 	/**
 	 * The containing model set.
@@ -107,43 +92,42 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 
 	private KommaModule module;
 
-	private DelegatingSesameManager sharedManager = new DelegatingSesameManager();
+	protected SharedKommaManager sharedManager = new SharedKommaManager();
 
 	/*
 	 * documentation inherited
 	 */
 	@Override
 	public void addImport(URI uri, String prefix) {
-		org.openrdf.model.URI modelUri = URIUtil.toSesameUri(getURI());
 		try {
-			ISesameManager manager = getManager();
-
-			RepositoryConnection conn = manager.getConnection();
+			IKommaManager manager = getManager();
+			boolean isActive = manager.getTransaction().isActive();
 			try {
-				boolean isActive = manager.getTransaction().isActive();
 				if (!isActive) {
 					manager.getTransaction().begin();
 				}
 
-				if (!conn.hasMatch(modelUri, RDF.TYPE, OWL.ONTOLOGY, false)) {
-					conn.add(modelUri, RDF.TYPE, OWL.ONTOLOGY, modelUri);
+				if (!manager.hasMatch(this, RDF.PROPERTY_TYPE,
+						OWL.TYPE_ONTOLOGY)) {
+					manager.add(new Statement(this, RDF.PROPERTY_TYPE,
+							OWL.TYPE_ONTOLOGY));
 				}
 
 				if (prefix != null && prefix.trim().length() > 0) {
-					conn.setNamespace(prefix,
-							URIUtil.modelUriToNamespace(uri.toString()));
+					manager.setNamespace(prefix, uri);
 				}
 
-				conn.add(modelUri, OWL.IMPORTS, URIUtil.toSesameUri(uri),
-						modelUri);
+				manager.add(new Statement(this, OWL.PROPERTY_IMPORTS, uri));
 
 				if (!isActive) {
 					manager.getTransaction().commit();
 
-					unloadKommaManager();
+					updateSharedManager();
 				}
 			} catch (Exception e) {
-				manager.getTransaction().rollback();
+				if (!isActive && manager != null) {
+					manager.getTransaction().rollback();
+				}
 				throw e;
 			}
 		} catch (Exception e) {
@@ -152,145 +136,6 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 
 		// ensure that manager is reinitialized if it was unloaded
 		getManager();
-	}
-
-	protected ISesameManager createManager() {
-		return getManagerFactory().createKommaManager();
-	}
-
-	@Override
-	public KommaModule getModule() {
-		if (module == null) {
-			module = new KommaModule(
-					AbstractModelSupport.class.getClassLoader());
-
-			KommaModule modelSetModule = getModelSet().getModule();
-			if (modelSetModule != null) {
-				for (URL libraryUrl : modelSetModule.getLibraries()) {
-					module.addLibrary(libraryUrl);
-				}
-				module.includeModule(modelSetModule);
-			}
-
-			try {
-				RepositoryConnection conn = getRepository().getConnection();
-				try {
-					org.openrdf.model.URI modelUri = URIUtil
-							.toSesameUri(getURI());
-
-					ModelResult importResult = conn.match(null, OWL.IMPORTS,
-							null, true, modelUri);
-
-					while (importResult.hasNext()) {
-						Value object = importResult.next().getObject();
-
-						if (!(object instanceof org.openrdf.model.URI)) {
-							continue;
-						}
-
-						URI importedModelUri = URIImpl
-								.createURI(((org.openrdf.model.URI) object)
-										.toString());
-
-						try {
-							IModel model = getModelSet().getModel(
-									importedModelUri, true);
-
-							KommaModule importedModule = ((IModel.Internal) model)
-									.getModule();
-							if (importedModule != null) {
-								for (URL jarFileUrl : importedModule
-										.getLibraries()) {
-									module.addLibrary(jarFileUrl);
-								}
-								module.includeModule(importedModule);
-							}
-						} catch (Throwable e) {
-							KommaCore.logErrorStatus(
-									"Error while loading import: "
-											+ importedModelUri,
-									new Status(IStatus.WARNING,
-											ModelCore.PLUGIN_ID, 0, e
-													.getMessage(), e));
-						}
-					}
-				} catch (Throwable e) {
-					throw e;
-				} finally {
-					conn.close();
-				}
-			} catch (Throwable e) {
-				throw new KommaException(e);
-			}
-
-			module.addWritableGraph(getURI());
-		}
-		return module;
-	}
-
-	protected DecoratingSesameManagerFactory createManagerFactory() {
-		KommaModule module = getModule();
-
-		return new CachingSesameManagerFactory(module, getRepository(),
-				new ModelInjector()) {
-			@Override
-			protected void createCoreGuiceModules(
-					Collection<AbstractModule> modules, KommaModule module,
-					Locale locale) {
-				modules.add(new ManagerCompositionModule(this, module, locale) {
-					@Override
-					protected ISesameManager provideSesameManager(
-							Injector injector) {
-						sharedManager.setKommaManager(super
-								.provideSesameManager(injector));
-						return sharedManager;
-					}
-
-					@Provides
-					@Singleton
-					@SuppressWarnings("unused")
-					protected IRepositoryChangeTracker provideChangeTracker() {
-						return getModelSet().getRepositoryChangeTracker();
-					}
-
-					@Provides
-					@Singleton
-					@SuppressWarnings("unused")
-					protected IModel provideModel() {
-						return getBehaviourDelegate();
-					}
-				});
-			}
-
-			@Override
-			protected boolean isInjectManager() {
-				return false;
-			}
-
-			@Override
-			protected ContextAwareConnection createConnection(
-					Repository repositoy) throws StoreException {
-				RepositoryConnection connection = ((IModelSet.Internal) getModelSet())
-						.getSharedRepositoyConnection();
-				ContextAwareConnection contextAwareConnection = new ContextAwareConnection(
-						connection.getRepository(), connection) {
-					@Override
-					public void close() throws StoreException {
-						// keep base connection open
-						// the model set is responsible for closing this
-						// connection
-					}
-				};
-
-				return contextAwareConnection;
-			}
-
-			@Override
-			public SesameReference getReference(Resource resource) {
-				return (SesameReference) ((IModelSet.Internal) modelSet)
-						.getSharedReference(resource);
-			}
-		};
 	}
 
 	/*
@@ -312,6 +157,17 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 		getWarnings().clear();
 	}
 
+	/*
+	 * documentation inherited
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void fireNotifications(
+			Collection<? extends INotification> notifications) {
+		((INotificationBroadcaster<INotification>) getModelSet())
+				.fireNotifications(notifications);
+	}
+
 	protected Map<?, ?> getDefaultDeleteOptions() {
 		return null;
 	}
@@ -324,26 +180,17 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 		return null;
 	}
 
+	@Override
+	public Set<IDiagnostic> getErrors() {
+		return getModelErrors();
+	}
+
 	/*
 	 * documentation inherited
 	 */
 	@Override
-	public ISesameManager getManager() {
-		if (manager != null && !manager.isOpen()) {
-			unloadKommaManager();
-		}
-
-		if (manager == null) {
-			manager = createManager();
-		}
-		return manager;
-	}
-
-	protected DecoratingSesameManagerFactory getManagerFactory() {
-		if (managerFactory == null) {
-			managerFactory = createManagerFactory();
-		}
-		return managerFactory;
+	public IKommaManager getManager() {
+		return sharedManager;
 	}
 
 	/*
@@ -352,6 +199,64 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	@Override
 	public IModelSet getModelSet() {
 		return modelSet;
+	}
+
+	@Override
+	public KommaModule getModule() {
+		if (module == null) {
+			module = new KommaModule(
+					AbstractModelSupport.class.getClassLoader());
+
+			KommaModule modelSetModule = getModelSet().getModule();
+			if (modelSetModule != null) {
+				module.includeModule(modelSetModule);
+			}
+
+			try {
+				IKommaManager manager = getManager();
+				try {
+					IExtendedIterator<IStatement> imports = manager.match(null,
+							OWL.PROPERTY_IMPORTS, null);
+
+					while (imports.hasNext()) {
+						Object object = imports.next().getObject();
+
+						if (!(object instanceof IReference)
+								|| ((IReference) object).getURI() == null) {
+							continue;
+						}
+
+						URI importedUri = ((IReference) object).getURI();
+						try {
+							IModel model = getModelSet().getModel(importedUri,
+									true);
+
+							KommaModule importedModule = ((IModel.Internal) model)
+									.getModule();
+							if (importedModule != null) {
+								module.includeModule(importedModule);
+							}
+						} catch (Throwable e) {
+							KommaCore.logErrorStatus(
+									"Error while loading import: "
+											+ importedUri,
+									new Status(IStatus.WARNING,
+											ModelCore.PLUGIN_ID, 0, e
+													.getMessage(), e));
+						}
+					}
+				} catch (Throwable e) {
+					throw e;
+				} finally {
+					// conn.close();
+				}
+			} catch (Throwable e) {
+				throw new KommaException(e);
+			}
+
+			module.addWritableGraph(getURI());
+		}
+		return module;
 	}
 
 	@Override
@@ -367,16 +272,13 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 		return getManager().find(getURI().trimFragment(), IOntology.class);
 	}
 
-	/*
-	 * documentation inherited
-	 */
-	@Override
-	public NotifyingRepository getRepository() {
-		return ((ISesameModelSet) modelSet).getRepository();
-	}
-
 	IURIConverter getURIConverter() {
 		return getModelSet().getURIConverter();
+	}
+
+	@Override
+	public Set<IDiagnostic> getWarnings() {
+		return getModelWarnings();
 	}
 
 	/*
@@ -390,15 +292,23 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 
 		this.modelSet = modelSet;
 
-		boolean managerWasNull = manager == null;
-
 		// ensure komma manager is reinitialized
-		unloadKommaManager();
+		updateSharedManager();
+	}
 
-		if (!managerWasNull) {
-			// instantiate manager only if it was instantiated previously
-			getManager();
-		}
+	@Override
+	public boolean isLoaded() {
+		return isModelLoaded();
+	}
+
+	@Override
+	public boolean isLoading() {
+		return isLoading();
+	}
+
+	@Override
+	public boolean isModified() {
+		return isModelModified();
 	}
 
 	/*
@@ -446,7 +356,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 			}
 
 			try {
-				load(inputStream, options);
+				getBehaviourDelegate().load(inputStream, options);
 			} finally {
 				inputStream.close();
 				Long timeStamp = (Long) response
@@ -459,59 +369,45 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 
 	}
 
-	@Override
-	public void setModified(boolean isModified) {
-		setModelModified(isModified);
-	}
-
-	/*
-	 * documentation inherited
-	 */
-	@Override
-	@SuppressWarnings("unchecked")
-	public void fireNotifications(
-			Collection<? extends INotification> notifications) {
-		((INotificationBroadcaster<INotification>) getModelSet())
-				.fireNotifications(notifications);
-	}
-
 	/*
 	 * documentation inherited
 	 */
 	@Override
 	public void removeImport(URI importedOnt) {
-		org.openrdf.model.URI modelUri = URIUtil.toSesameUri(getURI());
 		try {
-			ISesameManager manager = getManager();
-
-			RepositoryConnection conn = manager.getConnection();
+			IKommaManager manager = getManager();
+			boolean isActive = manager.getTransaction().isActive();
 			try {
-				boolean isActive = manager.getTransaction().isActive();
 				if (!isActive) {
 					manager.getTransaction().begin();
 				}
 
-				String importedOntUriStr = importedOnt.toString();
-				for (Namespace namespace : conn.getNamespaces().asList()) {
-					if (importedOntUriStr.equals(namespace.getName())) {
-						conn.removeNamespace(namespace.getPrefix());
+				for (INamespace namespace : manager.getNamespaces().toList()) {
+					if (importedOnt.equals(namespace.getURI())) {
+						manager.removeNamespace(namespace.getPrefix());
 					}
 				}
 
-				conn.removeMatch(modelUri, OWL.IMPORTS,
-						URIUtil.toSesameUri(importedOnt));
+				manager.remove(new Statement(getURI(), OWL.PROPERTY_IMPORTS,
+						importedOnt));
 
 				if (!isActive) {
 					manager.getTransaction().commit();
 
-					unloadKommaManager();
+					updateSharedManager();
 				}
-			} catch (StoreException e) {
-				manager.getTransaction().rollback();
+			} catch (Exception e) {
+				if (!isActive && manager != null) {
+					manager.getTransaction().rollback();
+				}
 				throw e;
 			}
-		} catch (StoreException e) {
-			throw new KommaException(e);
+		} catch (Exception e) {
+			if (e instanceof KommaException) {
+				throw (KommaException) e;
+			} else {
+				throw new KommaException(e);
+			}
 		}
 
 		// ensure that manager is reinitialized if it was unloaded
@@ -557,7 +453,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 					getURI(), new ExtensibleURIConverter.OptionsMap(
 							IURIConverter.OPTION_RESPONSE, response, options));
 			try {
-				save(outputStream, options);
+				getBehaviourDelegate().save(outputStream, options);
 			} finally {
 				outputStream.close();
 				Long timeStamp = (Long) response
@@ -734,6 +630,11 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 		}
 	}
 
+	@Override
+	public void setModified(boolean isModified) {
+		setModelModified(isModified);
+	}
+
 	/*
 	 * documentation inherited
 	 */
@@ -757,43 +658,16 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 				// setTimeStamp(IURIConverter.NULL_TIME_STAMP);
 			}
 		}
-		unloadKommaManager();
 	}
 
-	@Override
-	public Set<IDiagnostic> getErrors() {
-		return getModelErrors();
-	}
-
-	@Override
-	public Set<IDiagnostic> getWarnings() {
-		return getModelWarnings();
-	}
-
-	@Override
-	public boolean isLoaded() {
-		return isModelLoaded();
-	}
-
-	@Override
-	public boolean isModified() {
-		return isModelModified();
-	}
-
-	@Override
-	public boolean isLoading() {
-		return isLoading();
-	}
-
-	protected void unloadKommaManager() {
+	protected void updateSharedManager() {
 		module = null;
-		if (manager != null) {
-			manager.close();
-			manager = null;
-		}
-		if (managerFactory != null) {
-			managerFactory.close();
-			managerFactory = null;
-		}
+		sharedManager.setKommaManagerProvider(new Provider<IKommaManager>() {
+			@Override
+			public IKommaManager get() {
+				// TODO
+				return managerFactory.createKommaManager();
+			}
+		});
 	}
 }

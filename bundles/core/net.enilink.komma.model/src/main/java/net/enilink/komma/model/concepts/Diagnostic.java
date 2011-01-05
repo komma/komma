@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.internal.model.concepts;
+package net.enilink.komma.model.concepts;
 
 import net.enilink.composition.annotations.Iri;
 

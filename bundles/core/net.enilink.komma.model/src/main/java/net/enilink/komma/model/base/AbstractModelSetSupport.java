@@ -13,6 +13,7 @@ package net.enilink.komma.model.base;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,12 +24,11 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.apache.commons.collections.map.ReferenceMap;
 import net.enilink.composition.traits.Behaviour;
-import org.openrdf.model.Resource;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.event.NotifyingRepository;
-import org.openrdf.store.StoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.adapter.AdapterSet;
@@ -38,9 +38,13 @@ import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationSupport;
-import net.enilink.komma.common.util.URIUtil;
-import net.enilink.komma.internal.model.concepts.Model;
-import net.enilink.komma.internal.model.concepts.ModelSet;
+import net.enilink.komma.ds.IDataSource;
+import net.enilink.komma.ds.IDataSourceFactory;
+import net.enilink.komma.ds.change.IDataSourceChange;
+import net.enilink.komma.ds.change.IDataSourceChangeListener;
+import net.enilink.komma.ds.change.IDataSourceChangeTracker;
+import net.enilink.komma.ds.change.INamespaceChange;
+import net.enilink.komma.ds.change.IStatementChange;
 import net.enilink.komma.internal.model.event.NamespaceNotification;
 import net.enilink.komma.internal.model.event.StatementNotification;
 import net.enilink.komma.model.IContentHandler;
@@ -50,20 +54,12 @@ import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ObjectSupport;
-import net.enilink.komma.model.sesame.ISesameModelSet;
-import net.enilink.komma.repository.change.INamespaceChange;
-import net.enilink.komma.repository.change.IRepositoryChange;
-import net.enilink.komma.repository.change.IRepositoryChangeListener;
-import net.enilink.komma.repository.change.IRepositoryChangeTracker;
-import net.enilink.komma.repository.change.IStatementChange;
-import net.enilink.komma.repository.change.RepositoryChangeTracker;
+import net.enilink.komma.model.concepts.Model;
+import net.enilink.komma.model.concepts.ModelSet;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.sesame.ISesameManager;
-import net.enilink.komma.sesame.SesameReference;
 import net.enilink.komma.util.KommaUtil;
 
 /**
@@ -86,8 +82,8 @@ import net.enilink.komma.util.KommaUtil;
  * </p>
  */
 public abstract class AbstractModelSetSupport implements IModelSet,
-		ISesameModelSet, IModelSet.Internal, ModelSet,
-		INotificationBroadcaster<INotification>, Behaviour<IModelSet> {
+		IModelSet.Internal, ModelSet, INotificationBroadcaster<INotification>,
+		Behaviour<IModelSet> {
 	private final static Logger log = LoggerFactory
 			.getLogger(AbstractModelSetSupport.class);
 
@@ -100,9 +96,10 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 
 	private IAdapterSet adapterSet;
 
-	private NotifyingRepository dataRepository;
+	protected IDataSourceChangeTracker dataChangeTracker;
 
-	private RepositoryConnection dataRepositoryConnection;
+	@Inject
+	private IDataSourceFactory dataSourceFactory;
 
 	/**
 	 * The load options.
@@ -113,9 +110,9 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 
 	protected NotificationSupport<INotification> metaDataNotificationSupport = new NotificationSupport<INotification>();
 
-	private NotifyingRepository metaDataRepository;
-
-	protected RepositoryChangeTracker metaDataRepositoryChangeTracker = new RepositoryChangeTracker();
+	@Inject
+	@Named("meta")
+	private IDataSourceFactory metaDataSourceFactory;
 
 	/**
 	 * The local resource factory registry.
@@ -131,7 +128,8 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 
 	protected NotificationSupport<INotification> notificationSupport = new NotificationSupport<INotification>();
 
-	protected RepositoryChangeTracker repositoryChangeTracker = new RepositoryChangeTracker();
+	private ReferenceMap sharedReferences = new ReferenceMap(ReferenceMap.WEAK,
+			ReferenceMap.WEAK);
 
 	protected Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = new WeakHashMap<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>>();
 
@@ -153,7 +151,8 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 	 * Creates an empty instance.
 	 */
 	public AbstractModelSetSupport() {
-		init();
+		KommaModule module = createModule();
+		initModule(module);
 	}
 
 	@Override
@@ -207,14 +206,17 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 					uri);
 
 			if (isPersistent()) {
+				IDataSource ds = metaDataSourceFactory.get();
 				try {
+					ds.setReadContexts(Collections.singleton(uri));
+					ds.setIncludeInferred(false);
+
 					// check if model is already loaded
-					if (getSharedRepositoyConnection().hasMatch(null, null,
-							null, false, URIUtil.toSesameUri(uri))) {
+					if (ds.hasMatch(null, null, null)) {
 						((Model) result).setModelLoaded(true);
 					}
-				} catch (StoreException e) {
-					throw new KommaException(e);
+				} finally {
+					ds.close();
 				}
 			}
 
@@ -301,50 +303,21 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 	public void dispose() {
 		removeAndUnloadAllModels();
 
-		if (dataRepositoryConnection != null) {
+		if (dataSourceFactory != null) {
 			try {
-				dataRepositoryConnection.close();
-			} catch (StoreException e) {
+				dataSourceFactory.close();
+			} catch (Exception e) {
 				KommaCore.log(e);
 			}
-			dataRepositoryConnection = null;
+			dataSourceFactory = null;
 		}
-		if (dataRepository != null) {
+		if (metaDataSourceFactory != null) {
 			try {
-				dataRepository.shutDown();
-			} catch (StoreException e) {
+				metaDataSourceFactory.close();
+			} catch (Exception e) {
 				KommaCore.log(e);
 			}
-			dataRepository = null;
-		}
-		if (metaDataRepository != null) {
-			try {
-				metaDataRepository.shutDown();
-			} catch (StoreException e) {
-				KommaCore.log(e);
-			}
-			metaDataRepository = null;
-		}
-	}
-
-	protected void removeAndUnloadAllModels() {
-		if (metaDataRepository == null || getModels().isEmpty()) {
-			return;
-		}
-		List<IModel> models = new ArrayList<IModel>(getModels());
-		getModels().clear();
-		boolean caughtException = false;
-		for (IModel model : models) {
-			try {
-				model.unload();
-			} catch (RuntimeException ex) {
-				log.error("Error while unloading model", ex);
-				caughtException = true;
-			}
-		}
-		if (caughtException) {
-			throw new RuntimeException(
-					"Exception(s) unloading resources - check log files"); //$NON-NLS-1$
+			metaDataSourceFactory = null;
 		}
 	}
 
@@ -408,6 +381,11 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 		return adapterFactories;
 	}
 
+	@Override
+	public IDataSourceChangeTracker getDataChangeTracker() {
+		return dataChangeTracker;
+	}
+
 	/*
 	 * Javadoc copied from interface.
 	 */
@@ -417,20 +395,6 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 		}
 
 		return loadOptions;
-	}
-
-	public ISesameManager getMetaDataManager() {
-		return (ISesameManager) getKommaManager();
-	}
-
-	public NotifyingRepository getMetaDataRepository() {
-		if (metaDataRepository == null) {
-			metaDataRepository = (NotifyingRepository) ((ISesameManager) getKommaManager())
-					.getConnection().getRepository();
-			metaDataRepository
-					.addRepositoryConnectionListener(metaDataRepositoryChangeTracker);
-		}
-		return metaDataRepository;
 	}
 
 	/*
@@ -541,51 +505,16 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 		}
 	}
 
-	public NotifyingRepository getRepository() {
-		return dataRepository;
-	}
-
-	@Override
-	public IRepositoryChangeTracker getRepositoryChangeTracker() {
-		return repositoryChangeTracker;
-	}
-
-	@Override
-	public synchronized RepositoryConnection getSharedRepositoyConnection() {
-		if (dataRepositoryConnection == null) {
-			try {
-				dataRepositoryConnection = getRepository().getConnection();
-			} catch (StoreException e) {
-				throw new KommaException(e);
-			}
-		}
-		return dataRepositoryConnection;
-	}
-
-	private ReferenceMap resource2Reference = new ReferenceMap(
-			ReferenceMap.WEAK, ReferenceMap.WEAK);
-
-	private IReference[] getSharedReferences(Object[] resources) {
-		if (resources == null) {
-			return null;
-		}
-		IReference[] references = new IReference[resources.length];
-		for (int i = 0; i < resources.length; i++) {
-			references[i] = getSharedReference(resources[i]);
-		}
-		return references;
-	}
-
-	public IReference getSharedReference(Object resource) {
-		synchronized (resource2Reference) {
-			IReference reference = (IReference) resource2Reference
-					.get(resource);
-			if (reference == null) {
-				reference = new SesameReference((Resource) resource);
-				resource2Reference.put(resource, reference);
+	public IReference getSharedReference(IReference reference) {
+		synchronized (sharedReferences) {
+			IReference sharedReference = (IReference) sharedReferences
+					.get(reference);
+			if (sharedReference == null) {
+				sharedReference = reference;
+				sharedReferences.put(sharedReference, sharedReference);
 			}
 
-			return reference;
+			return sharedReference;
 		}
 	}
 
@@ -618,7 +547,7 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 	 *            the model that threw an exception while loading.
 	 * @param exception
 	 *            the exception thrown from the resource while loading.
-	 * @see #demandLoadHelper(Resource)
+	 * @see #demandLoadHelper(IModel)
 	 */
 	protected void handleDemandLoadException(IModel model, IOException exception)
 			throws RuntimeException {
@@ -659,51 +588,6 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 		throw wrappedException;
 	}
 
-	protected void init() {
-		repositoryChangeTracker
-				.addChangeListener(new IRepositoryChangeListener() {
-					@Override
-					public void repositoryChanged(IRepositoryChange... changes) {
-						AbstractModelSetSupport.this
-								.fireNotifications(transformChanges(changes));
-
-						Set<Resource> changedModels = new HashSet<Resource>();
-						for (IRepositoryChange change : changes) {
-							if (change instanceof IStatementChange) {
-								for (Resource context : ((IStatementChange) change)
-										.getContexts()) {
-									if (context != null) {
-										changedModels.add(context);
-									}
-								}
-							}
-						}
-						for (Resource changedModel : changedModels) {
-							if (changedModel instanceof org.openrdf.model.URI) {
-								IModel model = getModel(
-										URIImpl.createURI(((org.openrdf.model.URI) changedModel)
-												.stringValue()), false);
-								if (model != null && model.isLoaded()) {
-									model.setModified(true);
-								}
-							}
-						}
-					}
-				});
-
-		metaDataRepositoryChangeTracker
-				.addChangeListener(new IRepositoryChangeListener() {
-					@Override
-					public void repositoryChanged(IRepositoryChange... changes) {
-						metaDataNotificationSupport
-								.fireNotifications(transformChanges(changes));
-					}
-				});
-
-		KommaModule module = createModule();
-		initModule(module);
-	}
-
 	protected void initModule(KommaModule module) {
 		module.includeModule(KommaUtil.getCoreModule());
 
@@ -713,11 +597,25 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 		module.addConcept(IObject.class);
 	}
 
-	protected void initRepository(NotifyingRepository repository) {
-		this.dataRepository = repository;
-		// install change tracker
-		this.dataRepository
-				.addRepositoryConnectionListener(repositoryChangeTracker);
+	protected void removeAndUnloadAllModels() {
+		if (metaDataSourceFactory == null || getModels().isEmpty()) {
+			return;
+		}
+		List<IModel> models = new ArrayList<IModel>(getModels());
+		getModels().clear();
+		boolean caughtException = false;
+		for (IModel model : models) {
+			try {
+				model.unload();
+			} catch (RuntimeException ex) {
+				log.error("Error while unloading model", ex);
+				caughtException = true;
+			}
+		}
+		if (caughtException) {
+			throw new RuntimeException(
+					"Exception(s) unloading resources - check log files"); //$NON-NLS-1$
+		}
 	}
 
 	@Override
@@ -742,6 +640,51 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 		if (listeners != null) {
 			listeners.remove(listener);
 		}
+	}
+
+	@Inject
+	protected void setDataChangeTracker(IDataSourceChangeTracker changeTracker) {
+		dataChangeTracker = changeTracker;
+		dataChangeTracker.addChangeListener(new IDataSourceChangeListener() {
+			@Override
+			public void dataSourceChanged(List<IDataSourceChange> changes) {
+				AbstractModelSetSupport.this
+						.fireNotifications(transformChanges(changes));
+
+				Set<IReference> changedModels = new HashSet<IReference>();
+				for (IDataSourceChange change : changes) {
+					if (change instanceof IStatementChange) {
+						IReference context = ((IStatementChange) change)
+								.getContext();
+						if (context != null) {
+							changedModels.add(context);
+						}
+					}
+				}
+				for (IReference changedModel : changedModels) {
+					if (changedModel.getURI() != null) {
+						IModel model = getModel(changedModel.getURI(), false);
+						if (model != null && model.isLoaded()) {
+							model.setModified(true);
+						}
+					}
+				}
+			}
+		});
+	}
+
+	@Inject
+	@Named("meta")
+	protected void setMetaDataChangeTracker(
+			IDataSourceChangeTracker changeTracker) {
+		changeTracker.addChangeListener(new IDataSourceChangeListener() {
+			@Override
+			public void dataSourceChanged(List<IDataSourceChange> changes) {
+				metaDataNotificationSupport
+						.fireNotifications(transformChanges(changes));
+			}
+		});
+
 	}
 
 	/*
@@ -786,19 +729,20 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 	}
 
 	/** Transforms changes tracked in the repository into {@link INotification}s */
-	protected List<INotification> transformChanges(IRepositoryChange... changes) {
+	protected List<INotification> transformChanges(
+			List<IDataSourceChange> changes) {
 		List<INotification> notifications = new ArrayList<INotification>(
-				changes.length);
-		for (int i = 0; i < changes.length; i++) {
-			if (changes[i] instanceof INotification) {
-				notifications.add((INotification) changes[i]);
-			} else if (changes[i] instanceof INamespaceChange) {
-				INamespaceChange nsChange = (INamespaceChange) changes[i];
+				changes.size());
+		for (IDataSourceChange change : changes) {
+			if (change instanceof INotification) {
+				notifications.add((INotification) change);
+			} else if (change instanceof INamespaceChange) {
+				INamespaceChange nsChange = (INamespaceChange) change;
 				notifications
 						.add(new NamespaceNotification(nsChange.getPrefix(),
 								nsChange.getOldNS(), nsChange.getNewNS()));
 			} else {
-				IStatementChange stmtChange = (IStatementChange) changes[i];
+				IStatementChange stmtChange = (IStatementChange) change;
 				Object object = stmtChange.getObject();
 				notifications
 						.add(new StatementNotification(
@@ -806,9 +750,9 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 								stmtChange.isAdd(),
 								getSharedReference(stmtChange.getSubject()),
 								getSharedReference(stmtChange.getPredicate()),
-								object instanceof Resource ? getSharedReference((Resource) object)
-										: object,
-								getSharedReferences(stmtChange.getContexts())));
+								object instanceof IReference ? getSharedReference((IReference) object)
+										: object, getSharedReference(stmtChange
+										.getContext())));
 			}
 		}
 		return notifications;

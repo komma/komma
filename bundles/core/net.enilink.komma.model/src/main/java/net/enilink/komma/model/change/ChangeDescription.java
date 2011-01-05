@@ -20,23 +20,23 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.openrdf.repository.event.base.NotifyingRepositoryConnectionWrapper;
 
+import net.enilink.komma.ds.change.IDataSourceChange;
 import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.repository.change.IRepositoryChange;
 import net.enilink.komma.core.KommaException;
 
 public class ChangeDescription implements IChangeDescription {
-	private LinkedList<IRepositoryChange> changes = new LinkedList<IRepositoryChange>();
+	private LinkedList<IDataSourceChange> changes = new LinkedList<IDataSourceChange>();
 	private IModelSet.Internal modelSet;
 
 	public ChangeDescription(IModelSet modelSet) {
 		this.modelSet = (IModelSet.Internal) modelSet;
 	}
 
-	public void add(IRepositoryChange change) {
+	public void add(IDataSourceChange change) {
 		changes.add(change);
 	}
 
-	public List<IRepositoryChange> getChanges() {
+	public List<IDataSourceChange> getChanges() {
 		return changes;
 	}
 
@@ -57,7 +57,7 @@ public class ChangeDescription implements IChangeDescription {
 					connection.begin();
 				}
 
-				for (ListIterator<IRepositoryChange> it = changes
+				for (ListIterator<IDataSourceChange> it = changes
 						.listIterator(changes.size()); it.hasPrevious();) {
 					it.previous().redo(connection);
 				}
@@ -95,7 +95,7 @@ public class ChangeDescription implements IChangeDescription {
 					connection.begin();
 				}
 
-				for (ListIterator<IRepositoryChange> it = changes
+				for (ListIterator<IDataSourceChange> it = changes
 						.listIterator(changes.size()); it.hasPrevious();) {
 					it.previous().undo(connection);
 				}

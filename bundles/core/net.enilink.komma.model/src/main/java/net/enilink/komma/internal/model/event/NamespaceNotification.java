@@ -12,6 +12,7 @@ package net.enilink.komma.internal.model.event;
 
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.model.event.INamespaceNotification;
+import net.enilink.komma.core.URI;
 
 /**
  * Notification for a namespace change.
@@ -20,42 +21,26 @@ import net.enilink.komma.model.event.INamespaceNotification;
  * 
  */
 public class NamespaceNotification implements INamespaceNotification {
-	private String newNS;
+	private URI newNS;
 
-	private String oldNS;
+	private URI oldNS;
 
 	private String prefix;
 
-	public NamespaceNotification(String prefix, String oldNS, String newNS) {
+	public NamespaceNotification(String prefix, URI oldNS, URI newNS) {
 		this.prefix = prefix;
 		this.oldNS = oldNS;
 		this.newNS = newNS;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.enilink.komma.repository.event.INamespaceChange#getNewNS()
-	 */
-	public String getNewNS() {
+	public URI getNewNS() {
 		return newNS;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.enilink.komma.repository.event.INamespaceChange#getOldNS()
-	 */
-	public String getOldNS() {
+	public URI getOldNS() {
 		return oldNS;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.enilink.komma.repository.event.INamespaceChange#getPrefix()
-	 */
 	public String getPrefix() {
 		return prefix;
 	}
@@ -72,9 +57,10 @@ public class NamespaceNotification implements INamespaceNotification {
 
 	@Override
 	public String toString() {
-		return new StringBuilder().append("namespace ").append(
-				newNS == null ? "deleted" : "added").append(" [prefix=")
-				.append(prefix).append(", oldNS=").append(oldNS).append(
-						", newNS=").append(newNS).append("]").toString();
+		return new StringBuilder().append("namespace ")
+				.append(newNS == null ? "deleted" : "added")
+				.append(" [prefix=").append(prefix).append(", oldNS=")
+				.append(oldNS).append(", newNS=").append(newNS).append("]")
+				.toString();
 	}
 }

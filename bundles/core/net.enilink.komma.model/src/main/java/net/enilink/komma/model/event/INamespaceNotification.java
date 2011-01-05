@@ -11,11 +11,12 @@
 package net.enilink.komma.model.event;
 
 import net.enilink.komma.common.notify.INotification;
+import net.enilink.komma.core.URI;
 
 public interface INamespaceNotification extends INotification {
-	String getNewNS();
+	URI getNewNS();
 
-	String getOldNS();
+	URI getOldNS();
 
 	String getPrefix();
 }

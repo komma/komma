@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
@@ -40,20 +41,21 @@ import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.util.URIUtil;
 import net.enilink.komma.concepts.IResource;
+import net.enilink.komma.manager.EagerCachingKommaManagerModule;
+import net.enilink.komma.manager.ISesameManager;
+import net.enilink.komma.manager.SesameReference;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelSetFactory;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.core.IGraph;
+import net.enilink.komma.core.IKommaManager;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.LinkedHashGraph;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.sesame.EagerCachingSesameManagerFactory;
-import net.enilink.komma.sesame.ISesameManager;
-import net.enilink.komma.sesame.SesameReference;
 import net.enilink.komma.util.KommaUtil;
 
 public class ModelSetFactory implements IModelSetFactory {
@@ -66,9 +68,9 @@ public class ModelSetFactory implements IModelSetFactory {
 	}
 
 	/**
-	 * Initializes Sesame manager for meta data
+	 * Initializes manager for meta data
 	 */
-	protected ISesameManager createMetaDataManager() {
+	protected IKommaManager createMetaDataManager() {
 		KommaModule module = new KommaModule(getClass().getClassLoader());
 		if (parentModule != null) {
 			module.includeModule(parentModule);
@@ -90,7 +92,7 @@ public class ModelSetFactory implements IModelSetFactory {
 
 		module.includeModule(KommaUtil.getCoreModule());
 
-		return new EagerCachingSesameManagerFactory(module,
+		return new EagerCachingKommaManagerModule(module,
 				createMetaDataRepository()).createKommaManager();
 	}
 
@@ -131,13 +133,11 @@ public class ModelSetFactory implements IModelSetFactory {
 
 	@Override
 	public IModelSet createModelSet(IGraph configuration) {
-		ISesameManager metaDataManager = createMetaDataManager();
+		IKommaManager metaDataManager = createMetaDataManager();
 		metaDataManager.add(configuration);
 
 		List<IReference> types = new ArrayList<IReference>();
-		for (URI type : modelSetTypes) {
-			types.add(new SesameReference(URIUtil.toSesameUri(type)));
-		}
+		types.addAll(Arrays.asList(modelSetTypes));
 		types.add(MODELS.CLASS_MODELSET);
 		types.add(RDFS.TYPE_RESOURCE);
 

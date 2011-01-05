@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
-import org.openrdf.repository.event.NotifyingRepository;
 
 import net.enilink.komma.concepts.IOntology;
 import net.enilink.komma.core.IKommaManager;
@@ -25,7 +24,6 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.sesame.ISesameManager;
 
 @Iri(MODELS.NAMESPACE + "Model")
 public interface IModel {
@@ -85,7 +83,7 @@ public interface IModel {
 	void delete(Map<?, ?> options) throws IOException;
 
 	/**
-	 * Returns the {@link ISesameManager} manager which is responsible for
+	 * Returns the {@link IKommaManager} manager which is responsible for
 	 * loading and modifying the ontology's contents
 	 * 
 	 * @return manager instance
@@ -110,13 +108,6 @@ public interface IModel {
 	 * @see IModelSet#getModels
 	 */
 	IModelSet getModelSet();
-
-	/**
-	 * Returns the repository which contains the
-	 * 
-	 * @return
-	 */
-	NotifyingRepository getRepository();
 
 	/**
 	 * Returns the URI of this model. The URI is normally expected to be
