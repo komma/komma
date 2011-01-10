@@ -27,7 +27,7 @@ import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.UniqueExtendedIterator;
 import net.enilink.vocab.owl.FunctionalProperty;
-import net.enilink.komma.internal.sesame.behaviours.OrderedSesamePropertySet;
+import net.enilink.komma.em.internal.behaviours.OrderedPropertySet;
 import net.enilink.komma.results.ResultDescriptor;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IQuery;
@@ -36,7 +36,6 @@ import net.enilink.komma.core.IResultDescriptor;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.Statement;
-import net.enilink.komma.sesame.ISesameEntity;
 import net.enilink.komma.util.KommaUtil;
 import net.enilink.komma.util.Pair;
 
@@ -48,7 +47,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		private boolean single;
 
 		PropertyInfo(IReference property) {
-			this.property = getKommaManager().find(property);
+			this.property = getEntityManager().find(property);
 
 			// the following code checks if property is functional
 			// the property is functional if it is an FunctionalProperty or
@@ -67,11 +66,11 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 			if (property instanceof IProperty
 					&& ((IProperty) property).isOrderedContainment()) {
-				propertySet = new OrderedSesamePropertySet<Object>(
-						(ISesameEntity) getBehaviourDelegate(), property);
+				propertySet = new OrderedPropertySet<Object>(
+						getBehaviourDelegate(), property);
 			} else {
 				propertySet = new KommaPropertySet<Object>(
-						(ISesameEntity) getBehaviourDelegate(), property);
+						getBehaviourDelegate(), property);
 			}
 
 			injector.injectMembers(propertySet);
@@ -192,7 +191,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public void addProperty(IReference property, Object obj) {
-		getKommaManager().add(new Statement(this, property, obj));
+		getEntityManager().add(new Statement(this, property, obj));
 	}
 
 	private PropertyInfo ensurePropertyInfo(IReference property) {
@@ -214,7 +213,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public Pair<Integer, Integer> getApplicableCardinality(IReference property) {
-		IQuery<?> query = getKommaManager().createQuery(
+		IQuery<?> query = getEntityManager().createQuery(
 				SELECT_APPLICABLE_CARDINALITY);
 		query.setParameter("resource", getBehaviourDelegate());
 		query.setParameter("property", property);
@@ -240,7 +239,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public IExtendedIterator<IProperty> getRelevantProperties() {
-		IQuery<?> query = getKommaManager().createQuery(
+		IQuery<?> query = getEntityManager().createQuery(
 				SELECT_APPLICABLE_PROPERTIES);
 		query.setParameter("resource", this);
 
@@ -265,7 +264,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public IExtendedIterator<IClass> getClasses(boolean includeInferred) {
-		IQuery<?> query = getKommaManager().createQuery(SELECT_CLASSES(false));
+		IQuery<?> query = getEntityManager().createQuery(SELECT_CLASSES(false));
 		query.setParameter("resource", getBehaviourDelegate())
 				.setIncludeInferred(includeInferred);
 
@@ -274,7 +273,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public IExtendedIterator<IClass> getDirectClasses() {
-		return getKommaManager()
+		return getEntityManager()
 				.createQuery(DIRECT_CLASSES_DESC().toQueryString())
 				.setParameter("resource", getBehaviourDelegate())
 				.setIncludeInferred(true).evaluate(IClass.class);
@@ -282,7 +281,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public IExtendedIterator<IClass> getDirectNamedClasses() {
-		return getKommaManager()
+		return getEntityManager()
 				.createQuery(DIRECT_NAMED_CLASSES_DESC().toQueryString())
 				.setParameter("resource", getBehaviourDelegate())
 				.setIncludeInferred(true).evaluate(IClass.class);
@@ -290,7 +289,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public IExtendedIterator<IClass> getNamedClasses() {
-		IQuery<?> query = getKommaManager().createQuery(SELECT_CLASSES(true));
+		IQuery<?> query = getEntityManager().createQuery(SELECT_CLASSES(true));
 		query.setParameter("resource", getBehaviourDelegate());
 
 		return query.evaluate(IClass.class);
@@ -311,7 +310,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	public IExtendedIterator<IStatement> getPropertyStatements(
 			final IReference property, boolean includeInferred) {
 		IEntity propertyEntity = (property instanceof IEntity) ? (IEntity) property
-				: getKommaManager().find(property);
+				: getEntityManager().find(property);
 
 		IExtendedIterator<IStatement> stmts = internalGetPropertyStmts(
 				propertyEntity, false);
@@ -326,7 +325,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	@Override
 	public IExtendedIterator<IValue> getPropertyValues(IReference property,
 			boolean includeInferred) {
-		IQuery<IValue> query = getKommaManager().createQuery(
+		IQuery<IValue> query = getEntityManager().createQuery(
 				SELECT_PROPERTY_OBJECTS).bindResultType(IValue.class);
 		query.setParameter("subj", this);
 		query.setParameter("pred", property);
@@ -336,7 +335,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public boolean hasApplicableProperty(IReference property) {
-		IQuery<?> query = getKommaManager()
+		IQuery<?> query = getEntityManager()
 				.createQuery(HAS_APPLICABLE_PROPERTY);
 		query.setParameter("resource", this);
 		query.setParameter("property", property);
@@ -347,7 +346,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	@Override
 	public boolean hasProperty(IReference property, Object obj,
 			boolean includeInferred) {
-		return getKommaManager().createQuery("ASK {?s ?p ?o}")
+		return getEntityManager().createQuery("ASK {?s ?p ?o}")
 				.setParameter("s", this).setParameter("p", property)
 				.setParameter("o", obj).setIncludeInferred(includeInferred)
 				.getBooleanResult();
@@ -355,7 +354,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	protected IExtendedIterator<IStatement> internalGetPropertyStmts(
 			final IEntity property, final boolean includeInferred) {
-		IQuery<?> query = getKommaManager().createQuery(
+		IQuery<?> query = getEntityManager().createQuery(
 				property != null ? SELECT_PROPERTY_OBJECTS
 						: SELECT_PROPERTIES_AND_OBJECTS);
 		query.setParameter("subj", this);
@@ -398,7 +397,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public void removeProperty(IReference property) {
-		getKommaManager().remove(new Statement(this, property, null));
+		getEntityManager().remove(new Statement(this, property, null));
 	}
 
 	@SuppressWarnings("unchecked")

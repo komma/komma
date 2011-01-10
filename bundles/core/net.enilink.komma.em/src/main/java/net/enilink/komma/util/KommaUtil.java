@@ -41,7 +41,7 @@ import net.enilink.komma.concepts.KommaConcepts;
 import net.enilink.komma.concepts.OntologySupport;
 import net.enilink.komma.concepts.PropertySupport;
 import net.enilink.komma.concepts.ResourceSupport;
-import net.enilink.komma.core.IKommaManager;
+import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
@@ -53,17 +53,19 @@ public class KommaUtil implements ISparqlConstants {
 	public static KommaModule getCoreModule() {
 		KommaModule module = new KommaModule(KommaUtil.class.getClassLoader());
 
+		RoleClassLoader roleClassLoader = new RoleClassLoader(module);
+
 		// install basic RDF(S) and OWL support
-		for (URL url : KommaUtil
-				.getBundleMetaInfLocations("net.enilink.vocab.owl")
-				.andThen(
-						KommaUtil
-								.getBundleMetaInfLocations("net.enilink.vocab.rdfs"))
-				.andThen(
-						KommaUtil
-								.getBundleMetaInfLocations(KommaConcepts.PLUGIN_ID))) {
-			module.addLibrary(url);
-		}
+		roleClassLoader
+				.load(KommaUtil
+						.getBundleMetaInfLocations(
+								"net.enilink.vocab.owl")
+						.andThen(
+								KommaUtil
+										.getBundleMetaInfLocations("net.enilink.vocab.rdfs"))
+						.andThen(
+								KommaUtil
+										.getBundleMetaInfLocations(KommaConcepts.PLUGIN_ID)));
 
 		module.addBehaviour(ResourceSupport.class);
 		module.addBehaviour(ClassSupport.class);
@@ -167,7 +169,7 @@ public class KommaUtil implements ISparqlConstants {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static Collection<IResource> getInstances(IKommaManager manager,
+	public static Collection<IResource> getInstances(IEntityManager manager,
 			Collection<? extends IReference> classes) {
 		StringBuilder sb = new StringBuilder("SELECT DISTINCT ?r WHERE {");
 
@@ -194,7 +196,7 @@ public class KommaUtil implements ISparqlConstants {
 		return (Collection<IResource>) query.getResultList();
 	}
 
-	public static Object convertToType(IKommaManager manager, Object value,
+	public static Object convertToType(IEntityManager manager, Object value,
 			URI typeName) {
 		if (value instanceof ILiteral) {
 			value = ((ILiteral) value).getLabel();
@@ -203,11 +205,11 @@ public class KommaUtil implements ISparqlConstants {
 			typeName = XMLSCHEMA.TYPE_STRING;
 		}
 
-		return manager.convertValue(manager.createLiteral(
+		return manager.toInstance(manager.createLiteral(
 				String.valueOf(value), typeName, null));
 	}
 
-	public static ILiteral createStringLiteral(IKommaManager manager,
+	public static ILiteral createStringLiteral(IEntityManager manager,
 			Object value, String languageCode) {
 		if (value instanceof ILiteral) {
 			value = ((ILiteral) value).getLabel();
@@ -216,7 +218,7 @@ public class KommaUtil implements ISparqlConstants {
 		return manager.createLiteral(String.valueOf(value), null, languageCode);
 	}
 
-	public static Object convertToRange(IKommaManager manager,
+	public static Object convertToRange(IEntityManager manager,
 			Collection<? extends IReference> range, Object value) {
 		URI rangeName = null;
 		Iterator<? extends IReference> rangeIt = range.iterator();

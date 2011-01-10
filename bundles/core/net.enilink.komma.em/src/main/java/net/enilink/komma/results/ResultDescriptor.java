@@ -14,9 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.internal.query.QueryBase;
+import net.enilink.komma.em.internal.query.QueryBase;
 import net.enilink.komma.query.SparqlBuilder;
-import net.enilink.komma.core.IKommaManager;
+import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IResultDescriptor;
 
@@ -57,7 +57,7 @@ public class ResultDescriptor<R> extends QueryBase<IResultDescriptor<R>>
 	}
 
 	@SuppressWarnings("unchecked")
-	public IExtendedIterator<R> evaluate(IKommaManager manager) {
+	public IExtendedIterator<R> evaluate(IEntityManager manager) {
 		if (results == null) {
 			String sparql = toQueryString();
 			IQuery<?> query = manager.createQuery(sparql);

@@ -8,9 +8,23 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.concepts;
+package net.enilink.komma.em.internal.behaviours;
 
-import net.enilink.komma.util.ISparqlConstants;
+import net.enilink.composition.annotations.Iri;
 
-public abstract class BehaviorBase implements ISparqlConstants {
+import net.enilink.komma.concepts.CONCEPTS;
+import net.enilink.komma.core.URI;
+
+@Iri(CONCEPTS.NAMESPACE + "LiteralKeyMap")
+public abstract class LiteralKeyMap extends AbstractRDFMap {
+	@Override
+	protected URI getUri4Key() {
+		return CONCEPTS.PROPERTY_KEYDATA;
+	}
+
+	@Override
+	protected URI getUri4Value() {
+		return CONCEPTS.PROPERTY_VALUE;
+	}
+
 }

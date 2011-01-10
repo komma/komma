@@ -8,9 +8,15 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.concepts;
+package net.enilink.komma.em;
 
-import net.enilink.komma.util.ISparqlConstants;
+import net.enilink.komma.em.internal.EagerCachingEntityManager;
+import net.enilink.komma.core.IEntityManager;
 
-public abstract class BehaviorBase implements ISparqlConstants {
+public class EagerCachingEntityManagerModule extends
+		DecoratingEntityManagerModule {
+	@Override
+	protected Class<? extends IEntityManager> getManagerClass() {
+		return EagerCachingEntityManager.class;
+	}
 }

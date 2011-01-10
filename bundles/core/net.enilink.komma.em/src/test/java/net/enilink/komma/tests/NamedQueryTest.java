@@ -17,18 +17,14 @@ import junit.framework.Test;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.properties.annotations.name;
 import net.enilink.composition.properties.sparql.sparql;
-import org.openrdf.model.Model;
-import org.openrdf.model.Statement;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.query.BindingSet;
-import org.openrdf.result.GraphResult;
-import org.openrdf.result.Result;
-import org.openrdf.result.TupleResult;
 
+import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.komma.core.IGraph;
+import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIImpl;
 
-public class NamedQueryTest extends KommaManagerTestCase {
+public class NamedQueryTest extends EntityManagerTestCase {
 	private static final String NS = "urn:test:";
 	private static final String PREFIX = "PREFIX :<" + NS + ">\n";
 	private Person me;
@@ -61,30 +57,30 @@ public class NamedQueryTest extends KommaManagerTestCase {
 
 		@sparql(PREFIX + "SELECT ?friend WHERE { $this :friend ?friend . "
 				+ "?friend :name $name }")
-		BindingSet findBindingSetByName(@name("name") String arg1);
+		Object[] findByName(@name("name") String arg1);
 
 		@sparql(PREFIX
 				+ "CONSTRUCT { ?friend :name $name } WHERE { $this :friend ?friend . "
 				+ "?friend :name $name }")
-		Statement findStatementByName(@name("name") String arg1);
+		IStatement findStatementByName(@name("name") String arg1);
 
 		@sparql(PREFIX + "ASK { $this :friend $friend }")
 		boolean isFriend(@name("friend") Person arg1);
 
 		@sparql(PREFIX + "SELECT ?person WHERE { ?person a :Person }")
-		Result<Person> findAllPeople();
+		IExtendedIterator<Person> findAllPeople();
 
 		@sparql(PREFIX + "SELECT ?person ?name "
 				+ "WHERE { ?person :name ?name } ORDER BY ?name")
-		TupleResult findAllPeopleName();
+		IExtendedIterator<Object[]> findAllPeopleName();
 
 		@sparql(PREFIX + "CONSTRUCT { ?person a :Person; :name ?name } "
 				+ "WHERE { ?person :name ?name } ORDER BY ?name")
-		GraphResult loadAllPeople();
+		IExtendedIterator<IStatement> loadAllPeople();
 
 		@sparql(PREFIX + "CONSTRUCT { ?person a :Person; :name ?name } "
 				+ "WHERE { ?person :name ?name } ORDER BY ?name")
-		Model loadAllPeopleInModel();
+		IGraph loadAllPeopleInGraph();
 
 		@sparql(PREFIX + "SELECT ?person WHERE { ?person a :Person }")
 		Set<Person> findFriends();
@@ -128,7 +124,8 @@ public class NamedQueryTest extends KommaManagerTestCase {
 		me = manager.createNamed(URIImpl.createURI(NS + "me"), Person.class);
 		me.setName("james");
 		me.setAge(102);
-		john = manager.createNamed(URIImpl.createURI(NS + "john"), Person.class);
+		john = manager
+				.createNamed(URIImpl.createURI(NS + "john"), Person.class);
 		john.setName("john");
 		me.getFriends().add(john);
 	}
@@ -138,15 +135,13 @@ public class NamedQueryTest extends KommaManagerTestCase {
 	}
 
 	public void testBindingSetByName() throws Exception {
-		ValueFactory vf = manager.getConnection().getValueFactory();
-		BindingSet result = me.findBindingSetByName("john");
-		assertEquals(vf.createURI(NS, "john"), result.getValue("friend"));
+		Object[] result = me.findByName("john");
+		assertEquals(URIImpl.createURI(NS + "john"), result[0]);
 	}
 
 	public void testStatementByName() throws Exception {
-		ValueFactory vf = manager.getConnection().getValueFactory();
-		Statement result = me.findStatementByName("john");
-		assertEquals(vf.createURI(NS, "john"), result.getSubject());
+		IStatement result = me.findStatementByName("john");
+		assertEquals(URIImpl.createURI(NS + "john"), result.getSubject());
 	}
 
 	public void testIsFriend() throws Exception {
@@ -154,28 +149,28 @@ public class NamedQueryTest extends KommaManagerTestCase {
 	}
 
 	public void testFindAllPeople() throws Exception {
-		Result<Person> result = me.findAllPeople();
+		IExtendedIterator<Person> result = me.findAllPeople();
 		assertTrue(result.hasNext());
-		Set<Person> set = result.asSet();
+		Set<Person> set = result.toSet();
 		assertTrue(set.contains(me));
 		assertTrue(set.contains(john));
 	}
 
 	public void testTupleResult() throws Exception {
-		TupleResult result = me.findAllPeopleName();
+		IExtendedIterator<Object[]> result = me.findAllPeopleName();
 		assertTrue(result.hasNext());
-		assertEquals("james", result.next().getValue("name").stringValue());
+		assertEquals("james", result.next()[1].toString());
 		result.close();
 	}
 
 	public void testConstruct() throws Exception {
-		GraphResult result = me.loadAllPeople();
+		IExtendedIterator<?> result = me.loadAllPeople();
 		assertTrue(result.hasNext());
 		result.close();
 	}
 
 	public void testModel() throws Exception {
-		Model result = me.loadAllPeopleInModel();
+		IGraph result = me.loadAllPeopleInGraph();
 		assertFalse(result.isEmpty());
 	}
 
@@ -196,8 +191,8 @@ public class NamedQueryTest extends KommaManagerTestCase {
 	}
 
 	public void testOveride() throws Exception {
-		Employee e = manager
-				.createNamed(URIImpl.createURI(NS + "e"), Employee.class);
+		Employee e = manager.createNamed(URIImpl.createURI(NS + "e"),
+				Employee.class);
 		e.setName("employee");
 		assertEquals("employee", e.findName());
 	}

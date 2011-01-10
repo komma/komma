@@ -116,7 +116,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 			return true;
 		}
 
-		IQuery<?> query = getKommaManager().createQuery(IS_CONTAINMENT);
+		IQuery<?> query = getEntityManager().createQuery(IS_CONTAINMENT);
 		query.setParameter("property", this);
 		query.setIncludeInferred(true);
 
@@ -126,7 +126,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 	@SuppressWarnings("unchecked")
 	protected IExtendedIterator<IProperty> getSubProperties(boolean direct,
 			boolean includeInferred) {
-		IQuery<?> query = getKommaManager().createQuery(
+		IQuery<?> query = getEntityManager().createQuery(
 				direct ? SELECT_DIRECT_SUBPROPERTIES(true)
 						: SELECT_SUBPROPERTIES(true));
 		query.setParameter("superProperty", getBehaviourDelegate());
@@ -158,7 +158,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 	@SuppressWarnings("unchecked")
 	protected IExtendedIterator<IProperty> getSuperProperties(boolean direct,
 			boolean includeInferred) {
-		IQuery<?> query = getKommaManager().createQuery(
+		IQuery<?> query = getEntityManager().createQuery(
 				direct ? SELECT_DIRECT_SUPERPROPERTIES(true)
 						: SELECT_SUPERPROPERTIES(true));
 		query.setParameter("subProperty", getBehaviourDelegate());
@@ -177,7 +177,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 			return true;
 		}
 
-		IQuery<?> query = getKommaManager().createQuery(IS_ORDERED_CONTAINMENT);
+		IQuery<?> query = getEntityManager().createQuery(IS_ORDERED_CONTAINMENT);
 		query.setParameter("property", this);
 		query.setIncludeInferred(true);
 
@@ -187,7 +187,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 	@Override
 	public boolean isDomainCompatible(Object object) {
 		if (object instanceof IReference) {
-			IQuery<?> query = getKommaManager().createQuery(IS_DOMAIN_INSTANCE);
+			IQuery<?> query = getEntityManager().createQuery(IS_DOMAIN_INSTANCE);
 			query.setParameter("property", getBehaviourDelegate());
 			query.setParameter("object", object);
 			query.setIncludeInferred(true);
@@ -201,11 +201,11 @@ public abstract class PropertySupport extends BehaviorBase implements
 	public boolean isRangeCompatible(IResource subject, Object object) {
 		if (object instanceof IResource) {
 			// query can be optimized if OWL-inferencing is supported
-			if (getKommaManager().getInferencing().doesOWL()) {
+			if (getEntityManager().getInferencing().doesOWL()) {
 				String query = PREFIX + "ASK {"
 						+ "?o a ?c . ?p rdfs:range ?c }";
 
-				return subject.getKommaManager().createQuery(query)
+				return subject.getEntityManager().createQuery(query)
 						.setParameter("o", object)
 						.setParameter("p", getBehaviourDelegate())
 						.getBooleanResult();
@@ -219,7 +219,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 
 			@SuppressWarnings("unchecked")
 			IExtendedIterator<? extends IClass> it = (IExtendedIterator<IClass>) subject
-					.getKommaManager().createQuery(query)
+					.getEntityManager().createQuery(query)
 					.setParameter("o", object)
 					.setParameter("p", getBehaviourDelegate()).evaluate();
 
@@ -271,7 +271,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 			return true;
 		}
 		if (object instanceof IReference) {
-			IQuery<?> query = getKommaManager().createQuery(IS_RANGE_INSTANCE);
+			IQuery<?> query = getEntityManager().createQuery(IS_RANGE_INSTANCE);
 			query.setParameter("property", getBehaviourDelegate());
 			query.setParameter("object", object);
 			query.setIncludeInferred(true);
@@ -286,7 +286,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 	public IExtendedIterator<? extends IClass> getNamedRanges(
 			IResource subject, boolean direct) {
 		// query can be optimized if OWL-inferencing is supported
-		if (getKommaManager().getInferencing().doesOWL()) {
+		if (getEntityManager().getInferencing().doesOWL()) {
 			String query = PREFIX
 					+ "SELECT DISTINCT ?r WHERE {"
 					+ "	?o a ?c ."
@@ -312,7 +312,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 					+ "	FILTER(!bound(?abstract)) " //
 					+ "}";
 
-			return subject.getKommaManager().createQuery(query)
+			return subject.getEntityManager().createQuery(query)
 					.setParameter("o", subject).setParameter("p", this)
 					.evaluate(IClass.class);
 		}
@@ -323,7 +323,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 				+ "{{?restriction owl:allValuesFrom ?r} UNION {?restriction owl:someValuesFrom ?r} OPTIONAL {?r owl:intersectionOf ?x} FILTER (!bound(?x))}"
 				+ "}";
 
-		IExtendedIterator<? extends IClass> it = subject.getKommaManager()
+		IExtendedIterator<? extends IClass> it = subject.getEntityManager()
 				.createQuery(query).setParameter("o", subject)
 				.setParameter("p", getBehaviourDelegate())
 				.evaluate(IClass.class);
@@ -376,7 +376,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 		if (getBehaviourDelegate() instanceof DatatypeProperty) {
 			return false;
 		}
-		IQuery<?> query = getKommaManager().createQuery(HAS_LIST_RANGE_QUERY);
+		IQuery<?> query = getEntityManager().createQuery(HAS_LIST_RANGE_QUERY);
 		query.setParameter("property", this);
 		query.setIncludeInferred(true);
 
@@ -385,7 +385,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 
 	@Override
 	public IExtendedIterator<? extends IClass> getRanges(boolean direct) {
-		return getKommaManager()
+		return getEntityManager()
 				.createQuery(direct ? DIRECT_RANGE_QUERY : RANGE_QUERY)
 				.setParameter("property", getBehaviourDelegate())
 				.evaluate(IClass.class);
@@ -396,7 +396,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 			return hasListRange();
 		}
 		if (subject != null) {
-			if (((IResource) getKommaManager().find(subject))
+			if (((IResource) getEntityManager().find(subject))
 					.getApplicableCardinality(getBehaviourDelegate())
 					.getSecond() <= 1) {
 				return hasListRange();

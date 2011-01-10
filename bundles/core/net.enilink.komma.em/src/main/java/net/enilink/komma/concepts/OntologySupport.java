@@ -38,27 +38,27 @@ public abstract class OntologySupport extends BehaviorBase implements IOntology 
 
 	@Override
 	public Collection<IClass> getRootClasses() {
-		return getKommaManager().find(OWL.TYPE_THING, IClass.class)
+		return getEntityManager().find(OWL.TYPE_THING, IClass.class)
 				.getSubClasses(true, true).toList();
 	}
 
 	@Override
 	public IExtendedIterator<IProperty> getRootProperties() {
-		IQuery<?> query = getKommaManager().createQuery(SELECT_PROPERTIES())
+		IQuery<?> query = getEntityManager().createQuery(SELECT_PROPERTIES())
 				.setParameter("propertyType", RDF.TYPE_PROPERTY);
 		return query.evaluate(IProperty.class);
 	}
 
 	@Override
 	public IExtendedIterator<IProperty> getRootObjectProperties() {
-		IQuery<?> query = getKommaManager().createQuery(SELECT_PROPERTIES())
+		IQuery<?> query = getEntityManager().createQuery(SELECT_PROPERTIES())
 				.setParameter("propertyType", OWL.TYPE_OBJECTPROPERTY);
 		return query.evaluate(IProperty.class, ObjectProperty.class);
 	}
 
 	@Override
 	public IExtendedIterator<IProperty> getRootDatatypeProperties() {
-		IQuery<?> query = getKommaManager().createQuery(SELECT_PROPERTIES())
+		IQuery<?> query = getEntityManager().createQuery(SELECT_PROPERTIES())
 				.setParameter("propertyType", OWL.TYPE_DATATYPEPROPERTY);
 		return query.evaluate(IProperty.class, DatatypeProperty.class);
 	}

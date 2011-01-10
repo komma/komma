@@ -1,0 +1,59 @@
+/*******************************************************************************
+ * Copyright (c) 2009, 2010 Fraunhofer IWU and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Fraunhofer IWU - initial API and implementation
+ *******************************************************************************/
+package net.enilink.komma.em;
+
+import java.util.Locale;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.multibindings.Multibinder;
+
+import net.enilink.komma.dm.change.DataChangeTracker;
+import net.enilink.komma.dm.change.IDataChangeSupport;
+import net.enilink.komma.dm.change.IDataChangeTracker;
+import net.enilink.komma.core.IEntityDecorator;
+import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.core.KommaModule;
+
+public class EntityManagerFactoryModule extends AbstractModule {
+	Locale locale;
+
+	KommaModule module;
+
+	Module managerModule;
+
+	public EntityManagerFactoryModule(KommaModule module, Locale locale,
+			Module managerModule) {
+		this.module = module;
+		this.locale = locale;
+		this.managerModule = managerModule;
+	}
+
+	@Override
+	protected void configure() {
+		Multibinder.newSetBinder(binder(), IEntityDecorator.class);
+		bind(DataChangeTracker.class).in(Singleton.class);
+		bind(IDataChangeSupport.class).to(DataChangeTracker.class);
+		bind(IDataChangeTracker.class).to(DataChangeTracker.class);
+	}
+
+	@Singleton
+	@Provides
+	IEntityManagerFactory provideFactory(Injector injector) {
+		EntityManagerFactory factory = new EntityManagerFactory(module, locale,
+				managerModule);
+		injector.injectMembers(factory);
+		return factory;
+	}
+}
