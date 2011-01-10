@@ -11,6 +11,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IFileEditorInput;
 
+import com.google.inject.Guice;
+
 import net.enilink.komma.common.ui.ViewerPane;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.edit.ui.celleditor.AdapterFactoryTreeEditor;
@@ -23,9 +25,10 @@ import net.enilink.komma.edit.ui.rcp.KommaEditUIRCP;
 import net.enilink.komma.edit.ui.rcp.editor.TabbedPropertySheetPageSupport;
 import net.enilink.komma.edit.ui.views.IViewerMenuSupport;
 import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.IModelSetFactory;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelCore;
-import net.enilink.komma.model.base.ModelSetFactory;
+import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.workbench.IProjectModelSet;
@@ -65,13 +68,18 @@ public class BasicEditor extends KommaMultiPageEditor implements
 				module.addConcept(IProjectModelSet.class);
 				module.addBehaviour(ProjectModelSetSupport.class);
 
-				IModelSet modelSet = new ModelSetFactory(module,
-						URIImpl.createURI(MODELS.NAMESPACE +
-						// "MemoryModelSet" //
-								"OwlimModelSet" //
-						), URIImpl.createURI(MODELS.NAMESPACE
-								+ "ProjectModelSet") //
-				).createModelSet();
+				IModelSetFactory factory = Guice.createInjector(
+						new ModelSetModule(module)).getInstance(
+						IModelSetFactory.class);
+
+				IModelSet modelSet = factory
+						.createModelSet(
+								URIImpl.createURI(MODELS.NAMESPACE +
+								// "MemoryModelSet" //
+										"OwlimModelSet" //
+								),
+								URIImpl.createURI(MODELS.NAMESPACE
+										+ "ProjectModelSet"));
 
 				if (modelSet instanceof IProjectModelSet
 						&& getEditorInput() instanceof IFileEditorInput) {
