@@ -31,12 +31,11 @@ package net.enilink.composition.properties.sparql;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.xml.transform.Result;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
@@ -48,7 +47,7 @@ import net.enilink.composition.properties.annotations.name;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.core.IGraph;
-import net.enilink.komma.core.IKommaManager;
+import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IStatement;
 
@@ -126,7 +125,7 @@ public class SPARQLQueryOptimizer {
 	private void prepareQuery(String qry, String base, Class<?> range,
 			Map<String, String> eager, BehaviourMethodGenerator gen)
 			throws Exception {
-		Method prepareMethod = IKommaManager.class.getMethod("createQuery",
+		Method prepareMethod = IEntityManager.class.getMethod("createQuery",
 				String.class, String.class);
 
 		Type rangeType = Type.getType(range);
@@ -210,11 +209,11 @@ public class SPARQLQueryOptimizer {
 		gen.storeLocal(result);
 
 		gen.loadLocal(result);
-		gen.invoke(Result.class.getMethod("hasNext"));
+		gen.invoke(Iterator.class.getMethod("hasNext"));
 		Label noNext = gen.newLabel();
 		gen.ifZCmp(GeneratorAdapter.EQ, noNext);
 		gen.loadLocal(result);
-		gen.invoke(Result.class.getMethod("next"));
+		gen.invoke(Iterator.class.getMethod("next"));
 
 		gen.mark(noNext);
 		gen.push((String) null);

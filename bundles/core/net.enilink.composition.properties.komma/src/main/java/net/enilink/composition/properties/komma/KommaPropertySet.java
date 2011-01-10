@@ -44,8 +44,8 @@ import com.google.inject.Inject;
 import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.commons.iterator.IClosableIterator;
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.core.IKommaManager;
-import net.enilink.komma.core.IKommaTransaction;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaException;
@@ -66,7 +66,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	private int cacheLimit = CACHE_LIMIT;
 
 	@Inject
-	protected IKommaManager manager;
+	protected IEntityManager manager;
 
 	protected IReference property;
 
@@ -104,7 +104,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 
 	public boolean addAll(Collection<? extends E> c) {
 		boolean modified = false;
-		IKommaTransaction transaction = manager.getTransaction();
+		ITransaction transaction = manager.getTransaction();
 
 		try {
 			boolean active = transaction.isActive();
@@ -397,7 +397,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	public boolean removeAll(Collection<?> c) {
 		boolean modified = false;
 		try {
-			IKommaTransaction transaction = manager.getTransaction();
+			ITransaction transaction = manager.getTransaction();
 
 			boolean active = transaction.isActive();
 			if (!active) {
@@ -428,7 +428,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	public boolean retainAll(Collection<?> c) {
 		boolean modified = false;
 		try {
-			IKommaTransaction transaction = manager.getTransaction();
+			ITransaction transaction = manager.getTransaction();
 
 			boolean active = transaction.isActive();
 			if (!active) {
@@ -473,7 +473,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 		}
 		Set<E> c = new HashSet<E>(set);
 
-		IKommaTransaction transaction = manager.getTransaction();
+		ITransaction transaction = manager.getTransaction();
 
 		try {
 			boolean active = transaction.isActive();
@@ -512,7 +512,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 		if (o == null) {
 			clear();
 		} else {
-			IKommaTransaction transaction = manager.getTransaction();
+			ITransaction transaction = manager.getTransaction();
 
 			try {
 				boolean active = transaction.isActive();

@@ -42,7 +42,7 @@ import com.google.inject.Inject;
 
 import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.core.IKommaTransaction;
+import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.IReference;
@@ -120,7 +120,7 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 
 	@Override
 	public void clear() {
-		IKommaTransaction transaction = manager.getTransaction();
+		ITransaction transaction = manager.getTransaction();
 		try {
 			boolean active = transaction.isActive();
 			if (!active) {
@@ -186,7 +186,7 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 			return;
 		}
 		Set<String> c = new HashSet<String>(set);
-		IKommaTransaction transaction = manager.getTransaction();
+		ITransaction transaction = manager.getTransaction();
 		try {
 			boolean active = transaction.isActive();
 			if (!active) {

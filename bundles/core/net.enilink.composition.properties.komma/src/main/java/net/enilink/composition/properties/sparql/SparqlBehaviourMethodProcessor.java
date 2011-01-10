@@ -48,7 +48,7 @@ import net.enilink.composition.properties.PropertyMapper;
 
 import com.google.inject.Inject;
 
-import net.enilink.komma.core.IKommaManager;
+import net.enilink.komma.core.IEntityManager;
 
 /**
  * Generate a behaviour for {@link sparql} annotated methods.
@@ -57,7 +57,7 @@ import net.enilink.komma.core.IKommaManager;
 public class SparqlBehaviourMethodProcessor implements
 		BehaviourMethodProcessor, Opcodes, Types {
 
-	public static Type MANAGER_TYPE = Type.getType(IKommaManager.class);
+	public static Type MANAGER_TYPE = Type.getType(IEntityManager.class);
 	public static org.objectweb.asm.commons.Method GET_MANAGER = new org.objectweb.asm.commons.Method(
 			"getContext", Type.getMethodDescriptor(MANAGER_TYPE, new Type[0]));
 
