@@ -12,10 +12,11 @@ package net.enilink.komma.model;
 
 import net.enilink.composition.traits.Behaviour;
 
+import com.google.inject.Inject;
+
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.concepts.BehaviorBase;
 import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.internal.model.IModelAware;
 import net.enilink.komma.core.IQuery;
 
 public abstract class ObjectSupport extends BehaviorBase implements IObject,
@@ -68,12 +69,8 @@ public abstract class ObjectSupport extends BehaviorBase implements IObject,
 		return query.evaluate(IProperty.class);
 	}
 
+	@Inject
 	private IModel model;
-
-	@Override
-	public void initModel(IModel model) {
-		this.model = model;
-	}
 
 	@Override
 	public IModel getModel() {
