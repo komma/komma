@@ -44,26 +44,10 @@ import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.vocabulary.OWL;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.query.Binding;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.GraphQuery;
-import org.openrdf.query.Query;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.result.GraphResult;
-import org.openrdf.result.NamespaceResult;
-import org.openrdf.result.TupleResult;
-import org.openrdf.store.StoreException;
 
 import net.enilink.commons.extensions.RegistryReader;
 import net.enilink.commons.iterator.Filter;
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.commons.ui.editor.AbstractEditorPart;
 import net.enilink.commons.ui.editor.EditorWidgetFactory;
@@ -71,48 +55,38 @@ import net.enilink.commons.ui.editor.PageBook;
 import net.enilink.commons.ui.jface.viewers.CComboViewer;
 import net.enilink.commons.ui.progress.ProgressDistributor;
 import net.enilink.commons.ui.progress.UiProgressMonitorWrapper;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdf.RDF;
+import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelDescription;
 import net.enilink.komma.query.SparqlBuilder;
-import net.enilink.komma.sesame.ISesameManager;
-import net.enilink.komma.sesame.ISesameResourceAware;
-import net.enilink.komma.sesame.iterators.SesameIterator;
+import net.enilink.komma.core.IBooleanResult;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.core.IGraphResult;
+import net.enilink.komma.core.INamespace;
+import net.enilink.komma.core.IQuery;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.ITupleResult;
 import net.enilink.komma.sparql.ui.SparqlUI;
 import net.enilink.komma.util.Pair;
 
 class SparqlPart extends AbstractEditorPart {
-	private class Namespace {
-		String prefix;
-		String namespace;
-
-		public Namespace(String prefx, String namespace) {
-			this.prefix = prefx;
-			this.namespace = namespace;
-		}
-
-		public String getPrefix() {
-			return prefix;
-		}
-
-		public String getNamespace() {
-			return namespace;
-		}
-	}
-
 	private class LoadResultsJob extends FinishInUIJob {
 		ProgressDistributor progressDistributor;
 		String[] columnNames;
 		List<Object[]> data;
-		RepositoryConnection connection;
+		IEntityManagerFactory managerFactory;
 		String sparql;
 		List<IObject> selectedObjects;
 
-		private LoadResultsJob(RepositoryConnection connection,
+		private LoadResultsJob(IEntityManagerFactory managerFactory,
 				List<IObject> selectedObjects, String sparql) {
 			super("Evaluating SPARQL"); //$NON-NLS-1$
-			this.connection = connection;
+			this.managerFactory = managerFactory;
 			this.selectedObjects = selectedObjects;
 			if (this.selectedObjects == null) {
 				this.selectedObjects = Collections.emptyList();
@@ -149,64 +123,48 @@ class SparqlPart extends AbstractEditorPart {
 			for (IObject selected : selectedObjects) {
 				models.add(selected.getModel());
 			}
-			RepositoryConnection queryConnection;
+			IEntityManager managerForQuery;
 			if (models.size() != 1) {
-				queryConnection = this.connection;
+				managerForQuery = this.managerFactory.createEntityManager();
 			} else {
-				queryConnection = ((ISesameManager) models.iterator().next()
-						.getManager()).getConnection();
+				managerForQuery = models.iterator().next().getManager()
+						.getFactory().createEntityManager();
 			}
 
 			try {
-				Query query = queryConnection.prepareQuery(
-						QueryLanguage.SPARQL, sparql);
+				IQuery<?> query = managerForQuery.createQuery(sparql);
 				query.setIncludeInferred(true);
 				if (selectedObjects.size() > 0) {
 					int i = 0;
 					for (Object selected : selectedObjects) {
-						Resource resource = ((ISesameResourceAware) selected)
-								.getSesameResource();
 						if (i == 0) {
-							query.setBinding("selected", resource);
+							query.setParameter("selected", selected);
 						}
-						query.setBinding("selected" + (++i), resource);
+						query.setParameter("selected" + (++i), selected);
 					}
 				}
-				if (query instanceof TupleQuery) {
-					TupleResult result = ((TupleQuery) query).evaluate();
-					columnNames = result.getBindingNames().toArray(
-							new String[result.getBindingNames().size()]);
+				IExtendedIterator<?> result = query.evaluate();
+				if (result instanceof ITupleResult<?>) {
+					columnNames = ((ITupleResult<?>) result).getBindingNames()
+							.toArray(
+									new String[((ITupleResult<?>) result)
+											.getBindingNames().size()]);
 					data = new ArrayList<Object[]>();
 					while (result.hasNext()) {
-						Object[] values = new Object[columnNames.length];
-						BindingSet bindingSet = result.next();
-
-						int i = 0;
-						for (String columnName : columnNames) {
-							Binding binding = bindingSet.getBinding(columnName);
-							if (binding != null) {
-								values[i] = binding.getValue();
-							}
-							i++;
-						}
-
-						data.add(values);
+						data.add((Object[]) result.next());
 					}
 					result.close();
-				} else if (query instanceof BooleanQuery) {
-					boolean result = ((BooleanQuery) query).evaluate()
-							.asBoolean();
-
+				} else if (query instanceof IBooleanResult) {
 					columnNames = new String[] { "result" };
 					data = new ArrayList<Object[]>();
-					data.add(new Object[] { result });
-				} else if (query instanceof GraphQuery) {
-					GraphResult result = ((GraphQuery) query).evaluate();
+					data.add(new Object[] { ((IBooleanResult) result)
+							.asBoolean() });
+				} else if (query instanceof IGraphResult) {
 					columnNames = new String[] { "subject", "predicate",
 							"object" };
 					data = new ArrayList<Object[]>();
 					while (result.hasNext()) {
-						Statement stmt = result.next();
+						IStatement stmt = ((IGraphResult) result).next();
 
 						data.add(new Object[] { stmt.getSubject(),
 								stmt.getPredicate(), stmt.getObject() });
@@ -218,6 +176,10 @@ class SparqlPart extends AbstractEditorPart {
 				return new Status(IStatus.ERROR, SparqlUI.PLUGIN_ID,
 						"Error executing query", e);
 			} finally {
+				if (managerForQuery != null) {
+					managerForQuery.close();
+				}
+
 				progressDistributor.done();
 			}
 
@@ -439,7 +401,7 @@ class SparqlPart extends AbstractEditorPart {
 	}
 
 	ResultArea resultArea;
-	RepositoryConnection connection;
+	IEntityManagerFactory managerFactory;
 	Text queryText;
 
 	@Override
@@ -478,27 +440,10 @@ class SparqlPart extends AbstractEditorPart {
 			}
 		});
 
-		List<Namespace> namespacesList = new ArrayList<Namespace>();
-		NamespaceResult namespaces;
-		try {
-			namespaces = connection.getNamespaces();
-			namespacesList = WrappedIterator.create(
-					new SesameIterator<org.openrdf.model.Namespace, Namespace>(
-							namespaces) {
-						@Override
-						protected Namespace convert(
-								org.openrdf.model.Namespace ns)
-								throws Exception {
-							return new Namespace(ns.getPrefix(), ns.getName());
-						}
-					}).toList();
-		} catch (StoreException e1) {
-			e1.printStackTrace();
-		}
-
-		for (Namespace namespace : namespacesList) {
+		IEntityManager manager = managerFactory.createEntityManager();
+		for (INamespace namespace : manager.getNamespaces()) {
 			comboViewer.add(new Pair<String, String>(namespace.getPrefix(),
-					namespace.getNamespace()));
+					namespace.getURI().toString()));
 		}
 
 		Hyperlink addPrefixLink = getWidgetFactory().createHyperlink(
@@ -567,7 +512,7 @@ class SparqlPart extends AbstractEditorPart {
 
 	@Override
 	public void setInput(Object input) {
-		this.connection = (RepositoryConnection) input;
+		this.managerFactory = (IEntityManagerFactory) input;
 	}
 
 	public void loadResultData(String sparql) {
@@ -591,7 +536,7 @@ class SparqlPart extends AbstractEditorPart {
 			selectedObjects = selected;
 		}
 
-		loadJob = new LoadResultsJob(connection, selectedObjects, sparql);
+		loadJob = new LoadResultsJob(managerFactory, selectedObjects, sparql);
 		loadJob.setUser(true);
 		loadJob.schedule();
 	}

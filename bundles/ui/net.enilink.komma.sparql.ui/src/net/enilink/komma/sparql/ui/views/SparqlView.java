@@ -82,7 +82,7 @@ public class SparqlView extends ViewPart {
 				public void mouseDoubleClick(MouseEvent e) {
 					SparqlPart newPart = new SparqlPart();
 					newPart.setInput(((IModelSet.Internal) modelSet)
-							.getSharedRepositoyConnection());
+							.getEntityManagerFactory());
 					createTab(editorForm, tabFolder, newPart);
 				}
 			});
