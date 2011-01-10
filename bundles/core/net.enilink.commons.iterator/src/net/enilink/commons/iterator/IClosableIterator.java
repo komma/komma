@@ -1,41 +1,4 @@
 /*
-  (c) Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007 Hewlett-Packard Development Company, LP
-  [See end of file]
-  $Id: ClosableIterator.java,v 1.10 2007/01/02 11:49:41 andy_seaborne Exp $
- */
-
-package net.enilink.commons.iterator;
-
-import java.util.Iterator;
-
-/**
- * An iterator which should be closed after use. Some iterators take up
- * resources which should be free'd as soon as possible, eg large structures
- * which can be discarded early, or external resources such as database cursors.
- * <p>
- * Users of ClosableIterators (and thus of ExtendedIterator) should close the
- * iterator when they are done with it, whether because they have found a
- * desired element or because they have reached the end. If they do not,
- * resources may leak or be reclaimed unpredictably or much later than
- * convenient.
- * <p>
- * Implementors are encouraged to dispose of resources as soon as is convenient.
- * 
- * @author bwm
- * @version $Id: ClosableIterator.java,v 1.10 2007/01/02 11:49:41 andy_seaborne
- *          Exp $
- */
-
-public interface IClosableIterator<T> extends Iterator<T> {
-	/**
-	 * Close the iterator. Other operations on this iterator may now throw an
-	 * exception. A ClosableIterator may be closed as many times as desired -
-	 * the subsequent calls do nothing.
-	 */
-	public void close();
-}
-
-/*
  * (c) Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007 Hewlett-Packard
  * Development Company, LP All rights reserved.
  * 
@@ -60,7 +23,32 @@ public interface IClosableIterator<T> extends Iterator<T> {
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
- * StmtIterator.java
- * 
- * Created on 28 July 2000, 13:44
  */
+
+package net.enilink.commons.iterator;
+
+import java.util.Iterator;
+
+/**
+ * An iterator which should be closed after use. Some iterators take up
+ * resources which should be free'd as soon as possible, eg large structures
+ * which can be discarded early, or external resources such as database cursors.
+ * <p>
+ * Users of ClosableIterators (and thus of ExtendedIterator) should close the
+ * iterator when they are done with it, whether because they have found a
+ * desired element or because they have reached the end. If they do not,
+ * resources may leak or be reclaimed unpredictably or much later than
+ * convenient.
+ * <p>
+ * Implementors are encouraged to dispose of resources as soon as is convenient.
+ * 
+ */
+
+public interface IClosableIterator<T> extends Iterator<T> {
+	/**
+	 * Close the iterator. Other operations on this iterator may now throw an
+	 * exception. A ClosableIterator may be closed as many times as desired -
+	 * the subsequent calls do nothing.
+	 */
+	public void close();
+}

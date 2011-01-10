@@ -1,30 +1,4 @@
 /*
- 	(c) Copyright 2005, 2006, 2007 Hewlett-Packard Development Company, LP
- 	All rights reserved - see end of file.
- 	$Id: FilterDropIterator.java,v 1.3 2007/01/02 11:49:41 andy_seaborne Exp $
- */
-
-package net.enilink.commons.iterator;
-
-import java.util.Iterator;
-
-/**
- * A subclass of FiterIterator which discards the elements that pass the filter.
- * 
- * @author kers
- */
-public class FilterDropIterator<T> extends FilterIterator<T> implements
-		Iterator<T> {
-	public FilterDropIterator(Filter<? super T> f, Iterator<? extends T> it) {
-		super(f, it);
-	}
-
-	protected boolean accept(T x) {
-		return !f.accept(x);
-	}
-}
-
-/*
  * (c) Copyright 2005, 2006, 2007 Hewlett-Packard Development Company, LP All
  * rights reserved.
  * 
@@ -49,3 +23,22 @@ public class FilterDropIterator<T> extends FilterIterator<T> implements
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+package net.enilink.commons.iterator;
+
+import java.util.Iterator;
+
+/**
+ * A subclass of FiterIterator which discards the elements that pass the filter.
+ * 
+ */
+public class FilterDropIterator<T> extends FilterIterator<T> implements
+		Iterator<T> {
+	public FilterDropIterator(Filter<? super T> f, Iterator<? extends T> it) {
+		super(f, it);
+	}
+
+	protected boolean accept(T x) {
+		return !f.accept(x);
+	}
+}

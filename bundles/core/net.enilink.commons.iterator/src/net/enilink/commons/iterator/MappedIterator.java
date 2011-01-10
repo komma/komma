@@ -1,66 +1,4 @@
 /*
-  (c) Copyright 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Hewlett-Packard Development Company, LP
-  [See end of file]
-  $Id: Map1Iterator.java,v 1.8 2007/01/02 11:49:41 andy_seaborne Exp $
- */
-
-package net.enilink.commons.iterator;
-
-import java.util.Iterator;
-
-/**
- * An iterator that consumes an underlying iterator and maps its results before
- * delivering them; supports remove if the underlying iterator does.
- * 
- * @author jjc + kers
- * @version Release='$Name: $' Revision='$Revision: 1.8 $' Date='$Date:
- *          2007/01/02 11:49:41 $'
- */
-
-public class MappedIterator<A, B> extends NiceIterator<B> implements
-		IClosableIterator<B> {
-	private Iterator<? extends A> base;
-	private IMap<? super A, ? extends B> map;
-
-	/**
-	 * Construct a list of the converted.
-	 * 
-	 * @param m
-	 *            The conversion to apply.
-	 * @param it
-	 *            the iterator of elements to convert
-	 */
-	public MappedIterator(IMap<? super A, ? extends B> m,
-			Iterator<? extends A> it) {
-		map = m;
-		base = it;
-	}
-
-	public B next() {
-		return map.map(base.next());
-	}
-	
-
-	/** hasNext: defer to the base iterator */
-	public boolean hasNext() {
-		return base.hasNext();
-	}
-
-
-	/**
-	 * if .remove() is allowed, delegate to the base iterator's .remove;
-	 * otherwise, throw an UnsupportedOperationException.
-	 */
-	public void remove() {
-		base.remove();
-	}
-
-	/** close: defer to the base, iff it is closable */
-	public void close() {
-		WrappedIterator.close(base);
-	}
-}
-/*
  * (c) Copyright 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Hewlett-Packard
  * Development Company, LP All rights reserved.
  * 
@@ -85,3 +23,53 @@ public class MappedIterator<A, B> extends NiceIterator<B> implements
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+package net.enilink.commons.iterator;
+
+import java.util.Iterator;
+
+/**
+ * An iterator that consumes an underlying iterator and maps its results before
+ * delivering them; supports remove if the underlying iterator does.
+ */
+public class MappedIterator<A, B> extends NiceIterator<B> implements
+		IClosableIterator<B> {
+	private Iterator<? extends A> base;
+	private IMap<? super A, ? extends B> map;
+
+	/**
+	 * Construct a list of the converted.
+	 * 
+	 * @param m
+	 *            The conversion to apply.
+	 * @param it
+	 *            the iterator of elements to convert
+	 */
+	public MappedIterator(IMap<? super A, ? extends B> m,
+			Iterator<? extends A> it) {
+		map = m;
+		base = it;
+	}
+
+	public B next() {
+		return map.map(base.next());
+	}
+
+	/** hasNext: defer to the base iterator */
+	public boolean hasNext() {
+		return base.hasNext();
+	}
+
+	/**
+	 * if .remove() is allowed, delegate to the base iterator's .remove;
+	 * otherwise, throw an UnsupportedOperationException.
+	 */
+	public void remove() {
+		base.remove();
+	}
+
+	/** close: defer to the base, iff it is closable */
+	public void close() {
+		WrappedIterator.close(base);
+	}
+}

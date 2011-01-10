@@ -39,10 +39,9 @@ public class UniqueExtendedIterator<T> extends WrappedIterator<T> {
 	 *         exactly once. If <code>it</code> is already a unique extended
 	 *         iteator, it is not further wrapped.
 	 */
-	@SuppressWarnings("unchecked")
-	public static <T> IExtendedIterator<T> create(Iterator<? extends T> it) {
-		return (it instanceof UniqueExtendedIterator<?>) ? ((UniqueExtendedIterator) it)
-				: new UniqueExtendedIterator(it);
+	public static <T> IExtendedIterator<T> create(Iterator<T> it) {
+		return (it instanceof UniqueExtendedIterator<?>) ? ((UniqueExtendedIterator<T>) it)
+				: new UniqueExtendedIterator<T>(it);
 	}
 
 	/**

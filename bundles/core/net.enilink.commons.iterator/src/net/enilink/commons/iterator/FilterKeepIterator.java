@@ -1,28 +1,4 @@
 /*
- 	(c) Copyright 2005, 2006, 2007 Hewlett-Packard Development Company, LP
- 	All rights reserved - see end of file.
- 	$Id: FilterKeepIterator.java,v 1.3 2007/01/02 11:49:40 andy_seaborne Exp $
-*/
-
-package net.enilink.commons.iterator;
-
-import java.util.Iterator;
-
-/**
-    A subclass of FilterIterator which keeps the elements that pass the
-    test.
-    @author kers
-*/
-public class FilterKeepIterator<T> extends FilterIterator<T> implements Iterator<T>
-    {
-    public FilterKeepIterator( Filter<? super T> f, Iterator<T> it )
-        { super( f, it ); }
-    
-    protected boolean accept( T x )
-        { return f.accept( x ); }
-    }
-
-/*
  * (c) Copyright 2005, 2006, 2007 Hewlett-Packard Development Company, LP
  * All rights reserved.
  *
@@ -47,4 +23,23 @@ public class FilterKeepIterator<T> extends FilterIterator<T> implements Iterator
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
+
+package net.enilink.commons.iterator;
+
+import java.util.Iterator;
+
+/**
+ * A subclass of FilterIterator which keeps the elements that pass the test.
+ * 
+ */
+public class FilterKeepIterator<T> extends FilterIterator<T> implements
+		Iterator<T> {
+	public FilterKeepIterator(Filter<? super T> f, Iterator<T> it) {
+		super(f, it);
+	}
+
+	protected boolean accept(T x) {
+		return f.accept(x);
+	}
+}

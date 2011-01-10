@@ -13,14 +13,12 @@ package net.enilink.commons.iterator;
 import java.util.Iterator;
 
 /**
- * An iterator that consumes an underlying iterator and converts its results before
- * delivering them; supports remove if the underlying iterator does.
+ * An iterator that consumes an underlying iterator and converts its results
+ * before delivering them; supports remove if the underlying iterator does.
  * 
- * @author Ken Wenzel
  */
-
-public abstract class ConvertingIterator<A, B> extends NiceIterator<B> implements
-		IClosableIterator<B> {
+public abstract class ConvertingIterator<A, B> extends NiceIterator<B>
+		implements IClosableIterator<B> {
 	private Iterator<? extends A> base;
 
 	/**
@@ -36,7 +34,6 @@ public abstract class ConvertingIterator<A, B> extends NiceIterator<B> implement
 	public B next() {
 		return convert(base.next());
 	}
-	
 
 	abstract protected B convert(A value);
 
@@ -44,7 +41,6 @@ public abstract class ConvertingIterator<A, B> extends NiceIterator<B> implement
 	public boolean hasNext() {
 		return base.hasNext();
 	}
-
 
 	/**
 	 * if .remove() is allowed, delegate to the base iterator's .remove;
