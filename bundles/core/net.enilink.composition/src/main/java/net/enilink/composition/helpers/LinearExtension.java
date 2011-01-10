@@ -85,7 +85,7 @@ public class LinearExtension<T> {
 			}
 		}
 
-		// create intial topological ordering
+		// create initial topological ordering
 		while (!minElements.isEmpty()) {
 			T firstElement = minElements.remove(0);
 			T secondElement = null;

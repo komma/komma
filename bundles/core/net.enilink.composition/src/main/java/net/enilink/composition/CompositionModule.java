@@ -10,11 +10,11 @@
  *******************************************************************************/
 package net.enilink.composition;
 
-import net.enilink.composition.asm.DefaultBehaviourFactory;
 import net.enilink.composition.asm.BehaviourClassProcessor;
 import net.enilink.composition.asm.BehaviourMethodProcessor;
-import net.enilink.composition.asm.processors.BehaviourInterfaceImplementor;
+import net.enilink.composition.asm.DefaultBehaviourFactory;
 import net.enilink.composition.asm.processors.BehaviourConstructorGenerator;
+import net.enilink.composition.asm.processors.BehaviourInterfaceImplementor;
 import net.enilink.composition.asm.processors.MethodDelegationGenerator;
 import net.enilink.composition.mappers.DefaultRoleMapper;
 import net.enilink.composition.mappers.RoleMapper;
@@ -30,9 +30,37 @@ public class CompositionModule<T> extends AbstractModule {
 	private Multibinder<BehaviourClassProcessor> classProcessorBinder;
 	private Multibinder<BehaviourMethodProcessor> methodProcessorBinder;
 
+	protected void bindClassDefiner() {
+		bind(ClassDefiner.class).in(Singleton.class);
+	}
+
 	@Override
 	protected void configure() {
 		initBindings();
+	}
+
+	protected Multibinder<BehaviourClassProcessor> getBehaviourClassProcessorBinder() {
+		if (classProcessorBinder == null) {
+			classProcessorBinder = Multibinder.newSetBinder(binder(),
+					BehaviourClassProcessor.class);
+		}
+		return classProcessorBinder;
+	}
+
+	protected Multibinder<BehaviourFactory> getBehaviourFactoryBinder() {
+		if (behaviourFactoryBinder == null) {
+			behaviourFactoryBinder = Multibinder.newSetBinder(binder(),
+					BehaviourFactory.class);
+		}
+		return behaviourFactoryBinder;
+	}
+
+	protected Multibinder<BehaviourMethodProcessor> getBehaviourMethodProcessorBinder() {
+		if (methodProcessorBinder == null) {
+			methodProcessorBinder = Multibinder.newSetBinder(binder(),
+					BehaviourMethodProcessor.class);
+		}
+		return methodProcessorBinder;
 	}
 
 	protected void initBindings() {
@@ -46,36 +74,12 @@ public class CompositionModule<T> extends AbstractModule {
 
 		getBehaviourFactoryBinder().addBinding().to(
 				DefaultBehaviourFactory.class);
+
+		bindClassDefiner();
 	}
 
-	protected Multibinder<BehaviourFactory> getBehaviourFactoryBinder() {
-		if (behaviourFactoryBinder == null) {
-			behaviourFactoryBinder = Multibinder.newSetBinder(binder(),
-					BehaviourFactory.class);
-		}
-		return behaviourFactoryBinder;
-	}
-
-	protected Multibinder<BehaviourClassProcessor> getBehaviourClassProcessorBinder() {
-		if (classProcessorBinder == null) {
-			classProcessorBinder = Multibinder.newSetBinder(binder(),
-					BehaviourClassProcessor.class);
-		}
-		return classProcessorBinder;
-	}
-
-	protected Multibinder<BehaviourMethodProcessor> getBehaviourMethodProcessorBinder() {
-		if (methodProcessorBinder == null) {
-			methodProcessorBinder = Multibinder.newSetBinder(binder(),
-					BehaviourMethodProcessor.class);
-		}
-		return methodProcessorBinder;
-	}
-
-	@Provides
-	@Singleton
-	protected ClassDefiner provideClassDefiner() {
-		return new ClassDefiner();
+	protected void initRoleMapper(RoleMapper<T> roleMapper,
+			TypeFactory<T> typeFactory) {
 	}
 
 	@Provides
@@ -84,9 +88,5 @@ public class CompositionModule<T> extends AbstractModule {
 		RoleMapper<T> roleMapper = new DefaultRoleMapper<T>(typeFactory);
 		initRoleMapper(roleMapper, typeFactory);
 		return roleMapper;
-	}
-
-	protected void initRoleMapper(RoleMapper<T> roleMapper,
-			TypeFactory<T> typeFactory) {
 	}
 }

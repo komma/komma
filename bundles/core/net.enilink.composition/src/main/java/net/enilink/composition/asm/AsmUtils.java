@@ -31,8 +31,6 @@ import net.enilink.composition.asm.meta.ClassInfo;
 /**
  * Utility methods for the transformation process.
  * 
- * @author Ken Wenzel
- * 
  */
 public class AsmUtils {
 	protected static Map<Reference<ClassLoader>, Map<String, ClassInfo>> classInfos = new ConcurrentHashMap<Reference<ClassLoader>, Map<String, ClassInfo>>();
@@ -57,11 +55,15 @@ public class AsmUtils {
 	}
 
 	public static ClassReader createClassReader(String className,
-			ClassLoader classLoader) throws IOException {
+			ClassLoader classLoader) throws ClassNotFoundException {
 		String classFilename = className.replace('.', '/') + ".class";
 		InputStream inputStream = classLoader
 				.getResourceAsStream(classFilename);
-		return new ClassReader(inputStream);
+		try {
+			return new ClassReader(inputStream);
+		} catch (IOException e) {
+			throw new ClassNotFoundException("Class not found: " + className, e);
+		}
 	}
 
 	public static Class<?> defineExtendedClass(ClassDefiner definer,
@@ -71,11 +73,11 @@ public class AsmUtils {
 		ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 		classNode.accept(classWriter);
 
-//		 printClass(classWriter.toByteArray());
+		// printClass(classWriter.toByteArray());
 		verifyClass(classNode, definer, classWriter.toByteArray());
 
-		Class<?> newClass = definer.defineClass(classNode.name
-				.replace('/', '.'), classWriter.toByteArray());
+		Class<?> newClass = definer.defineClass(
+				classNode.name.replace('/', '.'), classWriter.toByteArray());
 
 		return newClass;
 	}
