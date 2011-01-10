@@ -205,7 +205,7 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 					.getDirectNamedSubClasses().toSet();
 			if (RDFS.TYPE_RESOURCE.equals(object)) {
 				if (!subClasses.contains(OWL.TYPE_THING)) {
-					subClasses.add((IClass) ((IClass) object).getKommaManager()
+					subClasses.add((IClass) ((IClass) object).getEntityManager()
 							.find(OWL.TYPE_THING));
 				}
 			}
