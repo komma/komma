@@ -28,24 +28,24 @@
  */
 package net.enilink.komma.core;
 
-import static java.util.Collections.unmodifiableList;
-import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import net.enilink.composition.annotations.Iri;
+
 /**
- * Defines the Scope of an {@link IKommaManager} and its factory. This includes
+ * Defines the Scope of an {@link IEntityManager} and its factory. This includes
  * roles, literals, factories, datasets, and contexts.
  * 
  * @author James Leigh
@@ -74,21 +74,70 @@ public class KommaModule {
 		public String toString() {
 			return javaClass.getName() + "=" + rdfType;
 		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((javaClass == null) ? 0 : javaClass.hashCode());
+			result = prime * result
+					+ ((rdfType == null) ? 0 : rdfType.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Association other = (Association) obj;
+			if (javaClass == null) {
+				if (other.javaClass != null)
+					return false;
+			} else if (!javaClass.equals(other.javaClass))
+				return false;
+			if (rdfType == null) {
+				if (other.rdfType != null)
+					return false;
+			} else if (!rdfType.equals(other.rdfType))
+				return false;
+			return true;
+		}
 	}
 
 	private static class CombinedClassLoader extends ClassLoader {
-		private ClassLoader alt;
+		private Set<ClassLoader> alternatives;
 
-		public CombinedClassLoader(ClassLoader parent, ClassLoader alt) {
+		public CombinedClassLoader(ClassLoader parent) {
 			super(parent);
-			this.alt = alt;
+		}
+
+		public void addAlternative(ClassLoader loader) {
+			if (alternatives == null) {
+				alternatives = new LinkedHashSet<ClassLoader>();
+			}
+			if (loader instanceof CombinedClassLoader) {
+				alternatives
+						.addAll(((CombinedClassLoader) loader).alternatives);
+			} else {
+				alternatives.add(loader);
+			}
 		}
 
 		@Override
 		public URL getResource(String name) {
 			URL resource = super.getResource(name);
 			if (resource == null) {
-				return alt.getResource(name);
+				for (ClassLoader alt : alternatives) {
+					resource = alt.getResource(name);
+					if (resource != null) {
+						break;
+					}
+				}
 			}
 			return resource;
 		}
@@ -97,7 +146,12 @@ public class KommaModule {
 		public InputStream getResourceAsStream(String name) {
 			InputStream stream = super.getResourceAsStream(name);
 			if (stream == null) {
-				return alt.getResourceAsStream(name);
+				for (ClassLoader alt : alternatives) {
+					stream = alt.getResourceAsStream(name);
+					if (stream != null) {
+						break;
+					}
+				}
 			}
 			return stream;
 		}
@@ -109,9 +163,11 @@ public class KommaModule {
 			while (e.hasMoreElements()) {
 				list.add(e.nextElement());
 			}
-			e = alt.getResources(name);
-			while (e.hasMoreElements()) {
-				list.add(e.nextElement());
+			for (ClassLoader alt : alternatives) {
+				e = alt.getResources(name);
+				while (e.hasMoreElements()) {
+					list.add(e.nextElement());
+				}
 			}
 			return list.elements();
 		}
@@ -121,42 +177,46 @@ public class KommaModule {
 			try {
 				return super.loadClass(name);
 			} catch (ClassNotFoundException e) {
-				try {
-					return alt.loadClass(name);
-				} catch (ClassNotFoundException e2) {
-					throw e;
+				for (ClassLoader alt : alternatives) {
+					try {
+						return alt.loadClass(name);
+					} catch (ClassNotFoundException e2) {
+						// ignore and try next alternative class loader
+					}
 				}
+				throw e;
 			}
 		}
 	}
 
-	private ClassLoader cl;
+	private CombinedClassLoader cl;
 
-	private List<Association> datatypes = new ArrayList<Association>();
+	private Map<Class<?>, Association> annotations = new HashMap<Class<?>, Association>();
 
-	private List<Association> concepts = new ArrayList<Association>();
+	private Set<Association> datatypes = new HashSet<Association>();
 
-	private List<Association> behaviours = new ArrayList<Association>();
+	private Set<Association> concepts = new HashSet<Association>();
+
+	private Set<Association> behaviours = new HashSet<Association>();
 
 	private Set<URI> readableGraphs = new LinkedHashSet<URI>();
 
 	private Set<URI> writableGraphs = new LinkedHashSet<URI>();
 
-	private Map<URL, String> datasets = new HashMap<URL, String>();
-
-	private List<URL> libraries = new ArrayList<URL>();
-
 	public KommaModule() {
-		super();
-		cl = Thread.currentThread().getContextClassLoader();
+		ClassLoader contextClassLoader = Thread.currentThread()
+				.getContextClassLoader();
+		if (contextClassLoader != null) {
+			cl = new CombinedClassLoader(contextClassLoader);
+		}
 		if (cl == null) {
-			cl = getClass().getClassLoader();
+			cl = new CombinedClassLoader(getClass().getClassLoader());
 		}
 	}
 
-	public KommaModule(ClassLoader cl) {
-		super();
-		this.cl = new CombinedClassLoader(cl, getClass().getClassLoader());
+	public KommaModule(ClassLoader classLoader) {
+		cl = new CombinedClassLoader(classLoader);
+		cl.addAlternative(getClass().getClassLoader());
 	}
 
 	public synchronized ClassLoader getClassLoader() {
@@ -201,15 +261,14 @@ public class KommaModule {
 	 * @return this
 	 */
 	public KommaModule includeModule(KommaModule module) {
+		annotations.putAll(module.annotations);
 		datatypes.addAll(module.datatypes);
 		concepts.addAll(module.concepts);
 		behaviours.addAll(module.behaviours);
 		readableGraphs.addAll(module.writableGraphs);
 		readableGraphs.addAll(module.readableGraphs);
-		datasets.putAll(module.datasets);
-		libraries.addAll(module.libraries);
 		if (!cl.equals(module.cl)) {
-			cl = new CombinedClassLoader(cl, module.cl);
+			cl.addAlternative(module.cl);
 		}
 		return this;
 	}
@@ -218,8 +277,8 @@ public class KommaModule {
 		return unmodifiableSet(readableGraphs);
 	}
 
-	public List<Association> getDatatypes() {
-		return unmodifiableList(datatypes);
+	public Collection<Association> getDatatypes() {
+		return unmodifiableSet(datatypes);
 	}
 
 	/**
@@ -235,8 +294,46 @@ public class KommaModule {
 		return this;
 	}
 
-	public List<Association> getConcepts() {
-		return unmodifiableList(concepts);
+	public Collection<Association> getAnnotations() {
+		return annotations.values();
+	}
+
+	/**
+	 * Associates this annotation with its type.
+	 * 
+	 * @param annotation
+	 *            annotation class
+	 */
+	public KommaModule addAnnotation(Class<?> annotation) {
+		if (!annotation.isAnnotationPresent(Iri.class))
+			throw new IllegalArgumentException("@Iri annotation required in "
+					+ annotation.getSimpleName());
+		String uri = annotation.getAnnotation(Iri.class).value();
+		addAnnotation(annotation, uri);
+		return this;
+	}
+
+	/**
+	 * Associates the annotation concept with the given type.
+	 * 
+	 * @param annotation
+	 *            annotation class
+	 * @param type
+	 *            URI
+	 */
+	public KommaModule addAnnotation(Class<?> annotation, String type) {
+		Association registered = annotations.get(annotation);
+		if (registered != null && !registered.getRdfType().equals(type)) {
+			throw new IllegalArgumentException(
+					"annotation is already associated to type "
+							+ registered.getRdfType());
+		}
+		annotations.put(annotation, new Association(annotation, type));
+		return this;
+	}
+
+	public Collection<Association> getConcepts() {
+		return unmodifiableSet(concepts);
 	}
 
 	/**
@@ -263,8 +360,8 @@ public class KommaModule {
 		return this;
 	}
 
-	public List<Association> getBehaviours() {
-		return unmodifiableList(behaviours);
+	public Collection<Association> getBehaviours() {
+		return unmodifiableSet(behaviours);
 	}
 
 	/**
@@ -291,47 +388,19 @@ public class KommaModule {
 		return this;
 	}
 
-	public Map<URL, String> getDatasets() {
-		return unmodifiableMap(datasets);
-	}
-
-	/**
-	 * Marks this dataset to be loaded and replace any data in the given
-	 * context.
-	 * 
-	 * @param dataset
-	 * @param context
-	 * @return this
-	 */
-	public KommaModule addDataset(URL dataset, String context) {
-		datasets.put(dataset, context);
-		return this;
-	}
-
-	public List<URL> getLibraries() {
-		return unmodifiableList(libraries);
-	}
-
-	public KommaModule addLibrary(URL library) {
-		libraries.add(library);
-		return this;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result
+				+ ((annotations == null) ? 0 : annotations.hashCode());
 		result = prime * result
 				+ ((behaviours == null) ? 0 : behaviours.hashCode());
 		result = prime * result + ((cl == null) ? 0 : cl.hashCode());
 		result = prime * result
 				+ ((concepts == null) ? 0 : concepts.hashCode());
 		result = prime * result
-				+ ((datasets == null) ? 0 : datasets.hashCode());
-		result = prime * result
 				+ ((datatypes == null) ? 0 : datatypes.hashCode());
-		result = prime * result
-				+ ((libraries == null) ? 0 : libraries.hashCode());
 		result = prime * result
 				+ ((readableGraphs == null) ? 0 : readableGraphs.hashCode());
 		result = prime * result
@@ -348,6 +417,11 @@ public class KommaModule {
 		if (getClass() != obj.getClass())
 			return false;
 		KommaModule other = (KommaModule) obj;
+		if (annotations == null) {
+			if (other.annotations != null)
+				return false;
+		} else if (!annotations.equals(other.annotations))
+			return false;
 		if (behaviours == null) {
 			if (other.behaviours != null)
 				return false;
@@ -363,20 +437,10 @@ public class KommaModule {
 				return false;
 		} else if (!concepts.equals(other.concepts))
 			return false;
-		if (datasets == null) {
-			if (other.datasets != null)
-				return false;
-		} else if (!datasets.equals(other.datasets))
-			return false;
 		if (datatypes == null) {
 			if (other.datatypes != null)
 				return false;
 		} else if (!datatypes.equals(other.datatypes))
-			return false;
-		if (libraries == null) {
-			if (other.libraries != null)
-				return false;
-		} else if (!libraries.equals(other.libraries))
 			return false;
 		if (readableGraphs == null) {
 			if (other.readableGraphs != null)

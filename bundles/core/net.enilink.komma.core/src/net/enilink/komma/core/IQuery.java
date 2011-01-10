@@ -195,16 +195,6 @@ public interface IQuery<R> extends IQueryBase<IQuery<R>> {
 	IQuery<R> setParameter(String name, String label, Locale locale);
 
 	/**
-	 * Assigns entity by name to the given parameter name.
-	 * 
-	 * @param name
-	 *            Name of the variable to bind to.
-	 * @param uri
-	 *            Name of the entity.
-	 */
-	IQuery<R> setURI(String name, URI uri);
-
-	/**
 	 * Assigns a concept to the given name.
 	 * 
 	 * @param name

@@ -20,15 +20,7 @@ import javax.transaction.TransactionRequiredException;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 
-public interface IKommaManager {
-	/**
-	 * Registers an {@link IEntityDecorator decorator}
-	 * 
-	 * @param decorator
-	 *            the decorator
-	 */
-	void addDecorator(IEntityDecorator decorator);
-
+public interface IEntityManager {
 	/**
 	 * Add statements to this manager
 	 * 
@@ -38,6 +30,14 @@ public interface IKommaManager {
 	 *             thrown if there is an error while adding the statements
 	 */
 	void add(Iterable<? extends IStatement> statements);
+
+	/**
+	 * Registers an {@link IEntityDecorator decorator}
+	 * 
+	 * @param decorator
+	 *            the decorator
+	 */
+	void addDecorator(IEntityDecorator decorator);
 
 	/**
 	 * Clear the persistence context, causing all managed entities to become
@@ -74,13 +74,6 @@ public interface IKommaManager {
 	boolean contains(Object entity);
 
 	/**
-	 * Returns the literal's value converted to a Java type.
-	 * 
-	 * @return the literal's value
-	 */
-	Object convertValue(ILiteral literal);
-
-	/**
 	 * Assigns <code>type</code> to a new anonymous entity.
 	 * 
 	 * @param concept
@@ -99,6 +92,20 @@ public interface IKommaManager {
 	 * @return Java Bean representing the subject.
 	 */
 	IEntity create(IReference... concepts);
+
+	/**
+	 * Creates an ILiteral to hold a literal (value, type, language).
+	 * 
+	 * @param value
+	 *            the literal's value.
+	 * @param datatype
+	 *            the literal's datatype.
+	 * @param language
+	 *            the literal's language.
+	 * 
+	 * @return Java Bean representing the literal.
+	 */
+	ILiteral createLiteral(Object value, URI datatype, String language);
 
 	/**
 	 * Assigns <code>concept</code> to the named entity subject.
@@ -125,20 +132,6 @@ public interface IKommaManager {
 	 * @return Java Bean representing the subject.
 	 */
 	IEntity createNamed(URI uri, IReference... concepts);
-
-	/**
-	 * Creates an ILiteral to hold a literal (value, type, language).
-	 * 
-	 * @param value
-	 *            the literal's value.
-	 * @param datatype
-	 *            the literal's datatype.
-	 * @param language
-	 *            the literal's language.
-	 * 
-	 * @return Java Bean representing the literal.
-	 */
-	ILiteral createLiteral(Object value, URI datatype, String language);
 
 	/**
 	 * Creates an IKommaQuery to evaluate the query string.
@@ -194,7 +187,7 @@ public interface IKommaManager {
 	 *            URI of the entity.
 	 * @return JavaBean representing the subject.
 	 */
-	<T> T find(URI uri, Class<T> concept, Class<?>... concepts);
+	<T> T find(IReference uri, Class<T> concept, Class<?>... concepts);
 
 	/**
 	 * Creates an iteration of entities that implement this <code>role</code>.
@@ -209,11 +202,12 @@ public interface IKommaManager {
 	/**
 	 * Creates a Java Bean class without inserting any statements.
 	 * 
-	 * @param uri
-	 *            URI of the entity.
+	 * @param reference
+	 *            Reference of the entity.
 	 * @return JavaBean representing the subject.
 	 */
-	<T> T findRestricted(URI uri, Class<T> concept, Class<?>... concepts);
+	<T> T findRestricted(IReference reference, Class<T> concept,
+			Class<?>... concepts);
 
 	/**
 	 * Synchronize the persistence context to the underlying database.
@@ -228,11 +222,11 @@ public interface IKommaManager {
 	/**
 	 * Return the factory for the entity manager.
 	 * 
-	 * @return IKommaManagerFactory instance
+	 * @return IEntityManagerFactory instance
 	 * @throws IllegalStateException
 	 *             if the entity manager has been closed.
 	 */
-	IKommaManagerFactory getFactory();
+	IEntityManagerFactory getFactory();
 
 	/**
 	 * Get the flush mode that applies to all objects contained in the
@@ -270,15 +264,6 @@ public interface IKommaManager {
 	LockModeType getLockMode(Object entity);
 
 	/**
-	 * Return the entity manager factory for the entity manager.
-	 * 
-	 * @return IKommaManagerFactory instance
-	 * @throws IllegalStateException
-	 *             if the entity manager has been closed.
-	 */
-	IKommaManagerFactory getManagerFactory();
-
-	/**
 	 * Gets the namespace that is associated with the specified prefix, if any.
 	 * 
 	 * @param prefix
@@ -287,6 +272,14 @@ public interface IKommaManager {
 	 *         or <tt>null</tt> if there is no such namespace.
 	 */
 	URI getNamespace(String prefix);
+
+	/**
+	 * Returns an iterator of all declared namespaces. Each Namespace object
+	 * consists of a prefix and a namespace uri.
+	 * 
+	 * @return An iterator containing {@link INamespace} objects.
+	 */
+	IExtendedIterator<INamespace> getNamespaces();
 
 	/**
 	 * Gets the prefix that is associated with the specified namespace uri, if
@@ -298,14 +291,6 @@ public interface IKommaManager {
 	 *         or <tt>null</tt> if there is no such prefix.
 	 */
 	String getPrefix(URI namespace);
-
-	/**
-	 * Returns an iterator of all declared namespaces. Each Namespace object
-	 * consists of a prefix and a namespace uri.
-	 * 
-	 * @return An iterator containing {@link INamespace} objects.
-	 */
-	IExtendedIterator<INamespace> getNamespaces();
 
 	/**
 	 * Get the properties and associated values that are in effect for the
@@ -328,12 +313,13 @@ public interface IKommaManager {
 	Set<String> getSupportedProperties();
 
 	/**
-	 * Returns the resource-level transaction object. The EntityTransaction
-	 * instance may be used serially to begin and commit multiple transactions.
+	 * Returns the resource-level transaction object. The
+	 * {@link ITransaction} instance may be used serially to begin and
+	 * commit multiple transactions.
 	 * 
-	 * @return EntityTransaction instance
+	 * @return IKommaTransaction instance
 	 */
-	IKommaTransaction getTransaction();
+	ITransaction getTransaction();
 
 	/**
 	 * Returns {@code true} if the {@link IEntityDecorator decorator} is already
@@ -345,6 +331,23 @@ public interface IKommaManager {
 	boolean hasDecorator(IEntityDecorator decorator);
 
 	/**
+	 * Returns <code>true</code> if at least one statement exists with the given
+	 * subject, predicate, and object. Null parameters represent wildcards.
+	 * 
+	 * @param subject
+	 *            the subject to match, or null for a wildcard
+	 * @param predicate
+	 *            the predicate to match, or null for a wildcard
+	 * @param object
+	 *            the object to match, or null for a wildcard
+	 * @return <code>true</code> if at least one matching statement exists, else
+	 *         <code>false</code>.
+	 * @throws KommaException
+	 *             thrown if there is an error while getting the statements
+	 */
+	boolean hasMatch(IReference subject, IReference predicate, Object object);
+
+	/**
 	 * If this manager currently has an open connection to the repository.
 	 * 
 	 * @return <code>true</code> if the connection is open.
@@ -352,10 +355,10 @@ public interface IKommaManager {
 	boolean isOpen();
 
 	/**
-	 * Indicate to the EntityManager that a transaction is active. This method
-	 * should be called on an application managed EntityManager that was created
-	 * outside the scope of the active transaction to associate it with the
-	 * current transaction.
+	 * Indicate to the {@link IEntityManager} that a transaction is active. This
+	 * method should be called on an application managed EntityManager that was
+	 * created outside the scope of the active transaction to associate it with
+	 * the current transaction.
 	 * 
 	 * @throws TransactionRequiredException
 	 *             if there is no transaction.
@@ -436,6 +439,23 @@ public interface IKommaManager {
 	 */
 	void lock(Object entity, LockModeType lockMode,
 			Map<String, Object> properties);
+
+	/**
+	 * Returns all the statements with the given subject, predicate, and object.
+	 * Null parameters represent wildcards.
+	 * 
+	 * @param subject
+	 *            the subject to match, or null for a wildcard
+	 * @param predicate
+	 *            the predicate to match, or null for a wildcard
+	 * @param object
+	 *            the object to match, or null for a wildcard
+	 * @return an {@link IExtendedIterator} of matching statements.
+	 * @throws KommaException
+	 *             thrown if there is an error while getting the statements
+	 */
+	IExtendedIterator<IStatement> match(IReference subject,
+			IReference predicate, Object object);
 
 	/**
 	 * Copies all non-null values from bean into an entity managed by this
@@ -562,6 +582,16 @@ public interface IKommaManager {
 	void refresh(Object entity, Map<String, Object> properties);
 
 	/**
+	 * Remove statements from this manager
+	 * 
+	 * @param statement
+	 *            the statement to remove
+	 * @throws KommaException
+	 *             thrown if there is an error while removing the statements
+	 */
+	void remove(Iterable<? extends IStatement> statements);
+
+	/**
 	 * Removes the given entity or subject and all implementing roles. It is the
 	 * responsibility of the caller to ensure this <code>entity</code> or any
 	 * other object referencing it are no longer used and any object that may
@@ -571,16 +601,6 @@ public interface IKommaManager {
 	 *            to be removed from the pool and repository.
 	 */
 	void remove(Object entity);
-
-	/**
-	 * Remove statements from this manager
-	 * 
-	 * @param statement
-	 *            the statement to remove
-	 * @throws KommaException
-	 *             thrown if there is an error while removing the statements
-	 */
-	void remove(Iterable<? extends IStatement> statements);
 
 	/**
 	 * Unregisters an {@link IEntityDecorator decorator}
@@ -654,4 +674,18 @@ public interface IKommaManager {
 	 *             if the second argument is not valid for the implementation
 	 */
 	void setProperty(String propertyName, Object value);
+
+	/**
+	 * Returns the {@link IValue} converted to a Java type.
+	 * 
+	 * @return the converted value
+	 */
+	Object toInstance(IValue value);
+
+	/**
+	 * Returns the Java object converted to an {@link IValue}.
+	 * 
+	 * @return the converted object value
+	 */
+	IValue toValue(Object instance);
 }

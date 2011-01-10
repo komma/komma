@@ -33,22 +33,20 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Factory interface to create IKommaManagers.
- * 
- * @author James Leigh
- * @author Ken Wenzel
+ * Factory interface to create {@link IEntityManager}.
  * 
  */
-public interface IKommaManagerFactory {
+public interface IEntityManagerFactory {
 	/**
-	 * If this factory should be able to create an ElmoManager.
+	 * If this factory should be able to create an {@link IEntityManager}.
 	 * 
 	 * @return <code>true</code> if this factory is ready.
 	 */
 	boolean isOpen();
 
 	/**
-	 * Closes the factory preventing any more ElmoManagers from being created.
+	 * Closes the factory preventing any more {@link IEntityManager}s from being
+	 * created.
 	 * 
 	 * @throws Exception
 	 * 
@@ -56,20 +54,32 @@ public interface IKommaManagerFactory {
 	void close();
 
 	/**
-	 * Creates a new KommaManager with the default Locale.
+	 * Creates a new {@link IEntityManager}.
 	 * 
-	 * @return A new KommaManager.
+	 * @return A new {@link IEntityManager}.
 	 */
-	IKommaManager createKommaManager();
+	IEntityManager createEntityManager();
 
 	/**
-	 * Creates a new KommaManager with the given Locale.
+	 * Creates a new {@link IEntityManagerFactory} with the default Locale.
 	 * 
-	 * @param locale
-	 *            Maybe null to indicate no localization.
-	 * @return A new KommaManager.
+	 * @param modules
+	 *            Set of modules to configure the {@link IEntityManagerFactory}.
+	 * 
+	 * @return A new {@link IEntityManagerFactory}.
 	 */
-	IKommaManager createKommaManager(Locale locale);
+	IEntityManagerFactory createChildFactory(KommaModule... modules);
+
+	/**
+	 * Creates a new {@link IEntityManagerFactory} with the given Locale.
+	 * 
+	 * @param modules
+	 *            Set of modules to configure the {@link IEntityManagerFactory}.
+	 * 
+	 * @return A new {@link IEntityManagerFactory}.
+	 */
+	IEntityManagerFactory createChildFactory(Locale locale,
+			KommaModule... modules);
 
 	/**
 	 * Get the properties and associated values that are in effect for the

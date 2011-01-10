@@ -31,7 +31,7 @@ public interface IStatement {
 	 * 
 	 * @return The statement's context, or <tt>null</tt>.
 	 */
-	public IReference getContext();
+	IReference getContext();
 
 	/**
 	 * Gets the object of this statement.

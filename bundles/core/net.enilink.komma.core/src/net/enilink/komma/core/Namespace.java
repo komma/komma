@@ -29,7 +29,7 @@ public class Namespace implements INamespace {
 	}
 
 	@Override
-	public URI getUri() {
+	public URI getURI() {
 		return uri;
 	}
 	

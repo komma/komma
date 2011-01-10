@@ -13,5 +13,5 @@ package net.enilink.komma.core;
 public interface INamespace {
 	String getPrefix();
 	
-	URI getUri();
+	URI getURI();
 }

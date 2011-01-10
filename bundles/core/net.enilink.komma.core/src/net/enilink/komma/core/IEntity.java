@@ -11,5 +11,11 @@
 package net.enilink.komma.core;
 
 public interface IEntity extends IReference, IReferenceable {
-	IKommaManager getKommaManager();
+	IEntityManager getEntityManager();
+
+	/**
+	 * Flushes the local state of the entity forcing it to refresh.
+	 * 
+	 */
+	void refresh();
 }
