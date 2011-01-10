@@ -19,9 +19,9 @@ import net.enilink.komma.model.ModelCore;
 
 /**
  * A plugin extension reader that populates the
- * {@link org.eclipse.emf.ecore.resource.Resource.Factory.Registry#INSTANCE
+ * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Registry#INSTANCE
  * global} resource factory's
- * {@link org.eclipse.emf.ecore.resource.Resource.Factory.Registry#getContentTypeToFactoryMap()
+ * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Registry#getContentTypeToFactoryMap()
  * content type} map. Clients are not expected to use this class directly.
  */
 public class ContentFactoriesRegistryReader extends KommaRegistryReader {

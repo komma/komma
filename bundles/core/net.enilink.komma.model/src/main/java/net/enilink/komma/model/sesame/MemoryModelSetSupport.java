@@ -8,11 +8,12 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.model.mem;
+package net.enilink.komma.model.sesame;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
@@ -25,7 +26,6 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryMetaData;
 import org.openrdf.repository.base.RepositoryMetaDataWrapper;
-import org.openrdf.repository.event.base.NotifyingRepositoryWrapper;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
@@ -35,16 +35,23 @@ import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.openrdf.sail.memory.MemoryStore;
 import org.openrdf.store.StoreException;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Module;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.AbstractKommaPlugin;
+import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.MODELS;
-import net.enilink.komma.model.base.AbstractModelSetSupport;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.sesame.SesameModule;
 
 @Iri(MODELS.NAMESPACE + "MemoryModelSet")
-public abstract class MemoryModelSetSupport extends AbstractModelSetSupport {
+public abstract class MemoryModelSetSupport implements IModelSet,
+		IModelSet.Internal {
 	protected Repository createRepository() throws StoreException {
 		NotifyingSail sailStack = new MemoryStore();
 		sailStack = new ForwardChainingRDFSInferencer(sailStack);
@@ -52,7 +59,6 @@ public abstract class MemoryModelSetSupport extends AbstractModelSetSupport {
 		Repository repository = new SailRepository(sailStack);
 		repository.initialize();
 
-		// return repository;
 		Repository federationRepository = createFederation(repository);
 		return federationRepository;
 	}
@@ -66,8 +72,8 @@ public abstract class MemoryModelSetSupport extends AbstractModelSetSupport {
 			@Override
 			public RepositoryMetaData getMetaData() throws StoreException {
 				if (metaData == null) {
-					metaData = new RepositoryMetaDataWrapper(super
-							.getMetaData()) {
+					metaData = new RepositoryMetaDataWrapper(
+							super.getMetaData()) {
 						@Override
 						public boolean isReadOnly() {
 							return true;
@@ -159,24 +165,24 @@ public abstract class MemoryModelSetSupport extends AbstractModelSetSupport {
 	}
 
 	@Override
-	public void dispose() {
-		super.dispose();
-	}
+	public void collectInjectionModules(Collection<Module> modules) {
+		modules.add(new SesameModule());
+		modules.add(new AbstractModule() {
+			@Override
+			protected void configure() {
 
-	@Override
-	protected void init() {
-		super.init();
+			}
 
-		Repository repository;
-		try {
-			repository = createRepository();
-		} catch (StoreException e) {
-			throw new KommaException("Creating repository failed", e);
-		}
-		NotifyingRepositoryWrapper notifyingRepository = new NotifyingRepositoryWrapper(
-				repository);
-		notifyingRepository.setDefaultReportDeltas(true);
-		initRepository(notifyingRepository);
+			@Singleton
+			@Provides
+			protected Repository provideRepository() {
+				try {
+					return createRepository();
+				} catch (StoreException e) {
+					throw new KommaException("Unable to create repository.", e);
+				}
+			}
+		});
 	}
 
 	@Override

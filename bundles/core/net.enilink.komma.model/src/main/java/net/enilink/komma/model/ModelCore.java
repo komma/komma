@@ -183,9 +183,9 @@ public class ModelCore extends AbstractKommaPlugin {
 		 * encouraged.
 		 * <p>
 		 * The
-		 * {@link org.eclipse.emf.ecore.resource.Resource.Factory.Registry#INSTANCE
+		 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Registry#INSTANCE
 		 * global} resource factory registry's
-		 * {@link org.eclipse.emf.ecore.resource.Resource.Factory.Registry#getExtensionToFactoryMap()
+		 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Registry#getExtensionToFactoryMap()
 		 * extension} map is populated by plugin registration of the form:
 		 * 
 		 * <pre>
@@ -197,9 +197,9 @@ public class ModelCore extends AbstractKommaPlugin {
 		 * </p>
 		 * <p>
 		 * The
-		 * {@link org.eclipse.emf.ecore.resource.Resource.Factory.Registry#INSTANCE
+		 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Registry#INSTANCE
 		 * global} resource factory registry's
-		 * {@link org.eclipse.emf.ecore.resource.Resource.Factory.Registry#getProtocolToFactoryMap()
+		 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Registry#getProtocolToFactoryMap()
 		 * protocol} map is populated by plugin registration of the form:
 		 * 
 		 * <pre>

@@ -11,9 +11,10 @@
 package net.enilink.komma.model;
 
 import net.enilink.komma.core.IGraph;
+import net.enilink.komma.core.URI;
 
 public interface IModelSetFactory {
-	IModelSet createModelSet();
-	
-	IModelSet createModelSet(IGraph configuration);
+	IModelSet createModelSet(URI... modelSetTypes);
+
+	IModelSet createModelSet(IGraph configuration, URI... modelSetTypes);
 }

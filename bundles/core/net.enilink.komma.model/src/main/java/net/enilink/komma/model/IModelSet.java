@@ -10,25 +10,57 @@
  */
 package net.enilink.komma.model;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
+
+import com.google.inject.Injector;
+import com.google.inject.Module;
 
 import net.enilink.komma.common.adapter.IAdapterSet;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.INotifier;
 import net.enilink.komma.common.util.WrappedException;
-import net.enilink.komma.ds.change.IDataSourceChangeTracker;
+import net.enilink.komma.dm.IDataManagerFactory;
+import net.enilink.komma.dm.change.IDataChangeTracker;
 import net.enilink.komma.model.base.AbstractModelSetSupport;
-import net.enilink.komma.core.IKommaManager;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
 
 @Iri(MODELS.NAMESPACE + "ModelSet")
 public interface IModelSet extends INotifier<INotification> {
+	interface Internal extends IModelSet {
+		/**
+		 * Collects {@link Module} that are used to construct an
+		 * {@link Injector} instance for models.
+		 */
+		void collectInjectionModules(Collection<Module> modules);
+
+		IDataManagerFactory getDataManagerFactory();
+
+		IEntityManagerFactory getEntityManagerFactory();
+
+		/**
+		 * Initialize the model set.
+		 */
+		void init();
+	}
+
+	/**
+	 * Returns the adapter set which contains dynamic adapters registered with
+	 * this model set
+	 * 
+	 * @return the adapter set
+	 */
+	IAdapterSet adapters();
+
 	void addMetaDataListener(INotificationListener<INotification> listener);
 
 	/**
@@ -85,6 +117,13 @@ public interface IModelSet extends INotifier<INotification> {
 	void dispose();
 
 	/**
+	 * Returns tracker for changes made to the underlying data repository.
+	 * 
+	 * @return the change tracker
+	 */
+	IDataChangeTracker getDataChangeTracker();
+
+	/**
 	 * Returns the options used during demand load.
 	 * <p>
 	 * Options are handled generically as feature-to-setting entries. They are
@@ -98,7 +137,7 @@ public interface IModelSet extends INotifier<INotification> {
 	 */
 	Map<Object, Object> getLoadOptions();
 
-	IKommaManager getMetaDataManager();
+	IEntityManager getMetaDataManager();
 
 	/**
 	 * Returns the model resolved by the URI.
@@ -163,7 +202,7 @@ public interface IModelSet extends INotifier<INotification> {
 
 	/**
 	 * Returns an {@link KommaModule} which may be used for creating an
-	 * {@link IKommaManager} or inclusion into other modules
+	 * {@link IEntityManager} or inclusion into other modules
 	 * 
 	 * @return the module instance
 	 */
@@ -205,12 +244,7 @@ public interface IModelSet extends INotifier<INotification> {
 	 */
 	IObject getObject(URI uri, boolean loadOnDemand);
 
-	/**
-	 * Returns tracker for changes made to the underlying data repository.
-	 * 
-	 * @return the change tracker
-	 */
-	IDataSourceChangeTracker getDataChangeTracker();
+	IUnitOfWork getUnitOfWork();
 
 	/**
 	 * Returns the converter used to normalize URIs and to open streams.
@@ -255,16 +289,4 @@ public interface IModelSet extends INotifier<INotification> {
 	 * @see URI
 	 */
 	void setURIConverter(IURIConverter converter);
-
-	/**
-	 * Returns the adapter set which contains dynamic adapters registered with
-	 * this model set
-	 * 
-	 * @return the adapter set
-	 */
-	IAdapterSet adapters();
-
-	public interface Internal extends IModelSet {
-		IReference getSharedReference(Object resource);
-	}
 }

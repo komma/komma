@@ -14,8 +14,8 @@ import java.util.List;
 
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotifier;
-import net.enilink.komma.ds.change.IDataSourceChange;
-import net.enilink.komma.ds.change.IDataSourceChangeListener;
+import net.enilink.komma.dm.change.IDataChange;
+import net.enilink.komma.dm.change.IDataChangeListener;
 import net.enilink.komma.model.IModelSet;
 
 /**
@@ -24,7 +24,7 @@ import net.enilink.komma.model.IModelSet;
  * change model} representing the changes needed to reverse (undo) all the model
  * changes made while recording.
  */
-public class ChangeRecorder implements IDataSourceChangeListener {
+public class ChangeRecorder implements IDataChangeListener {
 	protected ChangeDescription changeDescription;
 
 	protected IModelSet modelSet;
@@ -135,9 +135,9 @@ public class ChangeRecorder implements IDataSourceChangeListener {
 	}
 
 	@Override
-	public void dataSourceChanged(List<IDataSourceChange> changes) {
+	public void dataChanged(List<IDataChange> changes) {
 		if (isRecording() && !isPaused()) {
-			for (IDataSourceChange change : changes) {
+			for (IDataChange change : changes) {
 				changeDescription.add(change);
 			}
 		}
