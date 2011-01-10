@@ -26,8 +26,8 @@ import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.change.IChangeDescription;
-import net.enilink.komma.core.IKommaManager;
-import net.enilink.komma.core.IKommaTransaction;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.ITransaction;
 
 /**
  * A partial command implementation
@@ -107,11 +107,11 @@ public class RecordingWrapperCommand extends AbstractCommand {
 
 		Collection<?> affectedModels = new HashSet<Object>(command
 				.getAffectedResources(IModel.class));
-		List<IKommaTransaction> startedTransactions = new ArrayList<IKommaTransaction>(
+		List<ITransaction> startedTransactions = new ArrayList<ITransaction>(
 				affectedModels.size());
 		for (Object model : affectedModels) {
-			IKommaManager modelManager = ((IModel) model).getManager();
-			IKommaTransaction transaction = modelManager.getTransaction();
+			IEntityManager modelManager = ((IModel) model).getManager();
+			ITransaction transaction = modelManager.getTransaction();
 			if (!transaction.isActive()) {
 				// TODO check if next Sesame version supports nested
 				// transactions
@@ -131,7 +131,7 @@ public class RecordingWrapperCommand extends AbstractCommand {
 			if (status.isOK()) {
 				rollback = false;
 
-				for (IKommaTransaction transaction : startedTransactions) {
+				for (ITransaction transaction : startedTransactions) {
 					if (transaction.isActive()) {
 						transaction.commit();
 					}
@@ -142,7 +142,7 @@ public class RecordingWrapperCommand extends AbstractCommand {
 			change = internalDomain.getChangeRecorder().endRecording();
 
 			if (rollback) {
-				for (IKommaTransaction transaction : startedTransactions) {
+				for (ITransaction transaction : startedTransactions) {
 					if (transaction.isActive()) {
 						transaction.rollback();
 					}

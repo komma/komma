@@ -163,8 +163,8 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 			}
 			return false;
 		} else if (object instanceof IObject) {
-			return ((IObject) object).getKommaManager() == null
-					|| !((IObject) object).getKommaManager().isOpen();
+			return ((IObject) object).getEntityManager() == null
+					|| !((IObject) object).getEntityManager().isOpen();
 		} else if (object == null) {
 			return false;
 		} else {

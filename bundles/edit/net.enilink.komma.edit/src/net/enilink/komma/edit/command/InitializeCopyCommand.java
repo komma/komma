@@ -128,7 +128,7 @@ public class InitializeCopyCommand extends AbstractOverrideableCommand {
 
 	@SuppressWarnings("unchecked")
 	protected Collection<? extends IProperty> getPropertiesToCopy() {
-		return (Collection<IProperty>) getOwner().getKommaManager().createQuery(
+		return (Collection<IProperty>) getOwner().getEntityManager().createQuery(
 				"SELECT DISTINCT ?p WHERE {?s ?p ?o}")
 				.setIncludeInferred(false).setParameter("s", getOwner())
 				.evaluate().toList();

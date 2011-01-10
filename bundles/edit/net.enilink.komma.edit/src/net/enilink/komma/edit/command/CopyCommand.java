@@ -241,10 +241,10 @@ public class CopyCommand extends ExtendedCompositeCommand {
 
 		ExtendedCompositeCommand createCommand = new ExtendedCompositeCommand(0);
 
-		boolean transactionWasActive = owner.getKommaManager().getTransaction()
+		boolean transactionWasActive = owner.getEntityManager().getTransaction()
 				.isActive();
 		if (!transactionWasActive) {
-			owner.getKommaManager().getTransaction().begin();
+			owner.getEntityManager().getTransaction().begin();
 			copyHelper.setCommitTransaction(true);
 		}
 
@@ -284,7 +284,7 @@ public class CopyCommand extends ExtendedCompositeCommand {
 				status = addAndExecute(initializeCommand, progressMonitor, info);
 
 				if (copyHelper.getCommitTransaction()) {
-					owner.getKommaManager().getTransaction().commit();
+					owner.getEntityManager().getTransaction().commit();
 				}
 			}
 		} catch (Throwable e) {
@@ -292,7 +292,7 @@ public class CopyCommand extends ExtendedCompositeCommand {
 			throw new ExecutionException("Error while copying element", e);
 		} finally {
 			if (rollback && !transactionWasActive) {
-				owner.getKommaManager().getTransaction().rollback();
+				owner.getEntityManager().getTransaction().rollback();
 			}
 		}
 

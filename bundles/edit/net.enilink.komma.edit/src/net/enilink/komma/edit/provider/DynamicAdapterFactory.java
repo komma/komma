@@ -22,15 +22,15 @@ import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 
 import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.sesame.SesameManagerFactory;
 
 public class DynamicAdapterFactory implements IAdapterFactory {
 	protected class AdapterCompositionModule extends AbstractModule {
 		private KommaModule module;
 		private Locale locale;
 
-		protected AdapterCompositionModule(SesameManagerFactory factory,
+		protected AdapterCompositionModule(IEntityManagerFactory factory,
 				KommaModule module, Locale locale) {
 			this.module = module;
 			this.locale = locale == null ? Locale.getDefault() : locale;
@@ -59,16 +59,16 @@ public class DynamicAdapterFactory implements IAdapterFactory {
 				if (e.getRdfType() == null) {
 					roleMapper.addConcept(e.getJavaClass());
 				} else {
-					roleMapper.addConcept(e.getJavaClass(), typeFactory
-							.createType(e.getRdfType()));
+					roleMapper.addConcept(e.getJavaClass(),
+							typeFactory.createType(e.getRdfType()));
 				}
 			}
 			for (KommaModule.Association e : module.getBehaviours()) {
 				if (e.getRdfType() == null) {
 					roleMapper.addBehaviour(e.getJavaClass());
 				} else {
-					roleMapper.addBehaviour(e.getJavaClass(), typeFactory
-							.createType(e.getRdfType()));
+					roleMapper.addBehaviour(e.getJavaClass(),
+							typeFactory.createType(e.getRdfType()));
 				}
 			}
 

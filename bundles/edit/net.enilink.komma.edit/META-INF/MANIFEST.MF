@@ -19,7 +19,7 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.common;visibility:=reexport,
  net.enilink.komma.model;visibility:=reexport,
  net.enilink.commons.util,
- net.enilink.komma.lib.sesame
+ org.openrdf.sesame
 Eclipse-LazyStart: true
 Bundle-ActivationPolicy: lazy
 Import-Package: com.google.inject;version="2.0.0",

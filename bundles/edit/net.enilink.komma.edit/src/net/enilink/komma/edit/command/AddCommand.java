@@ -257,10 +257,10 @@ public class AddCommand extends AbstractOverrideableCommand {
 	protected CommandResult doExecuteWithResult(
 			IProgressMonitor progressMonitor, IAdaptable info)
 			throws ExecutionException {
-		boolean transactionWasActive = owner.getKommaManager().getTransaction()
+		boolean transactionWasActive = owner.getEntityManager().getTransaction()
 				.isActive();
 		if (!transactionWasActive) {
-			owner.getKommaManager().getTransaction().begin();
+			owner.getEntityManager().getTransaction().begin();
 		}
 		try {
 			Class listClass = getListType();
@@ -285,11 +285,11 @@ public class AddCommand extends AbstractOverrideableCommand {
 			affectedObjects = collection;
 
 			if (!transactionWasActive) {
-				owner.getKommaManager().getTransaction().commit();
+				owner.getEntityManager().getTransaction().commit();
 			}
 		} catch (Throwable e) {
 			if (!transactionWasActive) {
-				owner.getKommaManager().getTransaction().rollback();
+				owner.getEntityManager().getTransaction().rollback();
 			}
 			throw new ExecutionException("Error while adding element", e);
 		}

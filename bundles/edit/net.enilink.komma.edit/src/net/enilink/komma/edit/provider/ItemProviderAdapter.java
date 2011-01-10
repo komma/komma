@@ -80,7 +80,7 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
-import net.enilink.komma.core.IKommaManager;
+import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
 
@@ -835,11 +835,11 @@ public class ItemProviderAdapter extends
 				.getValue();
 
 		URI name = childDescriptor.getName();
-		IKommaManager manager;
+		IEntityManager manager;
 		if (owner instanceof IModel) {
 			manager = ((IModel) owner).getManager();
 		} else {
-			manager = ((IObject) owner).getKommaManager();
+			manager = ((IObject) owner).getEntityManager();
 		}
 
 		return manager.createNamed(name,
