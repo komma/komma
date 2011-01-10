@@ -148,7 +148,12 @@ public class CreateChildrenActionContributor {
 				}
 
 				protected IStatus run(IProgressMonitor monitor) {
-					domain.getNewChildDescriptors(object, null, this);
+					try {
+						domain.getModelSet().getUnitOfWork().begin();
+						domain.getNewChildDescriptors(object, null, this);
+					} finally {
+						domain.getModelSet().getUnitOfWork().end();
+					}
 					return Status.OK_STATUS;
 				}
 			};
@@ -165,7 +170,12 @@ public class CreateChildrenActionContributor {
 				}
 
 				protected IStatus run(IProgressMonitor monitor) {
-					domain.getNewChildDescriptors(null, object, this);
+					try {
+						domain.getModelSet().getUnitOfWork().begin();
+						domain.getNewChildDescriptors(null, object, this);
+					} finally {
+						domain.getModelSet().getUnitOfWork().end();
+					}
 					return Status.OK_STATUS;
 				}
 			};

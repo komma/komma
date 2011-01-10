@@ -38,11 +38,11 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.openrdf.model.vocabulary.XMLSchema;
 
 import net.enilink.vocab.owl.AnnotationProperty;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.OntologyProperty;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.ui.celleditor.ExtendedComboBoxCellEditor;
 import net.enilink.komma.common.ui.celleditor.ExtendedDialogCellEditor;
@@ -57,7 +57,6 @@ import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.sesame.SesameReference;
 import net.enilink.komma.util.KommaUtil;
 
 /**
@@ -148,8 +147,7 @@ public class PropertyDescriptor implements IPropertyDescriptor {
 		public DatatypeValueHandler(Collection<? extends IReference> datatypes) {
 			this.datatypes = datatypes;
 			if (this.datatypes == null || this.datatypes.isEmpty()) {
-				this.datatypes = Arrays.asList(new SesameReference(
-						XMLSchema.STRING));
+				this.datatypes = Arrays.asList(XMLSCHEMA.TYPE_STRING);
 			}
 		}
 
@@ -186,8 +184,8 @@ public class PropertyDescriptor implements IPropertyDescriptor {
 
 				if (convertedValue != null) {
 					Diagnostic diagnostic = ModelCore.getDefault()
-							.getDefaultValidator().validate(datatype,
-									convertedValue);
+							.getDefaultValidator()
+							.validate(datatype, convertedValue);
 					if (diagnostic.getSeverity() == Diagnostic.OK) {
 						return null;
 					} else {
@@ -204,8 +202,8 @@ public class PropertyDescriptor implements IPropertyDescriptor {
 		}
 
 		public Object toValue(String string) {
-			return KommaUtil.convertToRange(((IEntity) object)
-					.getKommaManager(), datatypes, string);
+			return KommaUtil.convertToRange(
+					((IEntity) object).getEntityManager(), datatypes, string);
 		}
 
 		public String toString(Object value) {
@@ -243,7 +241,7 @@ public class PropertyDescriptor implements IPropertyDescriptor {
 		// setValue() is final, we cannot do that conversion there, so we need
 		// to record what we're trying to validate and
 		// work around the problem in isCorrect().
-		// 
+		//
 		protected boolean validateAsValue = true;
 
 		@Override
@@ -329,8 +327,8 @@ public class PropertyDescriptor implements IPropertyDescriptor {
 			result = new ExtendedComboBoxCellEditor(composite,
 					new ArrayList<Object>(itemPropertyDescriptor
 							.getChoiceOfValues(object)),
-					getEditLabelProvider(), itemPropertyDescriptor
-							.isSortChoices(object));
+					getEditLabelProvider(),
+					itemPropertyDescriptor.isSortChoices(object));
 		} else if (!(genericProperty instanceof AnnotationProperty
 				|| genericProperty instanceof DatatypeProperty || genericProperty instanceof OntologyProperty)) {
 			final IProperty property = (IProperty) genericProperty;
@@ -373,8 +371,8 @@ public class PropertyDescriptor implements IPropertyDescriptor {
 				if (result == null) {
 					result = new ExtendedComboBoxCellEditor(composite,
 							new ArrayList<Object>(choiceOfValues),
-							getEditLabelProvider(), itemPropertyDescriptor
-									.isSortChoices(object));
+							getEditLabelProvider(),
+							itemPropertyDescriptor.isSortChoices(object));
 				}
 			}
 		} else if (genericProperty instanceof IProperty) {
@@ -390,21 +388,23 @@ public class PropertyDescriptor implements IPropertyDescriptor {
 								editLabelProvider, (IObject) object, property
 										.getRanges(true).toSet(),
 								(Collection<?>) doGetValue(), getDisplayName(),
-								null, itemPropertyDescriptor
-										.isMultiLine(object), false);
+								null,
+								itemPropertyDescriptor.isMultiLine(object),
+								false);
 						dialog.open();
 						return dialog.getResult();
 					}
 				};
-			} else if (property.getRdfsRanges().contains(
-					new SesameReference(XMLSchema.BOOLEAN))) {
-				result = new ExtendedComboBoxCellEditor(composite, Arrays
-						.asList(new Object[] { Boolean.FALSE, Boolean.TRUE }),
-						getEditLabelProvider(), itemPropertyDescriptor
-								.isSortChoices(object));
+			} else if (property.getRdfsRanges()
+					.contains(XMLSCHEMA.TYPE_BOOLEAN)) {
+				result = new ExtendedComboBoxCellEditor(composite,
+						Arrays.asList(new Object[] { Boolean.FALSE,
+								Boolean.TRUE }), getEditLabelProvider(),
+						itemPropertyDescriptor.isSortChoices(object));
 			} else {
-				result = createDatatypeCellEditor(property.getNamedRanges(
-						(IObject) object, true).toSet(), composite);
+				result = createDatatypeCellEditor(
+						property.getNamedRanges((IObject) object, true).toSet(),
+						composite);
 			}
 		}
 

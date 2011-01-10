@@ -68,7 +68,7 @@ public class PropertyValuesContentProvider extends ModelContentProvider
 			subject = null;
 		}
 		if (subject != null && property == null) {
-			property = subject.getKommaManager().find(propertyURI);
+			property = subject.getEntityManager().find(propertyURI);
 		}
 		super.inputChanged(viewer, oldInput, newInput);
 	}

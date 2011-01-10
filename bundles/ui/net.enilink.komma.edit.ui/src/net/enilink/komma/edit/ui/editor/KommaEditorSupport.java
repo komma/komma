@@ -64,6 +64,7 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 
+import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
@@ -100,11 +101,12 @@ import net.enilink.komma.edit.ui.util.EditUIMarkerHelper;
 import net.enilink.komma.edit.ui.util.EditUIUtil;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.IModelSetFactory;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.model.ModelUtil;
-import net.enilink.komma.model.base.ModelSetFactory;
 import net.enilink.komma.model.base.SimpleURIMapRule;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.model.validation.IValidator;
@@ -643,11 +645,14 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		KommaModule module = ModelCore.createModelSetModule(getClass()
 				.getClassLoader());
 
-		IModelSet modelSet = new ModelSetFactory(module,
-				URIImpl.createURI(MODELS.NAMESPACE +
+		IModelSetFactory factory = Guice.createInjector(
+				new ModelSetModule(module)).getInstance(IModelSetFactory.class);
+
+		IModelSet modelSet = factory.createModelSet(URIImpl
+				.createURI(MODELS.NAMESPACE +
 				// "MemoryModelSet" //
 						"OwlimModelSet" //
-				)).createModelSet();
+				));
 		return modelSet;
 	}
 

@@ -84,9 +84,11 @@ abstract public class NewObjectWizard extends Wizard {
 						Pattern namePattern = Pattern.compile("(\\w|[.])+");
 						if (!namePattern.matcher(name).matches()) {
 							errorMsg = "Invalid name.";
-						} else if (model.getManager().createQuery(
-								"SELECT ?subj WHERE { ?subj ?pred ?obj . }")
-								.setURI(
+						} else if (model
+								.getManager()
+								.createQuery(
+										"SELECT ?subj WHERE { ?subj ?pred ?obj . }")
+								.setParameter(
 										"subj",
 										model.getURI().namespace()
 												.appendFragment(name))

@@ -351,7 +351,7 @@ public class PropertyEditorDialog extends Dialog {
 							&& (event.character == '\r' || event.character == '\n')) {
 						try {
 							Object value = KommaUtil.convertToRange(object
-									.getKommaManager(), classes, choiceText
+									.getEntityManager(), classes, choiceText
 									.getText());
 							values.getChildren().add(value);
 							choiceText.setText("");
@@ -416,7 +416,7 @@ public class PropertyEditorDialog extends Dialog {
 				} else if (choiceText != null) {
 					try {
 						Object value = KommaUtil.convertToRange(object
-								.getKommaManager(), classes, choiceText
+								.getEntityManager(), classes, choiceText
 								.getText());
 						values.getChildren().add(value);
 						choiceText.setText("");
