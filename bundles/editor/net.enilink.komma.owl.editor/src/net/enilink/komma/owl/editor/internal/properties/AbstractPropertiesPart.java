@@ -174,7 +174,7 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 							.getSelection()).getFirstElement();
 
 					if (selected instanceof IResource) {
-						((IResource) selected).getKommaManager().remove(
+						((IResource) selected).getEntityManager().remove(
 								(IResource) selected);
 						getShell().getDisplay().asyncExec(new Runnable() {
 							@Override

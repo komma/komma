@@ -29,7 +29,7 @@ public class OtherPropertiesPart extends AbstractPropertiesPart {
 		if (model != null) {
 			IQuery<?> query = model
 					.getOntology()
-					.getKommaManager()
+					.getEntityManager()
 					.createQuery(
 							ISparqlConstants.PREFIX
 									+ "SELECT DISTINCT ?p WHERE {"

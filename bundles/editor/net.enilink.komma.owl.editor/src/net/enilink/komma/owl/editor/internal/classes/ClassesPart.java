@@ -133,7 +133,7 @@ public class ClassesPart extends AbstractEditingDomainPart {
 																	resourceName),
 													OWL.TYPE_CLASS);
 									if (treeViewer.getSelection() != null)
-										entity.getKommaManager()
+										entity.getEntityManager()
 												.setProperty(
 														RDFS.PROPERTY_SUBCLASSOF
 																.toString(),
@@ -178,7 +178,7 @@ public class ClassesPart extends AbstractEditingDomainPart {
 					final Object selected = ((IStructuredSelection) treeViewer.getSelection()).getFirstElement();
 
 					if (selected instanceof IResource) {
-						((IResource) selected).getKommaManager().remove(
+						((IResource) selected).getEntityManager().remove(
 								(IResource) selected);
 						getShell().getDisplay().asyncExec(new Runnable() {
 							@Override

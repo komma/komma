@@ -95,7 +95,7 @@ public class InstanceTreePart extends IndividualsPart {
 		if (input == null) {
 			viewer.setInput(null);
 		} else {
-			List<IObject> instances = input.getKommaManager()
+			List<IObject> instances = input.getEntityManager()
 					.createQuery(QUERY_INSTANCES).setIncludeInferred(true)
 					.setParameter("c", input).evaluate(IObject.class).toList();
 

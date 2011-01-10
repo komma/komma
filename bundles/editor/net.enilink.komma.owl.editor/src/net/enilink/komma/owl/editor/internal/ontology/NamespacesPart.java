@@ -97,7 +97,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 				@Override
 				protected void modifyNamespace() {
 					model.getManager().setNamespace(namespace.getPrefix(),
-							namespace.getUri());
+							namespace.getURI());
 				}
 			});
 		}
@@ -135,7 +135,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 					protected void modifyNamespace() {
 						model.getManager().removeNamespace(element.getPrefix());
 						model.getManager().setNamespace((String) value,
-								element.getUri());
+								element.getURI());
 					}
 				});
 				break;
@@ -192,7 +192,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 			case 0:
 				return element.getPrefix();
 			case 1:
-				return element.getUri().toString();
+				return element.getURI().toString();
 			}
 			return "";
 		}
@@ -239,7 +239,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 				case 0:
 					return ((INamespace) element).getPrefix();
 				case 1:
-					return ((INamespace) element).getUri().toString();
+					return ((INamespace) element).getURI().toString();
 				}
 			}
 			return "";

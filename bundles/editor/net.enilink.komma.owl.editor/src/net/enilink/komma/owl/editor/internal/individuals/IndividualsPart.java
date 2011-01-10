@@ -183,7 +183,7 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 					final Object selected = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
 
 					if (selected instanceof IResource) {
-						((IResource) selected).getKommaManager().remove(
+						((IResource) selected).getEntityManager().remove(
 								(IResource) selected);
 						getShell().getDisplay().asyncExec(new Runnable() {
 							@Override
