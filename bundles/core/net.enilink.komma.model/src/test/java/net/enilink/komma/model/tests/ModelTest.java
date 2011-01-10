@@ -13,15 +13,19 @@ package net.enilink.komma.model.tests;
 import java.util.Collection;
 
 import junit.framework.Test;
+
+import com.google.inject.Guice;
+
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationFilter;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.IModelSetFactory;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelCore;
-import net.enilink.komma.model.base.ModelSetFactory;
+import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIImpl;
@@ -36,9 +40,11 @@ public class ModelTest extends KommaTestCase {
 		KommaModule module = ModelCore.createModelSetModule(getClass()
 				.getClassLoader());
 
-		modelSet = new ModelSetFactory(module, URIImpl
-				.createURI(MODELS.NAMESPACE + "MemoryModelSet"))
-				.createModelSet();
+		IModelSetFactory factory = Guice.createInjector(
+				new ModelSetModule(module)).getInstance(IModelSetFactory.class);
+
+		modelSet = factory.createModelSet(MODELS.NAMESPACE_URI
+				.appendFragment("MemoryModelSet"));
 	}
 
 	protected void tearDown() throws Exception {

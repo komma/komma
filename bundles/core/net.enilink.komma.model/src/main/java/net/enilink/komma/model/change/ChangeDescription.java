@@ -18,59 +18,60 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.openrdf.repository.event.base.NotifyingRepositoryConnectionWrapper;
 
-import net.enilink.komma.ds.change.IDataSourceChange;
+import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.dm.change.DataChangeTracker;
+import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.core.KommaException;
 
 public class ChangeDescription implements IChangeDescription {
-	private LinkedList<IDataSourceChange> changes = new LinkedList<IDataSourceChange>();
+	private LinkedList<IDataChange> changes = new LinkedList<IDataChange>();
 	private IModelSet.Internal modelSet;
 
 	public ChangeDescription(IModelSet modelSet) {
 		this.modelSet = (IModelSet.Internal) modelSet;
 	}
 
-	public void add(IDataSourceChange change) {
+	public void add(IDataChange change) {
 		changes.add(change);
 	}
 
-	public List<IDataSourceChange> getChanges() {
+	public List<IDataChange> getChanges() {
 		return changes;
 	}
 
 	@Override
 	public IStatus redo(IProgressMonitor monitor, IAdaptable info) {
 		try {
-			NotifyingRepositoryConnectionWrapper connection = null;
+			IDataManager dm = null;
 			try {
-				connection = (NotifyingRepositoryConnectionWrapper) modelSet
-						.getSharedRepositoyConnection();
-				boolean isReportDeltas = connection.reportDeltas();
-				if (isReportDeltas) {
-					connection.setReportDeltas(false);
+				dm = modelSet.getDataManagerFactory().get();
+
+				DataChangeTracker changeTracker = (DataChangeTracker) modelSet
+						.getDataChangeTracker();
+				boolean isTrackingChanges = changeTracker.isEnabled();
+				if (isTrackingChanges) {
+					changeTracker.setEnabled(false);
 				}
 
-				boolean autoCommit = connection.isAutoCommit();
-				if (autoCommit) {
-					connection.begin();
-				}
-
-				for (ListIterator<IDataSourceChange> it = changes
+				dm.getTransaction().begin();
+				for (ListIterator<IDataChange> it = changes
 						.listIterator(changes.size()); it.hasPrevious();) {
-					it.previous().redo(connection);
+					it.previous().redo(dm);
 				}
 
-				if (autoCommit) {
-					connection.commit();
-				}
-				connection.setReportDeltas(isReportDeltas);
+				dm.getTransaction().commit();
+				changeTracker.setEnabled(isTrackingChanges);
 			} catch (Throwable e) {
-				if (connection != null) {
-					connection.rollback();
+				if (dm != null && dm.getTransaction().isActive()) {
+					dm.getTransaction().rollback();
 				}
 				throw e;
+			} finally {
+				if (dm != null) {
+					dm.close();
+				}
 			}
 		} catch (Throwable e) {
 			throw new KommaException(e);
@@ -81,34 +82,34 @@ public class ChangeDescription implements IChangeDescription {
 	@Override
 	public IStatus undo(IProgressMonitor monitor, IAdaptable info) {
 		try {
-			NotifyingRepositoryConnectionWrapper connection = null;
+			IDataManager dm = null;
 			try {
-				connection = (NotifyingRepositoryConnectionWrapper) modelSet
-						.getSharedRepositoyConnection();
-				boolean isReportDeltas = connection.reportDeltas();
-				if (isReportDeltas) {
-					connection.setReportDeltas(false);
+				dm = modelSet.getDataManagerFactory().get();
+
+				DataChangeTracker changeTracker = (DataChangeTracker) modelSet
+						.getDataChangeTracker();
+				boolean isTrackingChanges = changeTracker.isEnabled();
+				if (isTrackingChanges) {
+					changeTracker.setEnabled(false);
 				}
 
-				boolean autoCommit = connection.isAutoCommit();
-				if (autoCommit) {
-					connection.begin();
-				}
-
-				for (ListIterator<IDataSourceChange> it = changes
+				dm.getTransaction().begin();
+				for (ListIterator<IDataChange> it = changes
 						.listIterator(changes.size()); it.hasPrevious();) {
-					it.previous().undo(connection);
+					it.previous().undo(dm);
 				}
 
-				if (autoCommit) {
-					connection.commit();
-				}
-				connection.setReportDeltas(isReportDeltas);
+				dm.getTransaction().commit();
+				changeTracker.setEnabled(isTrackingChanges);
 			} catch (Throwable e) {
-				if (connection != null) {
-					connection.rollback();
+				if (dm != null && dm.getTransaction().isActive()) {
+					dm.getTransaction().rollback();
 				}
 				throw e;
+			} finally {
+				if (dm != null) {
+					dm.close();
+				}
 			}
 		} catch (Throwable e) {
 			throw new KommaException(e);

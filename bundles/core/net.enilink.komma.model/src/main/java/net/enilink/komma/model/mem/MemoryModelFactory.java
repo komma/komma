@@ -22,7 +22,8 @@ public class MemoryModelFactory implements IModel.Factory {
 		IModel model = (IModel) modelSet.getMetaDataManager().createNamed(uri,
 				MODELS.NAMESPACE_URI.appendFragment("MemoryModel"),
 				MODELS.CLASS_MODEL, OWL.TYPE_ONTOLOGY);
-		((IModel.Internal) model).internalSetModelSet(modelSet);
+		((IModel.Internal) model)
+				.internalSetModelSet((IModelSet.Internal) modelSet);
 		return model;
 	}
 }

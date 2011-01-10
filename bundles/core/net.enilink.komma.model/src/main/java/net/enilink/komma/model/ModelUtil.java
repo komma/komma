@@ -47,7 +47,7 @@ public class ModelUtil {
 									.namespace().equals(uri.namespace())) {
 						prefix = null;
 					} else {
-						prefix = resource.getKommaManager().getPrefix(
+						prefix = resource.getEntityManager().getPrefix(
 								uri.namespace());
 					}
 

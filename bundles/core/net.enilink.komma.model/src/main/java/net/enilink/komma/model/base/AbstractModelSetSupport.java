@@ -28,7 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import com.google.inject.Injector;
+import com.google.inject.Module;
 
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.adapter.AdapterSet;
@@ -38,13 +39,16 @@ import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationSupport;
-import net.enilink.komma.ds.IDataSource;
-import net.enilink.komma.ds.IDataSourceFactory;
-import net.enilink.komma.ds.change.IDataSourceChange;
-import net.enilink.komma.ds.change.IDataSourceChangeListener;
-import net.enilink.komma.ds.change.IDataSourceChangeTracker;
-import net.enilink.komma.ds.change.INamespaceChange;
-import net.enilink.komma.ds.change.IStatementChange;
+import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.dm.IDataManagerFactory;
+import net.enilink.komma.dm.change.IDataChange;
+import net.enilink.komma.dm.change.IDataChangeListener;
+import net.enilink.komma.dm.change.IDataChangeTracker;
+import net.enilink.komma.dm.change.INamespaceChange;
+import net.enilink.komma.dm.change.IStatementChange;
+import net.enilink.komma.em.CacheModule;
+import net.enilink.komma.em.CachingEntityManagerModule;
+import net.enilink.komma.em.EntityManagerFactoryModule;
 import net.enilink.komma.internal.model.event.NamespaceNotification;
 import net.enilink.komma.internal.model.event.StatementNotification;
 import net.enilink.komma.model.IContentHandler;
@@ -56,7 +60,10 @@ import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ObjectSupport;
 import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.model.concepts.ModelSet;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
@@ -81,9 +88,9 @@ import net.enilink.komma.util.KommaUtil;
  * </ul>
  * </p>
  */
-public abstract class AbstractModelSetSupport implements IModelSet,
-		IModelSet.Internal, ModelSet, INotificationBroadcaster<INotification>,
-		Behaviour<IModelSet> {
+public abstract class AbstractModelSetSupport implements IModelSet.Internal,
+		ModelSet, INotificationBroadcaster<INotification>,
+		Behaviour<IModelSet.Internal> {
 	private final static Logger log = LoggerFactory
 			.getLogger(AbstractModelSetSupport.class);
 
@@ -96,10 +103,9 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 
 	private IAdapterSet adapterSet;
 
-	protected IDataSourceChangeTracker dataChangeTracker;
+	protected IDataChangeTracker dataChangeTracker;
 
-	@Inject
-	private IDataSourceFactory dataSourceFactory;
+	private Injector injector;
 
 	/**
 	 * The load options.
@@ -108,11 +114,10 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 	 */
 	protected Map<Object, Object> loadOptions;
 
-	protected NotificationSupport<INotification> metaDataNotificationSupport = new NotificationSupport<INotification>();
-
 	@Inject
-	@Named("meta")
-	private IDataSourceFactory metaDataSourceFactory;
+	private IDataManagerFactory metaDataManagerFactory;
+
+	protected NotificationSupport<INotification> metaDataNotificationSupport = new NotificationSupport<INotification>();
 
 	/**
 	 * The local resource factory registry.
@@ -133,6 +138,9 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 
 	protected Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = new WeakHashMap<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>>();
 
+	@Inject
+	IUnitOfWork unitOfWork;
+
 	/**
 	 * The URI converter.
 	 * 
@@ -146,14 +154,6 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 	 * @see #setURIModelMap(Map)
 	 */
 	protected Map<URI, IModel> uriModelMap;
-
-	/**
-	 * Creates an empty instance.
-	 */
-	public AbstractModelSetSupport() {
-		KommaModule module = createModule();
-		initModule(module);
-	}
 
 	@Override
 	public synchronized IAdapterSet adapters() {
@@ -188,6 +188,18 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 		listeners.add(listener);
 	}
 
+	@Override
+	public void collectInjectionModules(Collection<Module> modules) {
+		modules.add(new CacheModule());
+		modules.add(new EntityManagerFactoryModule(createModule(), null,
+				new CachingEntityManagerModule() {
+					@Override
+					protected boolean isInjectManager() {
+						return false;
+					}
+				}));
+	}
+
 	/*
 	 * Javadoc copied from interface.
 	 */
@@ -206,7 +218,7 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 					uri);
 
 			if (isPersistent()) {
-				IDataSource ds = metaDataSourceFactory.get();
+				IDataManager ds = getDataManagerFactory().get();
 				try {
 					ds.setReadContexts(Collections.singleton(uri));
 					ds.setIncludeInferred(false);
@@ -229,6 +241,12 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 
 	protected KommaModule createModule() {
 		module = new KommaModule(getClass().getClassLoader());
+		module.includeModule(KommaUtil.getCoreModule());
+
+		module.addReadableGraph(null);
+
+		module.addBehaviour(ObjectSupport.class);
+		module.addConcept(IObject.class);
 		return module;
 	}
 
@@ -303,21 +321,15 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 	public void dispose() {
 		removeAndUnloadAllModels();
 
-		if (dataSourceFactory != null) {
+		if (metaDataManagerFactory != null) {
+			getEntityManager().close();
+
 			try {
-				dataSourceFactory.close();
+				metaDataManagerFactory.close();
 			} catch (Exception e) {
 				KommaCore.log(e);
 			}
-			dataSourceFactory = null;
-		}
-		if (metaDataSourceFactory != null) {
-			try {
-				metaDataSourceFactory.close();
-			} catch (Exception e) {
-				KommaCore.log(e);
-			}
-			metaDataSourceFactory = null;
+			metaDataManagerFactory = null;
 		}
 	}
 
@@ -382,8 +394,18 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 	}
 
 	@Override
-	public IDataSourceChangeTracker getDataChangeTracker() {
+	public IDataChangeTracker getDataChangeTracker() {
 		return dataChangeTracker;
+	}
+
+	@Override
+	public IDataManagerFactory getDataManagerFactory() {
+		return injector.getInstance(IDataManagerFactory.class);
+	}
+
+	@Override
+	public IEntityManagerFactory getEntityManagerFactory() {
+		return injector.getInstance(IEntityManagerFactory.class);
 	}
 
 	/*
@@ -395,6 +417,11 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 		}
 
 		return loadOptions;
+	}
+
+	@Override
+	public IEntityManager getMetaDataManager() {
+		return getEntityManager();
 	}
 
 	/*
@@ -506,6 +533,9 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 	}
 
 	public IReference getSharedReference(IReference reference) {
+		if (reference == null) {
+			return null;
+		}
 		synchronized (sharedReferences) {
 			IReference sharedReference = (IReference) sharedReferences
 					.get(reference);
@@ -516,6 +546,10 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 
 			return sharedReference;
 		}
+	}
+
+	public IUnitOfWork getUnitOfWork() {
+		return unitOfWork;
 	}
 
 	/*
@@ -588,17 +622,19 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 		throw wrappedException;
 	}
 
-	protected void initModule(KommaModule module) {
-		module.includeModule(KommaUtil.getCoreModule());
+	/**
+	 * Initializes the injector that is used within models.
+	 */
+	public void init() {
+		List<Module> modules = new ArrayList<Module>();
+		getBehaviourDelegate().collectInjectionModules(modules);
 
-		module.addReadableGraph(null);
-
-		module.addBehaviour(ObjectSupport.class);
-		module.addConcept(IObject.class);
+		injector = injector.createChildInjector(modules);
+		setDataChangeTracker(injector.getInstance(IDataChangeTracker.class));
 	}
 
 	protected void removeAndUnloadAllModels() {
-		if (metaDataSourceFactory == null || getModels().isEmpty()) {
+		if (metaDataManagerFactory == null || getModels().isEmpty()) {
 			return;
 		}
 		List<IModel> models = new ArrayList<IModel>(getModels());
@@ -642,17 +678,16 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 		}
 	}
 
-	@Inject
-	protected void setDataChangeTracker(IDataSourceChangeTracker changeTracker) {
+	public void setDataChangeTracker(IDataChangeTracker changeTracker) {
 		dataChangeTracker = changeTracker;
-		dataChangeTracker.addChangeListener(new IDataSourceChangeListener() {
+		dataChangeTracker.addChangeListener(new IDataChangeListener() {
 			@Override
-			public void dataSourceChanged(List<IDataSourceChange> changes) {
+			public void dataChanged(List<IDataChange> changes) {
 				AbstractModelSetSupport.this
 						.fireNotifications(transformChanges(changes));
 
 				Set<IReference> changedModels = new HashSet<IReference>();
-				for (IDataSourceChange change : changes) {
+				for (IDataChange change : changes) {
 					if (change instanceof IStatementChange) {
 						IReference context = ((IStatementChange) change)
 								.getContext();
@@ -674,17 +709,20 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 	}
 
 	@Inject
-	@Named("meta")
-	protected void setMetaDataChangeTracker(
-			IDataSourceChangeTracker changeTracker) {
-		changeTracker.addChangeListener(new IDataSourceChangeListener() {
+	protected void setInjector(Injector injector) {
+		// TODO
+		this.injector = injector.getParent().getParent();
+	}
+
+	@Inject
+	protected void setMetaDataChangeTracker(IDataChangeTracker changeTracker) {
+		changeTracker.addChangeListener(new IDataChangeListener() {
 			@Override
-			public void dataSourceChanged(List<IDataSourceChange> changes) {
+			public void dataChanged(List<IDataChange> changes) {
 				metaDataNotificationSupport
 						.fireNotifications(transformChanges(changes));
 			}
 		});
-
 	}
 
 	/*
@@ -729,11 +767,10 @@ public abstract class AbstractModelSetSupport implements IModelSet,
 	}
 
 	/** Transforms changes tracked in the repository into {@link INotification}s */
-	protected List<INotification> transformChanges(
-			List<IDataSourceChange> changes) {
+	protected List<INotification> transformChanges(List<IDataChange> changes) {
 		List<INotification> notifications = new ArrayList<INotification>(
 				changes.size());
-		for (IDataSourceChange change : changes) {
+		for (IDataChange change : changes) {
 			if (change instanceof INotification) {
 				notifications.add((INotification) change);
 			} else if (change instanceof INamespaceChange) {

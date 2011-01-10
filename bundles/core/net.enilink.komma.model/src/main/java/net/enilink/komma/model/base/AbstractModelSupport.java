@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -24,9 +25,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import net.enilink.composition.traits.Behaviour;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
@@ -34,9 +32,8 @@ import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.concepts.IOntology;
+import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.internal.model.IModelAware;
-import net.enilink.komma.manager.KommaManagerFactory;
-import net.enilink.komma.manager.SharedKommaManager;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
@@ -45,7 +42,7 @@ import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
-import net.enilink.komma.core.IKommaManager;
+import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
@@ -80,19 +77,16 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 		}
 	}
 
-	@Inject
-	protected KommaManagerFactory managerFactory;
-
 	/**
 	 * The containing model set.
 	 * 
 	 * @see #getModelSet
 	 */
-	protected IModelSet modelSet;
+	protected IModelSet.Internal modelSet;
 
 	private KommaModule module;
 
-	protected SharedKommaManager sharedManager = new SharedKommaManager();
+	protected IEntityManager manager;
 
 	/*
 	 * documentation inherited
@@ -100,7 +94,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	@Override
 	public void addImport(URI uri, String prefix) {
 		try {
-			IKommaManager manager = getManager();
+			IEntityManager manager = getManager();
 			boolean isActive = manager.getTransaction().isActive();
 			try {
 				if (!isActive) {
@@ -122,7 +116,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 				if (!isActive) {
 					manager.getTransaction().commit();
 
-					updateSharedManager();
+					unloadManager();
 				}
 			} catch (Exception e) {
 				if (!isActive && manager != null) {
@@ -133,9 +127,6 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 		} catch (Exception e) {
 			throw new KommaException(e);
 		}
-
-		// ensure that manager is reinitialized if it was unloaded
-		getManager();
 	}
 
 	/*
@@ -155,6 +146,8 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	protected void doUnload() {
 		getErrors().clear();
 		getWarnings().clear();
+
+		unloadManager();
 	}
 
 	/*
@@ -189,8 +182,13 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	 * documentation inherited
 	 */
 	@Override
-	public IKommaManager getManager() {
-		return sharedManager;
+	public synchronized IEntityManager getManager() {
+		if (manager == null) {
+			manager = modelSet.getEntityManagerFactory()
+					.createChildFactory(getModule()).createEntityManager();
+			manager.addDecorator(new ModelInjector());
+		}
+		return manager;
 	}
 
 	/*
@@ -202,7 +200,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	}
 
 	@Override
-	public KommaModule getModule() {
+	public synchronized KommaModule getModule() {
 		if (module == null) {
 			module = new KommaModule(
 					AbstractModelSupport.class.getClassLoader());
@@ -213,9 +211,10 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 			}
 
 			try {
-				IKommaManager manager = getManager();
+				IDataManager dm = modelSet.getDataManagerFactory().get();
+				dm.setReadContexts(Collections.singleton(getURI()));
 				try {
-					IExtendedIterator<IStatement> imports = manager.match(null,
+					IExtendedIterator<IStatement> imports = dm.match(null,
 							OWL.PROPERTY_IMPORTS, null);
 
 					while (imports.hasNext()) {
@@ -248,7 +247,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 				} catch (Throwable e) {
 					throw e;
 				} finally {
-					// conn.close();
+					dm.close();
 				}
 			} catch (Throwable e) {
 				throw new KommaException(e);
@@ -285,7 +284,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	 * documentation inherited
 	 */
 	@Override
-	public void internalSetModelSet(IModelSet modelSet) {
+	public void internalSetModelSet(IModelSet.Internal modelSet) {
 		if (this.modelSet != null && this.modelSet.equals(modelSet)) {
 			return;
 		}
@@ -293,7 +292,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 		this.modelSet = modelSet;
 
 		// ensure komma manager is reinitialized
-		updateSharedManager();
+		unloadManager();
 	}
 
 	@Override
@@ -375,7 +374,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	@Override
 	public void removeImport(URI importedOnt) {
 		try {
-			IKommaManager manager = getManager();
+			IEntityManager manager = getManager();
 			boolean isActive = manager.getTransaction().isActive();
 			try {
 				if (!isActive) {
@@ -394,7 +393,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 				if (!isActive) {
 					manager.getTransaction().commit();
 
-					updateSharedManager();
+					unloadManager();
 				}
 			} catch (Exception e) {
 				if (!isActive && manager != null) {
@@ -409,9 +408,6 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 				throw new KommaException(e);
 			}
 		}
-
-		// ensure that manager is reinitialized if it was unloaded
-		getManager();
 	}
 
 	@Override
@@ -641,7 +637,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	@Override
 	public void setURI(URI uri) {
 		if (uri != null && !uri.equals(getURI())) {
-			getKommaManager().rename(this, uri);
+			getEntityManager().rename(this, uri);
 		}
 	}
 
@@ -660,14 +656,11 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 		}
 	}
 
-	protected void updateSharedManager() {
+	protected synchronized void unloadManager() {
 		module = null;
-		sharedManager.setKommaManagerProvider(new Provider<IKommaManager>() {
-			@Override
-			public IKommaManager get() {
-				// TODO
-				return managerFactory.createKommaManager();
-			}
-		});
+		if (manager != null) {
+			manager.close();
+			manager = null;
+		}
 	}
 }

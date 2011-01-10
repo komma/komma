@@ -19,7 +19,7 @@ import java.util.Set;
 import net.enilink.composition.annotations.Iri;
 
 import net.enilink.komma.concepts.IOntology;
-import net.enilink.komma.core.IKommaManager;
+import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
@@ -83,12 +83,12 @@ public interface IModel {
 	void delete(Map<?, ?> options) throws IOException;
 
 	/**
-	 * Returns the {@link IKommaManager} manager which is responsible for
+	 * Returns the {@link IEntityManager} manager which is responsible for
 	 * loading and modifying the ontology's contents
 	 * 
 	 * @return manager instance
 	 */
-	IKommaManager getManager();
+	IEntityManager getManager();
 
 	/**
 	 * Returns the ontology resource which is managed by this ontology model
@@ -379,7 +379,7 @@ public interface IModel {
 			 * {@link URIConverter#contentDescription(URI, Map) content type
 			 * identifier} to search the {@link #getContentTypeToFactoryMap()
 			 * content type} map. It will
-			 * {@link org.eclipse.IDescriptor.ecore.resource.Resource.Factory.Descriptor#createFactory
+			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Descriptor#createFactory
 			 * convert} a resulting descriptor into a factory. It may choose to
 			 * provide additional mechanisms and algorithms to determine a
 			 * factory appropriate for the given URI.
@@ -405,7 +405,7 @@ public interface IModel {
 			 * {@link #getExtensionToFactoryMap extension} map, and the given
 			 * content type identifier to search the
 			 * {@link #getContentTypeToFactoryMap() content type} map. It will
-			 * {@link org.eclipse.IDescriptor.ecore.resource.Resource.Factory.Descriptor#createFactory
+			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Descriptor#createFactory
 			 * convert} a resulting descriptor into a factory. It may choose to
 			 * provide additional mechanisms and algorithms to determine a
 			 * factory appropriate for the given URI.
@@ -426,8 +426,9 @@ public interface IModel {
 
 			/**
 			 * Returns a map from {@link URI#scheme protocol} to
-			 * {@link org.eclipse.Factory.ecore.resource.Resource.Factory} or
-			 * {@link org.eclipse.IDescriptor.ecore.resource.Resource.Factory.Descriptor}
+			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory}
+			 * or
+			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Descriptor}
 			 * .
 			 * 
 			 * @return the protocol map.
@@ -443,8 +444,9 @@ public interface IModel {
 
 			/**
 			 * Returns a map from {@link URI#fileExtension file extension} to
-			 * {@link org.eclipse.Factory.ecore.resource.Resource.Factory} or
-			 * {@link org.eclipse.IDescriptor.ecore.resource.Resource.Factory.Descriptor}
+			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory}
+			 * or
+			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Descriptor}
 			 * .
 			 * <p>
 			 * The {@link #DEFAULT_EXTENSION default} file extension
@@ -471,8 +473,9 @@ public interface IModel {
 
 			/**
 			 * Returns a map from content type identifier to
-			 * {@link org.eclipse.Factory.ecore.resource.Resource.Factory} or
-			 * {@link org.eclipse.IDescriptor.ecore.resource.Resource.Factory.Descriptor}
+			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory}
+			 * or
+			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Descriptor}
 			 * .
 			 * <p>
 			 * The {@link #DEFAULT_CONTENT_TYPE_IDENTIFIER default} content type
@@ -540,7 +543,7 @@ public interface IModel {
 		/**
 		 * Sets the model to be contained by the given model set.
 		 */
-		void internalSetModelSet(IModelSet modelSet);
+		void internalSetModelSet(IModelSet.Internal modelSet);
 
 		/**
 		 * Indicates whether the resource is currently being loaded.

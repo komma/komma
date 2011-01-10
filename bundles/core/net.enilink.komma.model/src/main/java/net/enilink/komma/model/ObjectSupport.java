@@ -48,7 +48,7 @@ public abstract class ObjectSupport extends BehaviorBase implements IObject,
 
 	@Override
 	public IObject getContainer() {
-		IQuery<?> query = getKommaManager().createQuery(SELECT_CONTAINER);
+		IQuery<?> query = getEntityManager().createQuery(SELECT_CONTAINER);
 		query.setParameter("obj", getBehaviourDelegate());
 		IExtendedIterator<?> it = query.evaluate();
 		try {
@@ -60,7 +60,7 @@ public abstract class ObjectSupport extends BehaviorBase implements IObject,
 
 	@Override
 	public IExtendedIterator<IProperty> getApplicableChildProperties() {
-		IQuery<?> query = getKommaManager().createQuery(
+		IQuery<?> query = getEntityManager().createQuery(
 				SELECT_APPLICABLE_CHILD_PROPERTIES);
 		query.setParameter("resource", getBehaviourDelegate());
 		query.setIncludeInferred(true);

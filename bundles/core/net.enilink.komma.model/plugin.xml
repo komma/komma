@@ -46,10 +46,10 @@
    <extension
          point="net.enilink.komma.model.modelBehaviours">
       <modelBehaviour
-            class="net.enilink.komma.model.mem.MemoryModelSetSupport">
+            class="net.enilink.komma.model.sesame.MemoryModelSetSupport">
       </modelBehaviour>
       <modelBehaviour
-            class="net.enilink.komma.model.mem.MemoryModelSupport">
+            class="net.enilink.komma.model.sesame.MemoryModelSupport">
       </modelBehaviour>
       <modelBehaviour
             class="net.enilink.komma.model.IModelSet">
