@@ -164,7 +164,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 										IAdaptable info)
 										throws ExecutionException {
 									IResource newResource = resource
-											.getKommaManager().rename(resource,
+											.getEntityManager().rename(resource,
 													uri);
 									setInput(newResource);
 									return CommandResult.newOKCommandResult();

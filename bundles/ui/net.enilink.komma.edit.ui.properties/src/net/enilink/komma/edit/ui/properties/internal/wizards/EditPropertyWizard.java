@@ -33,7 +33,7 @@ public class EditPropertyWizard extends Wizard {
 				addPage(new DatatypePropertyPage(context));
 			} else {
 				if (context.predicate.getRdfsRanges().contains(
-						context.predicate.getKommaManager().find(
+						context.predicate.getEntityManager().find(
 								RDFS.TYPE_CLASS))) {
 					addPage(new ClassSelectionPage(context));
 				} else {
@@ -56,7 +56,7 @@ public class EditPropertyWizard extends Wizard {
 
 		Object object = context.object;
 		if (context.isDatatypeProperty()) {
-			object = context.subject.getKommaManager().createLiteral(
+			object = context.subject.getEntityManager().createLiteral(
 					context.objectLabel, context.objectType,
 					context.objectLanguage);
 		}
@@ -80,7 +80,7 @@ public class EditPropertyWizard extends Wizard {
 				return getPage(DatatypePropertyPage.PAGE_NAME);
 			} else {
 				if (context.predicate.getRdfsRanges().contains(
-						context.predicate.getKommaManager().find(
+						context.predicate.getEntityManager().find(
 								RDFS.TYPE_CLASS))) {
 					return getPage(ClassSelectionPage.PAGE_NAME);
 				} else {

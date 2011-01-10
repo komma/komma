@@ -164,7 +164,7 @@ class ValueEditingSupport extends EditingSupport {
 			} else if (colonIndex > 0) {
 				String prefix = template.substring(0, colonIndex);
 				URI namespaceUri = ((IEntity) stmt.getSubject())
-						.getKommaManager().getNamespace(prefix);
+						.getEntityManager().getNamespace(prefix);
 				if (namespaceUri != null) {
 					uriPattern = namespaceUri.appendFragment(
 							template.substring(colonIndex + 1)).toString();
@@ -174,7 +174,7 @@ class ValueEditingSupport extends EditingSupport {
 
 		// TODO incorporate correct ranges
 		return ((IEntity) stmt.getSubject())
-				.getKommaManager()
+				.getEntityManager()
 				.createQuery(
 						ISparqlConstants.PREFIX
 								+ "SELECT DISTINCT ?s WHERE {{?s ?p ?o . FILTER regex(str(?s), ?uriPattern)}"
@@ -244,7 +244,7 @@ class ValueEditingSupport extends EditingSupport {
 					literalType = ((ILiteral) object).getDatatype();
 					literalLanguage = ((ILiteral) object).getLanguage();
 				}
-				newObject = subject.getKommaManager().createLiteral(
+				newObject = subject.getEntityManager().createLiteral(
 						(String) value, literalType, literalLanguage);
 				if (newObject.equals(object)) {
 					newObject = null;

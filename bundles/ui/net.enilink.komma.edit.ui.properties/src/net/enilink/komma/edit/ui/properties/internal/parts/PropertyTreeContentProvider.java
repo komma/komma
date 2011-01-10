@@ -109,7 +109,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 					+ "} ORDER BY ?property";
 
 			IExtendedIterator<IProperty> result = ((IEntity) inputElement)
-					.getKommaManager().createQuery(SELECT_PROPERTIES)
+					.getEntityManager().createQuery(SELECT_PROPERTIES)
 					.setParameter("resource", (IEntity) inputElement)
 					.setIncludeInferred(includeInferred)
 					.evaluate(IProperty.class);

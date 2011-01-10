@@ -135,7 +135,7 @@ public class ObjectPropertyPage extends WizardPage implements
 		Collection<? extends IClass> ranges = property.getNamedRanges(
 				context.subject, true).toList();
 		if (ranges.isEmpty()) {
-			return Arrays.asList(context.subject.getKommaManager().find(
+			return Arrays.asList(context.subject.getEntityManager().find(
 					OWL.TYPE_THING, IClass.class));
 		}
 		return ranges;

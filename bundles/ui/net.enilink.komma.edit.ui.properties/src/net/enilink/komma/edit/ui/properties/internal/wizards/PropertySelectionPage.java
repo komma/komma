@@ -155,7 +155,7 @@ public class PropertySelectionPage extends WizardPage {
 			throws CoreException {
 		if (showAllProperties) {
 			if (allProperties == null) {
-				allProperties = context.subject.getKommaManager()
+				allProperties = context.subject.getEntityManager()
 						.findAll(Property.class).toList();
 			}
 

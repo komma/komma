@@ -61,7 +61,6 @@ import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.sesame.ISesameManager;
 import net.enilink.komma.util.KommaUtil;
 
 public class DatatypePropertyPart extends AbstractEditingDomainPart {
@@ -95,8 +94,7 @@ public class DatatypePropertyPart extends AbstractEditingDomainPart {
 			case 1:
 			case 2: {
 				if (!(element instanceof ILiteral)) {
-					element = ((ISesameManager) resource.getModel()
-							.getManager()).getValue(element);
+					element = resource.getModel().getManager().toValue(element);
 				}
 
 				if (element instanceof ILiteral) {
@@ -227,8 +225,7 @@ public class DatatypePropertyPart extends AbstractEditingDomainPart {
 					element = ((IStatement) element).getObject();
 				}
 				if (!(element instanceof ILiteral)) {
-					element = ((ISesameManager) resource.getModel()
-							.getManager()).getValue(element);
+					element = resource.getModel().getManager().toValue(element);
 				}
 				if (element instanceof ILiteral) {
 					ILiteral literal = (ILiteral) element;
@@ -272,16 +269,16 @@ public class DatatypePropertyPart extends AbstractEditingDomainPart {
 						value = convertToType(value, typeUri);
 					}
 
-					resource.getKommaManager().getTransaction().begin();
+					resource.getEntityManager().getTransaction().begin();
 					resource.removeProperty(dataProperty, element);
 					resource.addProperty(dataProperty, value);
-					resource.getKommaManager().getTransaction().commit();
+					resource.getEntityManager().getTransaction().commit();
 				} else if (TYPE.equals(property)) {
-					resource.getKommaManager().getTransaction().begin();
+					resource.getEntityManager().getTransaction().begin();
 					resource.removeProperty(dataProperty, element);
-					resource.addProperty(dataProperty, convertToType(element,
-							(URI) value));
-					resource.getKommaManager().getTransaction().commit();
+					resource.addProperty(dataProperty,
+							convertToType(element, (URI) value));
+					resource.getEntityManager().getTransaction().commit();
 				} else if (LANG.equals(property)) {
 					// resource.removeProperty(dataProperty, element);
 					// resource.addProperty(dataProperty, convertToType(element,
@@ -402,8 +399,8 @@ public class DatatypePropertyPart extends AbstractEditingDomainPart {
 		if (value instanceof ILiteral) {
 			value = ((ILiteral) value).getLabel();
 		}
-		return resource.getModel().getManager().createLiteral(value.toString(),
-				typeUri, null);
+		return resource.getModel().getManager()
+				.createLiteral(value.toString(), typeUri, null);
 	}
 
 	private Object convertToPropertyRange(Object value) {
@@ -448,12 +445,10 @@ public class DatatypePropertyPart extends AbstractEditingDomainPart {
 				IStructuredSelection selection = (IStructuredSelection) tableViewer
 						.getSelection();
 				for (Object selected : selection.toArray()) {
-					resource
-							.removeProperty(
-									dataProperty,
-									(selected instanceof IStatement) ? ((IStatement) selected)
-											.getObject()
-											: selected);
+					resource.removeProperty(
+							dataProperty,
+							(selected instanceof IStatement) ? ((IStatement) selected)
+									.getObject() : selected);
 				}
 			}
 		};

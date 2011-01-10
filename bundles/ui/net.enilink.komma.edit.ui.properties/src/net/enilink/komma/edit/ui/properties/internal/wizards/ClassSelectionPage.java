@@ -86,7 +86,7 @@ public class ClassSelectionPage extends WizardPage implements
 
 	@Override
 	public Object getTreeInput() {
-		return context.subject.getKommaManager().find(OWL.TYPE_THING);
+		return context.subject.getEntityManager().find(OWL.TYPE_THING);
 	}
 
 	@Override

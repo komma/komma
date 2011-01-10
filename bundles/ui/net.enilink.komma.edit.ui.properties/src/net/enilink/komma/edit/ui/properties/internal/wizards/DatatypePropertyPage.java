@@ -177,7 +177,7 @@ class DatatypePropertyPage extends WizardPage {
 					.toSet();
 
 			if (listOfDatatypes == null) {
-				listOfDatatypes = context.subject.getKommaManager().findAll(
+				listOfDatatypes = context.subject.getEntityManager().findAll(
 						Datatype.class).toList();
 			}
 
@@ -208,7 +208,7 @@ class DatatypePropertyPage extends WizardPage {
 
 			if (context.objectType != null) {
 				datatypeViewer.setSelection(new StructuredSelection(
-						context.subject.getKommaManager().find(
+						context.subject.getEntityManager().find(
 								context.objectType)), true);
 			}
 			languageCombo.setEditable(context.objectType == null);
