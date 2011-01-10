@@ -49,5 +49,7 @@ public interface RDF {
 	public static final URI PROPERTY_FIRST = NAMESPACE_URI.appendFragment("first");
 
 	public static final URI PROPERTY_REST = NAMESPACE_URI.appendFragment("rest");
+	
+	public static final URI NIL = NAMESPACE_URI.appendFragment("nil");
 
 }
