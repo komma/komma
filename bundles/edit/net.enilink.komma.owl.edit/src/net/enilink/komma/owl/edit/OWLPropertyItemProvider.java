@@ -17,11 +17,11 @@ import java.util.Collections;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.openrdf.model.vocabulary.OWL;
-import org.openrdf.model.vocabulary.RDFS;
 
 import net.enilink.vocab.owl.DatatypeProperty;
+import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.owl.ObjectProperty;
+import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CompositeCommand;
 import net.enilink.komma.common.command.ICommand;
@@ -40,10 +40,9 @@ import net.enilink.komma.edit.provider.ViewerNotification;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.sesame.SesameReference;
 
 public class OWLPropertyItemProvider extends ReflectiveItemProvider {
-	IReference subPropertyOf = new SesameReference(RDFS.SUBPROPERTYOF);
+	IReference subPropertyOf = RDFS.PROPERTY_SUBPROPERTYOF;
 
 	public OWLPropertyItemProvider(
 			OWLItemProviderAdapterFactory adapterFactory,
@@ -60,27 +59,22 @@ public class OWLPropertyItemProvider extends ReflectiveItemProvider {
 	protected void collectNewChildDescriptors(
 			ICollector<Object> newChildDescriptors, Object object) {
 		if (object instanceof DatatypeProperty) {
-			newChildDescriptors.add(createChildParameter(
-					(IProperty) ((IObject) object).getModel().resolve(
-							subPropertyOf),
-					new ChildDescriptor(Arrays
-							.asList((IClass) ((IObject) object).getModel()
-									.resolve(
-											new SesameReference(
-													OWL.DATATYPEPROPERTY))),
-							true)));
-		} else if (object instanceof ObjectProperty) {
 			newChildDescriptors
 					.add(createChildParameter(
 							(IProperty) ((IObject) object).getModel().resolve(
 									subPropertyOf),
 							new ChildDescriptor(
 									Arrays.asList((IClass) ((IObject) object)
-											.getModel()
-											.resolve(
-													new SesameReference(
-															OWL.OBJECTPROPERTY))),
+											.getModel().resolve(
+													OWL.TYPE_DATATYPEPROPERTY)),
 									true)));
+		} else if (object instanceof ObjectProperty) {
+			newChildDescriptors.add(createChildParameter(
+					(IProperty) ((IObject) object).getModel().resolve(
+							subPropertyOf),
+					new ChildDescriptor(Arrays
+							.asList((IClass) ((IObject) object).getModel()
+									.resolve(OWL.TYPE_OBJECTPROPERTY)), true)));
 		}
 		newChildDescriptors.done();
 	}

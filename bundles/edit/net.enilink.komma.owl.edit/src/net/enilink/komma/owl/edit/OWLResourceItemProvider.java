@@ -39,7 +39,7 @@ public class OWLResourceItemProvider extends ReflectiveItemProvider {
 			Collection<IProperty> childrenProperties) {
 		if (object instanceof Ontology) {
 			childrenProperties.add((IProperty) ((IResource) object)
-					.getKommaManager().find(OWL.PROPERTY_IMPORTS));
+					.getEntityManager().find(OWL.PROPERTY_IMPORTS));
 		}
 	}
 
