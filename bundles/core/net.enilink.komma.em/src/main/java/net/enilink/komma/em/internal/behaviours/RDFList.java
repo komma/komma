@@ -42,9 +42,7 @@ import net.enilink.composition.traits.Behaviour;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.concepts.ResourceSupport;
-import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IValue;
@@ -181,13 +179,6 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 				}
 			}
 
-			private Object createInstance(IValue first) {
-				if (first instanceof IReference) {
-					getEntityManager().find((IReference) first);
-				}
-				return getEntityManager().toInstance((ILiteral) first);
-			}
-
 			public boolean hasNext() {
 				IReference next;
 				if (list == null) {
@@ -214,7 +205,7 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 				IValue first = getFirst(list);
 				if (first == null)
 					throw new NoSuchElementException();
-				return createInstance(first);
+				return getEntityManager().toInstance(first);
 			}
 
 			public int nextIndex() {
@@ -229,7 +220,7 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 				IValue first = getFirst(list);
 				if (first == null)
 					throw new NoSuchElementException();
-				return createInstance(first);
+				return getEntityManager().toInstance(first);
 			}
 
 			public int previousIndex() {

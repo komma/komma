@@ -41,7 +41,6 @@ import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.concepts.ResourceSupport;
-import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
@@ -93,10 +92,6 @@ public abstract class RDFSContainer extends AbstractList<Object> implements
 		getEntityManager().add(new Statement(getBehaviourDelegate(), pred, o));
 	}
 
-	private Object createInstance(IValue next) {
-		return getEntityManager().toInstance(next);
-	}
-
 	@Override
 	public Object get(int index) {
 		URI pred = getMemberPredicate(index);
@@ -104,7 +99,7 @@ public abstract class RDFSContainer extends AbstractList<Object> implements
 		try {
 			if (stmts.hasNext()) {
 				IValue next = stmts.next();
-				return createInstance(next);
+				return getEntityManager().toInstance(next);
 			}
 			return null;
 		} finally {
@@ -277,7 +272,7 @@ public abstract class RDFSContainer extends AbstractList<Object> implements
 				getEntityManager().getTransaction().begin();
 			}
 			IValue value = getAndSet(index, obj);
-			Object old = createInstance(value);
+			Object old = getEntityManager().toInstance(value);
 			if (!active) {
 				getEntityManager().getTransaction().commit();
 			}
