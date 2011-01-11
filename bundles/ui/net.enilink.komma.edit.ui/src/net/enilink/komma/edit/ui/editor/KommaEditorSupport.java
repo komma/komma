@@ -635,8 +635,6 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 					analyzeModelProblems(model, exception));
 		}
 
-		model.getManager();
-
 		getEditingDomain().getModelSet().addMetaDataListener(
 				problemIndicationListener);
 	}
