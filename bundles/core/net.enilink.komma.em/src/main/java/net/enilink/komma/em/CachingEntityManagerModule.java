@@ -14,11 +14,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.infinispan.Cache;
 import org.infinispan.tree.Fqn;
 import org.infinispan.tree.TreeCache;
-import org.infinispan.tree.TreeCacheFactory;
 import net.enilink.composition.asm.BehaviourMethodProcessor;
 import net.enilink.composition.cache.IPropertyCache;
 import net.enilink.composition.cache.behaviours.CacheBehaviourMethodProcessor;
@@ -27,11 +27,13 @@ import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Named;
 
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.komma.em.internal.CachingEntityManager;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReferenceable;
+import net.enilink.komma.core.URI;
 
 public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 	@Override
@@ -46,16 +48,18 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 		multibinder.addBinding().to(CacheBehaviourMethodProcessor.class);
 	}
 
-	@Singleton
 	@Provides
-	TreeCache<Object, Object> provideTreeCache(Cache<Object, Object> cache) {
-		return new TreeCacheFactory().createTreeCache(cache);
+	Fqn provideBaseFqn(@Named("addContexts") Set<URI> addContexts) {
+		if (addContexts != null) {
+			return Fqn.fromElements(addContexts.toArray());
+		}
+		return Fqn.root();
 	}
 
 	@Singleton
 	@Provides
 	IPropertyCache providePropertyCache(
-			final TreeCache<Object, Object> treeCache) {
+			final TreeCache<Object, Object> treeCache, final Fqn baseFqn) {
 		return new IPropertyCache() {
 			@SuppressWarnings("serial")
 			class IteratorList extends ArrayList<Object> {
@@ -64,7 +68,7 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 			@Override
 			public Object put(Object entity, Object property,
 					Object[] parameters, Object value) {
-				Fqn fqn = Fqn.fromElements(
+				Fqn fqn = Fqn.fromRelativeElements(baseFqn,
 						((IReferenceable) entity).getReference(), property);
 				boolean isIterator = value instanceof Iterator<?>;
 				if (isIterator) {
@@ -90,7 +94,7 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 			@Override
 			public Object get(Object entity, Object property,
 					Object[] parameters) {
-				Fqn fqn = Fqn.fromElements(
+				Fqn fqn = Fqn.fromRelativeElements(baseFqn,
 						((IReferenceable) entity).getReference(), property);
 				Object value = treeCache.get(fqn, Arrays.asList(parameters));
 

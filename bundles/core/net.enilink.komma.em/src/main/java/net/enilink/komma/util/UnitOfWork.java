@@ -10,12 +10,6 @@ public class UnitOfWork implements IUnitOfWork {
 	private ThreadLocal<Integer> countLocal = new ThreadLocal<Integer>();
 	private ThreadLocal<List<IEntityManager>> trackedManagersLocal = new ThreadLocal<List<IEntityManager>>();
 
-	@Override
-	public void begin() {
-		Integer count = countLocal.get();
-		countLocal.set(count == null ? 1 : count + 1);
-	}
-
 	public void addManager(IEntityManager manager) {
 		List<IEntityManager> trackedManagers = trackedManagersLocal.get();
 		if (trackedManagers == null) {
@@ -23,6 +17,12 @@ public class UnitOfWork implements IUnitOfWork {
 			trackedManagersLocal.set(trackedManagers);
 		}
 		trackedManagers.add(manager);
+	}
+
+	@Override
+	public void begin() {
+		Integer count = countLocal.get();
+		countLocal.set(count == null ? 1 : count + 1);
 	}
 
 	@Override
@@ -46,5 +46,12 @@ public class UnitOfWork implements IUnitOfWork {
 			trackedManagersLocal.remove();
 			countLocal.remove();
 		}
+	}
+
+	/**
+	 * Tests if this unit of work is currently active.
+	 */
+	public boolean isActive() {
+		return countLocal.get() != null;
 	}
 }

@@ -15,6 +15,8 @@ import org.infinispan.config.Configuration;
 import org.infinispan.config.GlobalConfiguration;
 import org.infinispan.manager.CacheManager;
 import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.tree.TreeCache;
+import org.infinispan.tree.TreeCacheFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -40,5 +42,11 @@ public class CacheModule extends AbstractModule {
 	@Provides
 	Cache<Object, Object> provideCache(CacheManager cacheManager) {
 		return cacheManager.getCache();
+	}
+
+	@Singleton
+	@Provides
+	TreeCache<Object, Object> provideTreeCache(Cache<Object, Object> cache) {
+		return new TreeCacheFactory().createTreeCache(cache);
 	}
 }

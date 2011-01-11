@@ -132,11 +132,11 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	private Map<net.enilink.komma.core.URI, String> uriToPrefix = null;
 
-	@Inject(optional = true)
+	@Inject
 	@Named("readContexts")
 	private Set<URI> readContexts;
 
-	@Inject(optional = true)
+	@Inject
 	@Named("addContexts")
 	private Set<URI> addContexts;
 
@@ -930,12 +930,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	@Inject
 	protected void setDataManager(IDataManager dm) {
 		this.dm = dm;
-		if (addContexts != null) {
-			this.dm.setAddContexts(addContexts);
-		}
-		if (readContexts != null) {
-			this.dm.setReadContexts(readContexts);
-		}
+		this.dm.setAddContexts(addContexts);
+		this.dm.setReadContexts(readContexts);
 
 		resourceManager = new ResourceManager(dm);
 		typeManager = new TypeManager(dm);

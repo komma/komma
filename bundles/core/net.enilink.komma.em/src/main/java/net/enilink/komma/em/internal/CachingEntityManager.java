@@ -34,6 +34,9 @@ import net.enilink.komma.core.URI;
 public class CachingEntityManager extends DecoratingEntityManager implements
 		IDataChangeListener {
 	@Inject
+	Fqn baseFqn;
+
+	@Inject
 	TreeCache<Object, Object> cache;
 
 	IDataChangeTracker changeTracker;
@@ -49,17 +52,14 @@ public class CachingEntityManager extends DecoratingEntityManager implements
 
 	@Override
 	public void close() {
-		if (cache != null) {
-			cache.stop();
-			cache = null;
-		}
 		changeTracker.removeChangeListener(this);
 		super.close();
 	}
 
 	public IEntity createBean(IReference resource, Collection<URI> types,
 			boolean restrictTypes, IGraph graph) {
-		Object element = cache.get(Fqn.fromElements(resource), "");
+		Object element = cache.get(Fqn.fromRelativeElements(baseFqn, resource),
+				"");
 		if (element != null) {
 			if (graph != null) {
 				initializeBean((IEntity) element, graph);
@@ -69,9 +69,22 @@ public class CachingEntityManager extends DecoratingEntityManager implements
 		IEntity entity = super
 				.createBean(resource, types, restrictTypes, graph);
 		if (!restrictTypes) {
-			cache.put(Fqn.fromElements(resource), "", entity);
+			cache.put(Fqn.fromRelativeElements(baseFqn, resource), "", entity);
 		}
 		return entity;
+	}
+
+	@Override
+	public void dataChanged(List<IDataChange> changes) {
+		for (IDataChange change : changes) {
+			if (change instanceof IStatementChange) {
+				IStatementChange stmtChange = (IStatementChange) change;
+				cache.removeNode(Fqn.fromRelativeElements(baseFqn,
+						stmtChange.getSubject()));
+				cache.removeNode(Fqn.fromRelativeElements(baseFqn,
+						stmtChange.getObject()));
+			}
+		}
 	}
 
 	@Override
@@ -84,18 +97,7 @@ public class CachingEntityManager extends DecoratingEntityManager implements
 	@Override
 	public void refresh(Object entity) {
 		super.refresh(entity);
-		cache.removeNode(Fqn.fromElements(entity));
-	}
-
-	@Override
-	public void dataChanged(List<IDataChange> changes) {
-		for (IDataChange change : changes) {
-			if (change instanceof IStatementChange) {
-				IStatementChange stmtChange = (IStatementChange) change;
-				cache.removeNode(Fqn.fromElements(stmtChange.getSubject()));
-				cache.removeNode(Fqn.fromElements(stmtChange.getObject()));
-			}
-		}
+		cache.removeNode(Fqn.fromRelativeElements(baseFqn, entity));
 	}
 
 	@Inject
