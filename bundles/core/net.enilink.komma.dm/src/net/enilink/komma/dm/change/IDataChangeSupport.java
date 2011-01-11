@@ -13,7 +13,9 @@ public interface IDataChangeSupport extends IDataChangeListener {
 
 	void commit(IDataManager dm);
 
-	boolean isEnabled();
+	boolean isEnabled(IDataManager dm);
+
+	void setEnabled(IDataManager dm, boolean enabled);
 
 	void remove(IDataManager dm, IReference subj, IReference pred, IValue obj,
 			IReference... contexts);

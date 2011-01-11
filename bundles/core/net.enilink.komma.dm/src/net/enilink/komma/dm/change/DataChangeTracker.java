@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import net.enilink.komma.dm.IDataManager;
@@ -28,8 +29,7 @@ public class DataChangeTracker implements IDataChangeSupport,
 		IDataChangeTracker {
 	private final static IReference[] NULL_CONTEXT = { null };
 	protected Map<IDataManager, List<IDataChange>> activeDataManagers = new HashMap<IDataManager, List<IDataChange>>();
-
-	private boolean enabled = true;
+	protected WeakHashMap<IDataManager, Object> disabledDataManagers = new WeakHashMap<IDataManager, Object>();
 
 	private CopyOnWriteArraySet<IDataChangeListener> listeners = new CopyOnWriteArraySet<IDataChangeListener>();
 
@@ -96,8 +96,10 @@ public class DataChangeTracker implements IDataChangeSupport,
 	}
 
 	@Override
-	public boolean isEnabled() {
-		return enabled;
+	public boolean isEnabled(IDataManager dm) {
+		synchronized (disabledDataManagers) {
+			return disabledDataManagers.get(dm) == null;
+		}
 	}
 
 	protected void notifyListeners(List<IDataChange> changes) {
@@ -139,8 +141,14 @@ public class DataChangeTracker implements IDataChangeSupport,
 		}
 	}
 
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
+	public void setEnabled(IDataManager dm, boolean enabled) {
+		synchronized (disabledDataManagers) {
+			if (enabled) {
+				disabledDataManagers.remove(dm);
+			} else {
+				disabledDataManagers.put(dm, true);
+			}
+		}
 	}
 
 	@Override
