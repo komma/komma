@@ -320,7 +320,8 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	@Override
 	public void dispose() {
 		removeAndUnloadAllModels();
-
+		getUnitOfWork().end();
+		
 		if (metaDataManagerFactory != null) {
 			getEntityManager().close();
 

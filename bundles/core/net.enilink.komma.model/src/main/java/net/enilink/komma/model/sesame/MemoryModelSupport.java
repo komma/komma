@@ -37,6 +37,7 @@ import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.URIImpl;
@@ -99,6 +100,9 @@ public abstract class MemoryModelSupport implements IModel, Model,
 	@Inject
 	SesameValueConverter valueConverter;
 
+	@Inject
+	IUnitOfWork unitOfWork;
+
 	@Override
 	public void load(final InputStream in, Map<?, ?> options)
 			throws IOException {
@@ -151,6 +155,7 @@ public abstract class MemoryModelSupport implements IModel, Model,
 							}
 						});
 						try {
+							unitOfWork.begin();
 							parser.parse(in, getURI().toString());
 						} catch (RDFParseException e) {
 							throw new KommaException("Invalid RDF data", e);
@@ -159,6 +164,8 @@ public abstract class MemoryModelSupport implements IModel, Model,
 						} catch (IOException e) {
 							throw new KommaException("Cannot access RDF data",
 									e);
+						} finally {
+							unitOfWork.end();
 						}
 					}
 				});

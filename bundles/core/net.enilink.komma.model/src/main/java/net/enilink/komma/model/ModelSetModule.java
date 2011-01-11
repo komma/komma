@@ -45,6 +45,11 @@ public class ModelSetModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
+		UnitOfWork uow = new UnitOfWork();
+		uow.begin();
+
+		bind(UnitOfWork.class).toInstance(uow);
+		bind(IUnitOfWork.class).toInstance(uow);
 	}
 
 	@Provides
@@ -80,10 +85,13 @@ public class ModelSetModule extends AbstractModule {
 				new AbstractModule() {
 					@Override
 					protected void configure() {
-						bind(Repository.class).toInstance(
-								createMetaDataRepository());
-						bind(UnitOfWork.class).in(Singleton.class);
-						bind(IUnitOfWork.class).to(UnitOfWork.class);
+					}
+
+					@Singleton
+					@Provides
+					@SuppressWarnings("unused")
+					Repository provideRepository() {
+						return createMetaDataRepository();
 					}
 				},
 				new SesameModule(),

@@ -12,18 +12,14 @@ package net.enilink.komma.model;
 
 import net.enilink.composition.traits.Behaviour;
 
-import com.google.inject.Inject;
-
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.concepts.BehaviorBase;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.core.IQuery;
 
 public abstract class ObjectSupport extends BehaviorBase implements IObject,
-		IModelAware, Behaviour<IObject> {
-	private static final String SELECT_CONTAINER = PREFIX //
-			+ "SELECT ?container WHERE { ?container komma:contains ?obj . }";
-
+		IModelAware, Behaviour<IObject>,
+		net.enilink.komma.internal.model.IModelAware {
 	private static final String SELECT_APPLICABLE_CHILD_PROPERTIES = PREFIX //
 			+ "SELECT DISTINCT ?property " //
 			+ "WHERE { " //
@@ -40,12 +36,26 @@ public abstract class ObjectSupport extends BehaviorBase implements IObject,
 			+ "	{" //
 			+ "		?otherProperty rdfs:domain ?class ." //
 			+ "	} UNION {" //
-			+ "		?class rdfs:subClassOf [owl:onProperty ?otherProperty]"
-			+ "	}" //
+			+ "		?class rdfs:subClassOf [owl:onProperty ?otherProperty]" + "	}" //
 			+ "	FILTER (?property != ?otherProperty)" //
 			+ "}" //
 			+ "FILTER (! bound(?otherProperty))" //
 			+ "} ORDER BY ?property";
+
+	private static final String SELECT_CONTAINER = PREFIX //
+			+ "SELECT ?container WHERE { ?container komma:contains ?obj . }";
+
+	private IModel model;
+
+	@Override
+	public IExtendedIterator<IProperty> getApplicableChildProperties() {
+		IQuery<?> query = getEntityManager().createQuery(
+				SELECT_APPLICABLE_CHILD_PROPERTIES);
+		query.setParameter("resource", getBehaviourDelegate());
+		query.setIncludeInferred(true);
+
+		return query.evaluate(IProperty.class);
+	}
 
 	@Override
 	public IObject getContainer() {
@@ -60,20 +70,12 @@ public abstract class ObjectSupport extends BehaviorBase implements IObject,
 	}
 
 	@Override
-	public IExtendedIterator<IProperty> getApplicableChildProperties() {
-		IQuery<?> query = getEntityManager().createQuery(
-				SELECT_APPLICABLE_CHILD_PROPERTIES);
-		query.setParameter("resource", getBehaviourDelegate());
-		query.setIncludeInferred(true);
-
-		return query.evaluate(IProperty.class);
-	}
-
-	@Inject
-	private IModel model;
-
-	@Override
 	public IModel getModel() {
 		return model;
+	}
+
+	@Override
+	public void initModel(IModel model) {
+		this.model = model;
 	}
 }
