@@ -50,10 +50,7 @@ public class ChangeDescription implements IChangeDescription {
 
 				DataChangeTracker changeTracker = (DataChangeTracker) modelSet
 						.getDataChangeTracker();
-				boolean isTrackingChanges = changeTracker.isEnabled();
-				if (isTrackingChanges) {
-					changeTracker.setEnabled(false);
-				}
+				changeTracker.setEnabled(dm, false);
 
 				dm.getTransaction().begin();
 				for (ListIterator<IDataChange> it = changes
@@ -62,7 +59,6 @@ public class ChangeDescription implements IChangeDescription {
 				}
 
 				dm.getTransaction().commit();
-				changeTracker.setEnabled(isTrackingChanges);
 			} catch (Throwable e) {
 				if (dm != null && dm.getTransaction().isActive()) {
 					dm.getTransaction().rollback();
@@ -88,10 +84,7 @@ public class ChangeDescription implements IChangeDescription {
 
 				DataChangeTracker changeTracker = (DataChangeTracker) modelSet
 						.getDataChangeTracker();
-				boolean isTrackingChanges = changeTracker.isEnabled();
-				if (isTrackingChanges) {
-					changeTracker.setEnabled(false);
-				}
+				changeTracker.setEnabled(dm, false);
 
 				dm.getTransaction().begin();
 				for (ListIterator<IDataChange> it = changes
@@ -100,7 +93,6 @@ public class ChangeDescription implements IChangeDescription {
 				}
 
 				dm.getTransaction().commit();
-				changeTracker.setEnabled(isTrackingChanges);
 			} catch (Throwable e) {
 				if (dm != null && dm.getTransaction().isActive()) {
 					dm.getTransaction().rollback();

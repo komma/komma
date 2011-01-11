@@ -43,6 +43,7 @@ import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.dm.change.IDataChangeListener;
+import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.dm.change.IDataChangeTracker;
 import net.enilink.komma.dm.change.INamespaceChange;
 import net.enilink.komma.dm.change.IStatementChange;
@@ -321,7 +322,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	public void dispose() {
 		removeAndUnloadAllModels();
 		getUnitOfWork().end();
-		
+
 		if (metaDataManagerFactory != null) {
 			getEntityManager().close();
 
@@ -392,6 +393,11 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	 */
 	public List<IAdapterFactory> getAdapterFactories() {
 		return adapterFactories;
+	}
+
+	@Override
+	public IDataChangeSupport getDataChangeSupport() {
+		return injector.getInstance(IDataChangeSupport.class);
 	}
 
 	@Override
@@ -664,7 +670,6 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	public void removeMetaDataListener(
 			INotificationListener<INotification> listener) {
 		metaDataNotificationSupport.removeListener(listener);
-
 	}
 
 	@Override

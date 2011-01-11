@@ -25,6 +25,7 @@ import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.INotifier;
 import net.enilink.komma.common.util.WrappedException;
 import net.enilink.komma.dm.IDataManagerFactory;
+import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.dm.change.IDataChangeTracker;
 import net.enilink.komma.model.base.AbstractModelSetSupport;
 import net.enilink.komma.core.IEntityManager;
@@ -116,6 +117,13 @@ public interface IModelSet extends INotifier<INotification> {
 	 */
 	void dispose();
 
+	/**
+	 * Returns change support for changes made to the underlying data repository.
+	 * 
+	 * @return the change support
+	 */
+	IDataChangeSupport getDataChangeSupport();
+	
 	/**
 	 * Returns tracker for changes made to the underlying data repository.
 	 * 

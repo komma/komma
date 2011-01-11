@@ -108,6 +108,8 @@ public abstract class MemoryModelSupport implements IModel, Model,
 			throws IOException {
 		final IDataManager dm = ((IModelSet.Internal) getModelSet())
 				.getDataManagerFactory().get();
+		getModelSet().getDataChangeSupport().setEnabled(dm, false);
+
 		try {
 			setModelLoading(true);
 
