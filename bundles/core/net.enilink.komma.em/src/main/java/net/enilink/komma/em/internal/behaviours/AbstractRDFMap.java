@@ -22,15 +22,12 @@ import net.enilink.composition.traits.Behaviour;
 
 import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.common.util.URIUtil;
 import net.enilink.komma.concepts.CONCEPTS;
-import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IValue;
-import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 
