@@ -68,7 +68,7 @@ public class SesameTransaction implements ITransaction {
 			dm.getConnection().commit();
 			rollbackOnly = false;
 
-			if (changeSupport.isEnabled()) {
+			if (changeSupport.isEnabled(dm)) {
 				changeSupport.commit(dm);
 			}
 		} catch (StoreException e) {
@@ -84,7 +84,7 @@ public class SesameTransaction implements ITransaction {
 			dm.getConnection().rollback();
 			rollbackOnly = false;
 
-			if (changeSupport.isEnabled()) {
+			if (changeSupport.isEnabled(dm)) {
 				changeSupport.rollback(dm);
 			}
 		} catch (StoreException e) {

@@ -83,7 +83,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 				Value object = valueConverter.toSesame((IValue) stmt
 						.getObject());
 
-				if (changeSupport.isEnabled()) {
+				if (changeSupport.isEnabled(this)) {
 					if (!conn.hasMatch(subject, predicate, object, false)) {
 						changeSupport.add(this, stmt.getSubject(),
 								stmt.getPredicate(), (IValue) stmt.getObject(),
@@ -92,7 +92,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 				}
 				conn.add(subject, predicate, object);
 			}
-			if (changeSupport.isEnabled() && !getTransaction().isActive()) {
+			if (changeSupport.isEnabled(this) && !getTransaction().isActive()) {
 				changeSupport.commit(this);
 			}
 		} catch (StoreException e) {
@@ -104,7 +104,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 	@Override
 	public IDataManager clearNamespaces() {
 		try {
-			if (changeSupport.isEnabled()) {
+			if (changeSupport.isEnabled(this)) {
 				for (INamespace namespace : getNamespaces()) {
 					changeSupport.removeNamespace(this, namespace.getPrefix(),
 							namespace.getURI());
@@ -305,7 +305,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 				Value object = valueConverter.toSesame((IValue) stmt
 						.getObject());
 
-				if (changeSupport.isEnabled()) {
+				if (changeSupport.isEnabled(this)) {
 					for (IStatement existing : match(stmt.getSubject(),
 							stmt.getPredicate(), (IValue) stmt.getObject())) {
 						changeSupport.remove(this, existing.getSubject(),
@@ -316,7 +316,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 				}
 				conn.removeMatch(subject, predicate, object);
 			}
-			if (changeSupport.isEnabled() && !getTransaction().isActive()) {
+			if (changeSupport.isEnabled(this) && !getTransaction().isActive()) {
 				changeSupport.commit(this);
 			}
 		} catch (StoreException e) {
@@ -328,7 +328,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 	@Override
 	public IDataManager removeNamespace(String prefix) {
 		try {
-			if (changeSupport.isEnabled()) {
+			if (changeSupport.isEnabled(this)) {
 				String namespace = getConnection().getNamespace(prefix);
 				if (namespace != null) {
 					changeSupport.removeNamespace(this, prefix,
@@ -339,7 +339,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 
 			getConnection().removeNamespace(prefix);
 
-			if (changeSupport.isEnabled()) {
+			if (changeSupport.isEnabled(this)) {
 				changeSupport.commit(this);
 			}
 		} catch (StoreException e) {
@@ -368,14 +368,14 @@ public class SesameRepositoryDataManager implements IDataManager {
 	public IDataManager setNamespace(String prefix,
 			net.enilink.komma.core.URI uri) {
 		try {
-			if (changeSupport.isEnabled()) {
+			if (changeSupport.isEnabled(this)) {
 				net.enilink.komma.core.URI existing = getNamespace(prefix);
 				changeSupport.setNamespace(this, prefix, existing, uri);
 			}
 
 			getConnection().setNamespace(prefix, uri.toString());
 
-			if (changeSupport.isEnabled()) {
+			if (changeSupport.isEnabled(this)) {
 				changeSupport.commit(this);
 			}
 		} catch (StoreException e) {

@@ -1,9 +1,7 @@
 package net.enilink.komma.internal.sesame.result;
 
-import java.util.Iterator;
 import java.util.List;
 
-import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.result.TupleResult;
 import org.openrdf.store.StoreException;
@@ -30,10 +28,8 @@ public class SesameTupleResult extends SesameResult<BindingSet, IValue[]>
 	protected IValue[] convert(BindingSet element) throws Exception {
 		IValue[] result = new IValue[element.size()];
 		int i = 0;
-		for (Iterator<Binding> it = element.iterator(); it.hasNext(); i++) {
-			Binding binding = it.next();
-
-			result[i] = valueConverter.fromSesame(binding.getValue());
+		for (String name : getBindingNames()) {
+			result[i++] = valueConverter.fromSesame(element.getValue(name));
 		}
 		return result;
 	}
