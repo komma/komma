@@ -38,7 +38,7 @@ import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 
-class ManagerCompositionModule extends AbstractModule {
+public class ManagerCompositionModule extends AbstractModule {
 	private static Map<ClassLoader, WeakReference<ClassDefiner>> definers = new WeakHashMap<ClassLoader, WeakReference<ClassDefiner>>();
 
 	private KommaModule module;

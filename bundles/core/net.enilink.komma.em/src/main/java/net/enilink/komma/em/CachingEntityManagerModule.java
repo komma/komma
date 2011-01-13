@@ -23,6 +23,7 @@ import net.enilink.composition.asm.BehaviourMethodProcessor;
 import net.enilink.composition.cache.IPropertyCache;
 import net.enilink.composition.cache.behaviours.CacheBehaviourMethodProcessor;
 
+import com.google.inject.Inject;
 import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -49,6 +50,7 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 	}
 
 	@Provides
+	@Inject(optional = true)
 	Fqn provideBaseFqn(@Named("addContexts") Set<URI> addContexts) {
 		if (addContexts != null) {
 			return Fqn.fromElements(addContexts.toArray());

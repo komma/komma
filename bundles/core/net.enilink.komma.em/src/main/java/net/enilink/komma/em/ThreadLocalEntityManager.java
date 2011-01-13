@@ -37,8 +37,6 @@ import net.enilink.komma.core.URI;
 
 public class ThreadLocalEntityManager implements IEntityManager {
 	private ThreadLocal<IEntityManager> delegate = new ThreadLocal<IEntityManager>();
-	private Provider<IEntityManager> managerProvider;
-
 	private IEntityDecorator managerInjector = new IEntityDecorator() {
 		@Override
 		public void decorate(IEntity entity) {
@@ -46,6 +44,8 @@ public class ThreadLocalEntityManager implements IEntityManager {
 					.initEntityManager(ThreadLocalEntityManager.this);
 		}
 	};
+
+	private Provider<IEntityManager> managerProvider;
 
 	@Override
 	public void add(Iterable<? extends IStatement> statements) {
@@ -272,6 +272,12 @@ public class ThreadLocalEntityManager implements IEntityManager {
 	}
 
 	@Override
+	public IExtendedIterator<IStatement> matchAsserted(IReference subject,
+			IReference predicate, IValue object) {
+		return getDelegate().matchAsserted(subject, predicate, object);
+	}
+
+	@Override
 	public <T> T merge(T bean) {
 		return getDelegate().merge(bean);
 	}
@@ -333,14 +339,14 @@ public class ThreadLocalEntityManager implements IEntityManager {
 		return getDelegate().rename(bean, uri);
 	}
 
-	@Override
-	public void setFlushMode(FlushModeType flushMode) {
-		getDelegate().setFlushMode(flushMode);
-	}
-
 	public void setEntityManagerProvider(
 			Provider<IEntityManager> managerProvider) {
 		this.managerProvider = managerProvider;
+	}
+
+	@Override
+	public void setFlushMode(FlushModeType flushMode) {
+		getDelegate().setFlushMode(flushMode);
 	}
 
 	@Override

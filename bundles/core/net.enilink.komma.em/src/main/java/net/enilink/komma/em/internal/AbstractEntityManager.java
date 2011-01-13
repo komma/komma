@@ -132,11 +132,11 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	private Map<net.enilink.komma.core.URI, String> uriToPrefix = null;
 
-	@Inject
+	@Inject(optional = true)
 	@Named("readContexts")
 	private Set<URI> readContexts;
 
-	@Inject
+	@Inject(optional = true)
 	@Named("addContexts")
 	private Set<URI> addContexts;
 
@@ -781,6 +781,12 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		return dm.match(subject, predicate, toValue(object));
 	}
 
+	@Override
+	public IExtendedIterator<IStatement> matchAsserted(IReference subject,
+			IReference predicate, IValue object) {
+		return dm.matchAsserted(subject, predicate, toValue(object));
+	}
+
 	@SuppressWarnings("unchecked")
 	public <T> T merge(T bean) {
 		if (bean == null) {
@@ -867,8 +873,12 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	public void remove(Object entity) {
-		IReference resource = getReferenceOrFail(entity);
-		resourceManager.removeResource(resource);
+		if (entity instanceof IStatement) {
+			remove(Collections.singleton((IStatement) entity));
+		} else {
+			IReference resource = getReferenceOrFail(entity);
+			resourceManager.removeResource(resource);
+		}
 	}
 
 	@Override
@@ -930,8 +940,10 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	@Inject
 	protected void setDataManager(IDataManager dm) {
 		this.dm = dm;
-		this.dm.setAddContexts(addContexts);
-		this.dm.setReadContexts(readContexts);
+		this.dm.setAddContexts(addContexts != null ? addContexts : Collections
+				.<URI> emptySet());
+		this.dm.setReadContexts(readContexts != null ? readContexts
+				: Collections.<URI> emptySet());
 
 		resourceManager = new ResourceManager(dm);
 		typeManager = new TypeManager(dm);

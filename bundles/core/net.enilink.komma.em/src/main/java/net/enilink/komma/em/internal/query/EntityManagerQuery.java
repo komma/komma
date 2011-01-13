@@ -100,7 +100,7 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 		int max = maxResults <= 0 ? 0 : maxResults + firstResult;
 
 		if (result instanceof ITupleResult) {
-			if (resultType == null
+			if ((resultType == null || resultType.isArray())
 					&& ((ITupleResult<?>) result).getBindingNames().size() > 1) {
 				iter = new TupleIterator(manager,
 						(ITupleResult<IValue[]>) result, max, resultInfos);

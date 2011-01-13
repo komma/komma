@@ -57,6 +57,9 @@ class EntityManagerFactory implements IEntityManagerFactory {
 	@Inject
 	Provider<IDataManager> dmProvider;
 
+	@Inject(optional = true)
+	Provider<IEntityManager> emProvider;
+
 	@Inject
 	Injector injector;
 
@@ -64,11 +67,11 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 	Injector managerInjector;
 
+	Module managerModule;
+
 	KommaModule module;
 
 	private boolean open = true;
-
-	Module managerModule;
 
 	public EntityManagerFactory(KommaModule module, Locale locale,
 			Module managerModule) {
@@ -112,7 +115,23 @@ class EntityManagerFactory implements IEntityManagerFactory {
 	}
 
 	@Override
-	public IEntityManager createEntityManager() {
+	public IEntityManager get() {
+		if (emProvider != null) {
+			return emProvider.get();
+		}
+		return getManagerInjector().getInstance(IEntityManager.class);
+	}
+
+	// protected void init(KommaModule module, LoaderRepository repository) {
+	// this.module = module;
+	// this.repository = repository;
+	//
+	// for (Map.Entry<URL, String> e : module.getDatasets().entrySet()) {
+	// loadContext(e.getKey(), e.getValue());
+	// }
+	// }
+
+	public synchronized Injector getManagerInjector() {
 		if (managerInjector == null) {
 			managerInjector = injector.createChildInjector(
 					new ManagerCompositionModule(module, locale),
@@ -128,17 +147,8 @@ class EntityManagerFactory implements IEntityManagerFactory {
 						}
 					}, managerModule);
 		}
-		return managerInjector.getInstance(IEntityManager.class);
+		return managerInjector;
 	}
-
-	// protected void init(KommaModule module, LoaderRepository repository) {
-	// this.module = module;
-	// this.repository = repository;
-	//
-	// for (Map.Entry<URL, String> e : module.getDatasets().entrySet()) {
-	// loadContext(e.getKey(), e.getValue());
-	// }
-	// }
 
 	@Override
 	public Map<String, Object> getProperties() {

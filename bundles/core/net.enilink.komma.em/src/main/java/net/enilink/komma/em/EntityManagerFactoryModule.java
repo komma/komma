@@ -29,9 +29,13 @@ import net.enilink.komma.core.KommaModule;
 public class EntityManagerFactoryModule extends AbstractModule {
 	Locale locale;
 
+	Module managerModule;
+
 	KommaModule module;
 
-	Module managerModule;
+	public EntityManagerFactoryModule(KommaModule module, Locale locale) {
+		this(module, locale, null);
+	}
 
 	public EntityManagerFactoryModule(KommaModule module, Locale locale,
 			Module managerModule) {

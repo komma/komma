@@ -62,7 +62,7 @@ public abstract class EntityManagerTestCase extends KommaTestCase {
 					}
 				}).getInstance(IEntityManagerFactory.class);
 
-		manager = factory.createEntityManager();
+		manager = factory.get();
 	}
 
 	protected KommaModule createModule() throws Exception {
