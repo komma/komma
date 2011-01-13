@@ -185,7 +185,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	public synchronized IEntityManager getManager() {
 		if (manager == null) {
 			manager = modelSet.getEntityManagerFactory()
-					.createChildFactory(getModule()).createEntityManager();
+					.createChildFactory(getModule()).get();
 			manager.addDecorator(new ModelInjector());
 		}
 		return manager;

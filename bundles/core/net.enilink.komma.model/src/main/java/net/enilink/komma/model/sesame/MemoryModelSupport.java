@@ -14,9 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.traits.Behaviour;
-import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
@@ -38,7 +36,6 @@ import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IUnitOfWork;
-import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.sesame.SesameValueConverter;
@@ -216,7 +213,8 @@ public abstract class MemoryModelSupport implements IModel, Model,
 						.setIncludeInferred(false)
 						.evaluateRestricted(IStatement.class);
 				while (stmts.hasNext()) {
-					rdfWriter.handleStatement(toSesame(stmts.next()));
+					rdfWriter.handleStatement(valueConverter.toSesame(stmts
+							.next()));
 				}
 			} finally {
 				// if (conn != null) {
@@ -232,11 +230,5 @@ public abstract class MemoryModelSupport implements IModel, Model,
 		} catch (RDFHandlerException e) {
 			throw new KommaException("Saving RDF failed", e);
 		}
-	}
-
-	private Statement toSesame(IStatement next) {
-		return new StatementImpl((Resource) valueConverter.toSesame(next
-				.getSubject()), valueConverter.toSesame(next.getPredicate()
-				.getURI()), valueConverter.toSesame((IValue) next.getObject()));
 	}
 }

@@ -31,7 +31,7 @@ class ModelSetFactory implements IModelSetFactory {
 	@Override
 	public IModelSet createModelSet(IGraph configuration, URI... modelSetTypes) {
 		IEntityManager metaDataManager = metaDataManagerFactory
-				.createEntityManager();
+				.get();
 		metaDataManager.add(configuration);
 
 		List<IReference> types = new ArrayList<IReference>();
