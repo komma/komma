@@ -125,10 +125,10 @@ class SparqlPart extends AbstractEditorPart {
 			}
 			IEntityManager managerForQuery;
 			if (models.size() != 1) {
-				managerForQuery = this.managerFactory.createEntityManager();
+				managerForQuery = this.managerFactory.get();
 			} else {
 				managerForQuery = models.iterator().next().getManager()
-						.getFactory().createEntityManager();
+						.getFactory().get();
 			}
 
 			try {
@@ -440,7 +440,7 @@ class SparqlPart extends AbstractEditorPart {
 			}
 		});
 
-		IEntityManager manager = managerFactory.createEntityManager();
+		IEntityManager manager = managerFactory.get();
 		for (INamespace namespace : manager.getNamespaces()) {
 			comboViewer.add(new Pair<String, String>(namespace.getPrefix(),
 					namespace.getURI().toString()));
