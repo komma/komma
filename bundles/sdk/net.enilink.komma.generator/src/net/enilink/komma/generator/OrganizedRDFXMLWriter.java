@@ -19,30 +19,24 @@ import org.openrdf.rio.rdfxml.util.RDFXMLPrettyWriter;
  * 
  * @author James Leigh
  * @see OrganizedRDFWriter
- *
+ * 
  */
 public class OrganizedRDFXMLWriter extends OrganizedRDFWriter {
 	public OrganizedRDFXMLWriter(File file, String enc)
-		throws FileNotFoundException, UnsupportedEncodingException
-	{
+			throws FileNotFoundException, UnsupportedEncodingException {
 		this(new PrintWriter(file, enc));
 	}
 
-	public OrganizedRDFXMLWriter(File file)
-		throws FileNotFoundException
-	{
+	public OrganizedRDFXMLWriter(File file) throws FileNotFoundException {
 		this(new PrintWriter(file));
 	}
 
 	public OrganizedRDFXMLWriter(String filename, String enc)
-		throws FileNotFoundException, UnsupportedEncodingException
-	{
+			throws FileNotFoundException, UnsupportedEncodingException {
 		this(new PrintWriter(filename, enc));
 	}
 
-	public OrganizedRDFXMLWriter(String filename)
-		throws FileNotFoundException
-	{
+	public OrganizedRDFXMLWriter(String filename) throws FileNotFoundException {
 		this(new PrintWriter(filename));
 	}
 
@@ -53,5 +47,4 @@ public class OrganizedRDFXMLWriter extends OrganizedRDFWriter {
 	public OrganizedRDFXMLWriter(Writer writer) {
 		super(new RDFXMLPrettyWriter(writer));
 	}
-
 }

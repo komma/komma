@@ -66,21 +66,16 @@ import org.apache.commons.cli.PosixParser;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.result.Result;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.sail.memory.MemoryStore;
 import org.openrdf.store.StoreException;
@@ -100,7 +95,11 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
-import net.enilink.komma.common.util.URIUtil;
+import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.dm.IDataManagerFactory;
+import net.enilink.komma.em.EagerCachingEntityManagerModule;
+import net.enilink.komma.em.EntityManagerFactoryModule;
+import net.enilink.komma.em.ManagerCompositionModule;
 import net.enilink.komma.generator.concepts.CodeClass;
 import net.enilink.komma.generator.concepts.CodeOntology;
 import net.enilink.komma.generator.concepts.CodeProperty;
@@ -108,10 +107,17 @@ import net.enilink.komma.generator.support.ClassPropertySupport;
 import net.enilink.komma.generator.support.CodePropertySupport;
 import net.enilink.komma.generator.support.ConceptSupport;
 import net.enilink.komma.generator.support.OntologySupport;
-import net.enilink.komma.literals.LiteralConverter;
+import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.sesame.DecoratingSesameManagerFactory;
+import net.enilink.komma.core.visitor.IDataVisitor;
+import net.enilink.komma.sesame.SesameModule;
+import net.enilink.komma.util.KommaUtil;
+import net.enilink.komma.util.UnitOfWork;
 
 /**
  * A Facade to CodeGenerator and OwlGenerator classes. This class provides a
@@ -439,11 +445,7 @@ public class OntologyConverter implements IApplication {
 				beans.addAll(findBeans(packageName, jars, cl));
 			}
 		}
-		ValueFactory valueFactory = new ValueFactoryImpl(
-				repository.getURIFactory(), repository.getLiteralFactory());
-		LiteralConverter literalConverter = new LiteralConverter();
-		literalConverter.setClassLoader(cl);
-		createOntology(beans, literalConverter, rdfOutputFile);
+		createOntology(beans, rdfOutputFile);
 	}
 
 	/**
@@ -455,7 +457,7 @@ public class OntologyConverter implements IApplication {
 	 * @see {@link #addRdfSource(URL)}
 	 */
 	public void createJar(File jarOutputFile) throws Exception {
-		createFiles(repository, cl, jarOutputFile, null, true);
+		createFiles(jarOutputFile, null, true);
 	}
 
 	/**
@@ -468,30 +470,13 @@ public class OntologyConverter implements IApplication {
 	 * @see {@link #addRdfSource(URL)}
 	 */
 	public void createFiles(File directory, File metaInfDir) throws Exception {
-		createFiles(repository, cl, directory, metaInfDir, false);
+		createFiles(directory, metaInfDir, false);
 	}
 
 	protected Repository createRepository() throws StoreException {
 		Repository repository = new SailRepository(new MemoryStore());
 		repository.initialize();
 		return repository;
-	}
-
-	protected DecoratingSesameManagerFactory createSesameManagerFactory(
-			Repository repository, URLClassLoader cl) {
-		KommaModule module = new KommaModule(cl);
-		module.addConcept(CodeClass.class);
-		module.addConcept(CodeOntology.class);
-		module.addConcept(CodeProperty.class);
-
-		module.addBehaviour(ClassPropertySupport.class);
-		module.addBehaviour(CodePropertySupport.class);
-		module.addBehaviour(ConceptSupport.class);
-		module.addBehaviour(OntologySupport.class);
-
-		DecoratingSesameManagerFactory factory = new DecoratingSesameManagerFactory(
-				module, repository);
-		return factory;
 	}
 
 	private URLClassLoader createClassLoader(Collection<URL> importJars)
@@ -595,128 +580,189 @@ public class OntologyConverter implements IApplication {
 		return beans;
 	}
 
-	private void createOntology(List<Class<?>> beans,
-			LiteralConverter literalConverter, File output) throws Exception {
+	private void createOntology(List<Class<?>> beans, File output)
+			throws Exception {
+		Injector genInjector = createGeneratorInjector();
+
 		RDFFormat format = formatForFileName(output.getName());
 		Writer out = new FileWriter(output);
 		try {
-			RepositoryConnection conn = repository.getConnection();
-			OwlGenerator gen = new OwlGenerator();
-			gen.setLiteralConverter(literalConverter);
+			IDataManagerFactory dmFactory = genInjector
+					.getInstance(IDataManagerFactory.class);
+			IDataManager dm = dmFactory.get();
+			OwlGenerator gen = genInjector.getInstance(OwlGenerator.class);
 			for (Map.Entry<String, String> e : packages.entrySet()) {
 				String namespace = e.getKey();
 				String pkgName = e.getValue();
 				String prefix = pkgName.substring(pkgName.lastIndexOf('.') + 1);
-				conn.setNamespace(prefix, namespace);
+				dm.setNamespace(prefix, URIImpl.createURI(namespace));
 				gen.setNamespace(pkgName, prefix, namespace);
 			}
-			RDFHandler inserter = new RDFInserter(conn);
-			Set<URI> ontologies = gen.exportOntology(beans, inserter);
+			Set<URI> ontologies = gen.exportOntology(beans,
+					new IDataVisitor<Void>() {
+						List<IStatement> stmts = new ArrayList<IStatement>();
+
+						@Override
+						public Void visitBegin() {
+							return null;
+						}
+
+						@Override
+						public Void visitEnd() {
+							return null;
+						}
+
+						@Override
+						public Void visitStatement(IStatement stmt) {
+							stmts.add(stmt);
+							return null;
+						}
+					});
+			dm.close();
+
 			OntologyWriter writer = new OntologyWriter(format, out);
-			writer.setConnection(conn);
-			writer.startRDF();
+			genInjector.injectMembers(writer);
+			writer.visitBegin();
 			for (URI ontology : ontologies) {
 				writer.printOntology(ontology);
 			}
-			writer.endRDF();
-			conn.close();
+			writer.visitEnd();
+			dmFactory.close();
 		} finally {
 			out.close();
 		}
+
+		genInjector.getInstance(IUnitOfWork.class).end();
+		genInjector.getInstance(IEntityManagerFactory.class).close();
 	}
 
-	private void createFiles(Repository repository, URLClassLoader cl,
-			File output, File metaInfDir, boolean createJar) throws Exception {
-		DecoratingSesameManagerFactory factory = createSesameManagerFactory(
-				repository, cl);
-		Collection<AbstractModule> modules = factory.createGuiceModules(null);
-		modules.add(new AbstractModule() {
-			@Override
-			protected void configure() {
-				Multibinder<IGenerator> generators = Multibinder.newSetBinder(
-						binder(), IGenerator.class);
-				if (!constantsOnly) {
-					generators.addBinding().to(CodeGenerator.class)
-							.in(Singleton.class);
-				}
-				generators.addBinding().to(ConstantsClassesGenerator.class)
-						.in(Singleton.class);
-			}
+	protected KommaModule createKommaModule(URLClassLoader cl) {
+		KommaModule module = new KommaModule(cl);
+		module.includeModule(KommaUtil.getCoreModule());
+		module.addConcept(CodeClass.class);
+		module.addConcept(CodeOntology.class);
+		module.addConcept(CodeProperty.class);
 
-			@Provides
-			@Named("baseClasses")
-			@SuppressWarnings("unused")
-			@Singleton
-			Collection<Class<?>> provideBaseClasses(
-					@Named("baseClasses") Collection<String> baseClasses,
-					ClassLoader cl) throws Exception {
-				List<Class<?>> base = new ArrayList<Class<?>>();
-				if (baseClasses != null) {
-					for (String bc : baseClasses) {
-						base.add(Class.forName(bc, true, cl));
+		module.addBehaviour(ClassPropertySupport.class);
+		module.addBehaviour(CodePropertySupport.class);
+		module.addBehaviour(ConceptSupport.class);
+		module.addBehaviour(OntologySupport.class);
+
+		return module;
+	}
+
+	protected Injector createGeneratorInjector() {
+		final KommaModule kommaModule = createKommaModule(cl);
+
+		Injector factoryInjector = injector.createChildInjector(
+				new AbstractModule() {
+					@Override
+					protected void configure() {
+						UnitOfWork uow = new UnitOfWork();
+						uow.begin();
+
+						bind(UnitOfWork.class).toInstance(uow);
+						bind(IUnitOfWork.class).toInstance(uow);
 					}
-				}
-				return base;
-			}
 
-			@Provides
-			@SuppressWarnings("unused")
-			@Singleton
-			JavaNameResolver provideNameResolver(Injector injector,
-					OwlNormalizer normalizer, ClassLoader cl)
-					throws StoreException {
-				JavaNameResolverImpl resolver = new JavaNameResolverImpl(cl);
-				injector.injectMembers(resolver);
-
-				for (Map.Entry<String, String> e : namespaces.entrySet()) {
-					resolver.bindPrefixToNamespace(e.getKey(), e.getValue());
-				}
-				if (propertyNamesPrefix != null) {
-					for (Map.Entry<String, String> e : packages.entrySet()) {
-						resolver.bindPrefixToNamespace(propertyNamesPrefix,
-								e.getKey());
+					@Singleton
+					@Provides
+					@SuppressWarnings("unused")
+					Repository provideRepository() {
+						return repository;
 					}
-				}
-				for (URI uri : normalizer.getAnonymousClasses()) {
-					String ns = uri.getNamespace();
-					net.enilink.komma.core.URI name = URIImpl
-							.createURI(ns).appendFragment(uri.getLocalName());
-					resolver.assignAnonymous(name);
-				}
+				}, new SesameModule(), new EntityManagerFactoryModule(
+						kommaModule, null));
 
-				for (Map.Entry<URI, URI> e : normalizer.getAliases().entrySet()) {
-					String ns1 = e.getKey().getNamespace();
-					net.enilink.komma.core.URI name = URIImpl
-							.createURI(ns1).appendFragment(
-									e.getKey().getLocalName());
-					String ns2 = e.getValue().getNamespace();
-					net.enilink.komma.core.URI alias = URIImpl
-							.createURI(ns2).appendFragment(
-									e.getValue().getLocalName());
-					resolver.assignAlias(name, alias);
-				}
+		return factoryInjector.createChildInjector(
+				new ManagerCompositionModule(kommaModule, null),
+				new EagerCachingEntityManagerModule(), new AbstractModule() {
+					@Override
+					protected void configure() {
+						Multibinder<IGenerator> generators = Multibinder
+								.newSetBinder(binder(), IGenerator.class);
+						if (!constantsOnly) {
+							generators.addBinding().to(CodeGenerator.class)
+									.in(Singleton.class);
+						}
+						generators.addBinding()
+								.to(ConstantsClassesGenerator.class)
+								.in(Singleton.class);
+					}
 
-				return resolver;
-			}
+					@Provides
+					@Named("baseClasses")
+					@SuppressWarnings("unused")
+					@Singleton
+					Collection<Class<?>> provideBaseClasses(
+							@Named("baseClasses") Collection<String> baseClasses,
+							ClassLoader cl) throws Exception {
+						List<Class<?>> base = new ArrayList<Class<?>>();
+						if (baseClasses != null) {
+							for (String bc : baseClasses) {
+								base.add(Class.forName(bc, true, cl));
+							}
+						}
+						return base;
+					}
 
-			@Provides
-			@SuppressWarnings("unused")
-			@Singleton
-			OwlNormalizer provideNormalizer(Injector injector) throws Exception {
-				OwlNormalizer normalizer = new OwlNormalizer();
-				injector.injectMembers(normalizer);
+					@Provides
+					@SuppressWarnings("unused")
+					@Singleton
+					JavaNameResolver provideNameResolver(Injector injector,
+							OwlNormalizer normalizer, ClassLoader cl)
+							throws StoreException {
+						JavaNameResolverImpl resolver = new JavaNameResolverImpl(
+								cl);
+						injector.injectMembers(resolver);
 
-				try {
-					normalizer.normalize();
-				} catch (Exception e) {
-					e.printStackTrace(System.err);
-				}
+						for (Map.Entry<String, String> e : namespaces
+								.entrySet()) {
+							resolver.bindPrefixToNamespace(e.getKey(),
+									e.getValue());
+						}
+						if (propertyNamesPrefix != null) {
+							for (Map.Entry<String, String> e : packages
+									.entrySet()) {
+								resolver.bindPrefixToNamespace(
+										propertyNamesPrefix, e.getKey());
+							}
+						}
+						for (IReference clazz : normalizer
+								.getAnonymousClasses()) {
+							resolver.assignAnonymous(clazz.getURI());
+						}
 
-				return normalizer;
-			}
-		});
+						for (Map.Entry<URI, URI> e : normalizer.getAliases()
+								.entrySet()) {
+							resolver.assignAlias(e.getKey(), e.getValue());
+						}
 
-		Injector genInjector = injector.createChildInjector(modules);
+						return resolver;
+					}
+
+					@Provides
+					@SuppressWarnings("unused")
+					@Singleton
+					OwlNormalizer provideNormalizer(Injector injector)
+							throws Exception {
+						OwlNormalizer normalizer = new OwlNormalizer();
+						injector.injectMembers(normalizer);
+
+						try {
+							normalizer.normalize();
+						} catch (Exception e) {
+							e.printStackTrace(System.err);
+						}
+
+						return normalizer;
+					}
+				});
+	}
+
+	private void createFiles(File output, File metaInfDir, boolean createJar)
+			throws Exception {
+		Injector genInjector = createGeneratorInjector();
 
 		FileSourceCodeHandler handler = createJar ? new FileSourceCodeHandler()
 				: new FileSourceCodeHandler(output);
@@ -754,6 +800,9 @@ public class OntologyConverter implements IApplication {
 
 			packageJar(output, dir, concepts, behaviours, literals);
 		}
+
+		genInjector.getInstance(IUnitOfWork.class).end();
+		genInjector.getInstance(IEntityManagerFactory.class).close();
 	}
 
 	private List<File> getClassPath(URLClassLoader cl)
@@ -873,9 +922,7 @@ public class OntologyConverter implements IApplication {
 			path += asLocalFile(rdf).getName();
 			URI ontology = findOntology(rdf);
 			// package only ontologies with generated code
-			if (ontology != null
-					&& packages.containsKey(URIUtil
-							.modelUriToNamespace(ontology.stringValue()))) {
+			if (ontology != null && packages.containsKey(ontology.namespace())) {
 				ontologies.put(path, ontology);
 				jar.putNextEntry(new JarEntry(path));
 				copyInto(rdf, jar);
@@ -900,25 +947,25 @@ public class OntologyConverter implements IApplication {
 
 	private URI findOntology(URL rdf) throws StoreException, RDFParseException,
 			IOException {
-		Repository repository = createRepository();
-		URIFactory uriFactory = repository.getURIFactory();
+		Repository repository = new SailRepository(new MemoryStore());
+		repository.initialize();
 		loadOntology(repository, rdf);
 		RepositoryConnection conn = repository.getConnection();
 		try {
 			Statement st = first(conn, RDF.TYPE, OWL.ONTOLOGY);
 			if (st != null)
-				return (URI) st.getSubject();
+				return URIImpl.createURI(st.getSubject().stringValue());
 			st = first(conn, RDFS.ISDEFINEDBY, null);
 			if (st != null)
-				return (URI) st.getObject();
+				return URIImpl.createURI(st.getObject().stringValue());
 			st = first(conn, RDF.TYPE, OWL.CLASS);
 			if (st != null)
-				return uriFactory.createURI(((URI) st.getSubject())
-						.getNamespace());
+				return URIImpl.createURI(((org.openrdf.model.URI) st
+						.getSubject()).getNamespace());
 			st = first(conn, RDF.TYPE, RDFS.CLASS);
 			if (st != null)
-				return uriFactory.createURI(((URI) st.getSubject())
-						.getNamespace());
+				return URIImpl.createURI(((org.openrdf.model.URI) st
+						.getSubject()).getNamespace());
 			return null;
 		} finally {
 			conn.clear();
@@ -926,8 +973,8 @@ public class OntologyConverter implements IApplication {
 		}
 	}
 
-	private Statement first(RepositoryConnection conn, URI pred, Value obj)
-			throws StoreException {
+	private Statement first(RepositoryConnection conn,
+			org.openrdf.model.URI pred, Value obj) throws StoreException {
 		Result<Statement> stmts = conn.match(null, pred, obj, true);
 		try {
 			if (stmts.hasNext())
@@ -947,5 +994,4 @@ public class OntologyConverter implements IApplication {
 	public void stop() {
 
 	}
-
 }

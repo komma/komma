@@ -36,8 +36,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.openrdf.model.vocabulary.OWL;
-import org.openrdf.model.vocabulary.RDFS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,18 +43,18 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.Property;
+import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.generator.source.JavaClassBuilder;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.sesame.ISesameManager;
 
 /**
  * Creates profiles with constants for classes and properties.
  * 
- * @author Elias Kögel
- * @author Ken Wenzel
  */
 public class ConstantsClassesGenerator implements IGenerator {
 	private static final String SELECT_CLASSES = "PREFIX rdfs: <"
@@ -69,7 +67,7 @@ public class ConstantsClassesGenerator implements IGenerator {
 			.getLogger(ConstantsClassesGenerator.class);
 
 	@Inject
-	private ISesameManager manager;
+	private IEntityManager manager;
 
 	/** namespace -&gt; package */
 	@Inject

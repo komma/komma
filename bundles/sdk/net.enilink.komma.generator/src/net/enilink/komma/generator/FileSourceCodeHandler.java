@@ -46,8 +46,6 @@ import net.enilink.komma.generator.java.merge.SourceMerger;
 /**
  * Saves the generated source code from CodeGenerator to disk.
  * 
- * @author James Leigh
- * 
  */
 public class FileSourceCodeHandler implements SourceCodeHandler {
 	private static final Pattern PACKAGE = Pattern.compile("package ([^;]*);");

@@ -52,7 +52,7 @@ public abstract class CodePropertySupport implements CodeProperty {
 
 	@SuppressWarnings("unchecked")
 	public List<Property> findAllInverseOfProperties() {
-		IQuery query = getKommaManager().createQuery(EQINV_WHERE_PROP);
+		IQuery query = getEntityManager().createQuery(EQINV_WHERE_PROP);
 		query.setParameter("prop", this);
 		return (List<Property>)query.getResultList();
 	}

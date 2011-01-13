@@ -12,25 +12,22 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
-import org.openrdf.model.Resource;
-import org.openrdf.model.vocabulary.OWL;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.rdfxml.util.RDFXMLPrettyWriter;
-import org.openrdf.store.StoreException;
+
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdf.RDF;
+import net.enilink.vocab.rdfs.RDFS;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.Namespace;
 
 /**
  * Prints RDF ontology data is an grouped by subject and type.
  * 
- * @author James Leigh
- * 
  */
 public class OntologyWriter extends OrganizedRDFWriter {
-
 	private static RDFWriter createWriter(RDFFormat format, OutputStream out) {
 		if (format.equals(RDFFormat.RDFXML)) {
 			return new RDFXMLPrettyWriter(out);
@@ -80,24 +77,23 @@ public class OntologyWriter extends OrganizedRDFWriter {
 	}
 
 	@Override
-	public void startRDF() throws RDFHandlerException {
-		super.startRDF();
-		handleNamespace("rdf", RDF.NAMESPACE);
-		handleNamespace("rdfs", RDFS.NAMESPACE);
-		handleNamespace("owl", OWL.NAMESPACE);
+	public Void visitBegin() {
+		super.visitBegin();
+		visitNamespace(new Namespace("rdf", RDF.NAMESPACE));
+		visitNamespace(new Namespace("rdfs", RDFS.NAMESPACE));
+		visitNamespace(new Namespace("owl", OWL.NAMESPACE));
+		return null;
 	}
 
-	public void printOntology(Resource ontology) throws StoreException,
-			RDFHandlerException {
+	public void printOntology(IReference ontology) {
 		print(ontology);
-		print(RDFS.ISDEFINEDBY, ontology);
+		print(RDFS.PROPERTY_ISDEFINEDBY, ontology);
 	}
 
 	@Override
-	public void print() throws RDFHandlerException {
-		print(RDF.TYPE, OWL.ONTOLOGY);
+	public void print() {
+		print(RDF.PROPERTY_TYPE, OWL.TYPE_ONTOLOGY);
 		super.print();
 		printReferenced();
 	}
-
 }

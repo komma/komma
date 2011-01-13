@@ -11,7 +11,5 @@
 package net.enilink.komma.generator;
 
 public interface IGenerator {
-
 	void exportSourceCode(final SourceCodeHandler handler) throws Exception;
-
 }

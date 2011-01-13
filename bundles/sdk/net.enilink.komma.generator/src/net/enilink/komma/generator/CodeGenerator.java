@@ -38,24 +38,25 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.openrdf.model.vocabulary.OWL;
-import org.openrdf.model.vocabulary.RDFS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.owl.Ontology;
 import net.enilink.vocab.rdfs.Datatype;
+import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.generator.concepts.CodeClass;
 import net.enilink.komma.generator.concepts.CodeOntology;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.IQuery;
+import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.sesame.ISesameEntity;
-import net.enilink.komma.sesame.ISesameManager;
 
 /**
  * Converts OWL ontologies into JavaBeans. This class can be used to create Elmo
@@ -92,7 +93,10 @@ public class CodeGenerator implements IGenerator {
 	final Logger logger = LoggerFactory.getLogger(CodeGenerator.class);
 
 	@Inject
-	private ISesameManager manager;
+	private IEntityManager manager;
+
+	@Inject
+	IUnitOfWork unitOfWork;
 
 	/** namespace -&gt; package */
 	@Inject
@@ -107,25 +111,26 @@ public class CodeGenerator implements IGenerator {
 
 	private List<Thread> threads = new ArrayList<Thread>();
 
-	private void addBaseClass(ISesameEntity bean) {
+	private void addBaseClass(IEntity bean) {
 		net.enilink.vocab.rdfs.Class klass;
 		klass = (net.enilink.vocab.rdfs.Class) bean;
 		Class<net.enilink.vocab.rdfs.Class> rdfsClass = net.enilink.vocab.rdfs.Class.class;
 		if (!containKnownNamespace(klass.getRdfsSubClassOf())) {
 			for (Class<?> b : baseClasses) {
 				URI name = URIImpl.createURI(JAVA_NS + b.getName());
-				klass.getRdfsSubClassOf().add(manager.createNamed(name, rdfsClass));
+				klass.getRdfsSubClassOf().add(
+						bean.getEntityManager().createNamed(name, rdfsClass));
 			}
 		}
 	}
 
-	private void buildClass(ISesameEntity bean, String packageName,
+	private void buildClass(IEntity bean, String packageName,
 			SourceCodeHandler handler) throws Exception {
 		String code = ((CodeClass) bean).generateSourceCode(resolver);
 		handler.handleSource(code);
 	}
 
-	private void buildClassOrDatatype(ISesameEntity bean, String packageName,
+	private void buildClassOrDatatype(IEntity bean, String packageName,
 			SourceCodeHandler handler) {
 		try {
 			if (bean instanceof Datatype) {
@@ -141,15 +146,15 @@ public class CodeGenerator implements IGenerator {
 		}
 	}
 
-	private void buildDatatype(ISesameEntity bean, String packageName,
+	private void buildDatatype(IEntity bean, String packageName,
 			SourceCodeHandler handler) throws Exception {
 		String code = ((CodeClass) bean).generateSourceCode(resolver);
 		handler.handleSource(code);
 	}
 
-	private void buildPackage(String namespace, SourceCodeHandler handler)
-			throws Exception {
-		Ontology ont = findOntology(namespace);
+	private void buildPackage(IEntityManager manager, String namespace,
+			SourceCodeHandler handler) throws Exception {
+		Ontology ont = findOntology(manager, namespace);
 		CodeOntology codeOnt = (CodeOntology) ont;
 		String code = codeOnt.generatePackageInfo(namespace, resolver);
 		handler.handleSource(code);
@@ -186,7 +191,7 @@ public class CodeGenerator implements IGenerator {
 
 		IQuery<?> query = manager.createQuery(SELECT_CLASSES);
 		for (Object o : query.getResultList()) {
-			final ISesameEntity bean = (ISesameEntity) o;
+			final IEntity bean = (IEntity) o;
 			if (bean.getURI() == null)
 				continue;
 			String namespace = bean.getURI().namespace().toString();
@@ -195,7 +200,9 @@ public class CodeGenerator implements IGenerator {
 				final String pkg = packages.get(namespace);
 				queue.add(new Runnable() {
 					public void run() {
+						unitOfWork.begin();
 						buildClassOrDatatype(bean, pkg, handler);
+						unitOfWork.end();
 					}
 				});
 			}
@@ -204,21 +211,23 @@ public class CodeGenerator implements IGenerator {
 			queue.add(helper);
 		}
 		for (String namespace : packages.keySet()) {
-			buildPackage(namespace, handler);
+			buildPackage(manager, namespace, handler);
 		}
 		for (Thread thread : threads) {
 			thread.join();
 		}
+
 		if (exception != null) {
 			throw exception;
 		}
 	}
 
-	private Ontology findOntology(String namespace) {
+	private Ontology findOntology(IEntityManager manager, String namespace) {
 		if (namespace.endsWith("#"))
-			return manager.createNamed(URIImpl.createURI(namespace.substring(0, namespace
-					.length() - 1)), Ontology.class);
-		return manager.createNamed(URIImpl.createURI(namespace), Ontology.class);
+			return manager.createNamed(URIImpl.createURI(namespace.substring(0,
+					namespace.length() - 1)), Ontology.class);
+		return manager
+				.createNamed(URIImpl.createURI(namespace), Ontology.class);
 	}
 
 	public Collection<Class<?>> getBaseClasses() {

@@ -53,7 +53,7 @@ public abstract class ClassPropertySupport implements CodeClass,
 
 	@SuppressWarnings("unchecked")
 	public Iterable<Property> getDeclaredProperties() {
-		IQuery<?> query = getKommaManager().createQuery(
+		IQuery<?> query = getEntityManager().createQuery(
 				WHERE_PROP_DOMAIN_TYPE);
 		query.setParameter("type", this);
 		return (Iterable<Property>) query.getResultList();

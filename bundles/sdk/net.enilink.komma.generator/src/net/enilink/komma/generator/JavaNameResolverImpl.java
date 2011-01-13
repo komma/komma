@@ -28,8 +28,6 @@
  */
 package net.enilink.komma.generator;
 
-import static org.openrdf.query.QueryLanguage.SPARQL;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,35 +36,27 @@ import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.mappers.RoleMapper;
-import org.openrdf.model.LiteralFactory;
-import org.openrdf.model.Namespace;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.impl.URIImpl;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.result.NamespaceResult;
-import org.openrdf.result.Result;
-import org.openrdf.result.TupleResult;
-import org.openrdf.store.StoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.literals.LiteralConverter;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.INamespace;
+import net.enilink.komma.core.IQuery;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.URI;
 
 public class JavaNameResolverImpl implements JavaNameResolver {
 	private final Logger log = LoggerFactory.getLogger(JavaNameResolver.class);
 
-	private static final String FILTER_REGEX_PATTERN = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-			+ "SELECT ?thing\n"
-			+ "WHERE { ?thing rdf:type ?type .\n"
+	private static final String FILTER_REGEX_PATTERN = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
+			+ "ASK { ?thing rdf:type ?type . "
 			+ "	FILTER regex(str(?thing), ?pattern, \"i\")}";
 
 	/** namespace -&gt; package */
@@ -79,16 +69,16 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 
 	private Map<URI, URI> aliases = new HashMap<URI, URI>();
 
-	private RoleMapper<org.openrdf.model.URI> roles;
+	private RoleMapper<URI> roles;
 
 	@Inject
 	private LiteralConverter literalConverter;
 
 	private ClassLoaderPackages cl;
 
-	private Repository repository;
-
 	private Set<String> nouns = new HashSet<String>();
+
+	private IEntityManager manager;
 
 	private static class ClassLoaderPackages extends ClassLoader {
 		public ClassLoaderPackages(ClassLoader parent) {
@@ -110,39 +100,28 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 	}
 
 	@Inject
-	public void setRoleMapper(RoleMapper<org.openrdf.model.URI> roles) {
+	public void setRoleMapper(RoleMapper<URI> roles) {
 		this.roles = roles;
 	}
 
 	@Inject
-	public void setRepository(Repository repository) throws StoreException {
-		this.repository = repository;
+	public void setManager(IEntityManager manager) {
+		this.manager = manager;
 		Set<String> localNames = new HashSet<String>();
-		RepositoryConnection con = repository.getConnection();
+		for (INamespace ns : manager.getNamespaces()) {
+			bindPrefixToNamespace(ns.getPrefix(), ns.getURI().toString());
+		}
+		IExtendedIterator<IStatement> stmts = manager.matchAsserted(null, null,
+				null);
 		try {
-			NamespaceResult result = con.getNamespaces();
-			try {
-				while (result.hasNext()) {
-					Namespace ns = result.next();
-					bindPrefixToNamespace(ns.getPrefix(), ns.getName());
+			while (stmts.hasNext()) {
+				IReference subj = stmts.next().getSubject();
+				if (subj.getURI() != null) {
+					localNames.add(subj.getURI().localPart());
 				}
-			} finally {
-				result.close();
-			}
-			Result<Statement> stmts = con.match(null, null, null, false);
-			try {
-				while (stmts.hasNext()) {
-					Resource subj = stmts.next().getSubject();
-					if (subj instanceof org.openrdf.model.URI) {
-						localNames.add(((org.openrdf.model.URI) subj)
-								.getLocalName());
-					}
-				}
-			} finally {
-				stmts.close();
 			}
 		} finally {
-			con.close();
+			stmts.close();
 		}
 		for (String name : localNames) {
 			if (!name.matches(".[A-Z_-]")) {
@@ -240,10 +219,6 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 		return initcap(name.localPart());
 	}
 
-	private URIImpl asSesameURI(URI uri) {
-		return new URIImpl(uri.toString());
-	}
-
 	private String enc(String str) {
 		if (str.length() == 0) {
 			return "_";
@@ -285,18 +260,18 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 	}
 
 	private Class<?> findBeanClassName(URI uri) {
-		URIImpl sesameUri = asSesameURI(uri);
-		boolean recorded = roles.isRecordedConcept(sesameUri);
+		boolean recorded = roles.isRecordedConcept(uri);
 		if (recorded) {
-			Collection<Class<?>> rs = roles.findRoles(sesameUri);
+			Collection<Class<?>> rs = roles.findRoles(uri,
+					new HashSet<Class<?>>());
 			for (Class<?> r : rs) {
-				if (r.isInterface() && sesameUri.equals(roles.findType(r))
-						&& r.getSimpleName().equals(sesameUri.getLocalName())) {
+				if (r.isInterface() && uri.equals(roles.findType(r))
+						&& r.getSimpleName().equals(uri.localPart())) {
 					return r;
 				}
 			}
 			for (Class<?> r : rs) {
-				if (r.isInterface() && sesameUri.equals(roles.findType(r))) {
+				if (r.isInterface() && uri.equals(roles.findType(r))) {
 					return r;
 				}
 			}
@@ -346,35 +321,17 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 	}
 
 	/**
-	 * If this is word is a thing in our repository it is a noun. An alternative
-	 * is to use a wordnet database.
+	 * If this word is a thing in our repository it is a noun. An alternative is
+	 * to use a wordnet database.
 	 */
 	private boolean isNoun(String word) {
 		if (nouns != null)
 			return nouns.contains(word);
-		try {
-			if (repository == null)
-				return false;
-			RepositoryConnection con = repository.getConnection();
-			try {
-				TupleQuery query = con.prepareTupleQuery(SPARQL,
-						FILTER_REGEX_PATTERN);
-				LiteralFactory lf = repository.getLiteralFactory();
-				query.setBinding("pattern", lf.createLiteral("[#/:]$word\\$"));
-				TupleResult result = query.evaluate();
-				try {
-					return result.hasNext();
-				} finally {
-					result.close();
-				}
-			} finally {
-				con.close();
-			}
-		} catch (StoreException exc) {
+		if (manager == null)
 			return false;
-		} catch (MalformedQueryException exc) {
-			throw new AssertionError(exc);
-		}
+		IQuery<?> query = manager.createQuery(FILTER_REGEX_PATTERN);
+		query.setParameter("pattern", "[#/:]$word\\$");
+		return query.getBooleanResult();
 	}
 
 	private String initcap(String str) {

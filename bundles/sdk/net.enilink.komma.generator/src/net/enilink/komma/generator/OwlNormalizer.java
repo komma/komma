@@ -43,51 +43,38 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.openrdf.model.BNode;
-import org.openrdf.model.Literal;
-import org.openrdf.model.LiteralFactory;
-import org.openrdf.model.Namespace;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.URIFactory;
-import org.openrdf.model.Value;
-import org.openrdf.model.vocabulary.OWL;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.model.vocabulary.XMLSchema;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.repository.contextaware.ContextAwareConnection;
-import org.openrdf.result.NamespaceResult;
-import org.openrdf.result.Result;
-import org.openrdf.result.TupleResult;
-import org.openrdf.store.StoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.owl.Class;
+import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.owl.Ontology;
 import net.enilink.vocab.owl.Thing;
 import net.enilink.vocab.rdf.Property;
+import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.Datatype;
-import net.enilink.komma.common.util.URIUtil;
+import net.enilink.vocab.rdfs.RDFS;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.ILiteral;
+import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IQuery;
-import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IValue;
+import net.enilink.komma.core.Statement;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.sesame.ISesameEntity;
-import net.enilink.komma.sesame.ISesameManager;
 
 /**
  * Applies a series of rules against the ontology, making it easier to convert
  * into Java classes. This includes applying some OWL reasoning on properties,
  * renaming anonymous and foreign classes.
- * 
- * @author James Leigh
  * 
  */
 public class OwlNormalizer {
@@ -118,7 +105,7 @@ public class OwlNormalizer {
 			+ " FILTER ( isURI(?bean) && ! bound(?ont) ) }}";
 
 	private static final String SELECT_ORPHANS = PREFIX
-			+ "SELECT DISTINCT ?bean" + " WHERE { ?bean rdf:type ?type"
+			+ "SELECT DISTINCT ?bean WHERE { ?bean rdf:type ?type"
 			+ " OPTIONAL { ?bean rdfs:isDefinedBy ?ont }"
 			+ " FILTER ( isURI(?bean) && ! bound(?ont) ) }";
 
@@ -131,13 +118,13 @@ public class OwlNormalizer {
 	private static final String SELECT_C_ONE_OF = PREFIX
 			+ "SELECT ?c WHERE { ?c owl:oneOf ?l }";
 
-	private ISesameManager manager;
+	private IEntityManager manager;
 
-	private Set<URI> anonymousClasses = new HashSet<URI>();
+	private Set<IReference> anonymousClasses = new HashSet<IReference>();
 
 	private Map<URI, URI> aliases = new HashMap<URI, URI>();
 
-	private Map<String, Ontology> ontologies;
+	private Map<URI, Ontology> ontologies;
 
 	private Set<String> commonNS = new HashSet<String>(Arrays.asList(
 			RDF.NAMESPACE, RDFS.NAMESPACE, OWL.NAMESPACE));
@@ -145,8 +132,7 @@ public class OwlNormalizer {
 	private static final Pattern NS_PREFIX = Pattern
 			.compile("^.*[/#](\\w+)[/#]?$");
 
-	private void addBaseClass(Class base, java.lang.Class<Class> type)
-			throws StoreException {
+	private void addBaseClass(Class base, java.lang.Class<Class> type) {
 		IQuery<?> query = manager.createQuery(BEAN_DEFINED_BY);
 		for (Object ont : base.getRdfsIsDefinedBy()) {
 			query.setParameter("ont", ont);
@@ -169,74 +155,64 @@ public class OwlNormalizer {
 		}
 	}
 
-	private void assignOrphansToNewOntology(ContextAwareConnection conn,
-			Map<String, Ontology> ontologies) throws MalformedQueryException,
-			StoreException {
-		TupleQuery query = conn.prepareTupleQuery(SELECT_ORPHANS);
-		TupleResult result = query.evaluate();
-		try {
-			while (result.hasNext()) {
-				BindingSet tuple = result.next();
-				URI uri = (URI) tuple.getValue("bean");
-				Resource ontology = (Resource) tuple.getValue("ontology");
+	private void assignOrphansToNewOntology(Map<URI, Ontology> ontologies) {
+		IExtendedIterator<IResource> results = manager.createQuery(
+				SELECT_ORPHANS).evaluate(IResource.class);
 
-				String ns = uri.getNamespace();
+		try {
+			while (results.hasNext()) {
+				IResource bean = results.next();
+
+				URI ns = bean.getURI().namespace();
 				Ontology ont = findOntology(ns, ontologies);
-				ontology = ((ISesameEntity) ont).getSesameResource();
-				log.debug("assigning " + uri + " " + ontology);
-				conn.add(uri, RDFS.ISDEFINEDBY, ontology);
+				log.debug("assigning " + bean + " " + ont);
+				bean.getRdfsIsDefinedBy().add(ont);
 			}
 		} finally {
-			result.close();
+			results.close();
 		}
 	}
 
-	private void assignOrphansToTheirOntology(ContextAwareConnection conn,
-			Map<String, Ontology> ontologies) throws MalformedQueryException,
-			StoreException {
-		TupleQuery query;
-		query = conn.prepareTupleQuery(FIND_ORPHANS_ONTOLOGY);
-		TupleResult result = query.evaluate();
+	private void assignOrphansToTheirOntology(Map<URI, Ontology> ontologies) {
+		IExtendedIterator<Object[]> results = manager.createQuery(
+				FIND_ORPHANS_ONTOLOGY).evaluate(Object[].class);
 		try {
-			while (result.hasNext()) {
-				BindingSet tuple = result.next();
-				URI uri = (URI) tuple.getValue("bean");
+			while (results.hasNext()) {
+				Object[] result = results.next();
 
-				if (!conn.hasMatch(uri, RDFS.ISDEFINEDBY, null)) {
-					URI ontology = (URI) tuple.getValue("ontology");
-					log.debug("assigning " + uri + " " + ontology);
-					conn.add(uri, RDFS.ISDEFINEDBY, ontology);
+				IResource bean = (IResource) result[0];
+				if (bean.getRdfsIsDefinedBy().isEmpty()) {
+					IReference ontology = (IReference) result[1];
+					log.debug("assigning " + bean + " " + ontology);
+					bean.getRdfsIsDefinedBy().add(ontology);
 				}
 			}
 		} finally {
-			result.close();
+			results.close();
 		}
 	}
 
 	private void checkNamespacePrefixes() throws Exception {
-		ContextAwareConnection conn;
-		conn = manager.getConnection();
-		TupleQuery query = conn.prepareTupleQuery(SELECT_DEFINED);
-		TupleResult result = query.evaluate();
+		IExtendedIterator<IReference> results = manager.createQuery(
+				SELECT_DEFINED).evaluate(IReference.class);
 		try {
-			while (result.hasNext()) {
-				BindingSet tuple = result.next();
-				Value value = tuple.getBinding("bean").getValue();
-				if (value instanceof BNode)
+			while (results.hasNext()) {
+				IReference bean = results.next();
+				if (bean.getURI() == null)
 					continue;
-				String ns = ((URI) value).getNamespace();
+				URI ns = bean.getURI().namespace();
 				String prefix = getPrefix(ns);
 				if (prefix == null) {
-					Matcher matcher = NS_PREFIX.matcher(ns);
+					Matcher matcher = NS_PREFIX.matcher(ns.toString());
 					if (matcher.find()) {
 						prefix = matcher.group(1);
 						log.debug("creating prefix " + prefix + " " + ns);
-						conn.setNamespace(prefix, ns);
+						manager.setNamespace(prefix, ns);
 					}
 				}
 			}
 		} finally {
-			result.close();
+			results.close();
 		}
 	}
 
@@ -262,17 +238,17 @@ public class OwlNormalizer {
 		}
 	}
 
-	private URI createLocalClass(URI obj, Ontology ont) throws StoreException {
-		String localName = obj.getLocalName();
+	private URI createLocalClass(URI obj, Ontology ont) {
+		String localName = obj.localPart();
 		String prefix = findPrefix(ont);
 		if (prefix != null) {
 			localName = initcap(prefix) + initcap(localName);
 		}
-		URI nc = getURIFactory().createURI(findNamespace(ont), localName);
+		URI nc = URIImpl.createURI(findNamespace(ont))
+				.appendFragment(localName);
 		aliases.put(nc, obj);
-		if (obj.equals(RDFS.RESOURCE)) {
-			Class base = manager.createNamed(URIImpl.createURI(nc.toString()),
-					Class.class);
+		if (obj.equals(RDFS.TYPE_RESOURCE)) {
+			Class base = manager.createNamed(nc, Class.class);
 			base.getRdfsIsDefinedBy().add(ont);
 			addBaseClass(base, Class.class);
 		}
@@ -332,15 +308,15 @@ public class OwlNormalizer {
 		}
 	}
 
-	private Set<Resource> findClasses(ContextAwareConnection conn,
-			Collection<Resource> classes) throws StoreException {
-		Set<Resource> set = new HashSet<Resource>(classes);
-		for (Resource c : classes) {
-			Result<Statement> stmts = conn.match(null, RDFS.SUBCLASSOF, c);
+	private Set<IReference> findClasses(Collection<IReference> classes) {
+		Set<IReference> set = new HashSet<IReference>(classes);
+		for (IReference c : classes) {
+			IExtendedIterator<IStatement> stmts = manager.match(null,
+					RDFS.PROPERTY_SUBCLASSOF, c);
 			try {
 				while (stmts.hasNext()) {
-					Statement stmt = stmts.next();
-					Resource subj = stmt.getSubject();
+					IStatement stmt = stmts.next();
+					IReference subj = stmt.getSubject();
 					set.add(subj);
 				}
 			} finally {
@@ -348,7 +324,7 @@ public class OwlNormalizer {
 			}
 		}
 		if (set.size() > classes.size()) {
-			return findClasses(conn, set);
+			return findClasses(set);
 		} else {
 			return set;
 		}
@@ -389,10 +365,10 @@ public class OwlNormalizer {
 		return common;
 	}
 
-	private String findNamespace(Ontology ont) throws StoreException {
+	private String findNamespace(Ontology ont) {
 		String prefix = findPrefix(ont);
 		if (prefix != null) {
-			String ns = manager.getConnection().getNamespace(prefix);
+			String ns = manager.getNamespace(prefix).toString();
 			if (ns.endsWith("#") || ns.endsWith("/") || ns.endsWith(":"))
 				return ns;
 			if (ns.contains("#"))
@@ -405,30 +381,29 @@ public class OwlNormalizer {
 		return ont.toString() + '#';
 	}
 
-	private void findNamespacesOfOntologies(ContextAwareConnection conn,
-			Map<String, Ontology> ontologies) throws MalformedQueryException,
-			StoreException {
-		TupleQuery query = conn.prepareTupleQuery(BEAN_DEFINED_BY);
+	private void findNamespacesOfOntologies(Map<URI, Ontology> ontologies) {
+		IQuery<?> query = manager.createQuery(BEAN_DEFINED_BY);
 		for (Ontology ont : manager.findAll(Ontology.class)) {
 			log.debug("found ontology " + ont);
-			ontologies.put(ont.toString(), ont);
-			ontologies.put(ont.getURI().trimFragment().toString(), ont);
-			ontologies.put(ont.getURI().namespace().toString(), ont);
-			Set<String> spaces = new HashSet<String>();
-			query.setBinding("ont", ((ISesameEntity) ont).getSesameResource());
-			TupleResult result = query.evaluate();
+			ontologies.put(ont.getURI(), ont);
+			ontologies.put(ont.getURI().trimFragment(), ont);
+			ontologies.put(ont.getURI().namespace(), ont);
+			Set<URI> spaces = new HashSet<URI>();
+			query.setParameter("ont", ont);
+			IExtendedIterator<IReference> result = query
+					.evaluate(IReference.class);
 			try {
 				while (result.hasNext()) {
-					BindingSet tuple = result.next();
-					Value bean = tuple.getBinding("bean").getValue();
-					if (bean instanceof URI)
-						spaces.add(((URI) bean).getNamespace());
+					IReference bean = result.next();
+					if (bean.getURI() != null) {
+						spaces.add(bean.getURI().namespace());
+					}
 				}
 			} finally {
 				result.close();
 			}
 			if (spaces.size() > 0) {
-				for (String ns : spaces) {
+				for (URI ns : spaces) {
 					ontologies.put(ns, ont);
 				}
 			} else {
@@ -437,44 +412,41 @@ public class OwlNormalizer {
 		}
 	}
 
-	private Map<String, Ontology> findOntologies()
-			throws MalformedQueryException, StoreException {
-		Map<String, Ontology> ontologies = new HashMap<String, Ontology>();
-		ContextAwareConnection conn = manager.getConnection();
-		assignOrphansToTheirOntology(conn, ontologies);
-		findNamespacesOfOntologies(conn, ontologies);
-		assignOrphansToNewOntology(conn, ontologies);
+	private Map<URI, Ontology> findOntologies() {
+		Map<URI, Ontology> ontologies = new HashMap<URI, Ontology>();
+		assignOrphansToTheirOntology(ontologies);
+		findNamespacesOfOntologies(ontologies);
+		assignOrphansToNewOntology(ontologies);
 		return ontologies;
 	}
 
-	private Ontology findOntology(String ns, Map<String, Ontology> ontologies) {
+	private Ontology findOntology(URI ns, Map<URI, Ontology> ontologies) {
 		if (ontologies.containsKey(ns)) {
 			return ontologies.get(ns);
 		}
-		for (Map.Entry<String, Ontology> e : ontologies.entrySet()) {
-			String key = e.getKey();
-			if (key.indexOf('#') > 0
-					&& ns.startsWith(key.substring(0, key.indexOf('#'))))
+		for (Map.Entry<URI, Ontology> e : ontologies.entrySet()) {
+			String keyStr = e.getKey().toString();
+			if (keyStr.indexOf('#') > 0
+					&& ns.toString().startsWith(
+							keyStr.substring(0, keyStr.indexOf('#'))))
 				return e.getValue();
 		}
-		net.enilink.komma.core.URI uri = URIImpl.createURI(ns)
-				.trimFragment();
 
-		Ontology ont = manager.createNamed(uri, Ontology.class);
+		Ontology ont = manager.createNamed(ns.trimFragment(), Ontology.class);
 		ontologies.put(ns, ont);
 		return ont;
 	}
 
-	private String findPrefix(Ontology ont) throws StoreException {
-		NamespaceResult spaces = manager.getConnection().getNamespaces();
+	private String findPrefix(Ontology ont) {
+		IExtendedIterator<INamespace> spaces = manager.getNamespaces();
 		try {
 			while (spaces.hasNext()) {
-				Namespace next = spaces.next();
-				if (next.getName().equals(ont.getURI().namespace().toString()))
+				INamespace next = spaces.next();
+				if (next.getURI().equals(ont.getURI().namespace()))
 					return next.getPrefix();
-				for (Map.Entry<String, Ontology> e : ontologies.entrySet()) {
+				for (Map.Entry<URI, Ontology> e : ontologies.entrySet()) {
 					if (e.getValue().equals(ont)
-							&& next.getName().equals(e.getKey()))
+							&& next.getURI().equals(e.getKey()))
 						return next.getPrefix();
 				}
 			}
@@ -504,7 +476,7 @@ public class OwlNormalizer {
 		return aliases;
 	}
 
-	public Set<URI> getAnonymousClasses() {
+	public Set<IReference> getAnonymousClasses() {
 		return anonymousClasses;
 	}
 
@@ -516,89 +488,65 @@ public class OwlNormalizer {
 		return alias;
 	}
 
-	private String getPrefix(String namespace) {
-		NamespaceResult namespaces = null;
-		try {
-			try {
-				ContextAwareConnection conn;
-				conn = manager.getConnection();
-				namespaces = conn.getNamespaces();
-				while (namespaces.hasNext()) {
-					Namespace ns = namespaces.next();
-					if (namespace.equals(ns.getName()))
-						return ns.getPrefix();
-				}
-				return null;
-			} finally {
-				if (namespaces != null)
-					namespaces.close();
-			}
-		} catch (StoreException e) {
-			throw new KommaException(e);
-		}
+	private String getPrefix(URI namespace) {
+		return manager.getPrefix(namespace);
 	}
 
-	private URIFactory getURIFactory() {
-		return manager.getConnection().getRepository().getURIFactory();
+	private URI guessNamespace(IEntity bean) {
+		return bean.getURI().namespace();
 	}
 
-	private String guessNamespace(IEntity bean) {
-		return bean.getURI().namespace().toString();
-	}
-
-	private void infer(ContextAwareConnection conn) throws StoreException {
+	private void infer() {
 		log.debug("inferring");
-		LiteralFactory lf = conn.getRepository().getLiteralFactory();
-		propagateSubClassType(conn, RDFS.CLASS);
-		symmetric(conn, OWL.INVERSEOF);
-		symmetric(conn, OWL.EQUIVALENTCLASS);
-		symmetric(conn, OWL.EQUIVALENTPROPERTY);
-		symmetric(conn, OWL.DISJOINTWITH);
-		setSubjectType(conn, RDF.FIRST, null, RDF.LIST);
-		setSubjectType(conn, RDF.REST, null, RDF.LIST);
-		setSubjectType(conn, OWL.UNIONOF, null, OWL.CLASS);
-		setSubjectType(conn, OWL.DISJOINTWITH, null, OWL.CLASS);
-		setSubjectType(conn, OWL.COMPLEMENTOF, null, OWL.CLASS);
-		setSubjectType(conn, OWL.EQUIVALENTCLASS, null, OWL.CLASS);
-		setSubjectType(conn, OWL.INTERSECTIONOF, null, OWL.CLASS);
-		setSubjectType(conn, RDF.TYPE, RDFS.CLASS, OWL.CLASS);
-		setSubjectType(conn, RDF.TYPE, OWL.DEPRECATEDCLASS, OWL.CLASS);
-		setObjectType(conn, RDFS.SUBCLASSOF, OWL.CLASS);
-		setObjectType(conn, OWL.UNIONOF, RDF.LIST);
-		setObjectType(conn, RDFS.ISDEFINEDBY, OWL.ONTOLOGY);
-		setSubjectType(conn, OWL.INVERSEOF, null, OWL.OBJECTPROPERTY);
-		setObjectType(conn, OWL.INVERSEOF, OWL.OBJECTPROPERTY);
-		setSubjectType(conn, RDFS.RANGE, null, RDF.PROPERTY);
-		setSubjectType(conn, RDFS.DOMAIN, null, RDF.PROPERTY);
-		setObjectType(conn, RDFS.SUBPROPERTYOF, RDF.PROPERTY);
-		setDatatype(lf, conn, OWL.CARDINALITY, XMLSchema.NON_NEGATIVE_INTEGER);
-		setDatatype(lf, conn, OWL.MINCARDINALITY,
-				XMLSchema.NON_NEGATIVE_INTEGER);
-		setDatatype(lf, conn, OWL.MAXCARDINALITY,
-				XMLSchema.NON_NEGATIVE_INTEGER);
+		propagateSubClassType(RDFS.TYPE_CLASS);
+		symmetric(OWL.PROPERTY_INVERSEOF);
+		symmetric(OWL.PROPERTY_EQUIVALENTCLASS);
+		symmetric(OWL.PROPERTY_EQUIVALENTPROPERTY);
+		symmetric(OWL.PROPERTY_DISJOINTWITH);
+		setSubjectType(RDF.PROPERTY_FIRST, null, RDF.TYPE_LIST);
+		setSubjectType(RDF.PROPERTY_REST, null, RDF.TYPE_LIST);
+		setSubjectType(OWL.PROPERTY_UNIONOF, null, OWL.TYPE_CLASS);
+		setSubjectType(OWL.PROPERTY_DISJOINTWITH, null, OWL.TYPE_CLASS);
+		setSubjectType(OWL.PROPERTY_COMPLEMENTOF, null, OWL.TYPE_CLASS);
+		setSubjectType(OWL.PROPERTY_EQUIVALENTCLASS, null, OWL.TYPE_CLASS);
+		setSubjectType(OWL.PROPERTY_INTERSECTIONOF, null, OWL.TYPE_CLASS);
+		setSubjectType(RDF.PROPERTY_TYPE, RDFS.TYPE_CLASS, OWL.TYPE_CLASS);
+		setSubjectType(RDF.PROPERTY_TYPE, OWL.TYPE_DEPRECATEDCLASS,
+				OWL.TYPE_CLASS);
+		setObjectType(RDFS.PROPERTY_SUBCLASSOF, OWL.TYPE_CLASS);
+		setObjectType(OWL.PROPERTY_UNIONOF, RDF.TYPE_LIST);
+		setObjectType(RDFS.PROPERTY_ISDEFINEDBY, OWL.TYPE_ONTOLOGY);
+		setSubjectType(OWL.PROPERTY_INVERSEOF, null, OWL.TYPE_OBJECTPROPERTY);
+		setObjectType(OWL.PROPERTY_INVERSEOF, OWL.TYPE_OBJECTPROPERTY);
+		setSubjectType(RDFS.PROPERTY_RANGE, null, RDF.TYPE_PROPERTY);
+		setSubjectType(RDFS.PROPERTY_DOMAIN, null, RDF.TYPE_PROPERTY);
+		setObjectType(RDFS.PROPERTY_SUBPROPERTYOF, RDF.TYPE_PROPERTY);
+		setDatatype(OWL.PROPERTY_CARDINALITY, XMLSCHEMA.TYPE_NONNEGATIVEINTEGER);
+		setDatatype(OWL.PROPERTY_MINCARDINALITY,
+				XMLSCHEMA.TYPE_NONNEGATIVEINTEGER);
+		setDatatype(OWL.PROPERTY_MAXCARDINALITY,
+				XMLSCHEMA.TYPE_NONNEGATIVEINTEGER);
 	}
 
 	private String initcap(String str) {
 		return str.substring(0, 1).toUpperCase() + str.substring(1);
 	}
 
-	private boolean isInOntology(ContextAwareConnection conn, URI subj,
-			String ns, Ontology ont) throws StoreException {
-		if (subj.getNamespace().equals(ns))
+	private boolean isInOntology(URI subj, URI ns, Ontology ont) {
+		if (subj.namespace().equals(ns))
 			return true;
-		Resource ontURI = ((ISesameEntity) ont).getSesameResource();
-		return conn.hasMatch(subj, RDFS.ISDEFINEDBY, ontURI);
+		return manager.hasMatch(subj, RDFS.PROPERTY_ISDEFINEDBY, ont);
 	}
 
-	private boolean isInSameOntology(ContextAwareConnection conn, URI subj,
-			URI obj) throws StoreException {
-		if (subj.getNamespace().equals(obj.getNamespace()))
+	private boolean isInSameOntology(URI subj, URI obj) {
+		if (subj.namespace().equals(obj.namespace()))
 			return true;
-		Result<Statement> stmts = conn.match(subj, RDFS.ISDEFINEDBY, null);
+		IExtendedIterator<IStatement> stmts = manager.match(subj,
+				RDFS.PROPERTY_ISDEFINEDBY, null);
 		try {
 			while (stmts.hasNext()) {
-				if (conn.hasMatch(obj, RDFS.ISDEFINEDBY, stmts.next()
-						.getObject()))
+				if (manager.hasMatch(obj, RDFS.PROPERTY_ISDEFINEDBY, stmts
+						.next().getObject()))
 					return true;
 			}
 		} finally {
@@ -607,15 +555,15 @@ public class OwlNormalizer {
 		return false;
 	}
 
-	private boolean isLocal(Resource nc, Resource obj) throws StoreException {
-		if (obj instanceof BNode)
+	private boolean isLocal(IReference nc, IReference obj) {
+		if (obj.getURI() == null)
 			return true;
-		if (nc instanceof BNode)
+		if (nc.getURI() == null)
 			return true;
-		return isInSameOntology(manager.getConnection(), (URI) nc, (URI) obj);
+		return isInSameOntology(nc.getURI(), obj.getURI());
 	}
 
-	private void mergeUnionClasses() throws StoreException {
+	private void mergeUnionClasses() {
 		Iterable<Class> classes = manager.findAll(Class.class);
 		for (Class clazz : classes) {
 			List<? extends IEntity> unionOf = clazz.getOwlUnionOf();
@@ -636,57 +584,62 @@ public class OwlNormalizer {
 					continue;
 				}
 				clazz.getRdfsSubClassOf().addAll(common);
-				Resource clazzValue = ((ISesameEntity) clazz)
-						.getSesameResource();
 				for (IEntity bean : unionOf) {
-					Resource ofValue = ((ISesameEntity) bean)
-							.getSesameResource();
 					Class of = manager.designateEntity(bean, Class.class);
 					if (bean instanceof Datatype && bean.getURI() != null) {
 						// don't use anonymous class for datatypes
 						rename(clazz, bean.getURI());
-					} else if (isLocal(clazzValue, ofValue)) {
+					} else if (isLocal(clazz, of)) {
 						of.getRdfsSubClassOf().add(clazz);
 					} else {
 						Ontology ont = (Ontology) clazz.getRdfsIsDefinedBy()
 								.toArray()[0];
-						URI nc = createLocalClass((URI) ofValue, ont);
-						ContextAwareConnection conn = manager.getConnection();
-						conn.add(nc, RDF.TYPE, OWL.CLASS);
-						conn.add(nc, RDFS.SUBCLASSOF, ofValue);
-						conn.add(nc, RDFS.SUBCLASSOF, clazzValue);
-						conn.add(nc, RDFS.ISDEFINEDBY,
-								((ISesameEntity) ont).getSesameResource());
-						renameClass(conn, (URI) ofValue, nc);
+						URI nc = createLocalClass(of.getURI(), ont);
+						manager.add(Arrays
+								.asList( //
+								new Statement(nc, RDF.PROPERTY_TYPE,
+										OWL.TYPE_CLASS), //
+										new Statement(nc,
+												RDFS.PROPERTY_SUBCLASSOF, of), //
+										new Statement(nc,
+												RDFS.PROPERTY_SUBCLASSOF, clazz), //
+										new Statement(nc,
+												RDFS.PROPERTY_ISDEFINEDBY, ont)));
+						renameClass(of.getURI(), nc);
 					}
 				}
 			}
 		}
 	}
 
-	private void moveForeignDomains(ContextAwareConnection conn)
-			throws StoreException {
-		Result<Statement> stmts = conn.match(null, RDFS.DOMAIN, null);
+	private void moveForeignDomains() {
+		IExtendedIterator<IStatement> stmts = manager.match(null,
+				RDFS.PROPERTY_DOMAIN, null);
 		try {
 			while (stmts.hasNext()) {
-				Statement stmt = stmts.next();
-				if (stmt.getSubject() instanceof URI
-						&& stmt.getObject() instanceof URI) {
-					URI subj = (URI) stmt.getSubject();
-					URI obj = (URI) stmt.getObject();
-					for (Map.Entry<String, Ontology> e : ontologies.entrySet()) {
-						String ns = e.getKey();
+				IStatement stmt = stmts.next();
+				if (stmt.getSubject().getURI() != null
+						&& stmt.getObject() instanceof IReference
+						&& ((IReference) stmt.getObject()).getURI() != null) {
+					URI subj = stmt.getSubject().getURI();
+					URI obj = ((IReference) stmt.getObject()).getURI();
+					for (Map.Entry<URI, Ontology> e : ontologies.entrySet()) {
+						URI ns = e.getKey();
 						Ontology ont = e.getValue();
-						if (isInOntology(conn, subj, ns, ont)
-								&& !isInSameOntology(conn, subj, obj)) {
+						if (isInOntology(subj, ns, ont)
+								&& !isInSameOntology(subj, obj)) {
 							URI nc = createLocalClass(obj, ont);
 							log.debug("moving " + subj + " " + nc);
-							conn.remove(stmt);
-							conn.add(subj, RDFS.DOMAIN, nc);
-							conn.add(nc, RDF.TYPE, OWL.CLASS);
-							conn.add(nc, RDFS.SUBCLASSOF, obj);
-							conn.add(nc, RDFS.ISDEFINEDBY,
-									((ISesameEntity) ont).getSesameResource());
+							manager.remove(stmt);
+							manager.add(Arrays.asList( //
+									new Statement(subj, RDFS.PROPERTY_DOMAIN,
+											nc), //
+									new Statement(nc, RDF.PROPERTY_TYPE,
+											OWL.TYPE_CLASS), //
+									new Statement(nc, RDFS.PROPERTY_SUBCLASSOF,
+											obj), //
+									new Statement(nc,
+											RDFS.PROPERTY_ISDEFINEDBY, ont)));
 						}
 					}
 				}
@@ -697,7 +650,7 @@ public class OwlNormalizer {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Class nameAnonymous(Class clazz) throws StoreException {
+	private Class nameAnonymous(Class clazz) {
 		List<Class> unionOf = clazz.getOwlUnionOf();
 		if (unionOf != null) {
 			return renameClass(clazz, "Or", unionOf);
@@ -732,7 +685,7 @@ public class OwlNormalizer {
 	}
 
 	public void normalize() throws Exception {
-		infer(manager.getConnection());
+		infer();
 		ontologies = findOntologies();
 		checkNamespacePrefixes();
 		checkPropertyDomains();
@@ -740,25 +693,25 @@ public class OwlNormalizer {
 		subClassOneOf();
 		distributeEquivalentClasses();
 		mergeUnionClasses();
-		moveForeignDomains(manager.getConnection());
+		moveForeignDomains();
 		if (log.isDebugEnabled()) {
 			File file = File.createTempFile("normalized", ".rdf");
-			manager.getConnection().export(new OrganizedRDFXMLWriter(file));
+			// manager.getConnection().export(new OrganizedRDFXMLWriter(file));
 			log.debug("Normalized RDF saved to " + file);
 		}
 	}
 
-	private void propagateSubClassType(ContextAwareConnection conn,
-			Resource classDef) throws StoreException {
-		for (Resource c : findClasses(conn, Collections.singleton(classDef))) {
-			if (c.equals(RDFS.DATATYPE))
+	private void propagateSubClassType(IReference classDef) {
+		for (IReference c : findClasses(Collections.singleton(classDef))) {
+			if (c.equals(RDFS.TYPE_DATATYPE))
 				continue;
-			Result<Statement> stmts = conn.match(null, RDF.TYPE, c);
+			IExtendedIterator<IStatement> stmts = manager.match(null,
+					RDF.PROPERTY_TYPE, c);
 			try {
 				while (stmts.hasNext()) {
-					Statement stmt = stmts.next();
-					Resource subj = stmt.getSubject();
-					conn.add(subj, RDF.TYPE, classDef);
+					IStatement stmt = stmts.next();
+					IReference subj = stmt.getSubject();
+					manager.add(new Statement(subj, RDF.PROPERTY_TYPE, classDef));
 				}
 			} finally {
 				stmts.close();
@@ -766,41 +719,17 @@ public class OwlNormalizer {
 		}
 	}
 
-	private Class rename(Class clazz, net.enilink.komma.core.URI name)
-			throws StoreException {
+	private Class rename(Class clazz, net.enilink.komma.core.URI name) {
 		log.debug("renaming " + clazz + " " + name);
-		Class copy = manager.createNamed(name, clazz.getClass());
-		Ontology ont = findOntology(name.namespace().toString(), ontologies);
-		copy.getRdfsIsDefinedBy().add(ont);
-		ContextAwareConnection conn = manager.getConnection();
-		Resource orig = ((ISesameEntity) clazz).getSesameResource();
-		URI dest = (URI) ((ISesameEntity) copy).getSesameResource();
-		anonymousClasses.add(dest);
-		Result<Statement> stmts = conn.match(orig, null, null);
-		try {
-			while (stmts.hasNext()) {
-				Statement stmt = stmts.next();
-				conn.add(dest, stmt.getPredicate(), stmt.getObject());
-			}
-		} finally {
-			stmts.close();
-		}
-		conn.removeMatch(orig, null, null);
-		stmts = conn.match(null, null, orig);
-		try {
-			while (stmts.hasNext()) {
-				Statement stmt = stmts.next();
-				conn.add(stmt.getSubject(), stmt.getPredicate(), dest);
-			}
-		} finally {
-			stmts.close();
-		}
-		conn.removeMatch((Resource) null, null, orig);
-		return copy;
+		Ontology ont = findOntology(name.namespace(), ontologies);
+		Class renamed = manager.rename(clazz, name);
+		renamed.getRdfsIsDefinedBy().add(ont);
+		anonymousClasses.add(renamed);
+		return renamed;
 	}
 
 	private Class renameClass(Class clazz, String and,
-			List<? extends IEntity> list) throws StoreException {
+			List<? extends IEntity> list) {
 		String namespace = null;
 		Set<String> names = new TreeSet<String>();
 		for (IEntity of : list) {
@@ -828,58 +757,60 @@ public class OwlNormalizer {
 				URIImpl.createURI(namespace).appendFragment(sb.toString()));
 	}
 
-	private void renameClass(ContextAwareConnection conn, URI obj, URI nc)
-			throws StoreException {
+	private void renameClass(URI obj, URI nc) {
 		log.debug("renaming " + obj + " " + nc);
 		aliases.put(nc, obj);
-		Result<Statement> stmts = conn.match(null, null, obj);
+		IExtendedIterator<IStatement> stmts = manager.match(null, null, obj);
 		try {
 			while (stmts.hasNext()) {
-				Statement stmt = stmts.next();
+				IStatement stmt = stmts.next();
 				if (isLocal(nc, stmt.getSubject())) {
-					if (!stmt.getPredicate().equals(RDFS.RANGE)
-							|| !stmt.getObject().equals(RDFS.RESOURCE)) {
-						if (!stmt.getPredicate().equals(RDF.TYPE))
-							conn.remove(stmt);
-						conn.add(stmt.getSubject(), stmt.getPredicate(), nc);
+					if (!stmt.getPredicate().equals(RDFS.PROPERTY_RANGE)
+							|| !stmt.getObject().equals(RDFS.TYPE_RESOURCE)) {
+						if (!stmt.getPredicate().equals(RDF.PROPERTY_TYPE))
+							manager.remove(stmt);
+						manager.add(new Statement(stmt.getSubject(), stmt
+								.getPredicate(), nc));
 					}
 				}
 			}
 		} finally {
 			stmts.close();
 		}
-		if (obj.equals(RDFS.RESOURCE)) {
+		if (obj.equals(RDFS.TYPE_RESOURCE)) {
 			Class base = manager.createNamed(URIImpl.createURI(nc.toString()),
 					Class.class);
 			addBaseClass(base, Class.class);
 		}
 	}
 
-	private void setDatatype(LiteralFactory lf, ContextAwareConnection conn,
-			URI pred, URI datatype) throws StoreException {
-		Result<Statement> stmts = conn.match(null, pred, null);
+	private void setDatatype(URI pred, URI datatype) {
+		IExtendedIterator<IStatement> stmts = manager.match(null, pred, null);
 		try {
 			while (stmts.hasNext()) {
-				Statement stmt = stmts.next();
-				String label = ((Literal) stmt.getObject()).getLabel();
-				Literal literal = lf.createLiteral(label, datatype);
-				conn.remove(stmt);
-				conn.add(stmt.getSubject(), stmt.getPredicate(), literal);
+				IStatement stmt = stmts.next();
+				if (stmt.getObject() instanceof IReference) {
+					continue;
+				}
+				String label = ((ILiteral) stmt.getObject()).getLabel();
+				ILiteral literal = manager.createLiteral(label, datatype, null);
+				manager.remove(stmt);
+				manager.add(new Statement(stmt.getSubject(), stmt
+						.getPredicate(), literal));
 			}
 		} finally {
 			stmts.close();
 		}
 	}
 
-	private void setObjectType(ContextAwareConnection conn, URI pred, URI type)
-			throws StoreException {
-		Result<Statement> stmts = conn.match(null, pred, null);
+	private void setObjectType(URI pred, URI type) {
+		IExtendedIterator<IStatement> stmts = manager.match(null, pred, null);
 		try {
 			while (stmts.hasNext()) {
-				Statement st = stmts.next();
-				if (st.getObject() instanceof Resource) {
-					Resource subj = (Resource) st.getObject();
-					conn.add(subj, RDF.TYPE, type);
+				IStatement st = stmts.next();
+				if (st.getObject() instanceof IReference) {
+					IReference subj = (IReference) st.getObject();
+					manager.add(new Statement(subj, RDF.PROPERTY_TYPE, type));
 				} else {
 					log.warn("Invalid statement " + st);
 				}
@@ -890,16 +821,16 @@ public class OwlNormalizer {
 	}
 
 	@Inject
-	public void setSesameManager(ISesameManager manager) {
+	public void setEntityManager(IEntityManager manager) {
 		this.manager = manager;
 	}
 
-	private void setSubjectType(ContextAwareConnection conn, URI pred,
-			Value obj, URI type) throws StoreException {
-		Result<Statement> stmts = conn.match(null, pred, obj);
+	private void setSubjectType(URI pred, IValue obj, URI type) {
+		IExtendedIterator<IStatement> stmts = manager.match(null, pred, obj);
 		try {
 			while (stmts.hasNext()) {
-				conn.add(stmts.next().getSubject(), RDF.TYPE, type);
+				manager.add(new Statement(stmts.next().getSubject(),
+						RDF.PROPERTY_TYPE, type));
 			}
 		} finally {
 			stmts.close();
@@ -946,15 +877,14 @@ public class OwlNormalizer {
 		}
 	}
 
-	private void symmetric(ContextAwareConnection conn, URI pred)
-			throws StoreException {
-		Result<Statement> stmts = conn.match(null, pred, null);
+	private void symmetric(URI pred) {
+		IExtendedIterator<IStatement> stmts = manager.match(null, pred, null);
 		try {
 			while (stmts.hasNext()) {
-				Statement stmt = stmts.next();
-				if (stmt.getObject() instanceof Resource) {
-					Resource subj = (Resource) stmt.getObject();
-					conn.add(subj, pred, stmt.getSubject());
+				IStatement stmt = stmts.next();
+				if (stmt.getObject() instanceof IReference) {
+					IReference subj = (IReference) stmt.getObject();
+					manager.add(new Statement(subj, pred, stmt.getSubject()));
 				} else {
 					log.warn("Invalid statement " + stmt);
 				}

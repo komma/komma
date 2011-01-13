@@ -44,5 +44,4 @@ public interface JavaNameResolver {
 	String getPropertyName(URI name);
 
 	String getPluralPropertyName(URI name);
-
 }
