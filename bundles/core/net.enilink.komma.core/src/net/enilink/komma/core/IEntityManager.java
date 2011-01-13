@@ -313,9 +313,8 @@ public interface IEntityManager {
 	Set<String> getSupportedProperties();
 
 	/**
-	 * Returns the resource-level transaction object. The
-	 * {@link ITransaction} instance may be used serially to begin and
-	 * commit multiple transactions.
+	 * Returns the resource-level transaction object. The {@link ITransaction}
+	 * instance may be used serially to begin and commit multiple transactions.
 	 * 
 	 * @return IKommaTransaction instance
 	 */
@@ -456,6 +455,23 @@ public interface IEntityManager {
 	 */
 	IExtendedIterator<IStatement> match(IReference subject,
 			IReference predicate, Object object);
+
+	/**
+	 * Returns all asserted statements with the given subject, predicate, and
+	 * object. Null parameters represent wildcards.
+	 * 
+	 * @param subject
+	 *            the subject to match, or null for a wildcard
+	 * @param predicate
+	 *            the predicate to match, or null for a wildcard
+	 * @param object
+	 *            the object to match, or null for a wildcard
+	 * @return an {@link IExtendedIterator} of matching statements.
+	 * @throws KommaException
+	 *             thrown if there is an error while getting the statements
+	 */
+	IExtendedIterator<IStatement> matchAsserted(IReference subject,
+			IReference predicate, IValue object);
 
 	/**
 	 * Copies all non-null values from bean into an entity managed by this

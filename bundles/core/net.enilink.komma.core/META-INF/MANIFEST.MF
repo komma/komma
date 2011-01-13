@@ -7,5 +7,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: net.enilink.commons.iterator,
  net.enilink.composition;visibility:=reexport,
  net.enilink.composition.properties;visibility:=reexport
-Export-Package: net.enilink.komma.core
+Export-Package: net.enilink.komma.core,
+ net.enilink.komma.core.visitor
 DynamicImport-Package: *

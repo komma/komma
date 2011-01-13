@@ -58,7 +58,7 @@ public interface IEntityManagerFactory {
 	 * 
 	 * @return A new {@link IEntityManager}.
 	 */
-	IEntityManager createEntityManager();
+	IEntityManager get();
 
 	/**
 	 * Creates a new {@link IEntityManagerFactory} with the default Locale.
