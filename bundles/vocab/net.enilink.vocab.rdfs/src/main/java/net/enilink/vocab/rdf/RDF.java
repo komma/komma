@@ -35,6 +35,8 @@ public interface RDF {
 	public static final URI TYPE_RDFRESOURCE = NAMESPACE_URI.appendFragment("RdfResource");
 
 	public static final URI TYPE_XMLLITERAL = NAMESPACE_URI.appendFragment("XMLLiteral");
+	
+	public static final URI PROPERTY_LI = NAMESPACE_URI.appendFragment("li");
 
 	public static final URI PROPERTY_TYPE = NAMESPACE_URI.appendFragment("type");
 
