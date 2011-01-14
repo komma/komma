@@ -26,8 +26,5 @@ Import-Package: com.google.inject;version="2.0.0",
  org.eclipse.emf.codegen.merge.java.facade,
  org.eclipse.emf.codegen.merge.java.facade.ast,
  org.eclipse.text.edits,
- org.openrdf.rio,
- org.openrdf.rio.rdfxml,
- org.openrdf.rio.rdfxml.util,
  org.slf4j
 Export-Package: net.enilink.komma.generator
