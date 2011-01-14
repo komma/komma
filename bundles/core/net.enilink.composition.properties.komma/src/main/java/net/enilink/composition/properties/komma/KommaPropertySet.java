@@ -547,8 +547,9 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 				.evaluateRestricted(IReference.class);
 		try {
 			int size;
-			for (size = 0; values.next() != null; size++)
-				;
+			for (size = 0; values.hasNext(); size++) {
+				values.next();
+			}
 			return size;
 		} finally {
 			values.close();
