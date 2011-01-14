@@ -11,9 +11,11 @@
 package net.enilink.komma.em;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.google.inject.Provider;
 
@@ -46,6 +48,7 @@ public class ThreadLocalEntityManager implements IEntityManager {
 	};
 
 	private Provider<IEntityManager> managerProvider;
+	private List<IEntityDecorator> decorators = new CopyOnWriteArrayList<IEntityDecorator>();
 
 	@Override
 	public void add(Iterable<? extends IStatement> statements) {
@@ -54,7 +57,10 @@ public class ThreadLocalEntityManager implements IEntityManager {
 
 	@Override
 	public void addDecorator(IEntityDecorator decorator) {
-		getDelegate().addDecorator(decorator);
+		decorators.add(decorator);
+		if (delegate.get() != null) {
+			delegate.get().addDecorator(decorator);
+		}
 	}
 
 	@Override
@@ -165,6 +171,9 @@ public class ThreadLocalEntityManager implements IEntityManager {
 		IEntityManager manager = delegate.get();
 		if (manager == null || !manager.isOpen()) {
 			manager = managerProvider.get();
+			for (IEntityDecorator decorator : decorators) {
+				manager.addDecorator(decorator);
+			}
 			manager.addDecorator(managerInjector);
 
 			delegate.set(manager);
@@ -321,7 +330,10 @@ public class ThreadLocalEntityManager implements IEntityManager {
 
 	@Override
 	public void removeDecorator(IEntityDecorator decorator) {
-		getDelegate().removeDecorator(decorator);
+		decorators.remove(decorator);
+		if (delegate.get() != null) {
+			delegate.get().removeDecorator(decorator);
+		}
 	}
 
 	@Override
