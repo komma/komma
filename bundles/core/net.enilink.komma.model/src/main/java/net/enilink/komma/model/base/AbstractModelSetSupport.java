@@ -241,7 +241,12 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	}
 
 	protected KommaModule createModule() {
-		module = new KommaModule(getClass().getClassLoader());
+		// Attention: Do not use getClass().getClassLoader() here, since
+		// the actual class is a generated behavior and has a class definer
+		// as class loader -> including this module then within modules of
+		// models would cause mixing of "meta-model behaviors" and
+		// "model behaviors".
+		module = new KommaModule(AbstractModelSetSupport.class.getClassLoader());
 		module.includeModule(KommaUtil.getCoreModule());
 
 		module.addReadableGraph(null);
@@ -320,11 +325,14 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 
 	@Override
 	public void dispose() {
-		removeAndUnloadAllModels();
-		getUnitOfWork().end();
-
 		if (metaDataManagerFactory != null) {
-			getEntityManager().close();
+			removeAndUnloadAllModels();
+			getUnitOfWork().end();
+
+			getEntityManagerFactory().close();
+
+			// done by getUnitOfWork().end();
+			// getEntityManager().close();
 
 			try {
 				metaDataManagerFactory.close();
