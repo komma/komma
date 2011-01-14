@@ -14,10 +14,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.objectweb.asm.ClassReader;
@@ -33,16 +32,17 @@ import net.enilink.composition.asm.meta.ClassInfo;
  * 
  */
 public class AsmUtils {
-	protected static Map<Reference<ClassLoader>, Map<String, ClassInfo>> classInfos = new ConcurrentHashMap<Reference<ClassLoader>, Map<String, ClassInfo>>();
+	protected static Map<ClassLoader, Map<String, ClassInfo>> classInfos = new WeakHashMap<ClassLoader, Map<String, ClassInfo>>();
 
 	public static ClassInfo getClassInfo(String className,
 			ClassLoader classLoader) throws Exception {
-		Reference<ClassLoader> loaderRef = new WeakReference<ClassLoader>(
-				classLoader);
-		Map<String, ClassInfo> infoMap = classInfos.get(loaderRef);
-		if (infoMap == null) {
-			infoMap = new ConcurrentHashMap<String, ClassInfo>();
-			classInfos.put(loaderRef, infoMap);
+		Map<String, ClassInfo> infoMap;
+		synchronized (classInfos) {
+			infoMap = classInfos.get(classLoader);
+			if (infoMap == null) {
+				infoMap = new ConcurrentHashMap<String, ClassInfo>();
+				classInfos.put(classLoader, infoMap);
+			}
 		}
 		ClassInfo classInfo = infoMap.get(className);
 		if (classInfo == null) {
