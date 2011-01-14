@@ -40,28 +40,31 @@ import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 
-import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.util.IClosable;
 
 /**
  * Creates {@link IEntityManager}s.
  * 
  */
 class EntityManagerFactory implements IEntityManagerFactory {
-	private boolean closeDataManager = true;
+	private boolean isRootFactory = true;
 
-	@Inject
-	Provider<IDataManager> dmProvider;
+	@Inject(optional = true)
+	IDataManagerFactory dmFactory;
 
 	@Inject(optional = true)
 	Provider<IEntityManager> emProvider;
 
 	@Inject
 	Injector injector;
+
+	@Inject(optional = true)
+	Set<IClosable> closables;
 
 	Locale locale;
 
@@ -82,8 +85,17 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 	public void close() {
 		if (open) {
-			if (closeDataManager) {
-				((IDataManagerFactory) dmProvider).close();
+			if (isRootFactory) {
+				if (dmFactory != null) {
+					dmFactory.close();
+				}
+
+				if (closables != null) {
+					for (IClosable closable : closables) {
+						closable.close();
+					}
+					closables = null;
+				}
 			}
 			open = false;
 		}
@@ -108,7 +120,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 		EntityManagerFactory childFactory = new EntityManagerFactory(
 				childModule, locale, managerModule);
-		childFactory.closeDataManager = false;
+		childFactory.isRootFactory = false;
 		injector.injectMembers(childFactory);
 
 		return childFactory;

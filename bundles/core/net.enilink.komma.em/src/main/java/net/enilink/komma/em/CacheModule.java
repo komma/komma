@@ -21,10 +21,30 @@ import org.infinispan.tree.TreeCacheFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
+
+import net.enilink.komma.util.IClosable;
 
 public class CacheModule extends AbstractModule {
+	Cache<Object, Object> cache;
+
 	@Override
 	protected void configure() {
+		Multibinder<IClosable> closableBinder = Multibinder
+				.<IClosable> newSetBinder(binder(),
+						new TypeLiteral<IClosable>() {
+						});
+		closableBinder.addBinding().toInstance(new IClosable() {
+			@Override
+			public void close() {
+				if (cache != null) {
+					cache.stop();
+					cache.getCacheManager().stop();
+					cache = null;
+				}
+			}
+		});
 	}
 
 	@Provides
@@ -40,12 +60,13 @@ public class CacheModule extends AbstractModule {
 	}
 
 	@Provides
+	@Singleton
 	Cache<Object, Object> provideCache(CacheManager cacheManager) {
-		return cacheManager.getCache();
+		return cache = cacheManager.getCache();
 	}
 
-	@Singleton
 	@Provides
+	@Singleton
 	TreeCache<Object, Object> provideTreeCache(Cache<Object, Object> cache) {
 		return new TreeCacheFactory().createTreeCache(cache);
 	}
