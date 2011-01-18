@@ -26,7 +26,6 @@ import org.openrdf.rio.rdfxml.RDFXMLWriter;
 import com.google.inject.Inject;
 
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.common.util.URIUtil;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
@@ -196,34 +195,29 @@ public abstract class MemoryModelSupport implements IModel, Model,
 	public void save(OutputStream os, Map<?, ?> options) throws IOException {
 		RDFXMLWriter rdfWriter = new RDFXMLWriter(new OutputStreamWriter(os,
 				"UTF-8"));
-		try {
-			org.openrdf.model.URI modelUri = URIUtil.toSesameUri(getURI());
-			rdfWriter.setBaseURI(modelUri.toString());
 
+		try {
+			final IDataManager dm = ((IModelSet.Internal) getModelSet())
+					.getDataManagerFactory().get();
+			dm.setReadContexts(Collections.singleton(getURI()));
+
+			rdfWriter.setBaseURI(getURI().toString());
 			rdfWriter.startRDF();
 
 			try {
-				for (INamespace namespace : getManager().getNamespaces()) {
+				for (INamespace namespace : dm.getNamespaces()) {
 					rdfWriter.handleNamespace(namespace.getPrefix(), namespace
 							.getURI().toString());
 				}
 
-				IExtendedIterator<IStatement> stmts = getManager()
-						.createQuery("CONSTRUCT {?s ?p ?o} WHERE {?s ?p ?o}")
-						.setIncludeInferred(false)
-						.evaluateRestricted(IStatement.class);
+				IExtendedIterator<IStatement> stmts = dm.matchAsserted(null,
+						null, null);
 				while (stmts.hasNext()) {
 					rdfWriter.handleStatement(valueConverter.toSesame(stmts
 							.next()));
 				}
 			} finally {
-				// if (conn != null) {
-				// try {
-				// conn.close();
-				// } catch (StoreException e) {
-				// KommaCore.log(e);
-				// }
-				// }
+				dm.close();
 			}
 
 			rdfWriter.endRDF();
