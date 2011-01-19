@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -180,17 +179,12 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 
 	protected Object adaptEntityClass(IResource target, Object type,
 			Collection<Object> typesCache, Set<URI> seenNamespaces,
-			final Collection<IClass> seenClasses,
-			Collection<? extends IClass> classes) {
+			final Collection<IClass> seenClasses, List<IClass> classes) {
 		Object result = null;
 
-		for (Iterator<? extends IClass> it = classes.iterator(); it.hasNext();) {
-			IClass resourceClass = it.next();
-
-			if (!seenClasses.add(resourceClass)) {
-				it.remove();
-				continue;
-			}
+		seenClasses.addAll(classes);
+		while (!classes.isEmpty()) {
+			IClass resourceClass = classes.remove(0);
 
 			URI name = resourceClass.getURI();
 			if (name == null) {
@@ -218,16 +212,28 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 
 				typesCache.clear();
 			}
-		}
 
-		for (final IClass resourceClass : classes) {
-			result = adaptEntityClass(target, type, typesCache, seenNamespaces,
-					seenClasses, sort(resourceClass
-							.getDirectNamedSuperClasses().toList()));
-			if (result != null) {
-				break;
+			for (IClass superClass : resourceClass.getDirectNamedSuperClasses()) {
+				if (!seenClasses.add(superClass)) {
+					continue;
+				}
+				int index = Collections.binarySearch(classes, superClass,
+						IResource.RANK_COMPARATOR);
+				if (index < 0) {
+					index = -(index + 1);
+				}
+				classes.add(index, superClass);
 			}
 		}
+
+		// for (final IClass resourceClass : classes) {
+		// result = adaptEntityClass(target, type, typesCache, seenNamespaces,
+		// seenClasses, sort(resourceClass
+		// .getDirectNamedSuperClasses().toList()));
+		// if (result != null) {
+		// break;
+		// }
+		// }
 
 		return result;
 	}
@@ -392,7 +398,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 	 * @param classes
 	 * @return
 	 */
-	private Collection<? extends IClass> sort(List<IClass> classes) {
+	private List<IClass> sort(List<IClass> classes) {
 		Collections.sort(classes, IResource.RANK_COMPARATOR);
 		return classes;
 	}
