@@ -183,7 +183,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 				+ "?otherClass != ?class)}" //
 				+ "OPTIONAL {?resource a ?otherClass . FILTER ("
 				+ (named ? "isIRI(?otherClass) && " : "")
-				+ "?class = owl:Thing && ?otherClass != ?class)}" //
+				+ "(?class = owl:Thing || ?class = rdfs:Resource) && ?otherClass != ?class)}" //
 				+ "FILTER ("
 				+ (named ? "isIRI(?class) && " : "")
 				+ "!bound(?otherClass))}";
