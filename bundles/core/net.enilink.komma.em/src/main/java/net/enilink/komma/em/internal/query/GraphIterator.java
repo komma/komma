@@ -46,20 +46,27 @@ public class GraphIterator extends ConvertingIterator<IStatement, IStatement> {
 
 	private int position;
 
+	private boolean resolve;
+
 	public GraphIterator(IEntityManagerInternal manager, IGraphResult result,
-			int maxResults) {
+			int maxResults, boolean resolve) {
 		super(result);
 
 		this.manager = manager;
 		this.maxResults = maxResults;
+		this.resolve = resolve;
 	}
 
 	@Override
 	protected IStatement convert(IStatement stmt) {
-		return new net.enilink.komma.core.Statement(
-				(IResource) manager.find(stmt.getSubject(), IResource.class),
-				manager.find(stmt.getPredicate()), manager.toInstance(
-						(IValue) stmt.getObject(), null, null));
+		if (resolve) {
+			return new net.enilink.komma.core.Statement(
+					(IResource) manager
+							.find(stmt.getSubject(), IResource.class),
+					manager.find(stmt.getPredicate()), manager.toInstance(
+							(IValue) stmt.getObject(), null, null));
+		}
+		return stmt;
 	}
 
 	@Override
