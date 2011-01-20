@@ -4,7 +4,7 @@ Created-By: 10.0-b22 (Sun Microsystems Inc.)
 Bundle-ManifestVersion: 2
 Bundle-Name: KOMA Concepts Plug-in
 Bundle-SymbolicName: net.enilink.komma.concepts;singleton:=true
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.core.runtime,
  net.enilink.commons.iterator,
  net.enilink.komma.core,
