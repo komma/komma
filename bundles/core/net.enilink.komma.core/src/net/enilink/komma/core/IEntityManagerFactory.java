@@ -54,11 +54,19 @@ public interface IEntityManagerFactory {
 	void close();
 
 	/**
-	 * Creates a new {@link IEntityManager}.
+	 * Returns an {@link IEntityManager} managed by a unit of work.
+	 * 
+	 * @return A managed {@link IEntityManager}.
+	 */
+	IEntityManager get();
+
+	/**
+	 * Creates a new {@link IEntityManager}. Its the user's responsibility to
+	 * close this manager when the work is finished;
 	 * 
 	 * @return A new {@link IEntityManager}.
 	 */
-	IEntityManager get();
+	IEntityManager create();
 
 	/**
 	 * Creates a new {@link IEntityManagerFactory} with the default Locale.
@@ -101,4 +109,11 @@ public interface IEntityManagerFactory {
 	 * @return properties and hints
 	 */
 	Set<String> getSupportedProperties();
+
+	/**
+	 * Get the unit of work that is used to manage thread-local entity managers.
+	 * 
+	 * @return unit of work
+	 */
+	IUnitOfWork getUnitOfWork();
 }
