@@ -35,6 +35,7 @@ import java.util.Set;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
@@ -43,6 +44,7 @@ import com.google.inject.name.Names;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.util.IClosable;
@@ -52,7 +54,8 @@ import net.enilink.komma.util.IClosable;
  * 
  */
 class EntityManagerFactory implements IEntityManagerFactory {
-	private boolean isRootFactory = true;
+	@Inject(optional = true)
+	Set<IClosable> closables;
 
 	@Inject(optional = true)
 	IDataManagerFactory dmFactory;
@@ -63,8 +66,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 	@Inject
 	Injector injector;
 
-	@Inject(optional = true)
-	Set<IClosable> closables;
+	private boolean isRootFactory = true;
 
 	Locale locale;
 
@@ -75,6 +77,9 @@ class EntityManagerFactory implements IEntityManagerFactory {
 	KommaModule module;
 
 	private boolean open = true;
+
+	@Inject
+	IUnitOfWork unitOfWork;
 
 	public EntityManagerFactory(KommaModule module, Locale locale,
 			Module managerModule) {
@@ -99,6 +104,12 @@ class EntityManagerFactory implements IEntityManagerFactory {
 			}
 			open = false;
 		}
+	}
+
+	@Override
+	public IEntityManager create() {
+		return getManagerInjector().getInstance(
+				Key.get(IEntityManager.class, Names.named("unmanaged")));
 	}
 
 	@Override
@@ -134,15 +145,6 @@ class EntityManagerFactory implements IEntityManagerFactory {
 		return getManagerInjector().getInstance(IEntityManager.class);
 	}
 
-	// protected void init(KommaModule module, LoaderRepository repository) {
-	// this.module = module;
-	// this.repository = repository;
-	//
-	// for (Map.Entry<URL, String> e : module.getDatasets().entrySet()) {
-	// loadContext(e.getKey(), e.getValue());
-	// }
-	// }
-
 	public synchronized Injector getManagerInjector() {
 		if (managerInjector == null) {
 			managerInjector = injector.createChildInjector(
@@ -167,23 +169,14 @@ class EntityManagerFactory implements IEntityManagerFactory {
 		return null;
 	}
 
-	// private void loadContext(URL dataset, String context) throws
-	// KommaException {
-	// try {
-	// ValueFactory vf = repository.getValueFactory();
-	// repository.loadContext(dataset, vf.createURI(context));
-	// } catch (StoreException e) {
-	// throw new KommaException(e);
-	// } catch (RDFParseException e) {
-	// throw new KommaException(e);
-	// } catch (IOException e) {
-	// throw new KommaException(e);
-	// }
-	// }
-
 	@Override
 	public Set<String> getSupportedProperties() {
 		return null;
+	}
+
+	@Override
+	public IUnitOfWork getUnitOfWork() {
+		return unitOfWork;
 	}
 
 	public boolean isOpen() {

@@ -27,7 +27,8 @@ public class DecoratingEntityManagerModule extends AbstractModule {
 	protected void configure() {
 		bind(boolean.class).annotatedWith(Names.named("injectManager"))
 				.toInstance(isInjectManager());
-		// bind(IEntityManager.class).to(getManagerClass());
+		bind(IEntityManager.class).annotatedWith(Names.named("unmanaged")).to(
+				getManagerClass());
 	}
 
 	@Provides
