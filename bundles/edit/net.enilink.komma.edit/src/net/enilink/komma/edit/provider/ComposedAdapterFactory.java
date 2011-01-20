@@ -17,7 +17,6 @@
 package net.enilink.komma.edit.provider;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -365,9 +364,11 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 		Object result = null;
 
 		if (target instanceof IClass) {
+			List<IClass> classes = new ArrayList<IClass>(1);
+			classes.add((IClass) target);
 			result = adaptEntityClass((IResource) target, type,
 					new ArrayList<Object>(), new HashSet<URI>(),
-					new HashSet<IClass>(), Arrays.asList((IClass) target));
+					new HashSet<IClass>(), classes);
 		}
 
 		if (result != null) {
