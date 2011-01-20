@@ -71,6 +71,7 @@ import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.ITupleResult;
+import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.sparql.ui.SparqlUI;
 import net.enilink.komma.util.Pair;
 
@@ -123,12 +124,17 @@ class SparqlPart extends AbstractEditorPart {
 			for (IObject selected : selectedObjects) {
 				models.add(selected.getModel());
 			}
+			IUnitOfWork uow;
 			IEntityManager managerForQuery;
 			if (models.size() != 1) {
+				uow = this.managerFactory.getUnitOfWork();
+				uow.begin();
 				managerForQuery = this.managerFactory.get();
 			} else {
-				managerForQuery = models.iterator().next().getManager()
-						.getFactory().get();
+				IModel model = models.iterator().next();
+				uow = model.getModelSet().getUnitOfWork();
+				uow.begin();
+				managerForQuery = model.getManager().getFactory().get();
 			}
 
 			try {
@@ -176,10 +182,7 @@ class SparqlPart extends AbstractEditorPart {
 				return new Status(IStatus.ERROR, SparqlUI.PLUGIN_ID,
 						"Error executing query", e);
 			} finally {
-				if (managerForQuery != null) {
-					managerForQuery.close();
-				}
-
+				uow.end();
 				progressDistributor.done();
 			}
 
