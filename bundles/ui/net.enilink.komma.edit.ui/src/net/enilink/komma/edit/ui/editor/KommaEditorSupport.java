@@ -461,32 +461,37 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 					}
 				}
 
-				ResourceDeltaVisitor visitor = new ResourceDeltaVisitor();
-				delta.accept(visitor);
+				getEditingDomain().getModelSet().getUnitOfWork().begin();
+				try {
+					ResourceDeltaVisitor visitor = new ResourceDeltaVisitor();
+					delta.accept(visitor);
 
-				if (!visitor.getRemovedModels().isEmpty()) {
-					removedModels.addAll(visitor.getRemovedModels());
-					if (!isDirty()) {
-						editor.getSite().getShell().getDisplay()
-								.asyncExec(new Runnable() {
-									public void run() {
-										editor.getSite().getPage()
-												.closeEditor(editor, false);
-									}
-								});
+					if (!visitor.getRemovedModels().isEmpty()) {
+						removedModels.addAll(visitor.getRemovedModels());
+						if (!isDirty()) {
+							editor.getSite().getShell().getDisplay()
+									.asyncExec(new Runnable() {
+										public void run() {
+											editor.getSite().getPage()
+													.closeEditor(editor, false);
+										}
+									});
+						}
 					}
-				}
 
-				if (!visitor.getChangedModels().isEmpty()) {
-					changedModels.addAll(visitor.getChangedModels());
-					if (editor.getSite().getPage().getActiveEditor() == KommaEditorSupport.this) {
-						editor.getSite().getShell().getDisplay()
-								.asyncExec(new Runnable() {
-									public void run() {
-										handleActivate();
-									}
-								});
+					if (!visitor.getChangedModels().isEmpty()) {
+						changedModels.addAll(visitor.getChangedModels());
+						if (editor.getSite().getPage().getActiveEditor() == KommaEditorSupport.this) {
+							editor.getSite().getShell().getDisplay()
+									.asyncExec(new Runnable() {
+										public void run() {
+											handleActivate();
+										}
+									});
+						}
 					}
+				} finally {
+					getEditingDomain().getModelSet().getUnitOfWork().end();
 				}
 			} catch (CoreException exception) {
 				KommaEditUIPlugin.INSTANCE.log(exception);
@@ -745,19 +750,24 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 			// This is the method that gets invoked when the operation runs.
 			@Override
 			public void run(IProgressMonitor monitor) {
+				getEditingDomain().getModelSet().getUnitOfWork().begin();
 				// Save the resources to the file system.
-				for (IModel model : getEditingDomain().getModelSet()
-						.getModels()) {
-					if (model.isModified()
-							&& !getEditingDomain().isReadOnly(model)) {
-						try {
-							model.save(saveOptions);
-							savedModels.add(model);
-						} catch (Exception exception) {
-							modelToDiagnosticMap.put(model,
-									analyzeModelProblems(model, exception));
+				try {
+					for (IModel model : getEditingDomain().getModelSet()
+							.getModels()) {
+						if (model.isModified()
+								&& !getEditingDomain().isReadOnly(model)) {
+							try {
+								model.save(saveOptions);
+								savedModels.add(model);
+							} catch (Exception exception) {
+								modelToDiagnosticMap.put(model,
+										analyzeModelProblems(model, exception));
+							}
 						}
 					}
+				} finally {
+					getEditingDomain().getModelSet().getUnitOfWork().end();
 				}
 			}
 		};
