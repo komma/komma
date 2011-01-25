@@ -5,10 +5,12 @@ import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
+import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.URI;
 
 class Context {
 	IAdapterFactory adapterFactory;
+	IUnitOfWork unitOfWork;
 
 	IResource subject;
 	IProperty predicate;

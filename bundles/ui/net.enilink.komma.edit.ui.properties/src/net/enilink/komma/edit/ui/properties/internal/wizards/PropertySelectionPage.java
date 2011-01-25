@@ -16,6 +16,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -47,13 +48,37 @@ public class PropertySelectionPage extends WizardPage {
 
 	private Context context;
 
+	class PropertyItem {
+		IProperty property;
+		String text;
+
+		public PropertyItem(IProperty property, String text) {
+			this.property = property;
+			this.text = text;
+		}
+	}
+
 	PropertySelectionPage(Context context) {
 		super(PAGE_NAME, "Select property", null);
 
 		this.context = context;
 
 		this.labelProvider = new AdapterFactoryLabelProvider(
-				context.adapterFactory);
+				context.adapterFactory) {
+			public String getText(Object object) {
+				if (object instanceof PropertyItem) {
+					object = ((PropertyItem) object).property;
+				}
+				return super.getText(object);
+			}
+
+			public Image getImage(Object object) {
+				if (object instanceof PropertyItem) {
+					object = ((PropertyItem) object).property;
+				}
+				return super.getImage(object);
+			}
+		};
 
 		showAllProperties = false;
 	}
@@ -110,6 +135,7 @@ public class PropertySelectionPage extends WizardPage {
 			protected void updateStatus(IStatus status) {
 
 			}
+
 		};
 
 		filteredList.setListLabelProvider(labelProvider);
@@ -122,9 +148,9 @@ public class PropertySelectionPage extends WizardPage {
 					public void selectionChanged(SelectionChangedEvent event) {
 						IStructuredSelection selection = (IStructuredSelection) event
 								.getSelection();
-
-						context.predicate = (IProperty) selection
-								.getFirstElement();
+						Object first = selection.getFirstElement();
+						context.predicate = first == null ? null
+								: ((PropertyItem) first).property;
 						context.clearObject();
 						setPageComplete(true);
 					}
@@ -153,24 +179,32 @@ public class PropertySelectionPage extends WizardPage {
 	void fillListContentProvider(AbstractContentProvider contentProvider,
 			ItemsFilter itemsFilter, IProgressMonitor progressMonitor)
 			throws CoreException {
-		if (showAllProperties) {
-			if (allProperties == null) {
-				allProperties = context.subject.getEntityManager()
-						.findAll(Property.class).toList();
-			}
+		context.unitOfWork.begin();
+		try {
+			if (showAllProperties) {
+				if (allProperties == null) {
+					allProperties = context.subject.getEntityManager()
+							.findAll(Property.class).toList();
+				}
 
-			for (Property prop : allProperties) {
-				contentProvider.add(prop, itemsFilter);
-			}
-		} else {
-			if (applicableProperties == null) {
-				applicableProperties = context.subject.getRelevantProperties()
-						.toList();
-			}
+				for (Property prop : allProperties) {
+					contentProvider.add(new PropertyItem((IProperty) prop,
+							labelProvider.getText(prop)), itemsFilter);
+				}
+			} else {
+				if (applicableProperties == null) {
+					applicableProperties = context.subject
+							.getRelevantProperties().toList();
+				}
 
-			for (IProperty prop : applicableProperties) {
-				contentProvider.add(prop, itemsFilter);
+				for (IProperty prop : applicableProperties) {
+					contentProvider
+							.add(new PropertyItem(prop, labelProvider
+									.getText(prop)), itemsFilter);
+				}
 			}
+		} finally {
+			context.unitOfWork.end();
 		}
 	}
 
@@ -179,15 +213,15 @@ public class PropertySelectionPage extends WizardPage {
 	}
 
 	String getListItemName(Object item) {
-		return labelProvider.getText(item);
+		return ((PropertyItem) item).text;
 	}
 
 	Comparator<Object> getListItemsComparator() {
 		return new Comparator<Object>() {
 			@Override
 			public int compare(Object a, Object b) {
-				String labelA = labelProvider.getText(a);
-				String labelB = labelProvider.getText(b);
+				String labelA = ((PropertyItem) a).text;
+				String labelB = ((PropertyItem) b).text;
 				if (labelA == null) {
 					if (labelB == null) {
 						return 0;

@@ -23,6 +23,7 @@ public class EditPropertyWizard extends Wizard {
 		this.context.adapterFactory = adapterFactory;
 		this.context.subject = resource;
 		this.editingDomain = editingDomain;
+		context.unitOfWork = editingDomain.getModelSet().getUnitOfWork();
 		context.predicate = originalPredicate = predicate;
 		context.object = originalObject = object;
 	}
