@@ -26,7 +26,7 @@ public class SesameTupleResult extends SesameResult<BindingSet, IValue[]>
 
 	@Override
 	protected IValue[] convert(BindingSet element) throws Exception {
-		IValue[] result = new IValue[element.size()];
+		IValue[] result = new IValue[getBindingNames().size()];
 		int i = 0;
 		for (String name : getBindingNames()) {
 			result[i++] = valueConverter.fromSesame(element.getValue(name));
