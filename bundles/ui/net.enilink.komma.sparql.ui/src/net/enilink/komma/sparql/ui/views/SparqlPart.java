@@ -134,7 +134,7 @@ class SparqlPart extends AbstractEditorPart {
 				IModel model = models.iterator().next();
 				uow = model.getModelSet().getUnitOfWork();
 				uow.begin();
-				managerForQuery = model.getManager().getFactory().get();
+				managerForQuery = model.getManager();
 			}
 
 			try {
