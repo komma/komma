@@ -25,9 +25,9 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.parboiled.Parboiled;
-import org.parboiled.ReportingParseRunner;
 import org.parboiled.Rule;
 import org.parboiled.common.StringUtils;
+import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
 import net.enilink.komma.parser.sparql.SparqlParser;
@@ -124,7 +124,7 @@ public class SparqlBuilder {
 					result.parseErrors, "---\n"));
 		}
 
-		return result.parseTreeRoot.getValue();
+		return result.resultValue;
 	}
 
 	protected SparqlParser getParser() {
