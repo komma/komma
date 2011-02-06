@@ -1,5 +1,9 @@
 package net.enilink.komma.parser;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 
@@ -13,6 +17,7 @@ import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.QName;
 
 public abstract class BaseRdfParser extends BaseParser<Object> {
+	public static Object LIST_BEGIN = new Object();
 
 	public GenericLiteral createLiteral(String label, String language) {
 		return new GenericLiteral(label.trim(), null,
@@ -24,13 +29,12 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	public Rule RdfLiteral() {
-		return Sequence(
-				String(),
-				Optional(FirstOf(LANGTAG(), Sequence("^^", IriRef()))), //
-				set(node("O/F/S/IriRef") != null ? //
-				createTypedLiteral((String) value("String"),
-						(GraphNode) value("O/F/S/IriRef")) : createLiteral(
-						(String) value("String"), text("O/F/LANGTAG")) //
+		return Sequence(String(), push(null),
+				Optional(FirstOf(LANGTAG(), Sequence("^^", IriRef())), drop(1) //
+				), //
+				push(peek() instanceof GraphNode ? //
+				createTypedLiteral((String) pop(1), (GraphNode) pop())
+						: createLiteral((String) pop(1), (String) pop()) //
 				));
 	}
 
@@ -55,7 +59,7 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 
 	public Rule BooleanLiteral() {
 		return Sequence(FirstOf("TRUE", "FALSE"), //
-				set(new BooleanLiteral("true".equals(text("").toLowerCase()))));
+				push(new BooleanLiteral("true".equals(match().toLowerCase()))));
 	}
 
 	public Rule String() {
@@ -78,12 +82,13 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	public Rule PrefixedName() {
 		return FirstOf(PNAME_LN(), //
 				Sequence(PNAME_NS(), //
-						set(new QName(stripColon(text("PNAME_NS")), ""))));
+						push(new QName((String) pop(), ""))));
 	}
 
 	public Rule BlankNode() {
-		return Sequence(FirstOf(BLANK_NODE_LABEL(), Sequence('[', ']')),
-				set(new BNode(trim(text("f/B")))));
+		return Sequence(
+				FirstOf(BLANK_NODE_LABEL(), Sequence('[', ']', push(null))),
+				push(new BNode((String) pop())));
 	}
 
 	public Rule WS() {
@@ -95,22 +100,22 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	public Rule PNAME_NS() {
-		return Sequence(Optional(PN_PREFIX()), ':');
+		return Sequence(Optional(PN_PREFIX()), push(match()), ':');
 	}
 
 	public Rule PNAME_LN() {
-		return Sequence(PNAME_NS(), PN_LOCAL(), set(new QName(
-				stripColon(text("PNAME_NS")), text("PN_LOCAL").trim())));
+		return Sequence(PNAME_NS(), PN_LOCAL(), push(new QName((String) pop(1),
+				((String) pop()).trim())));
 	}
 
 	public Rule IRI_REF() {
 		return Sequence(
 				LESS_NO_COMMENT(),
-				ZeroOrMore(Sequence(
+				ZeroOrMore(
 						TestNot(FirstOf(LESS_NO_COMMENT(), Ch('>'), Ch('"'),
 								Ch('{'), Ch('}'), Ch('|'), Ch('^'), Ch('\\'),
-								Ch('`'), CharRange('\u0000', '\u0020'))), Any())),
-				'>', set(new IriRef(text("Z").trim())));
+								Ch('`'), CharRange('\u0000', '\u0020'))), ANY),
+				push(new IriRef(match().trim())), '>');
 	}
 
 	public Rule BLANK_NODE_LABEL() {
@@ -120,22 +125,25 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	public Rule LANGTAG() {
 		return Sequence(
 				Ch('@'),
-				OneOrMore(PN_CHARS_BASE()),
-				ZeroOrMore(Sequence('-',
-						OneOrMore(Sequence(PN_CHARS_BASE(), DIGIT())))), WS());
+				Sequence(
+						OneOrMore(PN_CHARS_BASE()),
+						ZeroOrMore('-',
+								OneOrMore(PN_CHARS_BASE(), DIGIT()))),
+				push(match()), WS());
 	}
 
 	public Rule INTEGER() {
-		return Sequence(OneOrMore(DIGIT()), WS(), //
-				set(new IntegerLiteral(Integer.parseInt((text(""))))) //
-		);
+		return Sequence(OneOrMore(DIGIT()),
+				push(new IntegerLiteral(Integer.parseInt(match().trim()))),
+				WS());
 	}
 
 	public Rule DECIMAL() {
 		return Sequence(
 				FirstOf(Sequence(OneOrMore(DIGIT()), '.', ZeroOrMore(DIGIT())),
-						Sequence('.', OneOrMore(DIGIT()))), WS(), //
-				set(new DoubleLiteral(Double.parseDouble((text(""))))));
+						Sequence('.', OneOrMore(DIGIT()))),
+				push(new DoubleLiteral(Double.parseDouble(match().trim()))),
+				WS());
 	}
 
 	public Rule DOUBLE() {
@@ -143,8 +151,9 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 				FirstOf(Sequence(OneOrMore(DIGIT()), '.', ZeroOrMore(DIGIT()),
 						EXPONENT()),
 						Sequence('.', OneOrMore(DIGIT()), EXPONENT()),
-						Sequence(OneOrMore(DIGIT()), EXPONENT())), WS(), //
-				set(new DoubleLiteral(Double.parseDouble(text("")))));
+						Sequence(OneOrMore(DIGIT()), EXPONENT())),
+				push(new DoubleLiteral(Double.parseDouble(match().trim()))),
+				WS());
 	}
 
 	public Rule INTEGER_POSITIVE() {
@@ -161,24 +170,24 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 
 	public Rule INTEGER_NEGATIVE() {
 		return Sequence('-', INTEGER(), //
-				set(new IntegerLiteral(-((IntegerLiteral) value()).getValue())) //
+				push(new IntegerLiteral(-((IntegerLiteral) pop()).getValue())) //
 		);
 	}
 
 	public Rule DECIMAL_NEGATIVE() {
 		return Sequence('-', DECIMAL(), //
-				set(new DoubleLiteral(-((DoubleLiteral) value()).getValue())) //
+				push(new DoubleLiteral(-((DoubleLiteral) pop()).getValue())) //
 		);
 	}
 
 	public Rule DOUBLE_NEGATIVE() {
 		return Sequence('-', DOUBLE(), //
-				set(new DoubleLiteral(-((DoubleLiteral) value()).getValue())) //
+				push(new DoubleLiteral(-((DoubleLiteral) pop()).getValue())) //
 		);
 	}
 
 	public Rule EXPONENT() {
-		return Sequence(CharIgnoreCase('e'), Optional(FirstOf('+', '-')),
+		return Sequence(IgnoreCase('e'), Optional(FirstOf('+', '-')),
 				OneOrMore(DIGIT()));
 	}
 
@@ -188,8 +197,8 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 				ZeroOrMore(FirstOf(
 						Sequence(
 								TestNot(FirstOf(Ch('\''), Ch('\\'), Ch('\n'),
-										Ch('\r'))), Any()), ECHAR())),
-				set(text("Z").replaceAll("\\'", "'")), Ch('\''), WS());
+										Ch('\r'))), ANY), ECHAR())),
+				push(match().replaceAll("\\'", "'")), Ch('\''), WS());
 	}
 
 	public Rule STRING_LITERAL2() {
@@ -198,28 +207,28 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 				ZeroOrMore(FirstOf(
 						Sequence(
 								TestNot(FirstOf(Ch('"'), Ch('\\'), Ch('\n'),
-										Ch('\r'))), Any()), ECHAR())),
-				set(text("Z").replaceAll("\\\"", "\"")), Ch('"'), WS());
+										Ch('\r'))), ANY), ECHAR())),
+				push(match().replaceAll("\\\"", "\"")), Ch('"'), WS());
 	}
 
 	public Rule STRING_LITERAL_LONG1() {
 		return Sequence(
 				String("'''"),
-				ZeroOrMore(Sequence(
+				ZeroOrMore(
 						Optional(FirstOf(String("''"), Ch('\''))),
 						FirstOf(Sequence(TestNot(FirstOf(Ch('\''), Ch('\\'))),
-								Any()), ECHAR()))),
-				set(text("Z").replaceAll("\\'", "'")), String("'''"), WS());
+								ANY), ECHAR())),
+				push(match().replaceAll("\\'", "'")), String("'''"), WS());
 	}
 
 	public Rule STRING_LITERAL_LONG2() {
 		return Sequence(
 				String("\"\"\""),
-				ZeroOrMore(Sequence(
+				ZeroOrMore(
 						Optional(FirstOf(String("\"\""), Ch('\"'))),
 						FirstOf(Sequence(TestNot(FirstOf(Ch('\"'), Ch('\\'))),
-								Any()), ECHAR()))),
-				set(text("Z").replaceAll("\\\"", "\"")), String("\"\"\""), WS());
+								ANY), ECHAR())),
+				push(match().replaceAll("\\\"", "\"")), String("\"\"\""), WS());
 	}
 
 	public Rule ECHAR() {
@@ -247,9 +256,11 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 
 	public Rule PN_LOCAL() {
 		return Sequence(
-				FirstOf(PN_CHARS_U(), DIGIT()),
-				Optional(ZeroOrMore(FirstOf(PN_CHARS(),
-						Sequence('.', PN_CHARS())))), WS());
+				Sequence(
+						FirstOf(PN_CHARS_U(), DIGIT()),
+						Optional(ZeroOrMore(FirstOf(PN_CHARS(),
+								Sequence('.', PN_CHARS()))))), push(match()),
+				WS());
 	}
 
 	public Rule PN_CHARS_BASE() {
@@ -275,7 +286,7 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	public Rule COMMENT() {
-		return Sequence(Ch('#'), ZeroOrMore(Sequence(TestNot(EOL()), Any())),
+		return Sequence(Ch('#'), ZeroOrMore(TestNot(EOL()), ANY),
 				EOL());
 	}
 
@@ -288,12 +299,29 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	@Override
-	protected Rule FromCharLiteral(char c) {
+	protected Rule fromCharLiteral(char c) {
 		return Sequence(Ch(c), WS());
 	}
 
 	@Override
-	protected Rule FromStringLiteral(String string) {
+	protected Rule fromStringLiteral(String string) {
 		return Sequence(String(string), WS());
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> List<T> popList(Class<T> elementType, int additional) {
+		LinkedList<T> list = new LinkedList<T>();
+		Object element;
+		while ((element = pop()) != LIST_BEGIN) {
+			list.addFirst((T) element);
+		}
+		while (additional-- > 0) {
+			list.addFirst((T) pop());
+		}
+		return new ArrayList<T>(list);
+	}
+
+	public <T> List<T> popList(Class<T> elementType) {
+		return popList(elementType, 0);
 	}
 }

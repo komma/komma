@@ -10,10 +10,10 @@ import junit.framework.ComparisonFailure;
 
 import org.junit.Test;
 import org.parboiled.Parboiled;
-import org.parboiled.ReportingParseRunner;
-import org.parboiled.common.StringUtils;
-import org.parboiled.support.DefaultInputBuffer;
-import org.parboiled.support.InputBuffer;
+import org.parboiled.buffers.DefaultInputBuffer;
+import org.parboiled.buffers.InputBuffer;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParseTreeUtils;
 import org.parboiled.support.ParsingResult;
 
@@ -87,17 +87,17 @@ public class ManchesterTest extends GUnitBaseTestCase {
 			System.out.println(textInfo.text);
 
 			ParsingResult<Object> result = new ReportingParseRunner<Object>(
-					parser.OntologyDocument(), textInfo.text).run();
+					parser.OntologyDocument()).run(textInfo.text);
 
-			InputBuffer inputBuffer = new DefaultInputBuffer(textInfo.text);
+			InputBuffer inputBuffer = new DefaultInputBuffer(
+					textInfo.text.toCharArray());
 
 			boolean passed = result.hasErrors()
 					&& textInfo.result == Result.FAIL || !result.hasErrors()
 					&& textInfo.result == Result.OK;
 
 			if (result.hasErrors() && textInfo.result == Result.OK) {
-				System.out.println(StringUtils
-						.join(result.parseErrors, "---\n"));
+				System.out.println(ErrorUtils.printParseErrors(result));
 			}
 
 			if (textInfo.pathCheck.size() > 0) {

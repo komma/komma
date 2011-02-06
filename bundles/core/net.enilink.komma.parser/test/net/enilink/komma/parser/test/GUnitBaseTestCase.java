@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 import junit.framework.Assert;
 
 import org.parboiled.Node;
-import org.parboiled.support.InputBuffer;
+import org.parboiled.buffers.InputBuffer;
 import org.parboiled.support.ParseTreeUtils;
 import org.parboiled.support.ParsingResult;
 
