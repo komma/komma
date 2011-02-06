@@ -1,22 +1,12 @@
 package net.enilink.komma.common.ui.celleditor;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposalListener2;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
-import org.eclipse.jface.fieldassist.IControlContentAdapter;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.viewers.TextCellEditor;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 
-import net.enilink.commons.ui.CommonsUi;
+import net.enilink.komma.common.ui.assist.ContentProposals;
 
 public class TextCellEditorWithContentProposal extends TextCellEditor {
 	private ContentProposalAdapter contentProposalAdapter;
@@ -27,40 +17,8 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 			char[] autoActivationCharacters) {
 		super(parent);
 
-		enableContentProposal(contentProposalProvider, autoActivationCharacters);
-	}
-
-	private void enableContentProposal(
-			IContentProposalProvider contentProposalProvider,
-			char[] autoActivationCharacters) {
-		List<Object> args = new ArrayList<Object>(Arrays.asList(text,
-				new TextContentAdapter(), contentProposalProvider));
-		Constructor<ContentProposalAdapter> constructor;
-		try {
-			if (CommonsUi.IS_RAP_RUNNING) {
-				constructor = ContentProposalAdapter.class.getConstructor(
-						Control.class, IControlContentAdapter.class,
-						IContentProposalProvider.class, char[].class);
-			} else {
-				Class<?> keyStrokeClass = getClass().getClassLoader()
-						.loadClass("org.eclipse.jface.bindings.keys.KeyStroke");
-				constructor = ContentProposalAdapter.class.getConstructor(
-						Control.class, IControlContentAdapter.class,
-						IContentProposalProvider.class, keyStrokeClass,
-						char[].class);
-
-				Method getInstance = keyStrokeClass.getMethod("getInstance",
-						int.class, int.class);
-
-				args.add(getInstance.invoke(null, SWT.CTRL, ' '));
-			}
-
-			args.add(autoActivationCharacters);
-			contentProposalAdapter = constructor.newInstance(args.toArray());
-		} catch (Exception e) {
-			throw new RuntimeException(
-					"Unable to initialize content proposals", e);
-		}
+		contentProposalAdapter = ContentProposals.enableContentProposal(text,
+				contentProposalProvider, autoActivationCharacters);
 
 		// Listen for popup open/close events to be able to handle focus events
 		// correctly
