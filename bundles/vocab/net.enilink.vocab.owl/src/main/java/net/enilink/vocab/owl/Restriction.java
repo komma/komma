@@ -16,7 +16,6 @@ import java.util.List;
 import net.enilink.composition.annotations.Iri;
 
 import net.enilink.vocab.rdfs.Class;
-import net.enilink.vocab.rdfs.Datatype;
 
 @Iri("http://www.w3.org/2002/07/owl#Restriction")
 public interface Restriction extends net.enilink.vocab.owl.Class {
@@ -44,10 +43,10 @@ public interface Restriction extends net.enilink.vocab.owl.Class {
 
 	/** http://www.w3.org/2002/07/owl#hasSelf */
 	@Iri("http://www.w3.org/2002/07/owl#hasSelf")
-	public abstract Restriction getOwlHasSelf();
+	public abstract Boolean getOwlHasSelf();
 
 	/** http://www.w3.org/2002/07/owl#hasSelf */
-	public abstract void setOwlHasSelf(Restriction value);
+	public abstract void setOwlHasSelf(Boolean value);
 
 	/** http://www.w3.org/2002/07/owl#hasValue */
 	@Iri("http://www.w3.org/2002/07/owl#hasValue")
@@ -112,13 +111,6 @@ public interface Restriction extends net.enilink.vocab.owl.Class {
 
 	/** http://www.w3.org/2002/07/owl#onDataRange */
 	public abstract void setOwlOnDataRange(DataRange dataRange);
-
-	/** http://www.w3.org/2002/07/owl#onDatatype */
-	@Iri("http://www.w3.org/2002/07/owl#onDatatype")
-	public abstract Datatype getOwlOnDatatype();
-
-	/** http://www.w3.org/2002/07/owl#onDatatype */
-	public abstract void setOwlOnDatatype(Datatype datatype);
 
 	/** http://www.w3.org/2002/07/owl#someValuesFrom */
 	@Iri("http://www.w3.org/2002/07/owl#someValuesFrom")

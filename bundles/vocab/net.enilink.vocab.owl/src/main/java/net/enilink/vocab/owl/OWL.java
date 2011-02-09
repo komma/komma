@@ -19,6 +19,10 @@ import net.enilink.komma.core.URIImpl;
 public interface OWL {
 	public static final String NAMESPACE = "http://www.w3.org/2002/07/owl#";
 	public static final URI NAMESPACE_URI = URIImpl.createURI(NAMESPACE);
+	
+	public static final URI TYPE_ANNOTATION = NAMESPACE_URI.appendFragment("Annotation");
+	
+	public static final URI TYPE_AXIOM = NAMESPACE_URI.appendFragment("Axiom");
 
 	public static final URI TYPE_THING = NAMESPACE_URI.appendFragment("Thing");
 
@@ -59,7 +63,15 @@ public interface OWL {
 	public static final URI TYPE_OWLPROPERTY = NAMESPACE_URI.appendFragment("OwlProperty");
 
 	public static final URI TYPE_OWLRESOURCE = NAMESPACE_URI.appendFragment("OwlResource");
+	
+	public static final URI TYPE_INDIVIDUAL = NAMESPACE_URI.appendFragment("Individual");
 
+	public static final URI PROPERTY_ANNOTATEDSOURCE = NAMESPACE_URI.appendFragment("annotatedSource");
+	
+	public static final URI PROPERTY_ANNOTATEDPROPERTY = NAMESPACE_URI.appendFragment("annotatedProperty");
+
+	public static final URI PROPERTY_ANNOTATEDTARGET = NAMESPACE_URI.appendFragment("annotatedTarget");
+	
 	public static final URI PROPERTY_EQUIVALENTCLASS = NAMESPACE_URI.appendFragment("equivalentClass");
 
 	public static final URI PROPERTY_DISJOINTWITH = NAMESPACE_URI.appendFragment("disjointWith");
@@ -93,6 +105,14 @@ public interface OWL {
 	public static final URI PROPERTY_MAXCARDINALITY = NAMESPACE_URI.appendFragment("maxCardinality");
 
 	public static final URI PROPERTY_CARDINALITY = NAMESPACE_URI.appendFragment("cardinality");
+	
+	public static final URI PROPERTY_MINQUALIFIEDCARDINALITY = NAMESPACE_URI.appendFragment("minQualifiedCardinality");
+
+	public static final URI PROPERTY_MAXQUALIFIEDCARDINALITY = NAMESPACE_URI.appendFragment("maxQualifiedCardinality");
+
+	public static final URI PROPERTY_HASSELF = NAMESPACE_URI.appendFragment("hasSelf");
+	
+	public static final URI PROPERTY_QUALIFIEDCARDINALITY = NAMESPACE_URI.appendFragment("qualifiedCardinality");
 
 	public static final URI PROPERTY_INVERSEOF = NAMESPACE_URI.appendFragment("inverseOf");
 
@@ -105,5 +125,17 @@ public interface OWL {
 	public static final URI PROPERTY_BACKWARDCOMPATIBLEWITH = NAMESPACE_URI.appendFragment("backwardCompatibleWith");
 
 	public static final URI PROPERTY_INCOMPATIBLEWITH = NAMESPACE_URI.appendFragment("incompatibleWith");
+	
+	public static final URI PROPERTY_PROPERTYCHAINAXIOM = NAMESPACE_URI.appendFragment("propertyChainAxiom");
+	
+	public static final URI PROPERTY_ONDATATYPE = NAMESPACE_URI.appendFragment("onDatatype");
+	
+	public static final URI PROPERTY_WITHRESTRICTIONS = NAMESPACE_URI.appendFragment("withRestrictions");
+	
+	public static final URI PROPERTY_HASKEY = NAMESPACE_URI.appendFragment("hasKey");
+	
+	public static final URI PROPERTY_ONDATARANGE = NAMESPACE_URI.appendFragment("onDataRange");
+	
+	public static final URI PROPERTY_ONCLASS = NAMESPACE_URI.appendFragment("onClass");
 
 }
