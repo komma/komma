@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 import net.enilink.komma.dm.IDataManager;
-import net.enilink.komma.dm.change.DataChangeTracker;
 import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.core.KommaException;
@@ -48,9 +47,9 @@ public class ChangeDescription implements IChangeDescription {
 			try {
 				dm = modelSet.getDataManagerFactory().get();
 
-				DataChangeTracker changeTracker = (DataChangeTracker) modelSet
-						.getDataChangeTracker();
-				changeTracker.setEnabled(dm, false);
+				// DataChangeTracker changeTracker = (DataChangeTracker)
+				// modelSet.getDataChangeTracker();
+				// changeTracker.setEnabled(dm, false);
 
 				dm.getTransaction().begin();
 				for (ListIterator<IDataChange> it = changes
@@ -82,9 +81,9 @@ public class ChangeDescription implements IChangeDescription {
 			try {
 				dm = modelSet.getDataManagerFactory().get();
 
-				DataChangeTracker changeTracker = (DataChangeTracker) modelSet
-						.getDataChangeTracker();
-				changeTracker.setEnabled(dm, false);
+				// DataChangeTracker changeTracker = (DataChangeTracker)
+				// modelSet.getDataChangeTracker();
+				// changeTracker.setEnabled(dm, false);
 
 				dm.getTransaction().begin();
 				for (ListIterator<IDataChange> it = changes
