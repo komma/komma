@@ -78,7 +78,7 @@ public class SparqlParser extends BaseRdfParser {
 				setPrologue((Prologue) pop(1), (Query) peek()), EOI);
 	}
 
-	protected boolean setPrologue(Prologue prologue, Query query) {
+	public boolean setPrologue(Prologue prologue, Query query) {
 		if (query != null) {
 			query.setPrologue(prologue);
 		}
@@ -371,7 +371,7 @@ public class SparqlParser extends BaseRdfParser {
 		return true;
 	}
 
-	protected PropertyList createPropertyList(GraphNode subject) {
+	public PropertyList createPropertyList(GraphNode subject) {
 		PropertyList propertyList = subject.getPropertyList();
 		if ((propertyList == null || PropertyList.EMPTY_LIST
 				.equals(propertyList)) && subject instanceof AbstractGraphNode) {

@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
+import org.parboiled.annotations.SuppressNode;
 
 import net.enilink.komma.parser.sparql.tree.BNode;
 import net.enilink.komma.parser.sparql.tree.BooleanLiteral;
@@ -91,6 +92,7 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 				push(new BNode((String) pop())));
 	}
 
+	@SuppressNode
 	public Rule WS() {
 		return ZeroOrMore(FirstOf(COMMENT(), WS_NO_COMMENT()));
 	}
@@ -125,10 +127,8 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	public Rule LANGTAG() {
 		return Sequence(
 				Ch('@'),
-				Sequence(
-						OneOrMore(PN_CHARS_BASE()),
-						ZeroOrMore('-',
-								OneOrMore(PN_CHARS_BASE(), DIGIT()))),
+				Sequence(OneOrMore(PN_CHARS_BASE()),
+						ZeroOrMore('-', OneOrMore(PN_CHARS_BASE(), DIGIT()))),
 				push(match()), WS());
 	}
 
@@ -286,8 +286,7 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	public Rule COMMENT() {
-		return Sequence(Ch('#'), ZeroOrMore(TestNot(EOL()), ANY),
-				EOL());
+		return Sequence(Ch('#'), ZeroOrMore(TestNot(EOL()), ANY), EOL());
 	}
 
 	public Rule EOL() {
@@ -309,16 +308,24 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> List<T> popList(Class<T> elementType, int additional) {
+	public <T> List<T> popList(int start, Class<T> elementType, int additional) {
 		LinkedList<T> list = new LinkedList<T>();
 		Object element;
-		while ((element = pop()) != LIST_BEGIN) {
+		while ((element = pop(start)) != LIST_BEGIN) {
 			list.addFirst((T) element);
 		}
 		while (additional-- > 0) {
-			list.addFirst((T) pop());
+			list.addFirst((T) pop(start));
 		}
 		return new ArrayList<T>(list);
+	}
+
+	public <T> List<T> popList(int start, Class<T> elementType) {
+		return popList(start, elementType);
+	}
+
+	public <T> List<T> popList(Class<T> elementType, int additional) {
+		return popList(0, elementType, additional);
 	}
 
 	public <T> List<T> popList(Class<T> elementType) {

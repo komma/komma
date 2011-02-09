@@ -12,7 +12,6 @@ Ontology: <http://www.co-ode.org/ontologies/pizza/pizza.owl>
 Annotations: 
         rdfs:comment "A property created to be used with the ValuePartition - Spiciness."@en
 
-
 ObjectProperty: hasBase
 
     Annotations: 

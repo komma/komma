@@ -47,7 +47,7 @@ Datatype: NegInt
          rdfs:comment "ein negativer Integer."@de
          
     EquivalentTo: 
-        integer[< 0]
+        integer[<0]
         
    Class: UnclosedPizza
     HasKey: 

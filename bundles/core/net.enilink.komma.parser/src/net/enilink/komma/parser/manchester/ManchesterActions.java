@@ -3,7 +3,7 @@ package net.enilink.komma.parser.manchester;
 import org.parboiled.BaseActions;
 
 public class ManchesterActions extends BaseActions<Object> implements
-		IManchesterAction {
+		IManchesterActions {
 
 	/*
 	 * (non-Javadoc)

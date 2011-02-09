@@ -16,7 +16,6 @@ import java.io.InputStreamReader;
 import org.junit.Assert;
 import org.junit.Test;
 import org.parboiled.Parboiled;
-import org.parboiled.common.StringUtils;
 import org.parboiled.errors.ErrorUtils;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.DefaultValueStack;

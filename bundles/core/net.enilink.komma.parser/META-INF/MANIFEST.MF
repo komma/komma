@@ -17,6 +17,7 @@ Import-Package: org.openrdf.repository,
  org.parboiled.trees
 Export-Package: net.enilink.komma.parser,
  net.enilink.komma.parser.manchester,
+ net.enilink.komma.parser.manchester.tree,
  net.enilink.komma.parser.sparql,
  net.enilink.komma.parser.sparql.tree,
  net.enilink.komma.parser.sparql.tree.expr,
