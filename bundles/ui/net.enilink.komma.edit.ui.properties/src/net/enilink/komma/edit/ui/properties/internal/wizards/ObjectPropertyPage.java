@@ -48,7 +48,7 @@ public class ObjectPropertyPage extends WizardPage implements
 	private Composite parentComposite;
 
 	private Context context;
-
+	
 	protected ObjectPropertyPage(Context context) {
 		super(PAGE_NAME, "Edit property value", null);
 		this.context = context;
@@ -162,9 +162,14 @@ public class ObjectPropertyPage extends WizardPage implements
 		}
 
 		if (typeClasses != null) {
-			final Collection<IResource> individuals = getAvailableObjects(typeClasses);
-			for (IResource individual : individuals) {
-				contentProvider.add(individual, itemsFilter);
+			context.unitOfWork.begin();
+			try {
+				final Collection<IResource> individuals = getAvailableObjects(typeClasses);
+				for (IResource individual : individuals) {
+					contentProvider.add(individual, itemsFilter);
+				}
+			} finally {
+				context.unitOfWork.end();
 			}
 		}
 	}
