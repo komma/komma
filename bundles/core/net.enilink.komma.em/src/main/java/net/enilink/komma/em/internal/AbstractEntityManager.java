@@ -347,7 +347,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 			assert obj instanceof IEntityManagerAware : "core roles are not registered, check your deployed classpath";
 			IEntityManagerAware bean = (IEntityManagerAware) obj;
-			bean.initReference(resource);
+			bean.initReference(getReference(resource));
 			return (IEntity) bean;
 		} catch (Exception e) {
 			throw new KommaException(e);
