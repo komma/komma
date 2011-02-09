@@ -113,7 +113,7 @@ public class MoveCommand extends AbstractOverrideableCommand {
 	/**
 	 * This is the list in which the command will move an object.
 	 */
-	protected List<Object> ownerList;
+	protected Collection<Object> ownerList;
 
 	/**
 	 * This is the value being moved within the owner list.
@@ -144,7 +144,7 @@ public class MoveCommand extends AbstractOverrideableCommand {
 		this.value = value;
 		this.index = index;
 
-		ownerList = (List<Object>) getOwnerList(this.owner, property);
+		ownerList = getOwnerList(this.owner, property);
 	}
 
 	/**
@@ -214,8 +214,9 @@ public class MoveCommand extends AbstractOverrideableCommand {
 	protected boolean prepare() {
 		// Return whether there is a list, the value is in the list, and index
 		// is in range...
-		boolean result = ownerList != null && ownerList.contains(value)
-				&& index >= 0 && index < ownerList.size()
+		boolean result = ownerList != null && ownerList instanceof List<?>
+				&& ownerList.contains(value) && index >= 0
+				&& index < ownerList.size()
 				&& (owner == null || !getDomain().isReadOnly(owner.getModel()));
 
 		return result;
@@ -225,8 +226,8 @@ public class MoveCommand extends AbstractOverrideableCommand {
 	protected CommandResult doExecuteWithResult(
 			IProgressMonitor progressMonitor, IAdaptable info)
 			throws ExecutionException {
-		oldIndex = ownerList.indexOf(value);
-		ownerList.add(index, ownerList.remove(oldIndex));
+		oldIndex = ((List<?>) ownerList).indexOf(value);
+		((List<Object>) ownerList).add(index, ownerList.remove(oldIndex));
 
 		return CommandResult.newOKCommandResult(Collections.singleton(value));
 	}
@@ -239,8 +240,8 @@ public class MoveCommand extends AbstractOverrideableCommand {
 	@Override
 	public Collection<?> doGetAffectedResources(Object type) {
 		if (IModel.class.equals(type) && (owner != null || ownerList != null)) {
-			Collection<Object> affected = new HashSet<Object>(super
-					.doGetAffectedResources(type));
+			Collection<Object> affected = new HashSet<Object>(
+					super.doGetAffectedResources(type));
 			if (value instanceof IObject) {
 				affected.add(((IObject) value).getModel());
 			}

@@ -185,22 +185,24 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 
 	@Override
 	public Object getImage(Object object) {
-		try {
-			return overlayImage(
-					object,
-					getResourceLocator().getImage(
-							"full/obj16/"
-									+ getTypes(object).iterator().next()
-											.getURI().localPart()));
-		} catch (Exception missing) {
+		for (IClass type : getTypes(object)) {
 			try {
-				// try default image from provided resource locator
-				return overlayImage(object,
-						getResourceLocator().getImage("full/obj16/Item"));
-			} catch (Exception missing2) {
-				// fall back to image provided by edit plugin
-				return KommaEditPlugin.INSTANCE.getImage("full/obj16/Item");
+				return overlayImage(
+						object,
+						getResourceLocator().getImage(
+								"full/obj16/" + type.getURI().localPart()));
+			} catch (Exception missing) {
+				// ignore
 			}
+		}
+
+		try {
+			// try default image from provided resource locator
+			return overlayImage(object,
+					getResourceLocator().getImage("full/obj16/Item"));
+		} catch (Exception missing2) {
+			// fall back to image provided by edit plugin
+			return KommaEditPlugin.INSTANCE.getImage("full/obj16/Item");
 		}
 	}
 

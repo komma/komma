@@ -1231,7 +1231,8 @@ public class ItemProviderAdapter extends
 						}
 
 						if (property.isMany(object)) {
-							List<?> values = (List<?>) object.get(property);
+							Collection<?> values = (Collection<?>) object
+									.get(property);
 							if (values != null) {
 								index -= values.size();
 							}
