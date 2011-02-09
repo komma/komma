@@ -44,6 +44,7 @@ import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
+import org.parboiled.Parboiled;
 
 import net.enilink.commons.extensions.RegistryReader;
 import net.enilink.commons.iterator.Filter;
@@ -58,10 +59,13 @@ import net.enilink.commons.ui.progress.UiProgressMonitorWrapper;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
+import net.enilink.komma.common.ui.assist.ContentProposals;
+import net.enilink.komma.edit.ui.assist.ParboiledProposalProvider;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelDescription;
+import net.enilink.komma.parser.sparql.SparqlParser;
 import net.enilink.komma.query.SparqlBuilder;
 import net.enilink.komma.core.IBooleanResult;
 import net.enilink.komma.core.IEntityManager;
@@ -73,6 +77,7 @@ import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.ITupleResult;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.sparql.ui.SparqlUI;
+import net.enilink.komma.sparql.ui.assist.SparqlProposals;
 import net.enilink.komma.util.Pair;
 
 class SparqlPart extends AbstractEditorPart {
@@ -494,6 +499,11 @@ class SparqlPart extends AbstractEditorPart {
 			}
 		});
 		queryText.setMenu(menuManager.createContextMenu(queryText));
+		ContentProposals.enableContentProposal(
+				queryText,
+				new ParboiledProposalProvider(Parboiled.createParser(
+						SparqlParser.class).Query(), new SparqlProposals()),
+				null);
 
 		Button button = getWidgetFactory().createButton(queryComposite, "Run",
 				SWT.PUSH);
