@@ -10,6 +10,7 @@ Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: net.enilink.komma.edit.ui,
  net.enilink.komma.edit.ui.action,
+ net.enilink.komma.edit.ui.assist,
  net.enilink.komma.edit.ui.celleditor,
  net.enilink.komma.edit.ui.commands,
  net.enilink.komma.edit.ui.dialogs,
@@ -27,6 +28,7 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.edit;visibility:=reexport,
  net.enilink.komma.common.ui;visibility:=reexport,
  org.eclipse.core.resources;resolution:=optional,
- net.enilink.commons.ui
+ net.enilink.commons.ui,
+ org.parboiled
 Bundle-ActivationPolicy: lazy
 Import-Package: com.google.inject
