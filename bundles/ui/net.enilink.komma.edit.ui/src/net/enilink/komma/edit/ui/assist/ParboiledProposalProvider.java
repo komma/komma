@@ -221,36 +221,34 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 	static class ProposalParseRunner extends BasicParseRunner<Object> {
 		public class Handler implements MatchHandler {
 			public boolean match(MatcherContext<?> context) {
-				if (context.getMatcher().match(context)) {
-					if (context.getCurrentIndex() == proposalIndex) {
-						List<Matcher> matchers = new FollowMatchersVisitor()
-								.getFollowMatchers(context);
-						for (Matcher matcher : matchers) {
-							visitor.process(matcher);
-						}
-
-						if (proposalProvider != null) {
-							do {
-								ISemanticProposal proposal = proposalProvider
-										.getProposal(context.getMatcher()
-												.getLabel());
-								if (proposal != null
-										&& !semanticProposals
-												.containsKey(proposal)) {
-									semanticProposals.put(
-											proposal,
-											context.getInputBuffer().extract(
-													context.getStartIndex(),
-													proposalIndex));
-									break;
-								}
-								context = context.getParent();
-							} while (context != null);
-						}
+				boolean matched = context.getMatcher().match(context);
+				if (proposalIndex == 0 && context.getCurrentIndex() == 0
+						|| proposalIndex == context.getCurrentIndex() + 1) {
+					List<Matcher> matchers = new FollowMatchersVisitor()
+							.getFollowMatchers(context);
+					for (Matcher matcher : matchers) {
+						visitor.process(matcher);
 					}
-					return true;
+
+					if (proposalProvider != null) {
+						do {
+							ISemanticProposal proposal = proposalProvider
+									.getProposal(context.getMatcher()
+											.getLabel());
+							if (proposal != null
+									&& !semanticProposals.containsKey(proposal)) {
+								semanticProposals.put(
+										proposal,
+										context.getInputBuffer().extract(
+												context.getStartIndex(),
+												proposalIndex));
+								break;
+							}
+							context = context.getParent();
+						} while (context != null);
+					}
 				}
-				return false;
+				return matched;
 			}
 
 			public boolean matchRoot(MatcherContext<?> rootContext) {

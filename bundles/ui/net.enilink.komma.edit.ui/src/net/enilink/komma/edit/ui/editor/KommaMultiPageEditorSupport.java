@@ -12,7 +12,7 @@ import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 
-public abstract class KommaMultiPageEditorSupport<E extends MultiPageEditorPart & ISupportedMultiPageEditor>
+public abstract class KommaMultiPageEditorSupport<E extends ISupportedMultiPageEditor>
 		extends KommaEditorSupport<E> {
 	public KommaMultiPageEditorSupport(E editor) {
 		super(editor);
