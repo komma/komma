@@ -60,7 +60,7 @@ public class ContentHandlerRegistryReader extends KommaRegistryReader {
 				if (add) {
 					try {
 						@SuppressWarnings("unchecked")
-						Class<IContentHandler> contributorHandlerClass = Platform
+						Class<IContentHandler> contributorHandlerClass = (Class<IContentHandler>)Platform
 								.getBundle(element.getNamespaceIdentifier())
 								.loadClass(contributorClassName);
 						Map<String, String> parameters = new HashMap<String, String>();
