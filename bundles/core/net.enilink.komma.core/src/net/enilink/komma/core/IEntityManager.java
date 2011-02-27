@@ -347,6 +347,25 @@ public interface IEntityManager {
 	boolean hasMatch(IReference subject, IReference predicate, Object object);
 
 	/**
+	 * Returns <code>true</code> if at least one asserted statement exists with
+	 * the given subject, predicate, and object. Null parameters represent
+	 * wildcards.
+	 * 
+	 * @param subject
+	 *            the subject to match, or null for a wildcard
+	 * @param predicate
+	 *            the predicate to match, or null for a wildcard
+	 * @param object
+	 *            the object to match, or null for a wildcard
+	 * @return <code>true</code> if at least one matching statement exists, else
+	 *         <code>false</code>.
+	 * @throws KommaException
+	 *             thrown if there is an error while getting the statements
+	 */
+	boolean hasMatchAsserted(IReference subject, IReference predicate,
+			Object object);
+
+	/**
 	 * If this manager currently has an open connection to the repository.
 	 * 
 	 * @return <code>true</code> if the connection is open.
