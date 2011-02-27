@@ -1,8 +1,15 @@
 package net.enilink.komma.edit.ui.properties.internal.parts;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.viewers.CellEditor;
@@ -13,19 +20,51 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Item;
+import org.parboiled.Parboiled;
+import org.parboiled.parserunners.BasicParseRunner;
+import org.parboiled.support.ParsingResult;
 
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdfs.RDFS;
+import net.enilink.komma.common.command.CommandResult;
+import net.enilink.komma.common.command.CompositeCommand;
+import net.enilink.komma.common.command.ICommand;
+import net.enilink.komma.common.command.ICompositeCommand;
+import net.enilink.komma.common.command.IdentityCommand;
+import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.common.ui.celleditor.TextCellEditorWithContentProposal;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.ui.KommaEditUIPlugin;
+import net.enilink.komma.edit.ui.assist.ParboiledProposalProvider;
+import net.enilink.komma.edit.ui.properties.internal.assist.ManchesterProposals;
 import net.enilink.komma.edit.ui.properties.internal.wizards.PropertyUtil;
+import net.enilink.komma.edit.ui.util.EditUIUtil;
+import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
+import net.enilink.komma.parser.manchester.IManchesterActions;
+import net.enilink.komma.parser.manchester.ManchesterSyntaxParser;
+import net.enilink.komma.parser.sparql.tree.BNode;
+import net.enilink.komma.parser.sparql.tree.BooleanLiteral;
+import net.enilink.komma.parser.sparql.tree.DoubleLiteral;
+import net.enilink.komma.parser.sparql.tree.GenericLiteral;
+import net.enilink.komma.parser.sparql.tree.IntegerLiteral;
+import net.enilink.komma.parser.sparql.tree.IriRef;
+import net.enilink.komma.parser.sparql.tree.Literal;
+import net.enilink.komma.parser.sparql.tree.QName;
+import net.enilink.komma.parser.sparql.tree.visitor.TreeWalker;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IValue;
+import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.util.ISparqlConstants;
 
 class ValueEditingSupport extends EditingSupport {
@@ -77,12 +116,12 @@ class ValueEditingSupport extends EditingSupport {
 		}
 	}
 
-	class ProposalProvider implements IContentProposalProvider {
+	class ResourceProposalProvider implements IContentProposalProvider {
 		@Override
 		public IContentProposal[] getProposals(String contents, int position) {
 			List<IContentProposal> proposals = new ArrayList<IContentProposal>();
-			for (IEntity resource : getResourceProposals(contents.substring(0,
-					position), 20)) {
+			for (IEntity resource : getResourceProposals(
+					contents.substring(0, position), 20)) {
 				String label = getText(resource);
 				String content = "";
 				if (position < label.length()) {
@@ -101,16 +140,23 @@ class ValueEditingSupport extends EditingSupport {
 	private IEditingDomain editingDomain;
 	private ILabelProvider labelProvider;
 
+	private CellEditor currentEditor;
+
 	private TextCellEditor literalEditor;
 
 	private TextCellEditorWithContentProposal resourceEditor;
+
+	private TextCellEditorWithContentProposal manchesterEditor;
+
+	private final ManchesterSyntaxParser manchesterParser = Parboiled
+			.createParser(ManchesterSyntaxParser.class);
 
 	public ValueEditingSupport(TreeViewer viewer) {
 		super(viewer);
 
 		literalEditor = new TextCellEditor(viewer.getTree());
 		resourceEditor = new TextCellEditorWithContentProposal(
-				viewer.getTree(), new ProposalProvider(), null);
+				viewer.getTree(), new ResourceProposalProvider(), null);
 		resourceEditor.getContentProposalAdapter().setLabelProvider(
 				new LabelProvider() {
 					@Override
@@ -127,6 +173,30 @@ class ValueEditingSupport extends EditingSupport {
 										.getResource());
 					}
 				});
+
+		ManchesterProposals manchesterProposals = new ManchesterProposals() {
+			public IContentProposal[] IriRef(ParsingResult<?> result,
+					int index, String prefix) {
+				List<IContentProposal> proposals = new ArrayList<IContentProposal>();
+				for (IEntity resource : getResourceProposals(prefix, 20)) {
+					String label = getText(resource);
+					label = label.substring(Math.min(label.length(),
+							prefix.length()));
+					proposals.add(new ContentProposal(label, label.length(),
+							resource));
+				}
+				return proposals
+						.toArray(new IContentProposal[proposals.size()]);
+			}
+		};
+		manchesterEditor = new TextCellEditorWithContentProposal(
+				viewer.getTree(), new ParboiledProposalProvider(
+						manchesterParser.Description(), manchesterProposals),
+				null) {
+			protected void focusLost() {
+			}
+		};
+//		manchesterEditor.setStyle(SWT.MULTI);
 	}
 
 	@Override
@@ -142,11 +212,19 @@ class ValueEditingSupport extends EditingSupport {
 	@Override
 	protected CellEditor getCellEditor(Object element) {
 		currentElement = element;
-		if (getStatement(element).getObject() instanceof IReference) {
-			return resourceEditor;
+
+		IStatement stmt = getStatement(element);
+		IProperty property = ((IEntity) stmt.getSubject()).getEntityManager()
+				.find(stmt.getPredicate(), IProperty.class);
+		if (property.getRdfsRanges().contains(RDFS.TYPE_CLASS)
+				|| property.getRdfsRanges().contains(OWL.TYPE_CLASS)) {
+			currentEditor = manchesterEditor;
+		} else if (stmt.getObject() instanceof IReference) {
+			currentEditor = resourceEditor;
 		} else {
-			return literalEditor;
+			currentEditor = literalEditor;
 		}
+		return currentEditor;
 	}
 
 	IExtendedIterator<IResource> getResourceProposals(String template, int limit) {
@@ -182,7 +260,7 @@ class ValueEditingSupport extends EditingSupport {
 								+ "{?s rdfs:label ?l . FILTER regex(str(?l), ?template)}"
 								+ "} LIMIT " + limit) //
 				.setParameter("uriPattern", uriPattern) //
-				.setParameter("template", "^" + template) // 
+				.setParameter("template", "^" + template) //
 				.evaluate(IResource.class);
 	}
 
@@ -214,19 +292,127 @@ class ValueEditingSupport extends EditingSupport {
 				: labelProvider.getText(element);
 	}
 
+	protected ICommand getAddStmtsCommand(final IModel model,
+			final Object subject, final List<Object[]> stmts) {
+		return new SimpleCommand() {
+			@Override
+			protected CommandResult doExecuteWithResult(
+					IProgressMonitor progressMonitor, IAdaptable info)
+					throws ExecutionException {
+				Map<BNode, IReference> bNodes = new HashMap<BNode, IReference>();
+				List<IStatement> realStmts = new ArrayList<IStatement>();
+				for (Object[] stmt : stmts) {
+					Object s = stmt[0], p = stmt[1], o = stmt[2];
+					realStmts.add(new Statement((IReference) toValue(model, s,
+							bNodes), (IReference) toValue(model, p, bNodes),
+							toValue(model, o, bNodes)));
+
+				}
+				model.getManager().add(realStmts);
+
+				return CommandResult.newOKCommandResult(toValue(model, subject,
+						bNodes));
+			}
+		};
+	}
+
+	protected IValue toValue(final IModel model, Object value,
+			final Map<BNode, IReference> bNodes) {
+		final IEntityManager em = model.getManager();
+		if (value instanceof BNode) {
+			IReference reference = bNodes.get(value);
+			if (reference == null) {
+				bNodes.put((BNode) value, reference = em.create());
+			}
+			return reference;
+		} else if (value instanceof IriRef) {
+			return URIImpl.createURI(((IriRef) value).getIri());
+		} else if (value instanceof QName) {
+			String prefix = ((QName) value).getPrefix();
+			String localPart = ((QName) value).getLocalPart();
+			URI ns;
+			if (prefix == null || prefix.trim().length() == 0) {
+				ns = model.getURI();
+			} else {
+				ns = model.getManager().getNamespace(prefix);
+			}
+			if (ns != null) {
+				return ns.appendFragment(localPart);
+			}
+			throw new IllegalArgumentException("Unknown prefix");
+		} else if (value instanceof Literal) {
+			final IValue[] result = new IValue[1];
+			((Literal) value).accept(new TreeWalker<Void>() {
+				@Override
+				public Boolean integerLiteral(IntegerLiteral numericLiteral,
+						Void data) {
+					em.toValue(numericLiteral.getValue());
+					return false;
+				}
+
+				@Override
+				public Boolean booleanLiteral(BooleanLiteral booleanLiteral,
+						Void data) {
+					em.toValue(booleanLiteral.getValue());
+					return false;
+				}
+
+				@Override
+				public Boolean doubleLiteral(DoubleLiteral doubleLiteral,
+						Void data) {
+					em.toValue(doubleLiteral.getValue());
+					return false;
+				}
+
+				@Override
+				public Boolean genericLiteral(GenericLiteral genericLiteral,
+						Void data) {
+					em.createLiteral(
+							genericLiteral.getLabel(),
+							(URI) toValue(model, genericLiteral.getDatatype(),
+									bNodes), genericLiteral.getLanguage());
+					return false;
+				}
+			}, null);
+			return (IValue) result[0];
+		}
+		return (IReference) value;
+	}
+
 	@Override
 	protected void setValue(Object element, Object value) {
 		if (value == null) {
 			return;
 		}
+		if (value.equals(getValue(element))) {
+			return;
+		}
 
-		IStatement stmt = getStatement(element);
-
-		IResource subject = (IResource) stmt.getSubject();
+		final IStatement stmt = getStatement(element);
+		final IResource subject = (IResource) stmt.getSubject();
 		Object object = stmt.getObject();
-		Object newObject = null;
+
+		ICommand newObjectCommand = null;
 		if (value instanceof String) {
-			if (object instanceof IReference) {
+			if (currentEditor == manchesterEditor) {
+				final List<Object[]> newStmts = new ArrayList<Object[]>();
+				ParsingResult<Object> result = BasicParseRunner.run(
+						Parboiled.createParser(ManchesterSyntaxParser.class,
+								new IManchesterActions() {
+									@Override
+									public boolean createStmt(Object subject,
+											Object predicate, Object object) {
+										newStmts.add(new Object[] { subject,
+												predicate, object });
+										return true;
+									}
+								}).Description(), (String) value);
+				if (result.resultValue != null) {
+					newObjectCommand = getAddStmtsCommand(
+							((IObject) subject).getModel(), result.resultValue,
+							newStmts);
+				}
+			} else if (object instanceof IReference) {
 				IExtendedIterator<IResource> resources = getResourceProposals(
 						(String) value, 1);
 				if (resources.hasNext()) {
@@ -234,7 +420,7 @@ class ValueEditingSupport extends EditingSupport {
 					if (!object.equals(resource)
 							&& getText(resource)
 									.equals(((String) value).trim())) {
-						newObject = resource;
+						newObjectCommand = new IdentityCommand(resource);
 					}
 				}
 			} else {
@@ -244,19 +430,71 @@ class ValueEditingSupport extends EditingSupport {
 					literalType = ((ILiteral) object).getDatatype();
 					literalLanguage = ((ILiteral) object).getLanguage();
 				}
-				newObject = subject.getEntityManager().createLiteral(
+				IValue newLiteral = subject.getEntityManager().createLiteral(
 						(String) value, literalType, literalLanguage);
-				if (newObject.equals(object)) {
-					newObject = null;
+				if (!newLiteral.equals(object)) {
+					newObjectCommand = new IdentityCommand(newLiteral);
 				}
 			}
 
-			if (newObject != null) {
-				PropertyUtil.removeProperty(editingDomain, (IResource) stmt
-						.getSubject(), (IProperty) stmt.getPredicate(), stmt
-						.getObject());
-				PropertyUtil.addProperty(editingDomain, subject,
-						(IProperty) stmt.getPredicate(), newObject);
+			if (newObjectCommand != null) {
+				ICompositeCommand command = new CompositeCommand() {
+					@Override
+					protected CommandResult doExecuteWithResult(
+							IProgressMonitor progressMonitor, IAdaptable info)
+							throws ExecutionException {
+						subject.getEntityManager().getTransaction().begin();
+						try {
+							CommandResult result = super.doExecuteWithResult(
+									progressMonitor, info);
+							if (!result.getStatus().isOK()) {
+								return result;
+							}
+							IStatus status = addAndExecute(
+									PropertyUtil.getRemoveCommand(
+											editingDomain,
+											(IResource) stmt.getSubject(),
+											(IProperty) stmt.getPredicate(),
+											stmt.getObject()), progressMonitor,
+									info);
+							if (status.isOK()) {
+								status = addAndExecute(
+										PropertyUtil.getAddCommand(
+												editingDomain,
+												subject,
+												(IProperty) stmt.getPredicate(),
+												result.getReturnValues()
+														.iterator().next()),
+										progressMonitor, info);
+							}
+							if (status.isOK()) {
+								subject.getEntityManager().getTransaction()
+										.commit();
+							}
+
+							return new CommandResult(status);
+						} finally {
+							if (subject.getEntityManager().getTransaction()
+									.isActive()) {
+								subject.getEntityManager().getTransaction()
+										.rollback();
+							}
+						}
+					}
+				};
+				command.add(newObjectCommand);
+
+				IStatus status = Status.CANCEL_STATUS;
+				try {
+					status = editingDomain.getCommandStack().execute(command,
+							null, null);
+				} catch (ExecutionException exc) {
+					status = EditUIUtil.createErrorStatus(exc);
+				}
+
+				if (!status.isOK()) {
+					KommaEditUIPlugin.getPlugin().log(status);
+				}
 			}
 		}
 

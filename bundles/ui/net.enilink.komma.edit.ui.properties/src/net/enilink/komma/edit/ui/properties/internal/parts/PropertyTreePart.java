@@ -19,6 +19,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -51,13 +52,16 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.internal.ide.StatusUtil;
 
 import net.enilink.commons.ui.editor.IEditorForm;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
+import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
+import net.enilink.komma.edit.command.RemoveCommand;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
 import net.enilink.komma.edit.ui.properties.internal.context.IPropertiesContext;
@@ -65,6 +69,7 @@ import net.enilink.komma.edit.ui.properties.internal.wizards.EditPropertyWizard;
 import net.enilink.komma.edit.ui.properties.internal.wizards.PropertyUtil;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
+import net.enilink.komma.edit.ui.util.EditUIUtil;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
@@ -164,8 +169,8 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 										IAdaptable info)
 										throws ExecutionException {
 									IResource newResource = resource
-											.getEntityManager().rename(resource,
-													uri);
+											.getEntityManager().rename(
+													resource, uri);
 									setInput(newResource);
 									return CommandResult.newOKCommandResult();
 								}
@@ -232,10 +237,18 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				messageBox.setText("Remove property");
 				int response = messageBox.open();
 				if (response == SWT.YES) {
-					IStatus status = PropertyUtil.removeProperty(
+					ICommand removeCommand = PropertyUtil.getRemoveCommand(
 							getEditingDomain(), resource,
 							(IProperty) statement.getPredicate(),
 							statement.getObject());
+
+					IStatus status = Status.CANCEL_STATUS;
+					try {
+						status = getEditingDomain().getCommandStack().execute(
+								removeCommand, null, null);
+					} catch (ExecutionException exc) {
+						status = EditUIUtil.createErrorStatus(exc);
+					}
 
 					if (!status.isOK()) {
 						MessageDialog.openError(getShell(), "Error",

@@ -1,13 +1,19 @@
 package net.enilink.komma.edit.ui.properties.internal.wizards;
 
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.common.command.CompositeCommand;
+import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.ui.util.EditUIUtil;
 
 public class EditPropertyWizard extends Wizard {
 	private Context context;
@@ -50,9 +56,10 @@ public class EditPropertyWizard extends Wizard {
 	}
 
 	public boolean performFinish() {
+		ICommand removeCommand = null;
 		if (originalPredicate != null && originalObject != null) {
-			PropertyUtil.removeProperty(editingDomain, context.subject,
-					originalPredicate, originalObject);
+			removeCommand = PropertyUtil.getRemoveCommand(editingDomain,
+					context.subject, originalPredicate, originalObject);
 		}
 
 		Object object = context.object;
@@ -61,9 +68,20 @@ public class EditPropertyWizard extends Wizard {
 					context.objectLabel, context.objectType,
 					context.objectLanguage);
 		}
-		PropertyUtil.addProperty(editingDomain, context.subject,
-				context.predicate, object);
-		return true;
+		ICommand command = PropertyUtil.getAddCommand(editingDomain,
+				context.subject, context.predicate, object);
+		if (removeCommand != null) {
+			command = removeCommand.compose(command);
+		}
+		IStatus status = Status.CANCEL_STATUS;
+		try {
+			status = editingDomain.getCommandStack().execute(command, null,
+					null);
+		} catch (ExecutionException exc) {
+			status = EditUIUtil.createErrorStatus(exc);
+		}
+
+		return status.isOK();
 	}
 
 	@Override
