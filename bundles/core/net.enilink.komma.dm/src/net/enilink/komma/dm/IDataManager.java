@@ -193,4 +193,6 @@ public interface IDataManager {
 	IDataManager setReadContexts(Set<URI> readContexts);
 
 	IDataManager setIncludeInferred(boolean includeInferred);
+
+	boolean getIncludeInferred();
 }
