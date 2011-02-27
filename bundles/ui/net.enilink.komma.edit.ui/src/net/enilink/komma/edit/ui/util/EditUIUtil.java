@@ -25,8 +25,10 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
@@ -68,8 +70,8 @@ public class EditUIUtil {
 					if (uri.isPlatformResource()) {
 						String path = uri.toPlatformString(true);
 						IResource workspaceResource = ResourcesPlugin
-								.getWorkspace().getRoot().findMember(
-										new Path(path));
+								.getWorkspace().getRoot()
+								.findMember(new Path(path));
 						if (workspaceResource instanceof IFile) {
 							editorInput = EclipseUtil
 									.createEditorInput((IFile) workspaceResource);
@@ -81,9 +83,11 @@ public class EditUIUtil {
 						IWorkbench workbench = PlatformUI.getWorkbench();
 						IWorkbenchPage page = workbench
 								.getActiveWorkbenchWindow().getActivePage();
-						IEditorPart editorPart = page.openEditor(editorInput,
-								workbench.getEditorRegistry().getDefaultEditor(
-										uri.lastSegment()).getId());
+						IEditorPart editorPart = page.openEditor(
+								editorInput,
+								workbench.getEditorRegistry()
+										.getDefaultEditor(uri.lastSegment())
+										.getId());
 						return editorPart != null;
 					}
 				}
@@ -121,8 +125,9 @@ public class EditUIUtil {
 	 */
 	public static IEditorDescriptor getDefaultEditor(String fileName) {
 		return fileName != null && fileName.length() != 0 ? getDefaultEditor(
-				fileName, Platform.getContentTypeManager().findContentTypesFor(
-						fileName)) : null;
+				fileName,
+				Platform.getContentTypeManager().findContentTypesFor(fileName))
+				: null;
 	}
 
 	/**
@@ -144,9 +149,10 @@ public class EditUIUtil {
 			String fileName) {
 		if (contents != null) {
 			try {
-				return getDefaultEditor(fileName, Platform
-						.getContentTypeManager().findContentTypesFor(contents,
-								fileName));
+				return getDefaultEditor(
+						fileName,
+						Platform.getContentTypeManager().findContentTypesFor(
+								contents, fileName));
 			} catch (IOException e) {
 				KommaEditUIPlugin.INSTANCE.log(e);
 			}
@@ -233,8 +239,9 @@ public class EditUIUtil {
 	public static IEditorDescriptor[] getEditors(String fileName,
 			boolean defaultsOnly) {
 		return fileName != null && fileName.length() != 0 ? getEditors(
-				fileName, Platform.getContentTypeManager().findContentTypesFor(
-						fileName), defaultsOnly) : new IEditorDescriptor[0];
+				fileName,
+				Platform.getContentTypeManager().findContentTypesFor(fileName),
+				defaultsOnly) : new IEditorDescriptor[0];
 	}
 
 	/**
@@ -329,5 +336,19 @@ public class EditUIUtil {
 		} finally {
 			close(stream);
 		}
+	}
+
+	/**
+	 * Creates a corresponding error status object for the given
+	 * <code>exception</code>.
+	 * 
+	 * @param exception
+	 *            The exception for which an error status object should be
+	 *            created.
+	 * @return The error status.
+	 */
+	public static IStatus createErrorStatus(Exception exception) {
+		return new Status(Status.ERROR, KommaEditUIPlugin.PLUGIN_ID,
+				exception.getMessage(), exception);
 	}
 }
