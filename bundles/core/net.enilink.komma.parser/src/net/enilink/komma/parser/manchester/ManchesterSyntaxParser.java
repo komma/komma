@@ -220,7 +220,7 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 
 		for (Object element : elements) {
 			GraphNode current = new BNode();
-			// actions.createStmt(current, RDF.PROPERTY_TYPE, RDF.TYPE_LIST);
+			actions.createStmt(current, RDF.PROPERTY_TYPE, RDF.TYPE_LIST);
 			actions.createStmt(current, RDF.PROPERTY_FIRST, element);
 			if (last != null) {
 				actions.createStmt(last, RDF.PROPERTY_REST, current);
