@@ -253,6 +253,12 @@ public class ThreadLocalEntityManager implements IEntityManager {
 	}
 
 	@Override
+	public boolean hasMatchAsserted(IReference subject, IReference predicate,
+			Object object) {
+		return getDelegate().hasMatchAsserted(subject, predicate, object);
+	}
+
+	@Override
 	public boolean isOpen() {
 		return getDelegate().isOpen();
 	}

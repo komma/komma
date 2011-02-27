@@ -80,7 +80,6 @@ public class KommaUtil implements ISparqlConstants {
 		return module;
 	}
 
-	@SuppressWarnings("unchecked")
 	public static IExtendedIterator<URL> getConceptLibraries(String bundleName) {
 		Enumeration<URL> libraries;
 		if (KommaCore.IS_ECLIPSE_RUNNING) {
@@ -117,7 +116,6 @@ public class KommaUtil implements ISparqlConstants {
 		return WrappedIterator.emptyIterator();
 	}
 
-	@SuppressWarnings("unchecked")
 	public static IExtendedIterator<URL> getBundleMetaInfLocations(Bundle bundle) {
 		if (bundle != null) {
 			Enumeration<URL> libraries = bundle.findEntries("/", "META-INF",
@@ -205,8 +203,8 @@ public class KommaUtil implements ISparqlConstants {
 			typeName = XMLSCHEMA.TYPE_STRING;
 		}
 
-		return manager.toInstance(manager.createLiteral(
-				String.valueOf(value), typeName, null));
+		return manager.toInstance(manager.createLiteral(String.valueOf(value),
+				typeName, null));
 	}
 
 	public static ILiteral createStringLiteral(IEntityManager manager,

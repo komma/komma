@@ -787,6 +787,18 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		return dm.matchAsserted(subject, predicate, toValue(object));
 	}
 
+	@Override
+	public boolean hasMatchAsserted(IReference subject, IReference predicate,
+			Object object) {
+		boolean includeInferred = dm.getIncludeInferred();
+		dm.setIncludeInferred(false);
+		try {
+			return dm.hasMatch(subject, predicate, toValue(object));
+		} finally {
+			dm.setIncludeInferred(includeInferred);
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	public <T> T merge(T bean) {
 		if (bean == null) {

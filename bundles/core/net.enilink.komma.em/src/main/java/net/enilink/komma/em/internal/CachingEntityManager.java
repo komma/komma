@@ -68,7 +68,9 @@ public class CachingEntityManager extends DecoratingEntityManager implements
 		}
 		IEntity entity = super
 				.createBean(resource, types, restrictTypes, graph);
-		if (!restrictTypes) {
+		// do not cache entities created during transactions or with restricted
+		// types
+		if (!(restrictTypes || getTransaction().isActive())) {
 			cache.put(Fqn.fromRelativeElements(baseFqn, resource), "", entity);
 		}
 		return entity;
@@ -76,6 +78,9 @@ public class CachingEntityManager extends DecoratingEntityManager implements
 
 	@Override
 	public void dataChanged(List<IDataChange> changes) {
+		// TODO entity managers should have higher priority than other listeners
+		// to ensure that cache is cleared before invocations of these other
+		// listeners
 		for (IDataChange change : changes) {
 			if (change instanceof IStatementChange) {
 				IStatementChange stmtChange = (IStatementChange) change;
