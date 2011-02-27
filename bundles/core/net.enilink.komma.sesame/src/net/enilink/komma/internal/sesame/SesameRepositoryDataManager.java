@@ -40,16 +40,18 @@ import net.enilink.komma.sesame.SesameValueConverter;
 public class SesameRepositoryDataManager implements IDataManager {
 	private static final URI[] ALL_CONTEXTS = new URI[0];
 
-	protected net.enilink.komma.core.URI[] changeCtx;
-
 	protected URI[] addCtx = ALL_CONTEXTS;
 	
 	protected URI[] readCtx = ALL_CONTEXTS;
 
+	protected net.enilink.komma.core.URI[] changeCtx;
+	
 	@Inject
 	protected IDataChangeSupport changeSupport;
 
 	protected RepositoryConnection connection;
+
+	private boolean includeInferred = true;
 
 	protected InferencingCapability inferencing;
 
@@ -63,8 +65,6 @@ public class SesameRepositoryDataManager implements IDataManager {
 
 	@Inject
 	protected SesameValueConverter valueConverter;
-
-	private boolean includeInferred = true;
 
 	@Inject
 	public SesameRepositoryDataManager(Repository repository,
@@ -171,6 +171,11 @@ public class SesameRepositoryDataManager implements IDataManager {
 
 	RepositoryConnection getConnection() {
 		return connection;
+	}
+
+	@Override
+	public boolean getIncludeInferred() {
+		return includeInferred;
 	}
 
 	@Override
