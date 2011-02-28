@@ -25,9 +25,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -37,6 +39,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
+import net.enilink.commons.ui.CommonsUi;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.provider.ComposedImage;
 import net.enilink.komma.core.URI;
@@ -51,15 +54,16 @@ public class ExtendedImageRegistry {
 		return INSTANCE;
 	}
 
-	protected HashMap<Object, Image> table = new HashMap<Object, Image>(10);
+	protected Map<Object, Image> table = Collections.synchronizedMap(new HashMap<Object, Image>(10));
 
 	public ExtendedImageRegistry() {
-		Display display = Display.getCurrent();
-		hookDisplayDispose(display);
+		this(Display.getCurrent());
 	}
 
 	public ExtendedImageRegistry(Display display) {
-		hookDisplayDispose(display);
+		if (!CommonsUi.IS_RAP_RUNNING) {
+			hookDisplayDispose(display);
+		}
 	}
 
 	protected static String modelURLPrefix = KommaEditPlugin.INSTANCE.getImage(

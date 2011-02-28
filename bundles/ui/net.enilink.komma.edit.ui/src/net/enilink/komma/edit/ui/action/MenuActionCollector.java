@@ -15,6 +15,7 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.SubContributionItem;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.progress.WorkbenchJob;
 
 import net.enilink.komma.common.util.ICollector;
@@ -32,6 +33,7 @@ abstract public class MenuActionCollector<T> extends CollectorJob<T> {
 	protected Collection<IAction> actions;
 	protected Set<IMenuManager> menuManagers = new HashSet<IMenuManager>();
 	protected volatile ISelection selection;
+	protected Display display = Display.getCurrent();
 
 	public MenuActionCollector(String name, ISelection selection) {
 		super(name);
@@ -92,7 +94,7 @@ abstract public class MenuActionCollector<T> extends CollectorJob<T> {
 
 	@Override
 	protected void handleObjects(final Collection<T> descriptors) {
-		new WorkbenchJob("Create actions") {
+		new WorkbenchJob(display, "Create actions") {
 			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
 				if (selection != null) {
