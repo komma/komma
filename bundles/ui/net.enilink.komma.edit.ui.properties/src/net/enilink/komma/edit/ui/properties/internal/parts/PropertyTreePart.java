@@ -52,7 +52,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.internal.ide.StatusUtil;
 
 import net.enilink.commons.ui.editor.IEditorForm;
 import net.enilink.komma.common.adapter.IAdapterFactory;
@@ -61,7 +60,6 @@ import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
-import net.enilink.komma.edit.command.RemoveCommand;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
 import net.enilink.komma.edit.ui.properties.internal.context.IPropertiesContext;
