@@ -45,11 +45,8 @@ public class ModelSetModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
-		UnitOfWork uow = new UnitOfWork();
-		uow.begin();
-
-		bind(UnitOfWork.class).toInstance(uow);
-		bind(IUnitOfWork.class).toInstance(uow);
+		bind(UnitOfWork.class).in(Singleton.class);
+		bind(IUnitOfWork.class).to(UnitOfWork.class);
 	}
 
 	@Provides

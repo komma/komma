@@ -18,6 +18,7 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.LinkedHashGraph;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.util.UnitOfWork;
 
 class ModelSetFactory implements IModelSetFactory {
 	@Inject
@@ -30,8 +31,7 @@ class ModelSetFactory implements IModelSetFactory {
 
 	@Override
 	public IModelSet createModelSet(IGraph configuration, URI... modelSetTypes) {
-		IEntityManager metaDataManager = metaDataManagerFactory
-				.get();
+		IEntityManager metaDataManager = metaDataManagerFactory.get();
 		metaDataManager.add(configuration);
 
 		List<IReference> types = new ArrayList<IReference>();
@@ -83,5 +83,13 @@ class ModelSetFactory implements IModelSetFactory {
 		}
 
 		return modelSet;
+	}
+	
+	@Inject
+	protected void setUnitOfWork(UnitOfWork unitOfWork) {
+		// start unit of work if it is not already active
+		if (unitOfWork.isActive()) {
+			unitOfWork.begin();
+		}
 	}
 }
