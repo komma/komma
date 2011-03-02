@@ -19,6 +19,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.command.CommandResult;
@@ -199,14 +200,30 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 	}
 
 	@Override
+	public Object getParent(Object object) {
+		if (object instanceof IClass) {
+			IExtendedIterator<?> it = ((IClass) object)
+					.getDirectNamedSuperClasses();
+			try {
+				if (it.hasNext()) {
+					return it.next();
+				}
+			} finally {
+				it.close();
+			}
+		}
+		return super.getParent(object);
+	}
+
+	@Override
 	public Collection<?> getChildren(Object object) {
 		if (object instanceof IClass) {
 			Set<IClass> subClasses = ((IClass) object)
 					.getDirectNamedSubClasses().toSet();
 			if (RDFS.TYPE_RESOURCE.equals(object)) {
 				if (!subClasses.contains(OWL.TYPE_THING)) {
-					subClasses.add((IClass) ((IClass) object).getEntityManager()
-							.find(OWL.TYPE_THING));
+					subClasses.add((IClass) ((IClass) object)
+							.getEntityManager().find(OWL.TYPE_THING));
 				}
 			}
 			return subClasses;
