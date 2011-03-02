@@ -88,7 +88,7 @@ class ModelSetFactory implements IModelSetFactory {
 	@Inject
 	protected void setUnitOfWork(UnitOfWork unitOfWork) {
 		// start unit of work if it is not already active
-		if (unitOfWork.isActive()) {
+		if (! unitOfWork.isActive()) {
 			unitOfWork.begin();
 		}
 	}
