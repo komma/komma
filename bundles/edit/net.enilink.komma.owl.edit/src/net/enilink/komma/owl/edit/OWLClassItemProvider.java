@@ -18,6 +18,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.command.CommandResult;
@@ -44,6 +45,35 @@ public class OWLClassItemProvider extends ReflectiveItemProvider {
 	public OWLClassItemProvider(OWLItemProviderAdapterFactory adapterFactory,
 			IResourceLocator resourceLocator, Collection<IClass> supportedTypes) {
 		super(adapterFactory, resourceLocator, supportedTypes);
+	}
+
+	protected Collection<IViewerNotification> addViewerNotifications(
+			Collection<IViewerNotification> viewerNotifications,
+			IStatementNotification notification, boolean contentRefresh,
+			boolean labelUpdate) {
+		if (RDFS.PROPERTY_SUBCLASSOF.equals(notification.getPredicate())) {
+			Object element = notification.getObject();
+
+			IObject object;
+			if (element instanceof IObject) {
+				object = (IObject) element;
+			} else if (element instanceof IReference) {
+				object = resolveReference((IReference) element);
+			} else {
+				return null;
+			}
+
+			if (object != null) {
+				if (viewerNotifications == null) {
+					viewerNotifications = createViewerNotificationList();
+				}
+				viewerNotifications.add(new ViewerNotification(object,
+						contentRefresh, labelUpdate));
+			}
+			return viewerNotifications;
+		}
+		return super.addViewerNotifications(viewerNotifications, notification,
+				contentRefresh, labelUpdate);
 	}
 
 	@Override
@@ -106,35 +136,6 @@ public class OWLClassItemProvider extends ReflectiveItemProvider {
 		}
 		return super.createCreateChildCommand(domain, owner, property, value,
 				index, collection);
-	}
-
-	protected Collection<IViewerNotification> addViewerNotifications(
-			Collection<IViewerNotification> viewerNotifications,
-			IStatementNotification notification, boolean contentRefresh,
-			boolean labelUpdate) {
-		if (RDFS.PROPERTY_SUBCLASSOF.equals(notification.getPredicate())) {
-			Object element = notification.getObject();
-
-			IObject object;
-			if (element instanceof IObject) {
-				object = (IObject) element;
-			} else if (element instanceof IReference) {
-				object = resolveReference((IReference) element);
-			} else {
-				return null;
-			}
-
-			if (object != null) {
-				if (viewerNotifications == null) {
-					viewerNotifications = createViewerNotificationList();
-				}
-				viewerNotifications.add(new ViewerNotification(object,
-						contentRefresh, labelUpdate));
-			}
-			return viewerNotifications;
-		}
-		return super.addViewerNotifications(viewerNotifications, notification,
-				contentRefresh, labelUpdate);
 	}
 
 	@Override
@@ -208,6 +209,27 @@ public class OWLClassItemProvider extends ReflectiveItemProvider {
 	}
 
 	@Override
+	public Object getParent(Object object) {
+		if (object instanceof IClass) {
+			IExtendedIterator<?> it = ((IClass) object)
+					.getDirectNamedSuperClasses();
+			try {
+				if (it.hasNext()) {
+					return it.next();
+				}
+			} finally {
+				it.close();
+			}
+		}
+		return super.getParent(object);
+	}
+
+	@Override
+	public String getText(Object object) {
+		return ManchesterSyntaxGenerator.generateText(object);
+	}
+
+	@Override
 	protected Collection<? extends IClass> getTypes(Object object) {
 		if (object instanceof IClass
 				&& (((IClass) object).equals(OWL.TYPE_OBJECTPROPERTY) || ((IClass) object)
@@ -223,10 +245,5 @@ public class OWLClassItemProvider extends ReflectiveItemProvider {
 			return ((IClass) object).hasNamedSubClasses(true);
 		}
 		return hasChildren(object, false);
-	}
-
-	@Override
-	public String getText(Object object) {
-		return ManchesterSyntaxGenerator.generateText(object);
 	}
 }

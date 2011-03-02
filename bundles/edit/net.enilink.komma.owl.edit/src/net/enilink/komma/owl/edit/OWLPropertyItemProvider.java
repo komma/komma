@@ -18,6 +18,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.owl.ObjectProperty;
@@ -215,6 +216,22 @@ public class OWLPropertyItemProvider extends ReflectiveItemProvider {
 			return ((IProperty) object).getDirectSubProperties().toSet();
 		}
 		return super.getChildren(object);
+	}
+
+	@Override
+	public Object getParent(Object object) {
+		if (object instanceof IProperty) {
+			IExtendedIterator<?> it = ((IProperty) object)
+					.getDirectSuperProperties();
+			try {
+				if (it.hasNext()) {
+					return it.next();
+				}
+			} finally {
+				it.close();
+			}
+		}
+		return super.getParent(object);
 	}
 
 	@Override
