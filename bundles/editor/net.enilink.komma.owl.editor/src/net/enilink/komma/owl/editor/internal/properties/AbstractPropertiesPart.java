@@ -30,6 +30,7 @@ import net.enilink.vocab.owl.OWL;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.SimpleCommand;
+import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
@@ -130,8 +131,7 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 									final IEntity property = model
 											.getManager()
 											.createNamed(
-													model
-															.getURI()
+													model.getURI()
 															.appendFragment(
 																	resourceName),
 													getPropertyType());
@@ -146,8 +146,7 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 												}
 											});
 
-									return CommandResult
-											.newOKCommandResult(property);
+									return CommandResult.newOKCommandResult(property);
 								}
 							}, null, null);
 				} catch (ExecutionException e) {
@@ -170,8 +169,7 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 						IProgressMonitor progressMonitor, IAdaptable info)
 						throws ExecutionException {
 
-					final Object selected = ((IStructuredSelection) treeViewer
-							.getSelection()).getFirstElement();
+					final Object selected = ((IStructuredSelection) treeViewer.getSelection()).getFirstElement();
 
 					if (selected instanceof IResource) {
 						((IResource) selected).getEntityManager().remove(
@@ -200,6 +198,14 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 			return true;
 		}
 		return super.setFocus();
+	}
+
+	@Override
+	public boolean setEditorInput(Object input) {
+		if (input instanceof IProperty && treeViewer != null) {
+			treeViewer.setSelection(new StructuredSelection(input), true);
+		}
+		return super.setEditorInput(input);
 	}
 
 	@Override
