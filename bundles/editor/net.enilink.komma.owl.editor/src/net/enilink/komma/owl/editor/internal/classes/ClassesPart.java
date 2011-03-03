@@ -44,6 +44,7 @@ import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.URI;
 
 public class ClassesPart extends AbstractEditingDomainPart {
 	protected Tree tree;
@@ -116,7 +117,7 @@ public class ClassesPart extends AbstractEditingDomainPart {
 		NewObjectWizard wizard = new NewObjectWizard(model) {
 			@Override
 			public boolean performFinish() {
-				final String resourceName = getObjectName();
+				final URI resourceName = getObjectName();
 				try {
 					getEditingDomain().getCommandStack().execute(
 							new SimpleCommand() {
@@ -125,12 +126,8 @@ public class ClassesPart extends AbstractEditingDomainPart {
 										IProgressMonitor progressMonitor,
 										IAdaptable info)
 										throws ExecutionException {
-									final IEntity entity = model
-											.getManager()
-											.createNamed(
-													model.getURI()
-															.appendFragment(
-																	resourceName),
+									final IEntity entity = model.getManager()
+											.createNamed(resourceName,
 													OWL.TYPE_CLASS);
 									if (treeViewer.getSelection() != null)
 										entity.getEntityManager()

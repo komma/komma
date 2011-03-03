@@ -119,7 +119,7 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 		NewObjectWizard wizard = new NewObjectWizard(model) {
 			@Override
 			public boolean performFinish() {
-				final String resourceName = getObjectName();
+				final URI resourceName = getObjectName();
 				try {
 					getEditingDomain().getCommandStack().execute(
 							new SimpleCommand() {
@@ -128,12 +128,8 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 										IProgressMonitor progressMonitor,
 										IAdaptable info)
 										throws ExecutionException {
-									final IEntity property = model
-											.getManager()
-											.createNamed(
-													model.getURI()
-															.appendFragment(
-																	resourceName),
+									final IEntity property = model.getManager()
+											.createNamed(resourceName,
 													getPropertyType());
 
 									getShell().getDisplay().asyncExec(

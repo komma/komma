@@ -43,6 +43,7 @@ import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.URI;
 
 public class IndividualsPart extends AbstractEditingDomainPart {
 	private StructuredViewer viewer;
@@ -131,7 +132,7 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 					((IObject) parent).getModel()) {
 				@Override
 				public boolean performFinish() {
-					final String resourceName = getObjectName();
+					final URI resourceName = getObjectName();
 					try {
 						getEditingDomain().getCommandStack().execute(
 								new SimpleCommand() {
@@ -140,9 +141,8 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 											IProgressMonitor progressMonitor,
 											IAdaptable info)
 											throws ExecutionException {
-										final IResource individual = parent.newInstance(model
-												.getURI().appendFragment(
-														resourceName));
+										final IResource individual = parent.newInstance(
+														resourceName);
 
 										getShell().getDisplay().asyncExec(
 												new Runnable() {
