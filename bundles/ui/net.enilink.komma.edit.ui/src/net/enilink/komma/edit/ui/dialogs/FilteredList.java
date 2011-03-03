@@ -738,8 +738,13 @@ public abstract class FilteredList {
 	 * Schedule refresh job.
 	 */
 	public void scheduleRefresh() {
-		refreshCacheJob.cancelAll();
-		refreshCacheJob.schedule();
+		composite.getDisplay().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				refreshCacheJob.cancelAll();
+				refreshCacheJob.schedule();
+			}
+		});
 	}
 
 	public void clearAndRefresh() {
@@ -871,7 +876,6 @@ public abstract class FilteredList {
 	 * refiltering.
 	 */
 	protected void applyFilter() {
-
 		ItemsFilter newFilter = createFilter();
 
 		// don't apply filtering for patterns which mean the same, for example:
@@ -1401,9 +1405,12 @@ public abstract class FilteredList {
 
 			int borderWidth = list.getTable().computeTrim(0, 0, 0, 0).width;
 
-			int imageWidth = ExtendedImageRegistry.getInstance().getImage(
-					KommaEditUIPlugin.INSTANCE
-							.getImage(IEditUIImages.VIEW_MENU)).getBounds().width;
+			int imageWidth = ExtendedImageRegistry
+					.getInstance()
+					.getImage(
+							KommaEditUIPlugin.INSTANCE
+									.getImage(IEditUIImages.VIEW_MENU))
+					.getBounds().width;
 
 			int width = rect.width - borderWidth - imageWidth;
 
@@ -1718,8 +1725,7 @@ public abstract class FilteredList {
 				return message;
 
 			return NLS
-					.bind(
-							DialogMessages.FilteredItemsSelectionDialog_taskProgressMessage,
+					.bind(DialogMessages.FilteredItemsSelectionDialog_taskProgressMessage,
 							new Object[] {
 									message,
 									new Integer(
@@ -1754,7 +1760,6 @@ public abstract class FilteredList {
 		 * IProgressMonitor)
 		 */
 		protected IStatus run(IProgressMonitor monitor) {
-
 			this.itemsFilter = filter;
 
 			contentProvider.reset();
@@ -2240,8 +2245,7 @@ public abstract class FilteredList {
 		 * Matches an item against filter conditions.
 		 * 
 		 * @param item
-		 * @return
-		 *         <code>true<code> if item matches against filter conditions, <code>false</code>
+		 * @return <code>true<code> if item matches against filter conditions, <code>false</code>
 		 *         otherwise
 		 */
 		public abstract boolean matchItem(Object item);
@@ -2948,8 +2952,8 @@ public abstract class FilteredList {
 			Object input = this.getInput();
 			if (input != null) {
 				ILabelProvider labelProvider = (ILabelProvider) getLabelProvider();
-				doRefresh(labelProvider.getText(input), labelProvider
-						.getImage(input));
+				doRefresh(labelProvider.getText(input),
+						labelProvider.getImage(input));
 			} else {
 				doRefresh(null, null);
 			}

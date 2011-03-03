@@ -43,12 +43,9 @@ public abstract class CreateObjectAction extends Action {
 			@Override
 			public boolean performFinish() {
 				final Object[] types = getObjectTypes();
-				final String resourceName = getObjectName();
+				final URI name = getObjectName();
 				shell.getDisplay().asyncExec(new Runnable() {
 					public void run() {
-						URI name = model.getURI().namespace().appendFragment(
-								resourceName);
-
 						IResource entity = model.getManager().find(name,
 								IResource.class);
 						try {

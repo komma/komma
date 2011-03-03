@@ -10,15 +10,21 @@
  *******************************************************************************/
 package net.enilink.komma.edit.ui.wizards;
 
-import java.util.regex.Pattern;
-
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Composite;
+import org.parboiled.Parboiled;
+import org.parboiled.parserunners.ReportingParseRunner;
+import org.parboiled.support.ParsingResult;
 
 import net.enilink.komma.model.IModel;
+import net.enilink.komma.parser.manchester.ManchesterSyntaxParser;
+import net.enilink.komma.parser.sparql.tree.IriRef;
+import net.enilink.komma.parser.sparql.tree.QName;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
 
 abstract public class NewObjectWizard extends Wizard {
 	protected ObjectTypeSelectionPage selectionPage;
@@ -73,32 +79,70 @@ abstract public class NewObjectWizard extends Wizard {
 
 		if (showNamePage()) {
 			objectNamePage = new ObjectNamePage() {
+				ManchesterSyntaxParser rdfParser = Parboiled
+						.createParser(ManchesterSyntaxParser.class);
+
 				@Override
-				protected void validate() {
-					String name = getObjectName();
+				protected URI validate(String nameText) {
+					URI name = null;
 
 					String errorMsg = null;
-					if (name.length() == 0) {
+					if (nameText.length() == 0) {
 						errorMsg = "Name may not be empty.";
 					} else {
-						Pattern namePattern = Pattern.compile("(\\w|[.])+");
-						if (!namePattern.matcher(name).matches()) {
+						ParsingResult<Object> result = new ReportingParseRunner<Object>(
+								rdfParser.IriRef()).run(nameText);
+
+						if (result.hasErrors()) {
 							errorMsg = "Invalid name.";
-						} else if (model
-								.getManager()
-								.createQuery(
-										"SELECT ?subj WHERE { ?subj ?pred ?obj . }")
-								.setParameter(
-										"subj",
-										model.getURI().namespace()
-												.appendFragment(name))
-								.evaluate().hasNext()) {
-							errorMsg = "An entity with the same name is already present in this model.";
+						} else {
+							if (result.resultValue instanceof IriRef) {
+								try {
+									name = URIImpl
+											.createURI(((IriRef) result.resultValue)
+													.getIri());
+									if (name.isRelative()) {
+										name = null;
+										throw new IllegalArgumentException(
+												"Relative IRIs are not supported.");
+									}
+								} catch (IllegalArgumentException e) {
+									errorMsg = "Invalid IRI.";
+								}
+							} else {
+								String prefix = ((QName) result.resultValue)
+										.getPrefix();
+								String localPart = ((QName) result.resultValue)
+										.getLocalPart();
+								URI ns;
+								if (prefix == null
+										|| prefix.trim().length() == 0) {
+									ns = model.getURI();
+								} else {
+									ns = model.getManager()
+											.getNamespace(prefix);
+								}
+								if (ns != null) {
+									name = ns.appendFragment(localPart);
+								} else {
+									errorMsg = "Unknown prefix";
+								}
+							}
+							if (name != null
+									&& model.getManager()
+											.createQuery(
+													"ASK { ?subj ?pred ?obj }")
+											.setParameter("subj", name)
+											.getBooleanResult()) {
+								errorMsg = "An entity with the same name is already present in this model.";
+							}
 						}
 					}
 
 					setPageComplete(errorMsg == null);
 					setErrorMessage(errorMsg);
+
+					return name;
 				}
 			};
 		}
@@ -139,7 +183,7 @@ abstract public class NewObjectWizard extends Wizard {
 		return selectionPage.getTypes();
 	}
 
-	public String getObjectName() {
+	public URI getObjectName() {
 		return objectNamePage.getObjectName();
 	}
 

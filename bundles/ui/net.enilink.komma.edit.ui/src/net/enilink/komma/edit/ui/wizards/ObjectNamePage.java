@@ -20,9 +20,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import net.enilink.komma.core.URI;
+
 public abstract class ObjectNamePage extends WizardPage {
 	protected Composite composite;
 	protected Text nameText;
+	protected URI name;
 
 	public ObjectNamePage() {
 		super("New Object");
@@ -30,7 +33,7 @@ public abstract class ObjectNamePage extends WizardPage {
 		setPageComplete(false);
 	}
 
-	abstract protected void validate();
+	abstract protected URI validate(String nameText);
 
 	public void createControl(Composite parent) {
 		composite = new Composite(parent, SWT.NONE);
@@ -46,14 +49,18 @@ public abstract class ObjectNamePage extends WizardPage {
 				.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false));
 		nameText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				validate();
+				name = validate(getNameAsText());
 			}
 		});
 
-		validate();
+		name = validate(getNameAsText());
 	}
 
-	protected String getObjectName() {
+	protected String getNameAsText() {
 		return nameText != null ? nameText.getText().trim() : "";
+	}
+	
+	protected URI getObjectName() {
+		return name;
 	}
 }

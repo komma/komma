@@ -100,10 +100,7 @@ public class CreateChildAction extends StaticSelectionCommandAction {
 								.asList(types));
 					}
 					if (showNamePage()) {
-						String name = getObjectName();
-
-						((IChildDescriptor) descriptor).setName(model.getURI()
-								.namespace().appendFragment(name));
+						((IChildDescriptor) descriptor).setName(getObjectName());
 					}
 					return true;
 				}
