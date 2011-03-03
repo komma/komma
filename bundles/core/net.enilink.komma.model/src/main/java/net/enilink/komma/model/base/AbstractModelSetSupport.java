@@ -412,6 +412,11 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	public IDataChangeTracker getDataChangeTracker() {
 		return dataChangeTracker;
 	}
+	
+	@Override
+	public Injector getInjector() {
+		return injector;
+	}
 
 	@Override
 	public IDataManagerFactory getDataManagerFactory() {
