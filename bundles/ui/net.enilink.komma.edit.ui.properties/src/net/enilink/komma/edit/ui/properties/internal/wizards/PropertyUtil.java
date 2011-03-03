@@ -45,11 +45,12 @@ public class PropertyUtil {
 		ICommand removeCommand = RemoveCommand.create(editingDomain, subject,
 				property, object);
 
-		// remove blank node objects which are solely referenced by deleted subject
+		// remove blank node objects which are solely referenced by deleted
+		// subject
 		// this can be optimized by using SPARQL 1.1
 		removeCommand = removeCommand.compose(new SimpleCommand() {
 			protected boolean canDelete(IEntityManager em,
-					IReference deletedSubject, IReference object) {
+					IReference deletedSubject, Object object) {
 				if (!(object instanceof IReference && ((IReference) object)
 						.getURI() == null)) {
 					return false;
@@ -59,7 +60,7 @@ public class PropertyUtil {
 				// { ... }
 				// iff no transaction is running
 				IExtendedIterator<IStatement> refs = em.matchAsserted(null,
-						null, object);
+						null, (IReference) object);
 				boolean canDelete = true;
 				for (IStatement refStmt : refs) {
 					if (!refStmt.getSubject().equals(deletedSubject)) {
@@ -76,14 +77,14 @@ public class PropertyUtil {
 					IProgressMonitor progressMonitor, IAdaptable info)
 					throws ExecutionException {
 				IEntityManager em = subject.getEntityManager();
-				if (canDelete(em, subject, (IReference) object)) {
+				if (canDelete(em, subject, object)) {
 					Queue<IReference> bnodes = new LinkedList<IReference>();
 					bnodes.add(((IReference) object));
 
 					while (!bnodes.isEmpty()) {
 						IReference node = bnodes.remove();
 						em.remove(node);
-						
+
 						for (IStatement stmt : em.matchAsserted(node, null,
 								null)) {
 							Object o = stmt.getObject();
