@@ -43,6 +43,8 @@ public interface IModelSet extends INotifier<INotification> {
 		 * {@link Injector} instance for models.
 		 */
 		void collectInjectionModules(Collection<Module> modules);
+		
+		Injector getInjector();
 
 		IDataManagerFactory getDataManagerFactory();
 

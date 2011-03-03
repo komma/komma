@@ -302,7 +302,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 
 	@Override
 	public boolean isLoading() {
-		return isLoading();
+		return isModelLoading();
 	}
 
 	@Override
