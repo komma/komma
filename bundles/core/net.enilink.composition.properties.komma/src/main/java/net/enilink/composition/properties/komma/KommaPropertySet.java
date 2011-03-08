@@ -63,8 +63,6 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	protected final IReference bean;
 	private List<E> cache;
 
-	private int cacheLimit = CACHE_LIMIT;
-
 	@Inject
 	protected IEntityManager manager;
 
@@ -181,7 +179,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 		return new ConvertingIterator<E, E>(
 				valueType == null ? (IExtendedIterator<E>) query.evaluate()
 						: query.evaluate(valueType)) {
-			private List<E> list = new ArrayList<E>(Math.min(10,
+			private List<E> list = new ArrayList<E>(Math.min(CACHE_LIMIT,
 					getCacheLimit()));
 			private E current;
 
@@ -269,7 +267,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	}
 
 	protected int getCacheLimit() {
-		return cacheLimit;
+		return CACHE_LIMIT;
 	}
 
 	public Class<E> getElementType() {
@@ -500,11 +498,6 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	}
 
 	protected void setCache(List<E> cache) {
-		if (cache != null) {
-			cacheLimit = Math.max(cacheLimit, cache.size() + 1);
-		} else {
-			cacheLimit = CACHE_LIMIT;
-		}
 		this.cache = cache;
 	}
 
