@@ -51,6 +51,35 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 		super(adapterFactory, resourceLocator, supportedTypes);
 	}
 
+	protected Collection<IViewerNotification> addViewerNotifications(
+			Collection<IViewerNotification> viewerNotifications,
+			IStatementNotification notification, boolean contentRefresh,
+			boolean labelUpdate) {
+		if (subPropertyOf.equals(notification.getPredicate())) {
+			Object element = notification.getObject();
+
+			IObject object;
+			if (element instanceof IObject) {
+				object = (IObject) element;
+			} else if (element instanceof IReference) {
+				object = resolveReference((IReference) element);
+			} else {
+				return null;
+			}
+
+			if (object != null) {
+				if (viewerNotifications == null) {
+					viewerNotifications = createViewerNotificationList();
+				}
+				viewerNotifications.add(new ViewerNotification(object,
+						contentRefresh, labelUpdate));
+			}
+			return viewerNotifications;
+		}
+		return super.addViewerNotifications(viewerNotifications, notification,
+				contentRefresh, labelUpdate);
+	}
+
 	@Override
 	protected void collectChildrenProperties(Object object,
 			Collection<IProperty> childrenProperties) {
@@ -60,17 +89,22 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 	protected void collectNewChildDescriptors(
 			ICollector<Object> newChildDescriptors, Object object) {
 		if (object instanceof DatatypeProperty) {
-			newChildDescriptors.add(createChildParameter(
-					(IProperty) ((IObject) object).getModel().resolve(
-							subPropertyOf), Arrays
-							.asList((IClass) ((IObject) object).getModel()
-									.resolve(OWL.TYPE_DATATYPEPROPERTY))));
+			newChildDescriptors
+					.add(createChildParameter(
+							(IProperty) ((IObject) object).getModel().resolve(
+									subPropertyOf),
+							new ChildDescriptor(
+									Arrays.asList((IClass) ((IObject) object)
+											.getModel().resolve(
+													OWL.TYPE_DATATYPEPROPERTY)),
+									true)));
 		} else if (object instanceof ObjectProperty) {
 			newChildDescriptors.add(createChildParameter(
 					(IProperty) ((IObject) object).getModel().resolve(
-							subPropertyOf), Arrays
+							subPropertyOf),
+					new ChildDescriptor(Arrays
 							.asList((IClass) ((IObject) object).getModel()
-									.resolve(OWL.TYPE_OBJECTPROPERTY))));
+									.resolve(OWL.TYPE_OBJECTPROPERTY)), true)));
 		}
 		newChildDescriptors.done();
 	}
@@ -116,35 +150,6 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 		}
 		return super.createCreateChildCommand(domain, owner, property, value,
 				index, collection);
-	}
-
-	protected Collection<IViewerNotification> addViewerNotifications(
-			Collection<IViewerNotification> viewerNotifications,
-			IStatementNotification notification, boolean contentRefresh,
-			boolean labelUpdate) {
-		if (subPropertyOf.equals(notification.getPredicate())) {
-			Object element = notification.getObject();
-
-			IObject object;
-			if (element instanceof IObject) {
-				object = (IObject) element;
-			} else if (element instanceof IReference) {
-				object = resolveReference((IReference) element);
-			} else {
-				return null;
-			}
-
-			if (object != null) {
-				if (viewerNotifications == null) {
-					viewerNotifications = createViewerNotificationList();
-				}
-				viewerNotifications.add(new ViewerNotification(object,
-						contentRefresh, labelUpdate));
-			}
-			return viewerNotifications;
-		}
-		return super.addViewerNotifications(viewerNotifications, notification,
-				contentRefresh, labelUpdate);
 	}
 
 	@Override

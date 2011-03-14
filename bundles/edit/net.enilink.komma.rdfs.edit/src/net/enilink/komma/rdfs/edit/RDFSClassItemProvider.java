@@ -25,6 +25,7 @@ import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CompositeCommand;
 import net.enilink.komma.common.command.ICommand;
+import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
@@ -33,6 +34,7 @@ import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.command.AddCommand;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.command.CreateChildCommand;
+import net.enilink.komma.edit.command.DragAndDropCommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.provider.IViewerNotification;
 import net.enilink.komma.edit.provider.ReflectiveItemProvider;
@@ -47,6 +49,35 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 		super(adapterFactory, resourceLocator, supportedTypes);
 	}
 
+	protected Collection<IViewerNotification> addViewerNotifications(
+			Collection<IViewerNotification> viewerNotifications,
+			IStatementNotification notification, boolean contentRefresh,
+			boolean labelUpdate) {
+		if (RDFS.PROPERTY_SUBCLASSOF.equals(notification.getPredicate())) {
+			Object element = notification.getObject();
+
+			IObject object;
+			if (element instanceof IObject) {
+				object = (IObject) element;
+			} else if (element instanceof IReference) {
+				object = resolveReference((IReference) element);
+			} else {
+				return null;
+			}
+
+			if (object != null) {
+				if (viewerNotifications == null) {
+					viewerNotifications = createViewerNotificationList();
+				}
+				viewerNotifications.add(new ViewerNotification(object,
+						contentRefresh, labelUpdate));
+			}
+			return viewerNotifications;
+		}
+		return super.addViewerNotifications(viewerNotifications, notification,
+				contentRefresh, labelUpdate);
+	}
+
 	@Override
 	protected void collectChildrenProperties(Object object,
 			Collection<IProperty> childrenProperties) {
@@ -57,10 +88,11 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 			ICollector<Object> newChildDescriptors, Object object) {
 		if (object instanceof IClass) {
 			newChildDescriptors.add(createChildParameter(
-					(IProperty) ((IObject) object).getModel().resolve(
-							RDFS.PROPERTY_SUBCLASSOF), Arrays
+					((IObject) object).getModel().resolve(
+							RDFS.PROPERTY_SUBCLASSOF),
+					new ChildDescriptor(Arrays
 							.asList((IClass) ((IObject) object).getModel()
-									.resolve(OWL.TYPE_CLASS))));
+									.resolve(OWL.TYPE_CLASS)), true)));
 		}
 		newChildDescriptors.done();
 	}
@@ -108,33 +140,35 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 				index, collection);
 	}
 
-	protected Collection<IViewerNotification> addViewerNotifications(
-			Collection<IViewerNotification> viewerNotifications,
-			IStatementNotification notification, boolean contentRefresh,
-			boolean labelUpdate) {
-		if (RDFS.PROPERTY_SUBCLASSOF.equals(notification.getPredicate())) {
-			Object element = notification.getObject();
+	@Override
+	protected ICommand createDragAndDropCommand(IEditingDomain domain,
+			Object owner, float location, int operations, int operation,
+			Collection<?> collection) {
+		return new DragAndDropCommand(domain, owner, location, operations,
+				operation, collection) {
+			@Override
+			protected boolean prepareDropCopyOn() {
+				// simply link dropped class to parent class by rdfs:subClassOf
+				dragCommand = IdentityCommand.INSTANCE;
+				dropCommand = AddCommand
+						.create(domain, owner, null, collection);
 
-			IObject object;
-			if (element instanceof IObject) {
-				object = (IObject) element;
-			} else if (element instanceof IReference) {
-				object = resolveReference((IReference) element);
-			} else {
-				return null;
+				return dropCommand.canExecute();
 			}
 
-			if (object != null) {
-				if (viewerNotifications == null) {
-					viewerNotifications = createViewerNotificationList();
+			@Override
+			protected boolean prepareDropLinkOn() {
+				return prepareDropCopyOn();
+			}
+
+			@Override
+			protected boolean isNonContainment(IReference property) {
+				if (RDFS.PROPERTY_SUBCLASSOF.equals(property)) {
+					return false;
 				}
-				viewerNotifications.add(new ViewerNotification(object,
-						contentRefresh, labelUpdate));
+				return super.isNonContainment(property);
 			}
-			return viewerNotifications;
-		}
-		return super.addViewerNotifications(viewerNotifications, notification,
-				contentRefresh, labelUpdate);
+		};
 	}
 
 	@Override
@@ -151,12 +185,21 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 			if (owner instanceof IClass && value instanceof IClass
 					&& !owner.equals(value)
 					&& !((IClass) owner).getRdfsSubClassOf().contains(value)) {
-				addCommand.add(createAddCommand(
-						domain,
-						(IObject) value,
+				addCommand.add(new AddCommand(domain, (IObject) value,
 						((IObject) value).getModel().resolve(
 								RDFS.PROPERTY_SUBCLASSOF),
-						Arrays.asList(owner), CommandParameter.NO_INDEX));
+						Arrays.asList(owner), CommandParameter.NO_INDEX) {
+					@Override
+					public Collection<?> doGetAffectedObjects() {
+						if (affectedObjects.contains(owner)) {
+							return collection;
+						} else {
+							return owner == null ? Collections.emptySet()
+									: Collections.singleton(owner);
+						}
+
+					}
+				});
 			} else {
 				addCommand.dispose();
 				return UnexecutableCommand.INSTANCE;
@@ -168,14 +211,6 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 	@Override
 	protected ICommand factorMoveCommand(IEditingDomain domain,
 			CommandParameter commandParameter) {
-		// final IObject owner = commandParameter.getOwnerObject();
-		// final Object value = commandParameter.getValue();
-		// if (owner instanceof IClass && value instanceof IClass
-		// && !owner.equals(value)) {
-		// return createMoveCommand(domain, (IObject) value, ((IObject) value)
-		// .getModel().resolve(subClassOf), owner,
-		// CommandParameter.NO_INDEX);
-		// }
 		return UnexecutableCommand.INSTANCE;
 	}
 
@@ -200,22 +235,6 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 	}
 
 	@Override
-	public Object getParent(Object object) {
-		if (object instanceof IClass) {
-			IExtendedIterator<?> it = ((IClass) object)
-					.getDirectNamedSuperClasses();
-			try {
-				if (it.hasNext()) {
-					return it.next();
-				}
-			} finally {
-				it.close();
-			}
-		}
-		return super.getParent(object);
-	}
-
-	@Override
 	public Collection<?> getChildren(Object object) {
 		if (object instanceof IClass) {
 			Set<IClass> subClasses = ((IClass) object)
@@ -229,6 +248,22 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 			return subClasses;
 		}
 		return super.getChildren(object);
+	}
+
+	@Override
+	public Object getParent(Object object) {
+		if (object instanceof IClass) {
+			IExtendedIterator<?> it = ((IClass) object)
+					.getDirectNamedSuperClasses();
+			try {
+				if (it.hasNext()) {
+					return it.next();
+				}
+			} finally {
+				it.close();
+			}
+		}
+		return super.getParent(object);
 	}
 
 	@Override

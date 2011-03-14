@@ -12,10 +12,12 @@ import java.util.Set;
 
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
+import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.provider.ReflectiveItemProviderAdapterFactory;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.core.URI;
 
 /**
  * This is the factory that is used to provide the interfaces needed to support
@@ -31,6 +33,11 @@ public class RDFSItemProviderAdapterFactory extends
 		ReflectiveItemProviderAdapterFactory {
 	public RDFSItemProviderAdapterFactory() {
 		super(RDFSEditPlugin.INSTANCE, RDFS.NAMESPACE_URI, RDF.NAMESPACE_URI);
+	}
+
+	protected RDFSItemProviderAdapterFactory(IResourceLocator resourceLocator,
+			URI... namespaceURIs) {
+		super(resourceLocator, namespaceURIs);
 	}
 
 	@Override
