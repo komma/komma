@@ -377,7 +377,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 	}
 
 	@Override
-	public IDataManager setAddContexts(
+	public IDataManager setModifyContexts(
 			Set<net.enilink.komma.core.URI> addContexts) {
 		this.changeCtx = addContexts
 				.toArray(new net.enilink.komma.core.URI[addContexts
