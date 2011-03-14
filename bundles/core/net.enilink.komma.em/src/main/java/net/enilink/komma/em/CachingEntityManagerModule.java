@@ -51,9 +51,9 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 
 	@Provides
 	@Inject(optional = true)
-	Fqn provideBaseFqn(@Named("addContexts") Set<URI> addContexts) {
-		if (addContexts != null) {
-			return Fqn.fromElements(addContexts.toArray());
+	Fqn provideBaseFqn(@Named("modifyContexts") Set<URI> modifyContexts) {
+		if (modifyContexts != null) {
+			return Fqn.fromElements(modifyContexts.toArray());
 		}
 		return Fqn.root();
 	}

@@ -156,7 +156,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 							}).annotatedWith(Names.named("readContexts"))
 									.toInstance(module.getReadableGraphs());
 							bind(new TypeLiteral<Set<URI>>() {
-							}).annotatedWith(Names.named("addContexts"))
+							}).annotatedWith(Names.named("modifyContexts"))
 									.toInstance(module.getWritableGraphs());
 						}
 					}, managerModule);

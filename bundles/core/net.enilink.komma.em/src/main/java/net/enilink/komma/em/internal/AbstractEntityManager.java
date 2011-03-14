@@ -137,8 +137,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	private Set<URI> readContexts;
 
 	@Inject(optional = true)
-	@Named("addContexts")
-	private Set<URI> addContexts;
+	@Named("modifyContexts")
+	private Set<URI> modifyContexts;
 
 	@Override
 	public void add(Iterable<? extends IStatement> statements) {
@@ -952,7 +952,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	@Inject
 	protected void setDataManager(IDataManager dm) {
 		this.dm = dm;
-		this.dm.setAddContexts(addContexts != null ? addContexts : Collections
+		this.dm.setModifyContexts(modifyContexts != null ? modifyContexts : Collections
 				.<URI> emptySet());
 		this.dm.setReadContexts(readContexts != null ? readContexts
 				: Collections.<URI> emptySet());
