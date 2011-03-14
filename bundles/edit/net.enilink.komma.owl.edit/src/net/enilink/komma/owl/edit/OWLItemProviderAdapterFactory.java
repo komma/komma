@@ -20,8 +20,8 @@ import net.enilink.vocab.owl.ObjectProperty;
 import net.enilink.vocab.owl.Ontology;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.edit.provider.ReflectiveItemProviderAdapterFactory;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.rdfs.edit.RDFSItemProviderAdapterFactory;
 import net.enilink.komma.core.URIImpl;
 
 /**
@@ -29,7 +29,7 @@ import net.enilink.komma.core.URIImpl;
  * Viewers.
  */
 public class OWLItemProviderAdapterFactory extends
-		ReflectiveItemProviderAdapterFactory {
+		RDFSItemProviderAdapterFactory {
 	public OWLItemProviderAdapterFactory() {
 		super(OWLEditPlugin.INSTANCE, URIImpl.createURI(Class.class
 				.getPackage().getAnnotation(Iri.class).value()));
