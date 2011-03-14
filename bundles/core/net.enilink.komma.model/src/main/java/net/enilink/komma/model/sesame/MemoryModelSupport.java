@@ -110,7 +110,7 @@ public abstract class MemoryModelSupport implements IModel, Model,
 			setModelLoading(true);
 
 			if (in != null && in.available() > 0) {
-				dm.setAddContexts(Collections.singleton(getURI()));
+				dm.setModifyContexts(Collections.singleton(getURI()));
 
 				dm.getTransaction().begin();
 
