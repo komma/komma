@@ -169,11 +169,11 @@ public interface IDataManager {
 	IDataManager removeNamespace(String prefix);
 
 	/**
-	 * Specifies a set of contexts which are used for adding new statements.
+	 * Specifies a set of contexts which are used for adding and removing statements.
 	 * 
-	 * @param addContexts
+	 * @param modifyContexts
 	 */
-	IDataManager setAddContexts(Set<URI> addContexts);
+	IDataManager setModifyContexts(Set<URI> modifyContexts);
 
 	/**
 	 * Sets the prefix for a namespace.

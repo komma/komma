@@ -5,6 +5,8 @@
  */
 package net.enilink.komma.dm.internal.change;
 
+import java.util.Collections;
+
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.dm.change.IStatementChange;
@@ -24,6 +26,7 @@ public class RemoveChange extends Statement implements IDataChange,
 	}
 
 	public void redo(IDataManager dm) {
+		dm.setModifyContexts(Collections.singleton(getContext().getURI()));
 		dm.remove(this);
 	}
 
@@ -34,6 +37,7 @@ public class RemoveChange extends Statement implements IDataChange,
 	}
 
 	public void undo(IDataManager dm) {
+		dm.setModifyContexts(Collections.singleton(getContext().getURI()));
 		dm.add(this);
 	}
 
