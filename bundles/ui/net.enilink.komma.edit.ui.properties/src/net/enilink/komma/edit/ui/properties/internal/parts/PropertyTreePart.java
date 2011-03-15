@@ -21,15 +21,22 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.ITreeViewerListener;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
@@ -69,6 +76,7 @@ import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 import net.enilink.komma.edit.ui.util.EditUIUtil;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
+import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.ILiteral;
@@ -300,12 +308,25 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				if (element instanceof IStatement) {
 					return toImage(((IStatement) element).getPredicate());
 				} else if (element instanceof PropertyNode) {
+					if (((PropertyNode) element).getFirstStatement()
+							.getPredicate() == null) {
+						return ExtendedImageRegistry.getInstance().getImage(
+								KommaEditUIPropertiesPlugin.INSTANCE
+										.getImage(IEditUIPropertiesImages.ADD));
+					}
 					return toImage(((PropertyNode) element).getFirstStatement()
 							.getPredicate());
 				}
 				break;
 			case 1:
 				if ((element instanceof PropertyNode)) {
+					if (((PropertyNode) element).isIncomplete()
+							|| ((PropertyNode) element)
+									.isCreateNewStatementOnEdit()) {
+						return ExtendedImageRegistry.getInstance().getImage(
+								KommaEditUIPropertiesPlugin.INSTANCE
+										.getImage(IEditUIPropertiesImages.ADD));
+					}
 					if (treeViewer.getExpandedState(element)) {
 						return null;
 					}
@@ -318,7 +339,9 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				break;
 			case 2:
 				if (element instanceof PropertyNode) {
-					if (treeViewer.getExpandedState(element)) {
+					if (treeViewer.getExpandedState(element)
+							|| ((PropertyNode) element)
+									.isCreateNewStatementOnEdit()) {
 						return null;
 					}
 
@@ -459,7 +482,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 	private IPropertiesContext context;
 
-	private ValueEditingSupport editingSupport;
+	private ValueEditingSupport[] editingSupports;
 
 	private Button itemShowFull;
 
@@ -472,6 +495,29 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	private Text uriText;
 
 	private List<Object> cachedExpandedElements = Collections.emptyList();
+
+	private IAction addPropertyAction = new Action("Add property") {
+		@Override
+		public void run() {
+			PropertyNode node = new PropertyNode(resource, null, true);
+			treeViewer.insert(treeViewer.getInput(), node, 0);
+			treeViewer.setSelection(new StructuredSelection(node), true);
+			treeViewer.editElement(node, 0);
+		}
+	};
+
+	private IAction addPropertyValueAction = new Action("Add value") {
+		@Override
+		public void run() {
+			ITreeSelection selection = (ITreeSelection) treeViewer
+					.getSelection();
+			Object selected = selection.getFirstElement();
+			if (selected instanceof PropertyNode) {
+				((PropertyNode) selected).setCreateNewStatementOnEdit(true);
+				treeViewer.editElement(selection.getPaths()[0], 1);
+			}
+		}
+	};
 
 	@Override
 	public void activate() {
@@ -560,7 +606,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	}
 
 	private void createTree(Composite parent) {
-		Tree tree = getWidgetFactory().createTree(parent,
+		final Tree tree = getWidgetFactory().createTree(parent,
 				SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
 		tree.setHeaderVisible(true);
 		tree.setLinesVisible(true);
@@ -585,14 +631,18 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 		column.getColumn().setWidth(300);
 		column.setLabelProvider(new TreeLabelProvider(0));
 
+		editingSupports = new ValueEditingSupport[2];
+		editingSupports[0] = new ValueEditingSupport(treeViewer, true);
+		column.setEditingSupport(editingSupports[0]);
+
 		column = new TreeViewerColumn(treeViewer, SWT.LEFT);
 		column.getColumn().setAlignment(SWT.LEFT);
 		column.getColumn().setText("Value");
 		column.getColumn().setWidth(200);
 		column.setLabelProvider(new TreeLabelProvider(1));
 
-		editingSupport = new ValueEditingSupport(treeViewer);
-		column.setEditingSupport(editingSupport);
+		editingSupports[1] = new ValueEditingSupport(treeViewer);
+		column.setEditingSupport(editingSupports[1]);
 
 		column = new TreeViewerColumn(treeViewer, SWT.CENTER);
 		column.getColumn().setText("Inferred");
@@ -620,11 +670,30 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				});
 			}
 		});
-
-		MenuManager menuManager = new MenuManager();
-		menuManager.add(new Action("Test") {
-
+		treeViewer.addDoubleClickListener(new IDoubleClickListener() {
+			@Override
+			public void doubleClick(final DoubleClickEvent event) {
+				asyncExec(new Runnable() {
+					public void run() {
+						addPropertyValueAction.run();
+					}
+				});
+			}
 		});
+
+		final MenuManager menuManager = new MenuManager();
+		menuManager.setRemoveAllWhenShown(true);
+		menuManager.addMenuListener(new IMenuListener() {
+			@Override
+			public void menuAboutToShow(IMenuManager manager) {
+				menuManager.add(addPropertyAction);
+				if (((IStructuredSelection) treeViewer.getSelection())
+						.getFirstElement() instanceof PropertyNode) {
+					menuManager.add(addPropertyValueAction);
+				}
+			}
+		});
+
 		Menu menu = menuManager.createContextMenu(treeViewer.getTree());
 		treeViewer.getTree().setMenu(menu);
 
@@ -671,8 +740,10 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 			adapterFactory = newAdapterFactory;
 
 			labelProvider = new AdapterFactoryLabelProvider(getAdapterFactory());
-			editingSupport.setLabelProvider(labelProvider);
-			editingSupport.setEditingDomain(getEditingDomain());
+			for (ValueEditingSupport editingSupport : editingSupports) {
+				editingSupport.setLabelProvider(labelProvider);
+				editingSupport.setEditingDomain(getEditingDomain());
+			}
 			// createContextMenuFor(treeViewer);
 		}
 
@@ -690,6 +761,9 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 	@Override
 	public boolean setEditorInput(Object input) {
+		if (input instanceof IModel) {
+			input = ((IModel) input).getOntology();
+		}
 		if (input == null || input instanceof IObject) {
 			resource = (IObject) input;
 			setStale(true);

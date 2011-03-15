@@ -146,7 +146,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 	@Override
 	public boolean hasChildren(Object element) {
 		return element instanceof PropertyNode
-//				&& ((PropertyNode) element).hasMultipleStatements()
+				&& !((PropertyNode) element).isIncomplete()
 				|| (element instanceof IStatement && ((IStatement) element)
 						.getObject() instanceof IResource);
 	}

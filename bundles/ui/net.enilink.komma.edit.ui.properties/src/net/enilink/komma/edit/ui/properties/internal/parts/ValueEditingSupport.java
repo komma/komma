@@ -12,12 +12,15 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.ICellEditorListener;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Item;
 import org.parboiled.Parboiled;
@@ -25,6 +28,7 @@ import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.support.ParsingResult;
 
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.command.CommandResult;
@@ -68,47 +72,15 @@ import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.util.ISparqlConstants;
 
 class ValueEditingSupport extends EditingSupport {
-	class ContentProposal implements IContentProposal {
-		String content;
-		int cursorPosition;
-		String description;
-		String label;
-
+	class ResourceProposal extends
+			org.eclipse.jface.fieldassist.ContentProposal {
 		IEntity resource;
 
-		public ContentProposal(String content, String description,
-				String label, int cursorPosition) {
-			this.content = content;
-			this.description = description;
-			this.label = label;
-			this.cursorPosition = cursorPosition;
-		}
-
-		public ContentProposal(String content, int cursorPosition,
+		public ResourceProposal(String content, int cursorPosition,
 				IEntity resource) {
-			this(content, labelProvider.getText(resource), labelProvider
+			super(content, labelProvider.getText(resource), labelProvider
 					.getText(resource), cursorPosition);
 			this.resource = resource;
-		}
-
-		@Override
-		public String getContent() {
-			return content;
-		}
-
-		@Override
-		public int getCursorPosition() {
-			return cursorPosition;
-		}
-
-		@Override
-		public String getDescription() {
-			return description;
-		}
-
-		@Override
-		public String getLabel() {
-			return label;
 		}
 
 		public IEntity getResource() {
@@ -128,8 +100,8 @@ class ValueEditingSupport extends EditingSupport {
 					content = label.substring(position);
 				}
 				if (content.length() > 0) {
-					proposals.add(new ContentProposal(content,
-							content.length(), resource));
+					proposals.add(new ResourceProposal(content, content
+							.length(), resource));
 				}
 			}
 			return proposals.toArray(new IContentProposal[proposals.size()]);
@@ -137,6 +109,7 @@ class ValueEditingSupport extends EditingSupport {
 	}
 
 	private Object currentElement;
+	private boolean createNew;
 	private IEditingDomain editingDomain;
 	private ILabelProvider labelProvider;
 
@@ -151,10 +124,19 @@ class ValueEditingSupport extends EditingSupport {
 	private final ManchesterSyntaxParser manchesterParser = Parboiled
 			.createParser(ManchesterSyntaxParser.class);
 
+	private boolean editPredicate;
+
 	public ValueEditingSupport(TreeViewer viewer) {
+		this(viewer, false);
+	}
+
+	public ValueEditingSupport(TreeViewer viewer, boolean editPredicate) {
 		super(viewer);
+		this.editPredicate = editPredicate;
 
 		literalEditor = new TextCellEditor(viewer.getTree());
+		addListener(literalEditor);
+
 		resourceEditor = new TextCellEditorWithContentProposal(
 				viewer.getTree(), new ResourceProposalProvider(), null);
 		resourceEditor.getContentProposalAdapter().setLabelProvider(
@@ -162,17 +144,18 @@ class ValueEditingSupport extends EditingSupport {
 					@Override
 					public Image getImage(Object object) {
 						return labelProvider == null ? null : labelProvider
-								.getImage(((ContentProposal) object)
+								.getImage(((ResourceProposal) object)
 										.getResource());
 					}
 
 					@Override
 					public String getText(Object object) {
 						return ValueEditingSupport.this
-								.getText(((ContentProposal) object)
+								.getText(((ResourceProposal) object)
 										.getResource());
 					}
 				});
+		addListener(resourceEditor);
 
 		ManchesterProposals manchesterProposals = new ManchesterProposals() {
 			public IContentProposal[] IriRef(ParsingResult<?> result,
@@ -182,7 +165,7 @@ class ValueEditingSupport extends EditingSupport {
 					String label = getText(resource);
 					label = label.substring(Math.min(label.length(),
 							prefix.length()));
-					proposals.add(new ContentProposal(label, label.length(),
+					proposals.add(new ResourceProposal(label, label.length(),
 							resource));
 				}
 				return proposals
@@ -195,31 +178,81 @@ class ValueEditingSupport extends EditingSupport {
 				null) {
 			protected void focusLost() {
 			}
+
+			@Override
+			public void deactivate() {
+				fireApplyEditorValue();
+				super.deactivate();
+			}
 		};
-//		manchesterEditor.setStyle(SWT.MULTI);
+		addListener(manchesterEditor);
+		manchesterEditor.setStyle(SWT.MULTI | SWT.WRAP);
 	}
 
 	@Override
 	protected boolean canEdit(Object element) {
-		if (element instanceof PropertyNode
-				&& ((TreeViewer) getViewer()).getExpandedState(element)) {
-			return false;
-		}
+		boolean expandedNode = element instanceof PropertyNode
+				&& ((AbstractTreeViewer) getViewer()).getExpandedState(element);
+		createNew = expandedNode
+				|| element instanceof PropertyNode
+				&& (((PropertyNode) element).isCreateNewStatementOnEdit() || ((PropertyNode) element)
+						.isIncomplete());
 		IStatement stmt = getStatement(element);
-		return !stmt.isInferred();
+		// forbid changing the predicate of existing statements
+		if (editPredicate) {
+			return !expandedNode && (createNew || stmt.getObject() == null);
+		}
+		return stmt.getPredicate() != null && !stmt.isInferred();
+	}
+
+	protected void addListener(CellEditor editor) {
+		editor.addListener(new ICellEditorListener() {
+			@Override
+			public void editorValueChanged(boolean oldValidState,
+					boolean newValidState) {
+			}
+
+			@Override
+			public void cancelEditor() {
+				applyEditorValue();
+			}
+
+			@Override
+			public void applyEditorValue() {
+				if (createNew) {
+					// ensure that initial state is restored
+					((PropertyNode) currentElement)
+							.setCreateNewStatementOnEdit(false);
+					getViewer().update(currentElement, null);
+				}
+			}
+		});
 	}
 
 	@Override
 	protected CellEditor getCellEditor(Object element) {
-		currentElement = element;
+		currentElement = unwrap(element);
+
+		if (createNew) {
+			((PropertyNode) currentElement).setCreateNewStatementOnEdit(true);
+			getViewer().update(element, null);
+		}
 
 		IStatement stmt = getStatement(element);
+		// use the resource editor for predicates
+		if (editPredicate) {
+			return currentEditor = resourceEditor;
+		}
 		IProperty property = ((IEntity) stmt.getSubject()).getEntityManager()
 				.find(stmt.getPredicate(), IProperty.class);
 		if (property.getRdfsRanges().contains(RDFS.TYPE_CLASS)
 				|| property.getRdfsRanges().contains(OWL.TYPE_CLASS)) {
 			currentEditor = manchesterEditor;
-		} else if (stmt.getObject() instanceof IReference) {
+		} else if (stmt.getObject() instanceof IReference
+				&& !(property instanceof DatatypeProperty)
+				|| property.getRdfsRanges().contains(RDFS.TYPE_RESOURCE)) {
+			// TODO implement correct selection strategy for resource editor in
+			// all possible cases
 			currentEditor = resourceEditor;
 		} else {
 			currentEditor = literalEditor;
@@ -258,16 +291,27 @@ class ValueEditingSupport extends EditingSupport {
 								+ "SELECT DISTINCT ?s WHERE {{?s ?p ?o . FILTER regex(str(?s), ?uriPattern)}"
 								+ " UNION "
 								+ "{?s rdfs:label ?l . FILTER regex(str(?l), ?template)}"
+								+ (editPredicate ? "?s a rdf:Property" : "")
 								+ "} LIMIT " + limit) //
 				.setParameter("uriPattern", uriPattern) //
 				.setParameter("template", "^" + template) //
 				.evaluate(IResource.class);
 	}
 
-	IStatement getStatement(Object element) {
-		if (element instanceof Item) {
-			element = ((Item) element).getData();
+	Object unwrap(Object itemOrData) {
+		if (itemOrData instanceof Item) {
+			return ((Item) itemOrData).getData();
 		}
+		return itemOrData;
+	}
+
+	IStatement getStatement(Object element) {
+		if (createNew) {
+			return new Statement(((PropertyNode) element).getResource(),
+					((PropertyNode) element).getProperty(), null);
+		}
+
+		element = unwrap(element);
 		if (element instanceof PropertyNode) {
 			element = ((PropertyNode) element).getFirstStatement();
 		}
@@ -380,7 +424,7 @@ class ValueEditingSupport extends EditingSupport {
 	}
 
 	@Override
-	protected void setValue(Object element, Object value) {
+	protected void setValue(final Object element, Object value) {
 		if (value == null) {
 			return;
 		}
@@ -412,15 +456,30 @@ class ValueEditingSupport extends EditingSupport {
 							((IObject) subject).getModel(), result.resultValue,
 							newStmts);
 				}
-			} else if (object instanceof IReference) {
+			} else if (currentEditor == resourceEditor) {
 				IExtendedIterator<IResource> resources = getResourceProposals(
 						(String) value, 1);
 				if (resources.hasNext()) {
 					IEntity resource = resources.next();
-					if (!object.equals(resource)
+					if (!resource.equals(object)
 							&& getText(resource)
 									.equals(((String) value).trim())) {
-						newObjectCommand = new IdentityCommand(resource);
+						if (editPredicate && resource instanceof IProperty) {
+							final PropertyNode node = (PropertyNode) element;
+							node.setProperty((IProperty) resource);
+							getViewer().update(node, null);
+							getViewer().getControl().getDisplay()
+									.asyncExec(new Runnable() {
+										@Override
+										public void run() {
+											// TODO find a more generic way to
+											// do this
+											getViewer().editElement(node, 1);
+										}
+									});
+						} else {
+							newObjectCommand = new IdentityCommand(resource);
+						}
 					}
 				}
 			} else {
@@ -450,13 +509,19 @@ class ValueEditingSupport extends EditingSupport {
 							if (!result.getStatus().isOK()) {
 								return result;
 							}
-							IStatus status = addAndExecute(
-									PropertyUtil.getRemoveCommand(
-											editingDomain,
-											(IResource) stmt.getSubject(),
-											(IProperty) stmt.getPredicate(),
-											stmt.getObject()), progressMonitor,
-									info);
+							// if stmt.getObject() == null then this is a new
+							// statement
+							// and therefore must not be removed
+							IStatus status = stmt.getObject() == null ? Status.OK_STATUS
+									: addAndExecute(
+											PropertyUtil.getRemoveCommand(
+													editingDomain,
+													(IResource) stmt
+															.getSubject(),
+													(IProperty) stmt
+															.getPredicate(),
+													stmt.getObject()),
+											progressMonitor, info);
 							if (status.isOK()) {
 								status = addAndExecute(
 										PropertyUtil.getAddCommand(
@@ -470,6 +535,13 @@ class ValueEditingSupport extends EditingSupport {
 							if (status.isOK()) {
 								subject.getEntityManager().getTransaction()
 										.commit();
+								// remove transitional template node
+								if (element instanceof PropertyNode
+										&& ((PropertyNode) element)
+												.isIncomplete()) {
+									((AbstractTreeViewer) getViewer())
+											.remove(element);
+								}
 							}
 
 							return new CommandResult(status);

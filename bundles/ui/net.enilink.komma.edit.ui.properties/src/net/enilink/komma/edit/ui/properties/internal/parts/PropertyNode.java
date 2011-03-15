@@ -17,10 +17,12 @@ import java.util.List;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.UniqueExtendedIterator;
+import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.Statement;
 
 /**
  * Tree node that represents the values of a given property for a given resource
@@ -29,8 +31,10 @@ import net.enilink.komma.core.IStatement;
  * @author Ken Wenzel
  */
 public class PropertyNode {
+	private boolean createNewStatementOnEdit;
 	private IStatement firstStatement;
 	private Boolean hasMultipleStatements;
+
 	private boolean includeInferred;
 
 	private IProperty property;
@@ -89,7 +93,7 @@ public class PropertyNode {
 			} else {
 				IExtendedIterator<IStatement> stmtIt = getStatementIterator();
 				if (!stmtIt.hasNext()) {
-					firstStatement = null;
+					firstStatement = new Statement(resource, property, null);
 					hasMultipleStatements = false;
 					return firstStatement;
 				}
@@ -129,6 +133,10 @@ public class PropertyNode {
 	}
 
 	protected IExtendedIterator<IStatement> getStatementIterator() {
+		if (property == null) {
+			return WrappedIterator.<IStatement> create(Collections
+					.<IStatement> emptyList().iterator());
+		}
 		return UniqueExtendedIterator.create(resource.getPropertyStatements(
 				property, includeInferred));
 	}
@@ -148,6 +156,14 @@ public class PropertyNode {
 		return hasMultipleStatements;
 	}
 
+	public boolean isCreateNewStatementOnEdit() {
+		return createNewStatementOnEdit;
+	}
+
+	public boolean isIncomplete() {
+		return property == null || getFirstStatement().getObject() == null;
+	}
+
 	public boolean isInitialized() {
 		return hasMultipleStatements != null;
 	}
@@ -165,7 +181,21 @@ public class PropertyNode {
 		}
 		hasMultipleStatements = null;
 	}
-	
+
+	public void setCreateNewStatementOnEdit(boolean createNewStatementOnEdit) {
+		this.createNewStatementOnEdit = createNewStatementOnEdit;
+	}
+
+	public void setProperty(IProperty property) {
+		if (isIncomplete()) {
+			this.property = property;
+			this.firstStatement = new Statement(resource, property, null);
+		} else {
+			throw new IllegalArgumentException(
+					"Changing the property is only allowed for incomplete statements.");
+		}
+	}
+
 	public void setResource(IResource resource) {
 		this.resource = resource;
 		refreshChildren();
