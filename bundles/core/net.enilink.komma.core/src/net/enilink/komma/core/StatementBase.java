@@ -95,9 +95,18 @@ public abstract class StatementBase implements IStatement {
 		final int prime = 31;
 		IReference ctx = getContext();
 		int result = (ctx == null) ? 0 : ctx.hashCode();
-		result = prime * result + getSubject().hashCode();
-		result = prime * result + getPredicate().hashCode();
-		result = prime * result + getObject().hashCode();
+		IReference subject = getSubject();
+		if (subject != null) {
+			result = prime * result + subject.hashCode();
+		}
+		IReference predicate = getPredicate();
+		if (predicate != null) {
+			result = prime * result + predicate.hashCode();
+		}
+		Object object = getObject();
+		if (object != null) {
+			result = prime * result + object.hashCode();
+		}
 		return result;
 	}
 
