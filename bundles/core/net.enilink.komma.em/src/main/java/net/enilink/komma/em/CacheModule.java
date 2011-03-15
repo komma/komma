@@ -13,7 +13,7 @@ package net.enilink.komma.em;
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
 import org.infinispan.config.GlobalConfiguration;
-import org.infinispan.manager.CacheManager;
+import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.tree.TreeCache;
 import org.infinispan.tree.TreeCacheFactory;
@@ -49,7 +49,7 @@ public class CacheModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	CacheManager provideCacheManager() {
+	CacheContainer provideCacheContainer() {
 		GlobalConfiguration globalConfig = new GlobalConfiguration();
 
 		Configuration config = new Configuration();
@@ -61,8 +61,8 @@ public class CacheModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	Cache<Object, Object> provideCache(CacheManager cacheManager) {
-		return cache = cacheManager.getCache();
+	Cache<Object, Object> provideCache(CacheContainer cacheContainer) {
+		return cacheContainer.getCache();
 	}
 
 	@Provides
