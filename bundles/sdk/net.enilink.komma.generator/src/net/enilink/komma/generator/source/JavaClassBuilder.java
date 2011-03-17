@@ -167,7 +167,7 @@ public class JavaClassBuilder extends JavaSourceBuilder {
 		sb.append("\tpublic static final ").append(imports(URI.class));
 		sb.append(" ").append(name).append(" = ")
 				.append(imports(URIImpl.class)).append(".createURI(");
-		sb.append("(\"").append(value.toString()).append("\");\n");
+		sb.append("\"").append(value.toString()).append("\");\n");
 		return this;
 	}
 

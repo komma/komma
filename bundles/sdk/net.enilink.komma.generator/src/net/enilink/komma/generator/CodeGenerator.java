@@ -52,7 +52,6 @@ import net.enilink.komma.generator.concepts.CodeClass;
 import net.enilink.komma.generator.concepts.CodeOntology;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.URI;
