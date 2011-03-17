@@ -10,6 +10,8 @@
  *******************************************************************************/
 package net.enilink.komma.model.concepts;
 
+import java.util.Set;
+
 import net.enilink.composition.annotations.Iri;
 
 import net.enilink.komma.core.IEntity;
@@ -19,19 +21,19 @@ import net.enilink.komma.core.IEntity;
  * @generated
  */
 @Iri("http://enilink.net/vocab/komma/models#ModelSet")
-public interface ModelSet extends IEntity {
+public interface ModelSetContainer extends IEntity {
 	/**
-	 * Returns whether this model set is persistent or not.
+	 * Returns the contained model sets.
 	 * 
 	 * @generated
 	 */
-	@Iri("http://enilink.net/vocab/komma/models#persistent")
-	boolean isPersistent();
+	@Iri("http://enilink.net/vocab/komma/models#containsModelSet")
+	Set<ModelSet> getModelSets();
 
 	/**
-	 * Sets whether this model set is persistent or not.
+	 * Sets the contained model sets.
 	 * 
 	 * @generated
 	 */
-	void setPersistent(boolean persistent);
+	void setModelSets(Set<ModelSet> modelSets);
 }
