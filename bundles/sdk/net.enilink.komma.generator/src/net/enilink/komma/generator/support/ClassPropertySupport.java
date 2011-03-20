@@ -51,12 +51,11 @@ public abstract class ClassPropertySupport implements CodeClass,
 	private static final String WHERE_PROP_DOMAIN_TYPE = PREFIX
 			+ "SELECT DISTINCT ?prop WHERE { { ?prop rdfs:domain ?type } UNION { ?type rdfs:subClassOf [owl:onProperty ?prop] } } ORDER BY ?prop";
 
-	@SuppressWarnings("unchecked")
 	public Iterable<Property> getDeclaredProperties() {
-		IQuery<?> query = getEntityManager().createQuery(
-				WHERE_PROP_DOMAIN_TYPE);
+		IQuery<?> query = getEntityManager()
+				.createQuery(WHERE_PROP_DOMAIN_TYPE);
 		query.setParameter("type", this);
-		return (Iterable<Property>) query.getResultList();
+		return query.evaluate(Property.class);
 	}
 
 	public CodeClass getRange(Property property) {
