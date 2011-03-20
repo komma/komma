@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
@@ -37,6 +38,7 @@ import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.ICompositeCommand;
 import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.common.command.SimpleCommand;
+import net.enilink.komma.common.ui.assist.ContentProposalExt;
 import net.enilink.komma.common.ui.celleditor.TextCellEditorWithContentProposal;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
@@ -72,14 +74,13 @@ import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.util.ISparqlConstants;
 
 class ValueEditingSupport extends EditingSupport {
-	class ResourceProposal extends
-			org.eclipse.jface.fieldassist.ContentProposal {
+	class ResourceProposal extends ContentProposalExt {
 		IEntity resource;
 
 		public ResourceProposal(String content, int cursorPosition,
 				IEntity resource) {
-			super(content, labelProvider.getText(resource), labelProvider
-					.getText(resource), cursorPosition);
+			super(content, Type.REPLACE, labelProvider.getText(resource),
+					labelProvider.getText(resource), cursorPosition);
 			this.resource = resource;
 		}
 
@@ -94,11 +95,7 @@ class ValueEditingSupport extends EditingSupport {
 			List<IContentProposal> proposals = new ArrayList<IContentProposal>();
 			for (IEntity resource : getResourceProposals(
 					contents.substring(0, position), 20)) {
-				String label = getText(resource);
-				String content = "";
-				if (position < label.length()) {
-					content = label.substring(position);
-				}
+				String content = getText(resource);
 				if (content.length() > 0) {
 					proposals.add(new ResourceProposal(content, content
 							.length(), resource));
@@ -155,18 +152,32 @@ class ValueEditingSupport extends EditingSupport {
 										.getResource());
 					}
 				});
+		resourceEditor.getContentProposalAdapter().setProposalAcceptanceStyle(
+				ContentProposalAdapter.PROPOSAL_REPLACE);
 		addListener(resourceEditor);
 
 		ManchesterProposals manchesterProposals = new ManchesterProposals() {
 			public IContentProposal[] IriRef(ParsingResult<?> result,
 					int index, String prefix) {
+				StringBuilder text = new StringBuilder();
+				for (int l = 1; l <= result.inputBuffer.getLineCount(); l++) {
+					text.append(result.inputBuffer.extractLine(l));
+				}
+
+				int insertPos = index - prefix.length();
+
 				List<IContentProposal> proposals = new ArrayList<IContentProposal>();
 				for (IEntity resource : getResourceProposals(prefix, 20)) {
 					String label = getText(resource);
-					label = label.substring(Math.min(label.length(),
-							prefix.length()));
-					proposals.add(new ResourceProposal(label, label.length(),
-							resource));
+					String origText = text.substring(insertPos, index);
+					// insert proposal text
+					text.replace(insertPos, index, label);
+					// create proposal
+					proposals.add(new ResourceProposal(text.toString(),
+							insertPos + label.length(), resource));
+					// restore original text
+					text.replace(insertPos, insertPos + label.length(),
+							origText);
 				}
 				return proposals
 						.toArray(new IContentProposal[proposals.size()]);
@@ -185,6 +196,9 @@ class ValueEditingSupport extends EditingSupport {
 				super.deactivate();
 			}
 		};
+		manchesterEditor.getContentProposalAdapter()
+				.setProposalAcceptanceStyle(
+						ContentProposalAdapter.PROPOSAL_IGNORE);
 		addListener(manchesterEditor);
 		manchesterEditor.setStyle(SWT.MULTI | SWT.WRAP);
 	}
