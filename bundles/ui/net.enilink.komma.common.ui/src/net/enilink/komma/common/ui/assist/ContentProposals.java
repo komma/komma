@@ -1,11 +1,6 @@
 package net.enilink.komma.common.ui.assist;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalListener;
@@ -22,36 +17,14 @@ public class ContentProposals {
 			final Control control,
 			IContentProposalProvider contentProposalProvider,
 			char[] autoActivationCharacters) {
-		List<Object> args = new ArrayList<Object>(Arrays.asList(control,
-				new TextContentAdapter(), contentProposalProvider));
-		Constructor<ContentProposalAdapter> constructor;
-		try {
-			if (CommonsUi.IS_RAP_RUNNING) {
-				constructor = ContentProposalAdapter.class.getConstructor(
-						Control.class, IControlContentAdapter.class,
-						IContentProposalProvider.class, char[].class);
-			} else {
-				Class<?> keyStrokeClass = ContentProposals.class
-						.getClassLoader().loadClass(
-								"org.eclipse.jface.bindings.keys.KeyStroke");
-				constructor = ContentProposalAdapter.class.getConstructor(
-						Control.class, IControlContentAdapter.class,
-						IContentProposalProvider.class, keyStrokeClass,
-						char[].class);
-
-				Method getInstance = keyStrokeClass.getMethod("getInstance",
-						int.class, int.class);
-
-				args.add(getInstance.invoke(null, SWT.CTRL, ' '));
-			}
-
-			args.add(autoActivationCharacters);
-			return constructor.newInstance(args.toArray());
-		} catch (Exception e) {
-			throw new RuntimeException(
-					"Unable to initialize content proposals", e);
+		KeyStroke triggerKeyStroke;
+		if (CommonsUi.IS_RAP_RUNNING) {
+			// TODO find good trigger key stroke for RAP
+			triggerKeyStroke = null;
+		} else {
+			triggerKeyStroke = KeyStroke.getInstance(SWT.CTRL, ' ');
 		}
-<<<<<<< HEAD
+
 		final IControlContentAdapter controlContentAdapter = new TextContentAdapter();
 		final ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(
 				control, controlContentAdapter, contentProposalProvider,
@@ -78,7 +51,5 @@ public class ContentProposals {
 					}
 				});
 		return proposalAdapter;
-=======
->>>>>>> parent of 1269e51... Adapt to new RAP API with KeyStroke class.
 	}
 }
