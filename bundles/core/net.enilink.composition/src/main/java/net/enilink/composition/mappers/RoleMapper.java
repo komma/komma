@@ -40,4 +40,5 @@ public interface RoleMapper<T> {
 
 	boolean isRecordedConcept(T type);
 
+	RoleMapper<T> clone();
 }

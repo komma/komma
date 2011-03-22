@@ -12,22 +12,17 @@ import java.util.Set;
 
 import net.enilink.composition.exceptions.ConfigException;
 
-public class ComposedRoleMapper<T> implements RoleMapper<T> {
-	private RoleMapper<T> primary;
-	private List<RoleMapper<T>> roleMappers;
-
-	private TypeFactory<T> typeFactory;
-
+public class ComposedRoleMapper<T> implements Cloneable, RoleMapper<T> {
 	/**
 	 * Iterates the graph of delegates while preventing cycles.
 	 */
 	class UniqueTransitiveIterator implements Iterator<RoleMapper<T>>,
 			Iterable<RoleMapper<T>> {
-		protected Set<RoleMapper<T>> seen = new HashSet<RoleMapper<T>>();
-
 		protected Queue<Iterator<RoleMapper<T>>> mapperQueue = new LinkedList<Iterator<RoleMapper<T>>>();
 
 		protected RoleMapper<T> next;
+
+		protected Set<RoleMapper<T>> seen = new HashSet<RoleMapper<T>>();
 
 		public UniqueTransitiveIterator() {
 			mapperQueue.add(getRoleMappers().iterator());
@@ -57,6 +52,11 @@ public class ComposedRoleMapper<T> implements RoleMapper<T> {
 		}
 
 		@Override
+		public Iterator<RoleMapper<T>> iterator() {
+			return this;
+		}
+
+		@Override
 		public RoleMapper<T> next() {
 			try {
 				seen.add(next);
@@ -71,12 +71,13 @@ public class ComposedRoleMapper<T> implements RoleMapper<T> {
 			throw new UnsupportedOperationException(
 					"This is a read-only iterator.");
 		}
-
-		@Override
-		public Iterator<RoleMapper<T>> iterator() {
-			return this;
-		}
 	}
+
+	private RoleMapper<T> primary;
+
+	private List<RoleMapper<T>> roleMappers;
+
+	private TypeFactory<T> typeFactory;
 
 	public ComposedRoleMapper(TypeFactory<T> typeFactory) {
 		this.typeFactory = typeFactory;
@@ -128,6 +129,23 @@ public class ComposedRoleMapper<T> implements RoleMapper<T> {
 			return roleMappers.add(roleMapper);
 		}
 		return false;
+	}
+
+	@Override
+	public ComposedRoleMapper<T> clone() {
+		try {
+			@SuppressWarnings("unchecked")
+			ComposedRoleMapper<T> cloned = (ComposedRoleMapper<T>) super
+					.clone();
+			cloned.primary = primary == null ? null : primary.clone();
+			if (roleMappers != null) {
+				// do not deep-copy the delegates
+				cloned.roleMappers = new ArrayList<RoleMapper<T>>(roleMappers);
+			}
+			return cloned;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
 	}
 
 	@Override
@@ -239,10 +257,6 @@ public class ComposedRoleMapper<T> implements RoleMapper<T> {
 		return false;
 	}
 
-	private UniqueTransitiveIterator iterator() {
-		return new UniqueTransitiveIterator();
-	}
-
 	@Override
 	public boolean isRecordedConcept(T type) {
 		for (RoleMapper<T> delegate : iterator()) {
@@ -251,6 +265,10 @@ public class ComposedRoleMapper<T> implements RoleMapper<T> {
 			}
 		}
 		return false;
+	}
+
+	private UniqueTransitiveIterator iterator() {
+		return new UniqueTransitiveIterator();
 	}
 
 	/**
