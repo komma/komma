@@ -20,7 +20,7 @@ import net.enilink.komma.core.IEntity;
  * 
  * @generated
  */
-@Iri("http://enilink.net/vocab/komma/models#ModelSet")
+@Iri("http://enilink.net/vocab/komma/models#ModelSetContainer")
 public interface ModelSetContainer extends IEntity {
 	/**
 	 * Returns the contained model sets.
