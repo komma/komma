@@ -65,6 +65,9 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import net.enilink.composition.mappers.ComposedRoleMapper;
+import net.enilink.composition.mappers.RoleMapper;
+import net.enilink.composition.mappers.TypeFactory;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
@@ -107,16 +110,19 @@ import net.enilink.komma.generator.support.ClassPropertySupport;
 import net.enilink.komma.generator.support.CodePropertySupport;
 import net.enilink.komma.generator.support.ConceptSupport;
 import net.enilink.komma.generator.support.OntologySupport;
+import net.enilink.komma.literals.LiteralConverter;
 import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.KommaModule.Association;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.core.visitor.IDataVisitor;
 import net.enilink.komma.sesame.SesameModule;
 import net.enilink.komma.util.KommaUtil;
+import net.enilink.komma.util.RoleClassLoader;
 import net.enilink.komma.util.UnitOfWork;
 
 /**
@@ -710,12 +716,41 @@ public class OntologyConverter implements IApplication {
 					@SuppressWarnings("unused")
 					@Singleton
 					JavaNameResolver provideNameResolver(Injector injector,
-							OwlNormalizer normalizer, ClassLoader cl)
-							throws StoreException {
+							OwlNormalizer normalizer, ClassLoader cl,
+							RoleMapper<URI> roleMapper, LiteralConverter lc,
+							TypeFactory<URI> typeFactory) throws StoreException {
 						JavaNameResolverImpl resolver = new JavaNameResolverImpl(
 								cl);
 						injector.injectMembers(resolver);
 
+						// register extra concepts and datatypes that should be
+						// accessible by the name resolver
+						ComposedRoleMapper<URI> roleMapperWithExtraConcepts = new ComposedRoleMapper<URI>(
+								typeFactory);
+						roleMapperWithExtraConcepts.addRoleMapper(roleMapper);
+						resolver.setRoleMapper(roleMapperWithExtraConcepts);
+
+						KommaModule extraModule = new KommaModule(cl);
+						RoleClassLoader rcl = new RoleClassLoader(extraModule);
+						rcl.load(Collections.<URL> emptySet());
+						for (Association concept : extraModule.getConcepts()) {
+							roleMapperWithExtraConcepts.addConcept(
+									concept.getJavaClass(),
+									concept.getRdfType() != null ? typeFactory
+											.createType(concept.getRdfType())
+											: null);
+						}
+
+						LiteralConverter lcWithExtraTypes = lc.clone();
+						for (Association datatype : extraModule.getDatatypes()) {
+							lcWithExtraTypes.addDatatype(
+									datatype.getJavaClass(),
+									datatype.getRdfType() != null ? typeFactory
+											.createType(datatype.getRdfType())
+											: null);
+						}
+
+						// initialize name resolver with known prefixes
 						for (Map.Entry<String, String> e : namespaces
 								.entrySet()) {
 							resolver.bindPrefixToNamespace(e.getKey(),

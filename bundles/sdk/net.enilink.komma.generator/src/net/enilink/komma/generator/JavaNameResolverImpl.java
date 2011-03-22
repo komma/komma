@@ -157,7 +157,7 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 		if (name == null) {
 			return Object.class.getName();
 		}
-		if (!packages.containsKey(name.namespace())) {
+		if (!packages.containsKey(name.namespace().toString())) {
 			Class<?> javaClass = findJavaClass(name);
 			if (javaClass != null) {
 				// TODO support n-dimension arrays
