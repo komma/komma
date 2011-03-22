@@ -47,14 +47,16 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 		Set<Matcher> active = new HashSet<Matcher>();
 		int optional = 0;
 
+		String prefix;
+		boolean includeSemanticProposals;
+
 		ISemanticProposalProvider proposalProvider;
 
 		Map<ISemanticProposal, String> semanticProposals;
-
 		Characters separators = Characters.of(' ', '\n', '\r', '\t', '\f',
 				Chars.EOI);
 		StringBuilder word;
-		LinkedHashSet<String> words = new LinkedHashSet<String>();
+		LinkedHashSet<Proposal> words = new LinkedHashSet<Proposal>();
 
 		public CollectProposalsVisitor(
 				ISemanticProposalProvider proposalProvider,
@@ -64,17 +66,28 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 		}
 
 		protected boolean addSemanticProposal(Matcher matcher) {
-			if (proposalProvider == null) {
+			if (proposalProvider == null || !includeSemanticProposals) {
 				return false;
 			}
 
 			ISemanticProposal proposal = proposalProvider.getProposal(matcher
 					.getLabel());
 			if (proposal != null && !semanticProposals.containsKey(proposal)) {
-				semanticProposals.put(proposal, "");
+				semanticProposals.put(proposal, prefix);
 				return true;
 			}
 			return false;
+		}
+
+		protected void addWord(String word) {
+			if (prefix == null || word.startsWith(prefix)) {
+				if (word.equals(prefix)) {
+					return;
+				}
+				String content = prefix == null ? word : word.substring(prefix
+						.length());
+				words.add(new Proposal(content, word));
+			}
 		}
 
 		@Override
@@ -84,7 +97,7 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 			return word.length() > 0;
 		}
 
-		public LinkedHashSet<String> getWords() {
+		public LinkedHashSet<Proposal> getWords() {
 			return words;
 		}
 
@@ -92,12 +105,15 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 			return optional > 0;
 		}
 
-		public void process(Matcher matcher) {
+		public void process(String prefix, boolean includeSemanticProposals,
+				Matcher matcher) {
 			active.clear();
+			this.prefix = prefix;
+			this.includeSemanticProposals = includeSemanticProposals;
 
 			word = new StringBuilder();
 			if (matcher.accept(this) && word.length() > 0) {
-				words.add(word.toString());
+				addWord(word.toString());
 			}
 		}
 
@@ -136,7 +152,7 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 				boolean accept = child.accept(this);
 				complete |= accept;
 				if (accept && word.length() > length) {
-					words.add(word.toString());
+					addWord(word.toString());
 				}
 				word.replace(length, word.length(), "");
 			}
@@ -218,16 +234,79 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 		}
 	}
 
+	static class Proposal implements Comparable<Proposal> {
+		String content;
+		String label;
+
+		public Proposal(String content, String label) {
+			this.content = content;
+			this.label = label;
+		}
+
+		@Override
+		public int compareTo(Proposal o) {
+			return label.compareTo(o.label);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Proposal other = (Proposal) obj;
+			if (content == null) {
+				if (other.content != null)
+					return false;
+			} else if (!content.equals(other.content))
+				return false;
+			if (label == null) {
+				if (other.label != null)
+					return false;
+			} else if (!label.equals(other.label))
+				return false;
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((content == null) ? 0 : content.hashCode());
+			result = prime * result + ((label == null) ? 0 : label.hashCode());
+			return result;
+		}
+	}
+
 	static class ProposalParseRunner extends BasicParseRunner<Object> {
 		public class Handler implements MatchHandler {
+			private String getPrefix(MatcherContext<?> context) {
+				// use last non-whitespace word as prefix
+				String prefix = context.getInputBuffer().extract(
+						context.getStartIndex(), proposalIndex);
+				if (prefix.matches(".*\\s$")) {
+					return "";
+				}
+				String[] words = prefix.split("\\s");
+				return words[words.length - 1];
+			}
+
 			public boolean match(MatcherContext<?> context) {
 				boolean matched = context.getMatcher().match(context);
-				if (proposalIndex == 0 && context.getCurrentIndex() == 0
-						|| proposalIndex == context.getCurrentIndex() + 1) {
+
+				if (!matched && context.getStartIndex() <= proposalIndex) {
+					visitor.process(getPrefix(context), false,
+							context.getMatcher());
+				} else if (proposalIndex == context.getCurrentIndex()) {
+					String prefix = getPrefix(context);
+
 					List<Matcher> matchers = new FollowMatchersVisitor()
 							.getFollowMatchers(context);
 					for (Matcher matcher : matchers) {
-						visitor.process(matcher);
+						visitor.process(prefix, true, matcher);
 					}
 
 					if (proposalProvider != null) {
@@ -237,11 +316,8 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 											.getLabel());
 							if (proposal != null
 									&& !semanticProposals.containsKey(proposal)) {
-								semanticProposals.put(
-										proposal,
-										context.getInputBuffer().extract(
-												context.getStartIndex(),
-												proposalIndex));
+								semanticProposals.put(proposal,
+										getPrefix(context));
 								break;
 							}
 							context = context.getParent();
@@ -272,8 +348,8 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 			return semanticProposals;
 		}
 
-		public Set<String> getWords() {
-			return new TreeSet<String>(visitor.getWords());
+		public Set<Proposal> getWords() {
+			return new TreeSet<Proposal>(visitor.getWords());
 		}
 
 		@Override
@@ -284,8 +360,8 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 		}
 	}
 
-	ISemanticProposalProvider semanticProposalProvider;
 	Rule rule;
+	ISemanticProposalProvider semanticProposalProvider;
 
 	public ParboiledProposalProvider(Rule rule,
 			ISemanticProposalProvider semanticProposalProvider) {
@@ -315,8 +391,9 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 			}
 		}
 
-		for (String word : runner.getWords()) {
-			proposals.add(new ContentProposal(word, word, word, word.length()));
+		for (Proposal proposal : runner.getWords()) {
+			proposals.add(new ContentProposal(proposal.content, proposal.label,
+					proposal.label, proposal.content.length()));
 		}
 
 		return proposals.toArray(new IContentProposal[proposals.size()]);
