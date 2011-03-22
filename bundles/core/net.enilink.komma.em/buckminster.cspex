@@ -11,7 +11,7 @@
 		<private name="bundle.resources" path="." />
 	</artifacts>
 	<actions>
-    </actions>
+	</actions>
 	<groups>
 	</groups>
 	<alterDependencies>
