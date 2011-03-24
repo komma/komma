@@ -22,9 +22,9 @@ import java.util.TreeSet;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
-import org.parboiled.MatchHandler;
 import org.parboiled.MatcherContext;
 import org.parboiled.Rule;
+import org.parboiled.buffers.InputBuffer;
 import org.parboiled.matchers.AbstractMatcher;
 import org.parboiled.matchers.ActionMatcher;
 import org.parboiled.matchers.CharIgnoreCaseMatcher;
@@ -45,10 +45,10 @@ import org.parboiled.support.ParsingResult;
 public class ParboiledProposalProvider implements IContentProposalProvider {
 	static class CollectProposalsVisitor extends DefaultMatcherVisitor<Boolean> {
 		Set<Matcher> active = new HashSet<Matcher>();
-		int optional = 0;
-
-		String prefix;
 		boolean includeSemanticProposals;
+
+		int optional = 0;
+		String prefix;
 
 		ISemanticProposalProvider proposalProvider;
 
@@ -279,62 +279,20 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 			result = prime * result + ((label == null) ? 0 : label.hashCode());
 			return result;
 		}
+
+		@Override
+		public String toString() {
+			return "{content : \"" + content + "\", label : \"" + label + "\"}";
+		}
 	}
 
 	static class ProposalParseRunner extends BasicParseRunner<Object> {
-		public class Handler implements MatchHandler {
-			private String getPrefix(MatcherContext<?> context) {
-				// use last non-whitespace word as prefix
-				String prefix = context.getInputBuffer().extract(
-						context.getStartIndex(), proposalIndex);
-				if (prefix.matches(".*\\s$")) {
-					return "";
-				}
-				String[] words = prefix.split("\\s");
-				return words[words.length - 1];
-			}
-
-			public boolean match(MatcherContext<?> context) {
-				boolean matched = context.getMatcher().match(context);
-
-				if (!matched && context.getStartIndex() <= proposalIndex) {
-					visitor.process(getPrefix(context), false,
-							context.getMatcher());
-				} else if (proposalIndex == context.getCurrentIndex()) {
-					String prefix = getPrefix(context);
-
-					List<Matcher> matchers = new FollowMatchersVisitor()
-							.getFollowMatchers(context);
-					for (Matcher matcher : matchers) {
-						visitor.process(prefix, true, matcher);
-					}
-
-					if (proposalProvider != null) {
-						do {
-							ISemanticProposal proposal = proposalProvider
-									.getProposal(context.getMatcher()
-											.getLabel());
-							if (proposal != null
-									&& !semanticProposals.containsKey(proposal)) {
-								semanticProposals.put(proposal,
-										getPrefix(context));
-								break;
-							}
-							context = context.getParent();
-						} while (context != null);
-					}
-				}
-				return matched;
-			}
-
-			public boolean matchRoot(MatcherContext<?> rootContext) {
-				return rootContext.runMatcher();
-			}
-		}
-
 		int proposalIndex;
+
 		ISemanticProposalProvider proposalProvider;
+
 		Map<ISemanticProposal, String> semanticProposals = new HashMap<ISemanticProposal, String>();
+
 		CollectProposalsVisitor visitor;
 
 		ProposalParseRunner(Rule rule, int proposalIndex,
@@ -342,6 +300,21 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 			super(rule);
 			this.proposalIndex = proposalIndex;
 			this.proposalProvider = proposalProvider;
+		}
+
+		private String getLastWord(MatcherContext<?> context) {
+			// determine the last non-whitespace word
+			String prefix = getPrefix(context);
+			if (prefix.matches(".*\\s$")) {
+				return "";
+			}
+			String[] words = prefix.split("\\s");
+			return words[words.length - 1];
+		}
+
+		private String getPrefix(MatcherContext<?> context) {
+			return context.getInputBuffer().extract(context.getStartIndex(),
+					proposalIndex);
 		}
 
 		public Map<ISemanticProposal, String> getSemanticProposals() {
@@ -352,11 +325,48 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 			return new TreeSet<Proposal>(visitor.getWords());
 		}
 
+		public boolean match(MatcherContext<?> context) {
+			boolean matched = context.getMatcher().match(context);
+
+			if (!matched) {
+				// TODO improve performance in this case
+				if (context.getStartIndex() <= proposalIndex) {
+					String prefix = getPrefix(context);
+					if (!prefix.matches(".*\\S.*\\s$")) {
+						visitor.process(prefix, false, context.getMatcher());
+					}
+				}
+			} else if (proposalIndex == context.getCurrentIndex()) {
+				String lastWord = getLastWord(context);
+
+				List<Matcher> matchers = new FollowMatchersVisitor()
+						.getFollowMatchers(context);
+				for (Matcher matcher : matchers) {
+					visitor.process(lastWord, true, matcher);
+				}
+
+				if (proposalProvider != null) {
+					do {
+						ISemanticProposal proposal = proposalProvider
+								.getProposal(context.getMatcher().getLabel());
+						if (proposal != null
+								&& !semanticProposals.containsKey(proposal)) {
+							semanticProposals.put(proposal, getPrefix(context));
+							break;
+						}
+						context = context.getParent();
+					} while (context != null);
+				}
+			}
+
+			return matched;
+		}
+
 		@Override
-		protected boolean runRootContext() {
+		public ParsingResult<Object> run(InputBuffer inputBuffer) {
 			visitor = new CollectProposalsVisitor(proposalProvider,
 					semanticProposals);
-			return runRootContext(new Handler(), true);
+			return super.run(inputBuffer);
 		}
 	}
 
