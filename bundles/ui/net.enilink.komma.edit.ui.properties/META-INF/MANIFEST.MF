@@ -8,7 +8,8 @@ Export-Package: net.enilink.komma.edit.ui.properties,
  net.enilink.komma.edit.ui.properties.internal.context;x-friends:="net.enilink.komma.edit.ui.properties.tabbed",
  net.enilink.komma.edit.ui.properties.internal.parts;x-friends:="net.enilink.komma.edit.ui.properties.tabbed",
  net.enilink.komma.edit.ui.properties.internal.wizards;x-friends:="net.enilink.komma.edit.ui.properties.tabbed"
-Import-Package: org.eclipse.core.commands
+Import-Package: org.eclipse.core.commands,
+ com.google.inject
 Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma,
  net.enilink.komma.edit.ui,

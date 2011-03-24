@@ -28,6 +28,8 @@ import org.parboiled.Parboiled;
 import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.support.ParsingResult;
 
+import com.google.inject.Provider;
+
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.OWL;
@@ -105,6 +107,36 @@ class ValueEditingSupport extends EditingSupport {
 		}
 	}
 
+	class ManchesterActions implements IManchesterActions {
+		final Map<BNode, IReference> bNodes = new HashMap<BNode, IReference>();
+		final Provider<IModel> modelProvider;
+
+		public ManchesterActions(Provider<IModel> modelProvider) {
+			this.modelProvider = modelProvider;
+		}
+
+		@Override
+		public boolean createStmt(Object subject, Object predicate,
+				Object object) {
+			return true;
+		}
+
+		@Override
+		public boolean isObjectProperty(Object property) {
+			return !isDataProperty(property);
+		}
+
+		@Override
+		public boolean isDataProperty(Object property) {
+			IModel model = modelProvider.get();
+			if (model == null) {
+				return false;
+			}
+			return model.getManager().find(
+					(IReference) toValue(model, property, bNodes)) instanceof DatatypeProperty;
+		}
+	}
+
 	private Object currentElement;
 	private boolean createNew;
 	private IEditingDomain editingDomain;
@@ -119,7 +151,18 @@ class ValueEditingSupport extends EditingSupport {
 	private TextCellEditorWithContentProposal manchesterEditor;
 
 	private final ManchesterSyntaxParser manchesterParser = Parboiled
-			.createParser(ManchesterSyntaxParser.class);
+			.createParser(ManchesterSyntaxParser.class, new ManchesterActions(
+					new Provider<IModel>() {
+						public IModel get() {
+							final IStatement stmt = getStatement(currentElement);
+							final IResource subject = (IResource) stmt
+									.getSubject();
+							if (subject instanceof IObject) {
+								return ((IObject) subject).getModel();
+							}
+							return null;
+						}
+					}));
 
 	private boolean editPredicate;
 
@@ -454,9 +497,14 @@ class ValueEditingSupport extends EditingSupport {
 		if (value instanceof String) {
 			if (currentEditor == manchesterEditor) {
 				final List<Object[]> newStmts = new ArrayList<Object[]>();
-				ParsingResult<Object> result = BasicParseRunner.run(
+				ParsingResult<Object> result = new BasicParseRunner<Object>(
 						Parboiled.createParser(ManchesterSyntaxParser.class,
-								new IManchesterActions() {
+								new ManchesterActions(new Provider<IModel>() {
+									@Override
+									public IModel get() {
+										return ((IObject) subject).getModel();
+									}
+								}) {
 									@Override
 									public boolean createStmt(Object subject,
 											Object predicate, Object object) {
@@ -464,7 +512,7 @@ class ValueEditingSupport extends EditingSupport {
 												predicate, object });
 										return true;
 									}
-								}).Description(), (String) value);
+								}).Description()).run((String) value);
 				if (result.resultValue != null) {
 					newObjectCommand = getAddStmtsCommand(
 							((IObject) subject).getModel(), result.resultValue,
