@@ -18,4 +18,13 @@ public class ManchesterActions extends BaseActions<Object> implements
 		return true;
 	}
 
+	@Override
+	public boolean isObjectProperty(Object property) {
+		return true;
+	}
+
+	@Override
+	public boolean isDataProperty(Object property) {
+		return true;
+	}
 }
