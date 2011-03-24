@@ -721,8 +721,8 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 			onTarget = pop();
 
 			if (type.equals(OWL.PROPERTY_CARDINALITY)) {
-				type = OWL.PROPERTY_MAXCARDINALITY;
-			} else if (type.equals(OWL.PROPERTY_CARDINALITY)) {
+				type = OWL.PROPERTY_QUALIFIEDCARDINALITY;
+			} else if (type.equals(OWL.PROPERTY_MAXCARDINALITY)) {
 				type = OWL.PROPERTY_MAXQUALIFIEDCARDINALITY;
 			} else if (type.equals(OWL.PROPERTY_MINCARDINALITY)) {
 				type = OWL.PROPERTY_MINQUALIFIEDCARDINALITY;
