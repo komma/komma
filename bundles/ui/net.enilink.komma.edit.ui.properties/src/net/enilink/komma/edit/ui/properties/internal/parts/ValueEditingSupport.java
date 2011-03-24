@@ -447,28 +447,28 @@ class ValueEditingSupport extends EditingSupport {
 				@Override
 				public Boolean integerLiteral(IntegerLiteral numericLiteral,
 						Void data) {
-					em.toValue(numericLiteral.getValue());
+					result[0] = em.toValue(numericLiteral.getValue());
 					return false;
 				}
 
 				@Override
 				public Boolean booleanLiteral(BooleanLiteral booleanLiteral,
 						Void data) {
-					em.toValue(booleanLiteral.getValue());
+					result[0] = em.toValue(booleanLiteral.getValue());
 					return false;
 				}
 
 				@Override
 				public Boolean doubleLiteral(DoubleLiteral doubleLiteral,
 						Void data) {
-					em.toValue(doubleLiteral.getValue());
+					result[0] = em.toValue(doubleLiteral.getValue());
 					return false;
 				}
 
 				@Override
 				public Boolean genericLiteral(GenericLiteral genericLiteral,
 						Void data) {
-					em.createLiteral(
+					result[0] = em.createLiteral(
 							genericLiteral.getLabel(),
 							(URI) toValue(model, genericLiteral.getDatatype(),
 									bNodes), genericLiteral.getLanguage());

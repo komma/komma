@@ -88,7 +88,7 @@ public class PropertyUtil {
 						for (IStatement stmt : em.matchAsserted(node, null,
 								null)) {
 							Object o = stmt.getObject();
-							if (canDelete(em, node, (IReference) o)) {
+							if (canDelete(em, node, o)) {
 								bnodes.add((IReference) o);
 							}
 						}
