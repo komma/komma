@@ -506,24 +506,6 @@ public interface IEntityManager {
 	<T> T merge(T bean);
 
 	/**
-	 * Make an instance managed and persistent.
-	 * 
-	 * @param entity
-	 * @throws EntityExistsException
-	 *             if the entity already exists. (If the entity already exists,
-	 *             the EntityExistsException may be thrown when the persist
-	 *             operation is invoked, or the EntityExistsException or another
-	 *             PersistenceException may be thrown at flush or commit time.)
-	 * @throws IllegalArgumentException
-	 *             if the instance is not an entity
-	 * @throws TransactionRequiredException
-	 *             if invoked on a container-managed entity manager of type
-	 *             PersistenceContextType.TRANSACTION and there is no
-	 *             transaction.
-	 */
-	void persist(Object entity);
-
-	/**
 	 * If <code>entity</code> implements Refreshable, its method
 	 * {@link Refreshable#refresh()} will be called. This call instructs
 	 * entities that their property values may have changed and they should
@@ -636,6 +618,19 @@ public interface IEntityManager {
 	 *            to be removed from the pool and repository.
 	 */
 	void remove(Object entity);
+
+	/**
+	 * Removes the given entity or subject while also recursively removing all
+	 * referenced resources. It is the responsibility of the caller to ensure
+	 * this <code>entity</code> or any other object referencing it are no longer
+	 * used and any object that may have cached a value containing this is
+	 * refreshed.
+	 * 
+	 * @param entity
+	 *            to be removed from the pool and repository.
+	 * 
+	 */
+	void removeRecursive(Object entity, boolean anonymousOnly);
 
 	/**
 	 * Unregisters an {@link IEntityDecorator decorator}
