@@ -116,6 +116,9 @@ public abstract class MemoryModelSupport implements IModel, Model,
 
 				final AtomicBoolean finished = new AtomicBoolean(false);
 				final Queue<IStatement> queue = new LinkedList<IStatement>();
+				// new Job("Load model") {
+				// @Override
+				// public IStatus run(IProgressMonitor monitor) {
 				Executors.newSingleThreadExecutor().execute(new Runnable() {
 					@Override
 					public void run() {
@@ -146,25 +149,35 @@ public abstract class MemoryModelSupport implements IModel, Model,
 
 							@Override
 							public void endRDF() throws RDFHandlerException {
+							}
+						});
+						try {
+							try {
+								unitOfWork.begin();
+								parser.parse(in, getURI().toString());
+							} catch (RDFParseException e) {
+								throw new KommaException("Invalid RDF data", e);
+							} catch (RDFHandlerException e) {
+								throw new KommaException("Loading RDF failed",
+										e);
+							} catch (IOException e) {
+								throw new KommaException(
+										"Cannot access RDF data", e);
+							} finally {
 								finished.set(true);
 								synchronized (queue) {
 									queue.notify();
 								}
+
+								unitOfWork.end();
 							}
-						});
-						try {
-							unitOfWork.begin();
-							parser.parse(in, getURI().toString());
-						} catch (RDFParseException e) {
-							throw new KommaException("Invalid RDF data", e);
-						} catch (RDFHandlerException e) {
-							throw new KommaException("Loading RDF failed", e);
-						} catch (IOException e) {
-							throw new KommaException("Cannot access RDF data",
-									e);
-						} finally {
-							unitOfWork.end();
+						} catch (RuntimeException e) {
+							throw e;
+							// return new Status(IStatus.ERROR,
+							// ModelCore.PLUGIN_ID,
+							// "Error while loading model", exception);
 						}
+						// return Status.OK_STATUS;
 					}
 				});
 
