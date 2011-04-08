@@ -41,9 +41,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 import org.apache.commons.collections.map.ReferenceIdentityMap;
@@ -279,10 +281,10 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	@SuppressWarnings("unchecked")
 	public <T> T create(IReference resource, Class<T> concept,
 			Class<?>... concepts) {
+		Set<URI> types = new HashSet<URI>();
+
 		boolean isActive = false;
 		try {
-			Set<URI> types = new HashSet<URI>();
-
 			isActive = getTransaction().isActive();
 
 			if (!isActive) {
@@ -307,7 +309,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			throw new KommaException(e);
 		}
 
-		IEntity bean = createBean(resource, null, false, null);
+		IEntity bean = createBean(resource, types, false, null);
 		assert assertConceptsRecorded(bean, combine(concept, concepts));
 		return (T) bean;
 	}
@@ -843,10 +845,6 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		}
 	}
 
-	public void persist(Object bean) {
-		merge(bean);
-	}
-
 	public void refresh(Object entity) {
 		if (entity instanceof Refreshable) {
 			((Refreshable) entity).refresh();
@@ -890,6 +888,54 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		} else {
 			IReference resource = getReferenceOrFail(entity);
 			resourceManager.removeResource(resource);
+		}
+	}
+
+	private boolean canDelete(IReference deletedSubject, Object object,
+			boolean anonymousOnly) {
+		if (!(object instanceof IReference && (((IReference) object).getURI() == null || !anonymousOnly))) {
+			return false;
+		}
+		// this could also be done with
+		// if (! em.hasMatchAsserted(null, null, node))
+		// { ... }
+		// iff no transaction is running
+		IExtendedIterator<IStatement> refs = matchAsserted(null, null,
+				(IReference) object);
+		boolean canDelete = true;
+		for (IStatement refStmt : refs) {
+			if (!refStmt.getSubject().equals(deletedSubject)) {
+				canDelete = false;
+				break;
+			}
+		}
+		refs.close();
+		return canDelete;
+	}
+
+	public void removeRecursive(Object entity, boolean anonymousOnly) {
+		IReference resource = null;
+		if (entity instanceof IStatement) {
+			IStatement stmt = (IStatement) entity;
+			remove(Collections.singleton(stmt));
+			resource = getReference(stmt.getObject());
+		} else {
+			resource = getReferenceOrFail(entity);
+		}
+		
+		if (resource != null) {
+			Queue<IReference> nodes = new LinkedList<IReference>();
+			nodes.add(((IReference) resource));
+			while (!nodes.isEmpty()) {
+				IReference node = nodes.remove();
+				for (IStatement stmt : matchAsserted(node, null, null)) {
+					Object o = stmt.getObject();
+					if (canDelete(node, o, anonymousOnly)) {
+						nodes.add((IReference) o);
+					}
+				}
+				remove(node);
+			}
 		}
 	}
 
@@ -952,8 +998,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	@Inject
 	protected void setDataManager(IDataManager dm) {
 		this.dm = dm;
-		this.dm.setModifyContexts(modifyContexts != null ? modifyContexts : Collections
-				.<URI> emptySet());
+		this.dm.setModifyContexts(modifyContexts != null ? modifyContexts
+				: Collections.<URI> emptySet());
 		this.dm.setReadContexts(readContexts != null ? readContexts
 				: Collections.<URI> emptySet());
 

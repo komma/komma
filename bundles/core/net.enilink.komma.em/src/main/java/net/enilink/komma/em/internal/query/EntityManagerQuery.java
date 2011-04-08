@@ -64,14 +64,7 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 	}
 
 	public IExtendedIterator<R> evaluate() {
-		IExtendedIterator<R> result = evaluateQuery(null, resultInfos);
-		opened.put(result, Boolean.TRUE);
-		if (firstResult > 0) {
-			for (int i = 0; i < firstResult && result.hasNext(); i++) {
-				result.next();
-			}
-		}
-		return result;
+		return evaluateQuery(null, resultInfos);
 	}
 
 	public <T> IExtendedIterator<T> evaluate(Class<T> resultType,
@@ -82,14 +75,7 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 			resultInfo.types.add(type);
 		}
 
-		IExtendedIterator<T> result = evaluateQuery(resultType, resultInfo);
-		opened.put(result, Boolean.TRUE);
-		if (firstResult > 0) {
-			for (int i = 0; i < firstResult && result.hasNext(); i++) {
-				result.next();
-			}
-		}
-		return result;
+		return evaluateQuery(resultType, resultInfo);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -119,6 +105,15 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 		} else {
 			iter = new BooleanIterator(((IBooleanResult) result).asBoolean());
 		}
+
+		opened.put(iter, Boolean.TRUE);
+		// skip elements if limit is used
+		if (firstResult > 0) {
+			for (int i = 0; i < firstResult && iter.hasNext(); i++) {
+				iter.next();
+			}
+		}
+
 		return (IExtendedIterator<T>) iter;
 	}
 
@@ -130,14 +125,7 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 			resultInfo.types.add(type);
 		}
 
-		IExtendedIterator<T> result = evaluateQuery(resultType, resultInfo);
-		opened.put(result, Boolean.TRUE);
-		if (firstResult > 0) {
-			for (int i = 0; i < firstResult && result.hasNext(); i++) {
-				result.next();
-			}
-		}
-		return result;
+		return evaluateQuery(resultType, resultInfo);
 	}
 
 	public int executeUpdate() {

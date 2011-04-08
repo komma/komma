@@ -298,11 +298,6 @@ public class ThreadLocalEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public void persist(Object bean) {
-		getDelegate().persist(bean);
-	}
-
-	@Override
 	public void refresh(Object entity) {
 		getDelegate().refresh(entity);
 	}
@@ -350,6 +345,11 @@ public class ThreadLocalEntityManager implements IEntityManager {
 	@Override
 	public void removeNamespace(String prefix) {
 		getDelegate().removeNamespace(prefix);
+	}
+
+	@Override
+	public void removeRecursive(Object entity, boolean anonymousOnly) {
+		getDelegate().removeRecursive(entity, anonymousOnly);
 	}
 
 	@Override
