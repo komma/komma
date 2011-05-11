@@ -36,11 +36,14 @@ import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.command.CreateChildCommand;
 import net.enilink.komma.edit.command.DragAndDropCommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.provider.ISearchableItemProvider;
 import net.enilink.komma.edit.provider.IViewerNotification;
 import net.enilink.komma.edit.provider.ReflectiveItemProvider;
+import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
 import net.enilink.komma.edit.provider.ViewerNotification;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.event.IStatementNotification;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 
 public class RDFSClassItemProvider extends ReflectiveItemProvider {
@@ -147,6 +150,14 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 		return new DragAndDropCommand(domain, owner, location, operations,
 				operation, collection) {
 			@Override
+			protected boolean isNonContainment(IReference property) {
+				if (RDFS.PROPERTY_SUBCLASSOF.equals(property)) {
+					return false;
+				}
+				return super.isNonContainment(property);
+			}
+
+			@Override
 			protected boolean prepareDropCopyOn() {
 				// simply link dropped class to parent class by rdfs:subClassOf
 				dragCommand = IdentityCommand.INSTANCE;
@@ -159,14 +170,6 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 			@Override
 			protected boolean prepareDropLinkOn() {
 				return prepareDropCopyOn();
-			}
-
-			@Override
-			protected boolean isNonContainment(IReference property) {
-				if (RDFS.PROPERTY_SUBCLASSOF.equals(property)) {
-					return false;
-				}
-				return super.isNonContainment(property);
 			}
 		};
 	}
@@ -245,14 +248,38 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 							.getEntityManager().find(OWL.TYPE_THING));
 				}
 			}
+			// avoid recursive containment
+			if (OWL.TYPE_THING.equals(object)) {
+				subClasses.remove(RDFS.TYPE_RESOURCE);
+			}
 			return subClasses;
 		}
 		return super.getChildren(object);
 	}
 
 	@Override
+	protected ISearchableItemProvider getSearchableItemProvider() {
+		return new SparqlSearchableItemProvider() {
+			@Override
+			protected String getSparqlFindPatterns(Object parent) {
+				return "?s rdfs:subClassOf ?parent";
+			}
+		};
+	}
+
+	@Override
 	public Object getParent(Object object) {
 		if (object instanceof IClass) {
+			if (RDFS.TYPE_RESOURCE.equals(object)) {
+				return null;
+			}
+			
+			// always return rdfs:Resource as parent of owl:Thing
+			if (OWL.TYPE_THING.equals(object)) {
+				return ((IEntity) object).getEntityManager().find(
+						RDFS.TYPE_RESOURCE);
+			}
+
 			IExtendedIterator<?> it = ((IClass) object)
 					.getDirectNamedSuperClasses();
 			try {
