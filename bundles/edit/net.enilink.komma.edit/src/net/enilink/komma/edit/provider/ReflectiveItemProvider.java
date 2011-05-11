@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.util.IResourceLocator;
@@ -37,7 +38,8 @@ import net.enilink.komma.core.IReference;
  */
 public class ReflectiveItemProvider extends ItemProviderAdapter implements
 		IEditingDomainItemProvider, IStructuredItemContentProvider,
-		ITreeItemContentProvider, IItemLabelProvider, IItemPropertySource {
+		ITreeItemContentProvider, IItemLabelProvider, IItemPropertySource,
+		ISearchableItemProvider {
 
 	protected IResourceLocator resourceLocator;
 	protected Collection<IClass> supportedTypes;
@@ -212,5 +214,14 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 
 	public String getText(Object object) {
 		return ModelUtil.getLabel(object);
+	}
+
+	protected ISearchableItemProvider getSearchableItemProvider() {
+		return new SparqlSearchableItemProvider();
+	}
+
+	@Override
+	public IExtendedIterator<?> find(Object expression, Object parent, int limit) {
+		return getSearchableItemProvider().find(expression, parent, limit);
 	}
 }

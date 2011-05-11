@@ -16,20 +16,16 @@
  */
 package net.enilink.komma.edit.provider;
 
-
 import java.util.Collection;
 
-
 /**
- * This is the interface needed to populate 
- * the top level items in a TreeViewer, 
- * the items of a ListViewer, 
- * or the rows of a TableViewer. 
+ * This is the interface needed to populate the top level items in a TreeViewer,
+ * the items of a ListViewer, or the rows of a TableViewer.
  */
-public interface IStructuredItemContentProvider
-{
-  /**
-   * This does the same thing as IStructuredContentProvider.getElements.
-   */
-  public Collection<?> getElements(Object object);
+public interface IStructuredItemContentProvider {
+	/**
+	 * This does the same thing as IStructuredContentProvider.getElements.
+	 */
+	Collection<?> getElements(Object object);
+
 }
