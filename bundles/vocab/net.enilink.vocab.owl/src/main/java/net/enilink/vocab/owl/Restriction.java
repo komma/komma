@@ -16,6 +16,7 @@ import java.util.List;
 import net.enilink.composition.annotations.Iri;
 
 import net.enilink.vocab.rdfs.Class;
+import net.enilink.komma.core.IValue;
 
 @Iri("http://www.w3.org/2002/07/owl#Restriction")
 public interface Restriction extends net.enilink.vocab.owl.Class {
@@ -50,7 +51,7 @@ public interface Restriction extends net.enilink.vocab.owl.Class {
 
 	/** http://www.w3.org/2002/07/owl#hasValue */
 	@Iri("http://www.w3.org/2002/07/owl#hasValue")
-	public abstract Object getOwlHasValue();
+	public abstract IValue getOwlHasValue();
 
 	/** http://www.w3.org/2002/07/owl#hasValue */
 	public abstract void setOwlHasValue(Object value);
