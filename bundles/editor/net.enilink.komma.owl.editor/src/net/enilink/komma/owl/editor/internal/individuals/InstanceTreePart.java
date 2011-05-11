@@ -1,19 +1,19 @@
 package net.enilink.komma.owl.editor.internal.individuals;
 
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
-import org.eclipse.jface.viewers.ILazyTreeContentProvider;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
+import net.enilink.komma.edit.provider.ISearchableItemProvider;
+import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
+import net.enilink.komma.edit.ui.provider.LazyAdapterFactoryContentProvider;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.util.ISparqlConstants;
 
@@ -22,54 +22,25 @@ public class InstanceTreePart extends IndividualsPart {
 			+ "SELECT DISTINCT ?r WHERE {"
 			+ "?r a ?c . OPTIONAL {?other komma:contains ?r} FILTER (!bound(?other)) }";
 
-	private class ContentProvider extends AdapterFactoryContentProvider
-			implements ILazyTreeContentProvider {
-		Map<Object, Object[]> parentToChildren = new WeakHashMap<Object, Object[]>();
-
+	class ContentProvider extends LazyAdapterFactoryContentProvider implements
+			ISearchableItemProvider {
 		public ContentProvider(IAdapterFactory adapterFactory) {
 			super(adapterFactory);
 		}
 
-		@Override
-		public Object[] getElements(Object object) {
-			if (object instanceof Object[]) {
-				return (Object[]) object;
-			}
-			return super.getElements(object);
-		}
-
-		@Override
-		public void updateElement(Object parent, int index) {
-			Object[] children;
-			if (parent instanceof Object[]) {
-				children = (Object[]) parent;
-			} else {
-				children = parentToChildren.get(parent);
-			}
-
-			if (children != null && index < children.length) {
-				((TreeViewer) viewer).replace(parent, index, children[index]);
-				updateChildCount(children[index], -1);
-			}
-		}
-
-		@Override
-		public void updateChildCount(Object element, int currentChildCount) {
-			Object[] children;
-			if (element instanceof Object[]) {
-				children = (Object[]) element;
-			} else {
-				parentToChildren.remove(element);
-
-				children = super.getChildren(element);
-				parentToChildren.put(element, children);
-			}
-
-			if (children.length != currentChildCount) {
-				((TreeViewer) viewer).setChildCount(element, children.length);
-			}
+		public IExtendedIterator<?> find(Object expression, Object parent,
+				int limit) {
+			SparqlSearchableItemProvider searchableProvider = new SparqlSearchableItemProvider() {
+				@Override
+				protected String getSparqlFindPatterns(Object parent) {
+					return "[a ?parent; komma:hasDescendant ?s]";
+				}
+			};
+			return searchableProvider.find(expression, currentInput, 20);
 		}
 	}
+
+	protected IClass currentInput;
 
 	@Override
 	protected StructuredViewer createViewer(Composite parent) {
@@ -92,6 +63,7 @@ public class InstanceTreePart extends IndividualsPart {
 
 	@Override
 	protected void setInputToViewer(StructuredViewer viewer, IClass input) {
+		currentInput = input;
 		if (input == null) {
 			viewer.setInput(null);
 		} else {

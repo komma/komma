@@ -23,7 +23,8 @@ import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 
@@ -38,6 +39,7 @@ import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 import net.enilink.komma.edit.ui.provider.reflective.IndividualsContentProvider;
 import net.enilink.komma.edit.ui.provider.reflective.ObjectComparator;
+import net.enilink.komma.edit.ui.util.FilterWidget;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
 import net.enilink.komma.model.IObject;
@@ -53,13 +55,15 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 
 	@Override
 	public void createContents(Composite parent) {
-		parent.setLayout(new FillLayout());
+		parent.setLayout(new GridLayout(1, false));
 		createActions();
 		createIndividualsPart(parent);
 	}
 
 	private void createIndividualsPart(Composite parent) {
 		viewer = createViewer(parent);
+		viewer.getControl().setLayoutData(
+				new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		viewer.setComparator(new ObjectComparator());
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -77,6 +81,12 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 				}
 			}
 		});
+
+		FilterWidget filterWidget = new FilterWidget();
+		filterWidget.setViewer(viewer);
+		filterWidget.createControl(parent);
+		filterWidget.getControl().setLayoutData(
+				new GridData(SWT.FILL, SWT.END, false, false));
 	}
 
 	protected StructuredViewer createViewer(Composite parent) {
@@ -141,8 +151,7 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 											IProgressMonitor progressMonitor,
 											IAdaptable info)
 											throws ExecutionException {
-										final IResource individual = parent.newInstance(
-														resourceName);
+										final IResource individual = parent.newInstance(resourceName);
 
 										getShell().getDisplay().asyncExec(
 												new Runnable() {
@@ -153,7 +162,8 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 													}
 												});
 
-										return CommandResult.newOKCommandResult(individual);
+										return CommandResult
+												.newOKCommandResult(individual);
 									}
 								}, null, null);
 					} catch (ExecutionException e) {

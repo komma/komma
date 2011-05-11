@@ -22,7 +22,8 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 
@@ -35,10 +36,11 @@ import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
-import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
+import net.enilink.komma.edit.ui.provider.LazyAdapterFactoryContentProvider;
 import net.enilink.komma.edit.ui.provider.reflective.ObjectComparator;
+import net.enilink.komma.edit.ui.util.FilterWidget;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
 import net.enilink.komma.model.IModel;
@@ -55,10 +57,11 @@ public class ClassesPart extends AbstractEditingDomainPart {
 
 	@Override
 	public void createContents(Composite parent) {
-		parent.setLayout(new FillLayout());
+		parent.setLayout(new GridLayout(1, false));
 		createActions();
 
-		tree = getWidgetFactory().createTree(parent, SWT.NONE);
+		tree = getWidgetFactory().createTree(parent, SWT.VIRTUAL);
+		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		treeViewer = new TreeViewer(tree);
 		treeViewer.setUseHashlookup(true);
@@ -80,6 +83,11 @@ public class ClassesPart extends AbstractEditingDomainPart {
 			}
 		});
 
+		FilterWidget filterWidget = new FilterWidget();
+		filterWidget.setViewer(treeViewer);
+		filterWidget.createControl(parent);
+		filterWidget.getControl().setLayoutData(
+				new GridData(SWT.FILL, SWT.END, false, false));
 	}
 
 	public void createActions() {
@@ -225,16 +233,8 @@ public class ClassesPart extends AbstractEditingDomainPart {
 				adapterFactory = newAdapterFactory;
 
 				treeViewer
-						.setContentProvider(new AdapterFactoryContentProvider(
-								getAdapterFactory()) {
-							@Override
-							public Object[] getElements(Object object) {
-								if (object instanceof Object[]) {
-									return (Object[]) object;
-								}
-								return super.getElements(object);
-							}
-						});
+						.setContentProvider(new LazyAdapterFactoryContentProvider(
+								getAdapterFactory()));
 				treeViewer.setLabelProvider(new AdapterFactoryLabelProvider(
 						getAdapterFactory()));
 
