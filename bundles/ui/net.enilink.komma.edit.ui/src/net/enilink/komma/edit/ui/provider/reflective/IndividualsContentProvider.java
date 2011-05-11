@@ -21,15 +21,20 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 
+import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.commons.iterator.NiceIterator;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.concepts.IClass;
+import net.enilink.komma.edit.provider.ISearchableItemProvider;
+import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 
 public class IndividualsContentProvider extends ModelContentProvider implements
-		IStructuredContentProvider, ILazyContentProvider {
+		IStructuredContentProvider, ILazyContentProvider,
+		ISearchableItemProvider {
 	protected Set<IClass> classes = new HashSet<IClass>();
 
 	protected IReference[] instanceReferences;
@@ -45,6 +50,24 @@ public class IndividualsContentProvider extends ModelContentProvider implements
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public IExtendedIterator<?> find(Object expression, Object parent, int limit) {
+		IExtendedIterator<Object> results = NiceIterator.emptyIterator();
+		if (!classes.isEmpty()) {
+			SparqlSearchableItemProvider searchableProvider = new SparqlSearchableItemProvider() {
+				@Override
+				protected String getSparqlFindPatterns(Object parent) {
+					return "?s a ?parent";
+				}
+			};
+			for (IClass clazz : classes) {
+				results = results.andThen(searchableProvider.find(expression,
+						clazz, 10));
+			}
+		}
+		return results;
 	}
 
 	public Object[] getElements(Object inputElement) {

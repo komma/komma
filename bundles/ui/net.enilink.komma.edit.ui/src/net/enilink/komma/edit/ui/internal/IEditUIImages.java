@@ -13,4 +13,5 @@ package net.enilink.komma.edit.ui.internal;
 public interface IEditUIImages {
 	static String VIEW_MENU = "full/ctool16/view_menu.gif";
 	static String SEPARATOR = "full/clcl16/separator.gif";
+	static String SEARCH = "full/elcl16/Search.png";
 }
