@@ -6,7 +6,9 @@ import java.util.List;
 import net.enilink.vocab.owl.DataRange;
 import net.enilink.vocab.owl.Restriction;
 import net.enilink.vocab.rdfs.Class;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
 import net.enilink.komma.model.ModelUtil;
+import net.enilink.komma.core.ILiteral;
 
 /**
  * Generator for the <a
@@ -118,6 +120,9 @@ public class ManchesterSyntaxGenerator {
 				sb.append("exactly").append(" ");
 				sb.append(restriction.getOwlQualifiedCardinality()).append(" ");
 				onClassOrDataRange(restriction);
+			} else if (restriction.getOwlHasValue() != null) {
+				sb.append("value").append(" ");
+				value(restriction.getOwlHasValue());
 			}
 
 			return this;
@@ -149,6 +154,25 @@ public class ManchesterSyntaxGenerator {
 	}
 
 	private ManchesterSyntaxGenerator value(Object value) {
+		if (value instanceof ILiteral) {
+			ILiteral literal = (ILiteral) value;
+			boolean quoted = XMLSCHEMA.TYPE_STRING
+					.equals(literal.getDatatype())
+					|| literal.getDatatype() == null;
+			if (quoted) {
+				sb.append("\"");
+			}
+			sb.append(ModelUtil.getLabel(value));
+			if (quoted) {
+				sb.append("\"");
+			}
+			if (literal.getDatatype() != null) {
+				sb.append("^^").append("<")
+						.append(ModelUtil.getLabel(literal.getDatatype()))
+						.append(">");
+			}
+			return this;
+		}
 		sb.append(ModelUtil.getLabel(value));
 		return this;
 	}
