@@ -190,10 +190,9 @@ public class AbstractEditingDomainView extends ViewPart implements
 			IEditingDomainProvider editingDomainProvider, IWorkbenchPart part) {
 		IEditingDomainProvider lastProvider = this.editingDomainProvider;
 
-		this.editingDomainProvider = editingDomainProvider;
-
 		if (editingDomainProvider == null) {
 			this.part = null;
+			this.editingDomainProvider = null;
 			this.model = null;
 		} else if (lastProvider != null
 				&& lastProvider.getEditingDomain().equals(
@@ -201,6 +200,7 @@ public class AbstractEditingDomainView extends ViewPart implements
 			return;
 		} else {
 			this.part = part;
+			this.editingDomainProvider = editingDomainProvider;
 
 			Set<IModel> models = editingDomainProvider.getEditingDomain()
 					.getModelSet().getModels();
