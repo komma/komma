@@ -177,7 +177,8 @@ public abstract class PropertySupport extends BehaviorBase implements
 			return true;
 		}
 
-		IQuery<?> query = getEntityManager().createQuery(IS_ORDERED_CONTAINMENT);
+		IQuery<?> query = getEntityManager()
+				.createQuery(IS_ORDERED_CONTAINMENT);
 		query.setParameter("property", this);
 		query.setIncludeInferred(true);
 
@@ -187,7 +188,8 @@ public abstract class PropertySupport extends BehaviorBase implements
 	@Override
 	public boolean isDomainCompatible(Object object) {
 		if (object instanceof IReference) {
-			IQuery<?> query = getEntityManager().createQuery(IS_DOMAIN_INSTANCE);
+			IQuery<?> query = getEntityManager()
+					.createQuery(IS_DOMAIN_INSTANCE);
 			query.setParameter("property", getBehaviourDelegate());
 			query.setParameter("object", object);
 			query.setIncludeInferred(true);
@@ -288,7 +290,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 		// query can be optimized if OWL-inferencing is supported
 		if (getEntityManager().getInferencing().doesOWL()) {
 			String query = PREFIX
-					+ "SELECT DISTINCT ?r WHERE {"
+					+ "SELECT DISTINCT ?resultR WHERE {"
 					+ "	?o a ?c ."
 					+ "	?c rdfs:subClassOf ?restriction ."
 					+ "	?restriction owl:onProperty ?p ."
@@ -305,7 +307,8 @@ public abstract class PropertySupport extends BehaviorBase implements
 					+ "		?otherR rdfs:subClassOf ?r" //
 					+ "		FILTER (isIRI(?otherR) && (?subP != ?p || ?otherR != ?r))" //
 					+ "	}" //
-					+ "	FILTER (! bound(?otherR) && isIRI(?r))" //
+					+ (!direct ? "	?resultR rdfs:subClassOf ?r ." : "")
+					+ "	FILTER (! bound(?otherR) && isIRI(?resultR) && ?resultR != owl:Nothing)" //
 					+ "	OPTIONAL {" //
 					+ "		?r komma:isAbstract ?abstract" //
 					+ "	} ." //
