@@ -14,8 +14,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.core;resolution:=optional,
  net.enilink.komma.sesame,
  org.openrdf.sesame;bundle-version="3.0.0"
-Bundle-ClassPath: lib/commons-cli-1.1.jar,
- .
+Bundle-ClassPath: ., lib/commons-cli-1.1.jar
 Import-Package: com.google.inject;version="2.0.0",
  com.google.inject.binder;version="2.0.0",
  com.google.inject.multibindings;version="2.0.0",
