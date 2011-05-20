@@ -33,6 +33,7 @@ import com.google.inject.Provider;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.owl.ObjectProperty;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CompositeCommand;
@@ -307,7 +308,9 @@ class ValueEditingSupport extends EditingSupport {
 			currentEditor = manchesterEditor;
 		} else if (stmt.getObject() instanceof IReference
 				&& !(property instanceof DatatypeProperty)
-				|| property.getRdfsRanges().contains(RDFS.TYPE_RESOURCE)) {
+				|| property instanceof ObjectProperty
+				|| property.getRdfsRanges().contains(RDFS.TYPE_RESOURCE)
+				|| property.getRdfsRanges().contains(OWL.TYPE_THING)) {
 			// TODO implement correct selection strategy for resource editor in
 			// all possible cases
 			currentEditor = resourceEditor;
