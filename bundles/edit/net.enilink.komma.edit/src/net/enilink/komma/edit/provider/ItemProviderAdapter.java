@@ -690,6 +690,10 @@ public class ItemProviderAdapter extends
 	}
 
 	public void addTarget(Object target) {
+		if (!(target instanceof IObject)) {
+			return;
+		}
+
 		if (targets == null) {
 			targets = new WeakHashMap<IReference, IObject>();
 		}
