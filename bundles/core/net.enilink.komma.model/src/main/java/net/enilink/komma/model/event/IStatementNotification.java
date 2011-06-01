@@ -10,8 +10,6 @@
  *******************************************************************************/
 package net.enilink.komma.model.event;
 
-import org.openrdf.model.Resource;
-
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.core.IReference;

@@ -21,7 +21,6 @@ import java.util.SortedMap;
 import org.eclipse.core.runtime.content.IContentDescriber;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
-import org.openrdf.model.Resource;
 
 import net.enilink.komma.model.base.ContentHandler;
 import net.enilink.komma.model.base.URIHandler;
@@ -166,12 +165,12 @@ public interface IContentHandler {
 	 * A {@link #contentDescription(URIImpl, InputStream, Map, Map) content
 	 * description} property describing the content's type identity. The value
 	 * will be an arbitrary string. The content type is often used to
-	 * {@link Resource.ModelSetFactory.Registry#getContentTypeToFactoryMap() determine}
+	 * {@link IModel.Factory.Registry#getContentTypeToFactoryMap() determine}
 	 * an appropriate resource factory for processing the contents of a URI.
 	 * 
 	 * @see IContentType#getId()
-	 * @see Resource.ModelSetFactory.Registry#getContentTypeToFactoryMap()
-	 * @see Resource.ModelSetFactory.Registry#getFactory(URIImpl, String)
+	 * @see IModel.Factory.Registry#getContentTypeToFactoryMap()
+	 * @see IModel.Factory.Registry#getFactory(URIImpl, String)
 	 */
 	String CONTENT_TYPE_PROPERTY = "org.eclipse.emf.ecore:contentType";
 
@@ -179,8 +178,8 @@ public interface IContentHandler {
 	 * A constant used to indicate that a {@link #CONTENT_TYPE_PROPERTY content
 	 * type} needs to be computed.
 	 * 
-	 * @see ResourceSet#createModel(URIImpl, String)
-	 * @see Resource.ModelSetFactory.Registry#getFactory(URIImpl, String)
+	 * @see IModelSet#createModel(URIImpl, String)
+	 * @see IModel.Factory.Registry#getFactory(URIImpl, String)
 	 */
 	String UNSPECIFIED_CONTENT_TYPE = "";
 
