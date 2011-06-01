@@ -5,8 +5,7 @@ Bundle-SymbolicName: net.enilink.komma.parser
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: Fraunhofer IWU
-Import-Package: org.openrdf.repository,
- org.parboiled,
+Import-Package: org.parboiled,
  org.parboiled.annotations,
  org.parboiled.buffers,
  org.parboiled.common,
