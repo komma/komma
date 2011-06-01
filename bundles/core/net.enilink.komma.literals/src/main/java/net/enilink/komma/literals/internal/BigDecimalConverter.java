@@ -30,8 +30,6 @@ package net.enilink.komma.literals.internal;
 
 import java.math.BigDecimal;
 
-import org.openrdf.model.datatypes.XMLDatatypeUtil;
-
 import com.google.inject.Inject;
 
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
@@ -62,7 +60,7 @@ public class BigDecimalConverter implements IConverter<BigDecimal> {
 	}
 
 	public BigDecimal deserialize(String label) {
-		return XMLDatatypeUtil.parseDecimal(label);
+		return new BigDecimal(label);
 	}
 
 	public ILiteral serialize(BigDecimal object) {

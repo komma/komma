@@ -31,8 +31,6 @@ package net.enilink.komma.literals.internal;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.openrdf.model.datatypes.XMLDatatypeUtil;
-
 import com.google.inject.Inject;
 
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
@@ -50,11 +48,12 @@ public class XMLGregorianCalendarConverter implements
 	@Inject
 	private ILiteralFactory lf;
 
+	private DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
+
 	private Class<? extends XMLGregorianCalendar> javaClass;
 
 	public XMLGregorianCalendarConverter() throws Exception {
-		DatatypeFactory factory = DatatypeFactory.newInstance();
-		javaClass = factory.newXMLGregorianCalendar().getClass();
+		javaClass = datatypeFactory.newXMLGregorianCalendar().getClass();
 	}
 
 	public String getJavaClassName() {
@@ -86,7 +85,7 @@ public class XMLGregorianCalendarConverter implements
 	}
 
 	public XMLGregorianCalendar deserialize(String label) {
-		return XMLDatatypeUtil.parseCalendar(label);
+		return datatypeFactory.newXMLGregorianCalendar(label);
 	}
 
 	public ILiteral serialize(XMLGregorianCalendar object) {

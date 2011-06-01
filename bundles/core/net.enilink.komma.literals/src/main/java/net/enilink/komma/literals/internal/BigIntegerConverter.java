@@ -30,8 +30,6 @@ package net.enilink.komma.literals.internal;
 
 import java.math.BigInteger;
 
-import org.openrdf.model.datatypes.XMLDatatypeUtil;
-
 import com.google.inject.Inject;
 
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
@@ -62,7 +60,7 @@ public class BigIntegerConverter implements IConverter<BigInteger> {
 	}
 
 	public BigInteger deserialize(String label) {
-		return XMLDatatypeUtil.parseInteger(label);
+		return new BigInteger(label);
 	}
 
 	public ILiteral serialize(BigInteger object) {
