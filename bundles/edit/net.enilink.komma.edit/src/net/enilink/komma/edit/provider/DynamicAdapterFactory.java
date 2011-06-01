@@ -10,9 +10,6 @@ import net.enilink.composition.ObjectFactory;
 import net.enilink.composition.mappers.DefaultRoleMapper;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.mappers.TypeFactory;
-import org.openrdf.model.URI;
-import org.openrdf.model.URIFactory;
-import org.openrdf.repository.RepositoryConnection;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
@@ -24,6 +21,8 @@ import com.google.inject.TypeLiteral;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
 
 public class DynamicAdapterFactory implements IAdapterFactory {
 	protected class AdapterCompositionModule extends AbstractModule {
@@ -94,19 +93,16 @@ public class DynamicAdapterFactory implements IAdapterFactory {
 
 		@Provides
 		@Singleton
-		protected TypeFactory<URI> provideTypeFactory(
-				final RepositoryConnection connection) {
+		protected TypeFactory<URI> provideTypeFactory() {
 			return new TypeFactory<URI>() {
-				URIFactory uriFactory = connection.getValueFactory();
-
 				@Override
 				public URI createType(String type) {
-					return uriFactory.createURI(type);
+					return URIImpl.createURI(type);
 				}
 
 				@Override
 				public String toString(URI type) {
-					return type.stringValue();
+					return type.toString();
 				}
 			};
 		}
