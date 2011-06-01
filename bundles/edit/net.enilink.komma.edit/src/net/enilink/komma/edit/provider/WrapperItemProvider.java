@@ -25,8 +25,8 @@ import java.util.Set;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.openrdf.model.vocabulary.XMLSchema;
 
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CommandWrapper;
@@ -357,17 +357,17 @@ public class WrapperItemProvider implements IWrapperItemProvider {
 	 * {@link #getPropertyImage() getPropertyImage} typically call this method.
 	 */
 	protected Object getPropertyImage(Collection<String> ranges) {
-		if (ranges.contains(XMLSchema.BOOLEAN.toString())) {
+		if (ranges.contains(XMLSCHEMA.TYPE_BOOLEAN.toString())) {
 			return ItemPropertyDescriptor.BOOLEAN_VALUE_IMAGE;
-		} else if (ranges.contains(XMLSchema.BYTE.toString())
-				|| ranges.contains(XMLSchema.INTEGER.toString())
-				|| ranges.contains(XMLSchema.LONG.toString())
-				|| ranges.contains(XMLSchema.SHORT.toString())) {
+		} else if (ranges.contains(XMLSCHEMA.TYPE_BYTE.toString())
+				|| ranges.contains(XMLSCHEMA.TYPE_INTEGER.toString())
+				|| ranges.contains(XMLSCHEMA.TYPE_LONG.toString())
+				|| ranges.contains(XMLSCHEMA.TYPE_SHORT.toString())) {
 			return ItemPropertyDescriptor.INTEGRAL_VALUE_IMAGE;
-		} else if (ranges.contains(XMLSchema.STRING.toString())) {
+		} else if (ranges.contains(XMLSCHEMA.TYPE_STRING.toString())) {
 			return ItemPropertyDescriptor.TEXT_VALUE_IMAGE;
-		} else if (ranges.contains(XMLSchema.DOUBLE.toString())
-				|| ranges.contains(XMLSchema.FLOAT.toString())) {
+		} else if (ranges.contains(XMLSCHEMA.TYPE_DOUBLE.toString())
+				|| ranges.contains(XMLSCHEMA.TYPE_FLOAT.toString())) {
 			return ItemPropertyDescriptor.REAL_VALUE_IMAGE;
 		}
 
