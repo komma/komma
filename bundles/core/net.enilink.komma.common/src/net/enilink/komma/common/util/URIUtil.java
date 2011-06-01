@@ -25,10 +25,6 @@ public class URIUtil {
 		return new QName(namespace, localName);
 	}
 
-	public static QName toQName(org.openrdf.model.URI uri) {
-		return new QName(uri.getNamespace(), uri.getLocalName());
-	}
-	
 	public static URI toUri(QName qName) {
 		String namespace = qName.getNamespaceURI();
 		if (!(namespace.endsWith("#") || namespace.endsWith("/"))
@@ -54,10 +50,6 @@ public class URIUtil {
 		}
 
 		return namespace;
-	}
-
-	public static org.openrdf.model.URI toSesameUri(URI uri) {
-		return new org.openrdf.model.impl.URIImpl(uri.toString());
 	}
 
 	/**
