@@ -55,7 +55,10 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 
 	@Override
 	public void createContents(Composite parent) {
-		parent.setLayout(new GridLayout(1, false));
+		GridLayout gridLayout = new GridLayout(1, false);
+		gridLayout.marginWidth = gridLayout.marginHeight = 0;
+		parent.setLayout(gridLayout);
+
 		createActions();
 		createIndividualsPart(parent);
 	}
