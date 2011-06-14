@@ -31,8 +31,8 @@ import net.enilink.komma.edit.ui.dialogs.FilteredList.AbstractContentProvider;
 import net.enilink.komma.edit.ui.dialogs.FilteredList.ItemsFilter;
 import net.enilink.komma.edit.ui.dialogs.FilteredTreeAndListSelectionWidget;
 import net.enilink.komma.edit.ui.dialogs.IFilteredTreeAndListDescriptor;
+import net.enilink.komma.edit.ui.properties.internal.wizards.ItemUtil.LabeledItem;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
-import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.model.ModelUtil;
 
 public class ObjectPropertyPage extends WizardPage implements
@@ -48,13 +48,12 @@ public class ObjectPropertyPage extends WizardPage implements
 	private Composite parentComposite;
 
 	private Context context;
-	
+
 	protected ObjectPropertyPage(Context context) {
 		super(PAGE_NAME, "Edit property value", null);
 		this.context = context;
 
-		this.labelProvider = new AdapterFactoryLabelProvider(
-				context.adapterFactory);
+		this.labelProvider = new ItemUtil.LabelProvider(context.adapterFactory);
 	}
 
 	@Override
@@ -81,8 +80,9 @@ public class ObjectPropertyPage extends WizardPage implements
 
 					@Override
 					public void selectionChanged(SelectionChangedEvent event) {
-						context.object = ((IStructuredSelection) event
-								.getSelection()).getFirstElement();
+						context.object = ItemUtil
+								.unwrap(((IStructuredSelection) event
+										.getSelection()).getFirstElement());
 						setPageComplete(context.object != null);
 					}
 				});
@@ -166,7 +166,8 @@ public class ObjectPropertyPage extends WizardPage implements
 			try {
 				final Collection<IResource> individuals = getAvailableObjects(typeClasses);
 				for (IResource individual : individuals) {
-					contentProvider.add(individual, itemsFilter);
+					contentProvider.add(new LabeledItem(individual,
+							labelProvider.getText(individual)), itemsFilter);
 				}
 			} finally {
 				context.unitOfWork.end();

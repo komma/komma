@@ -8,7 +8,6 @@ import org.eclipse.jface.wizard.Wizard;
 
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.adapter.IAdapterFactory;
-import net.enilink.komma.common.command.CompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;

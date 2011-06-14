@@ -16,7 +16,6 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -29,7 +28,7 @@ import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.ui.dialogs.FilteredList;
 import net.enilink.komma.edit.ui.dialogs.FilteredList.AbstractContentProvider;
 import net.enilink.komma.edit.ui.dialogs.FilteredList.ItemsFilter;
-import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
+import net.enilink.komma.edit.ui.properties.internal.wizards.ItemUtil.LabeledItem;
 import net.enilink.komma.model.ModelUtil;
 
 public class PropertySelectionPage extends WizardPage {
@@ -48,37 +47,12 @@ public class PropertySelectionPage extends WizardPage {
 
 	private Context context;
 
-	class PropertyItem {
-		IProperty property;
-		String text;
-
-		public PropertyItem(IProperty property, String text) {
-			this.property = property;
-			this.text = text;
-		}
-	}
-
 	PropertySelectionPage(Context context) {
 		super(PAGE_NAME, "Select property", null);
 
 		this.context = context;
 
-		this.labelProvider = new AdapterFactoryLabelProvider(
-				context.adapterFactory) {
-			public String getText(Object object) {
-				if (object instanceof PropertyItem) {
-					object = ((PropertyItem) object).property;
-				}
-				return super.getText(object);
-			}
-
-			public Image getImage(Object object) {
-				if (object instanceof PropertyItem) {
-					object = ((PropertyItem) object).property;
-				}
-				return super.getImage(object);
-			}
-		};
+		this.labelProvider = new ItemUtil.LabelProvider(context.adapterFactory);
 
 		showAllProperties = false;
 	}
@@ -150,7 +124,7 @@ public class PropertySelectionPage extends WizardPage {
 								.getSelection();
 						Object first = selection.getFirstElement();
 						context.predicate = first == null ? null
-								: ((PropertyItem) first).property;
+								: (IProperty) ((LabeledItem) first).value;
 						context.clearObject();
 						setPageComplete(true);
 					}
@@ -188,8 +162,9 @@ public class PropertySelectionPage extends WizardPage {
 				}
 
 				for (Property prop : allProperties) {
-					contentProvider.add(new PropertyItem((IProperty) prop,
-							labelProvider.getText(prop)), itemsFilter);
+					contentProvider.add(
+							new LabeledItem(prop, labelProvider.getText(prop)),
+							itemsFilter);
 				}
 			} else {
 				if (applicableProperties == null) {
@@ -198,9 +173,9 @@ public class PropertySelectionPage extends WizardPage {
 				}
 
 				for (IProperty prop : applicableProperties) {
-					contentProvider
-							.add(new PropertyItem(prop, labelProvider
-									.getText(prop)), itemsFilter);
+					contentProvider.add(
+							new LabeledItem(prop, labelProvider.getText(prop)),
+							itemsFilter);
 				}
 			}
 		} finally {
@@ -213,15 +188,15 @@ public class PropertySelectionPage extends WizardPage {
 	}
 
 	String getListItemName(Object item) {
-		return ((PropertyItem) item).text;
+		return ((LabeledItem) item).label;
 	}
 
 	Comparator<Object> getListItemsComparator() {
 		return new Comparator<Object>() {
 			@Override
 			public int compare(Object a, Object b) {
-				String labelA = ((PropertyItem) a).text;
-				String labelB = ((PropertyItem) b).text;
+				String labelA = labelProvider.getText(a);
+				String labelB = labelProvider.getText(b);
 				if (labelA == null) {
 					if (labelB == null) {
 						return 0;
