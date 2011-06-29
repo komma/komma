@@ -122,14 +122,14 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 
 	public Collection<IResource> getInstances() {
 		IQuery<?> query = getEntityManager().createQuery(SELECT_INSTANCES);
-		query.setParameter("class", getURI());
+		query.setParameter("class", this);
 		query.setIncludeInferred(true);
 		return query.evaluate(IResource.class).toSet();
 	}
 
 	public Collection<IReference> getInstancesAsReferences() {
 		IQuery<?> query = getEntityManager().createQuery(SELECT_INSTANCES);
-		query.setParameter("class", getURI());
+		query.setParameter("class", this);
 		query.setIncludeInferred(true);
 		return query.evaluateRestricted(IReference.class).toSet();
 	}
