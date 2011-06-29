@@ -27,16 +27,21 @@ import net.enilink.komma.em.DecoratingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.sesame.SesameModule;
+import net.enilink.komma.util.UnitOfWork;
 
 public abstract class EntityManagerTestCase extends KommaTestCase {
 	protected IEntityManagerFactory factory;
 	protected IEntityManager manager;
+	protected UnitOfWork uow;
 
 	@Override
 	protected void setUp() throws Exception {
+		uow = new UnitOfWork();
+		uow.begin();
 		factory = Guice.createInjector(
 				new SesameModule(),
 				new EntityManagerFactoryModule(createModule(), null,
@@ -44,6 +49,8 @@ public abstract class EntityManagerTestCase extends KommaTestCase {
 				new AbstractModule() {
 					@Override
 					protected void configure() {
+						bind(IUnitOfWork.class).toInstance(uow);
+						bind(UnitOfWork.class).toInstance(uow);
 					}
 
 					@SuppressWarnings("unused")
@@ -72,9 +79,7 @@ public abstract class EntityManagerTestCase extends KommaTestCase {
 	@Override
 	protected void tearDown() throws Exception {
 		try {
-			if (manager.isOpen()) {
-				manager.close();
-			}
+			uow.end();
 			factory.close();
 		} catch (Exception e) {
 		}
