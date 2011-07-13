@@ -39,6 +39,7 @@ import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationSupport;
+import net.enilink.komma.common.util.WrappedException;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.dm.change.IDataChange;
@@ -607,7 +608,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 			throws RuntimeException {
 		final String location = model.getURI() == null ? null : model.getURI()
 				.toString();
-		class DiagnosticWrappedException extends KommaException implements
+		class DiagnosticWrappedException extends WrappedException implements
 				IModel.IDiagnostic {
 			private static final long serialVersionUID = 1L;
 
