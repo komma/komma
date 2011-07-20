@@ -70,6 +70,18 @@ public class ResourceManager {
 			} finally {
 				stmts.close();
 			}
+			stmts = dm.matchAsserted(null, before, null);
+			try {
+				while (stmts.hasNext()) {
+					IStatement stmt = stmts.next();
+					IReference subj = stmt.getSubject();
+					Object obj = stmt.getObject();
+					dm.remove(new Statement(subj, before, obj));
+					dm.add(new Statement(subj, after, obj));
+				}
+			} finally {
+				stmts.close();
+			}
 			stmts = dm.matchAsserted(null, null, before);
 			try {
 				while (stmts.hasNext()) {
