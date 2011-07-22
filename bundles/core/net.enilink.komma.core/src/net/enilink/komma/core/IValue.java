@@ -12,5 +12,12 @@ package net.enilink.komma.core;
 
 /** Interface to represent arbitrary RDF values. */
 public interface IValue {
-
+	/**
+	 * Returns the same value as {@link #getURI()}<code>.toString()</code> for named nodes, a blank node
+	 * identifier for blank nodes and a string representation for literals.
+	 * 
+	 * @return URI for named nodes, identifier for blank nodes and string
+	 *         representation for literals.
+	 */
+	String toString();
 }

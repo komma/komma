@@ -10,9 +10,9 @@
  *******************************************************************************/
 package net.enilink.komma.core;
 
-public abstract class StatementBase implements IStatement {
+public abstract class StatementBase implements IStatementPattern {
 
-	private final boolean contextEquals(IStatement other) {
+	private final boolean contextEquals(IStatementPattern other) {
 		if (getContext() == null) {
 			return other.getContext() == null;
 		} else {
@@ -29,7 +29,7 @@ public abstract class StatementBase implements IStatement {
 	 *         {@link Statement} and if their subjects, predicates and objects
 	 *         are equal.
 	 */
-	public final boolean equals(IStatement other) {
+	public final boolean equals(IStatementPattern other) {
 		return this == other || spoEquals(other) && contextEquals(other);
 	}
 
@@ -44,8 +44,8 @@ public abstract class StatementBase implements IStatement {
 	 */
 	@Override
 	public final boolean equals(Object other) {
-		if (other instanceof IStatement) {
-			return equals((IStatement) other);
+		if (other instanceof IStatementPattern) {
+			return equals((IStatementPattern) other);
 		}
 
 		return false;
@@ -60,7 +60,7 @@ public abstract class StatementBase implements IStatement {
 	 *         {@link Statement} and if their subjects, predicates and objects
 	 *         are equal.
 	 */
-	public final boolean equalsIgnoreContext(IStatement other) {
+	public final boolean equalsIgnoreContext(IStatementPattern other) {
 		return this == other || spoEquals(other);
 	}
 
@@ -110,13 +110,57 @@ public abstract class StatementBase implements IStatement {
 		return result;
 	}
 
-	private final boolean spoEquals(IStatement other) {
+	@Override
+	public boolean matches(IStatementPattern pattern) {
+		Object pObject = pattern.getObject();
+		if (pObject != null && !pObject.equals(getObject())) {
+			return false;
+		}
+
+		Object pSubject = pattern.getSubject();
+		if (pSubject != null && !pSubject.equals(getSubject())) {
+			return false;
+		}
+
+		Object pPredicate = pattern.getPredicate();
+		if (pPredicate != null && !pPredicate.equals(getPredicate())) {
+			return false;
+		}
+
+		Object pContext = pattern.getContext();
+		if (pContext != null && !pContext.equals(getContext())) {
+			return false;
+		}
+
+		return true;
+	}
+
+	private final boolean spoEquals(IStatementPattern other) {
 		// The object is potentially the cheapest to check so we start with
 		// that. The number of different predicates in sets of statements is
 		// commonly the smallest, so predicate equality is checked last.
-		return getObject().equals(other.getObject())
-				&& getSubject().equals(other.getSubject())
-				&& getPredicate().equals(other.getPredicate());
+		Object object = getObject();
+		Object otherObject = other.getObject();
+		if (object != otherObject || object != null
+				&& !object.equals(otherObject)) {
+			return false;
+		}
+
+		Object subject = getSubject();
+		Object otherSubject = other.getSubject();
+		if (subject != otherSubject || subject != null
+				&& !subject.equals(otherSubject)) {
+			return false;
+		}
+
+		Object predicate = getPredicate();
+		Object otherPredicate = other.getPredicate();
+		if (predicate != otherPredicate || predicate != null
+				&& !predicate.equals(otherPredicate)) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**

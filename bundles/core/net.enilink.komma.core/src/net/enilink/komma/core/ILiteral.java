@@ -18,7 +18,7 @@ public interface ILiteral extends IValue {
 	 * 
 	 * @return The literal's value as-is.
 	 */
-	Object getValue();
+	Object getInstanceValue();
 
 	/**
 	 * Gets the label of this literal.

@@ -13,13 +13,9 @@ package net.enilink.komma.core;
 import java.util.Collections;
 import java.util.Iterator;
 
-public class Statement extends StatementBase implements IStatement,
+public class Statement extends StatementPattern implements IStatement,
 		Iterable<IStatement> {
-	private IReference context;
 	private boolean inferred;
-	private Object obj;
-	private IReference pred;
-	private IReference subj;
 
 	public Statement(IReference subj, IReference pred, Object obj) {
 		this(subj, pred, obj, null, false);
@@ -37,31 +33,8 @@ public class Statement extends StatementBase implements IStatement,
 
 	public Statement(IReference subj, IReference pred, Object obj,
 			IReference context, boolean inferred) {
-		this.subj = subj;
-		this.pred = pred;
-		this.obj = obj;
-		this.context = context;
+		super(subj, pred, obj, context);
 		this.inferred = inferred;
-	}
-
-	@Override
-	public IReference getContext() {
-		return context;
-	}
-
-	@Override
-	public Object getObject() {
-		return obj;
-	}
-
-	@Override
-	public IReference getPredicate() {
-		return pred;
-	}
-
-	@Override
-	public IReference getSubject() {
-		return subj;
 	}
 
 	@Override

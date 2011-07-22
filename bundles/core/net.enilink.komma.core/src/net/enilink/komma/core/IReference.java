@@ -17,5 +17,10 @@ package net.enilink.komma.core;
  * 
  */
 public interface IReference extends IValue {
+	/**
+	 * Return an URI for named nodes and <code>null</code> for blank nodes.
+	 * 
+	 * @return URI for named nodes, <code>null</code> for blank nodes.
+	 */
 	URI getURI();
 }

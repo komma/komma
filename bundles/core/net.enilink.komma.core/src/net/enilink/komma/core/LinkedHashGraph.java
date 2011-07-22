@@ -1216,7 +1216,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		}
 	}
 
-	class GraphStatement extends StatementBase {
+	class GraphStatement extends StatementBase implements IStatement {
 
 		private static final long serialVersionUID = 2200404772364346279L;
 

@@ -14,7 +14,7 @@ package net.enilink.komma.core;
  * An RDF statement. A statement is equal to another statement if the subjects,
  * predicates and objects are equal.
  */
-public interface IStatement {
+public interface IStatement extends IStatementPattern {
 	/**
 	 * Compares a statement object to another object.
 	 * 
