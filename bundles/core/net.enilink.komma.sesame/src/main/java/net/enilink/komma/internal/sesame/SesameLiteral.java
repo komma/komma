@@ -41,7 +41,12 @@ public class SesameLiteral implements ILiteral {
 	}
 
 	@Override
-	public Object getValue() {
+	public Object getInstanceValue() {
 		return getLabel();
+	}
+
+	@Override
+	public String toString() {
+		return literal.toString();
 	}
 }

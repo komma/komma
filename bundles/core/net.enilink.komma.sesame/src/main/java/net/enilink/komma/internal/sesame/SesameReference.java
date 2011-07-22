@@ -18,29 +18,15 @@ import net.enilink.komma.core.IReferenceable;
 import net.enilink.komma.core.URIImpl;
 
 public class SesameReference implements IReference {
-	private net.enilink.komma.core.URI uri;
-
 	private Resource resource;
+
+	private net.enilink.komma.core.URI uri;
 
 	public SesameReference(Resource resource) {
 		this.resource = resource;
 		if (resource instanceof URI) {
 			this.uri = URIImpl.createURI(((URI) resource).stringValue());
 		}
-	}
-
-	@Override
-	public net.enilink.komma.core.URI getURI() {
-		return uri;
-	}
-
-	public Resource getSesameResource() {
-		return resource;
-	}
-
-	@Override
-	public String toString() {
-		return resource.toString();
 	}
 
 	@Override
@@ -55,11 +41,25 @@ public class SesameReference implements IReference {
 				&& resource.equals(((SesameReference) obj).resource);
 	}
 
+	public Resource getSesameResource() {
+		return resource;
+	}
+
+	@Override
+	public net.enilink.komma.core.URI getURI() {
+		return uri;
+	}
+
 	@Override
 	public int hashCode() {
 		if (uri != null) {
 			return uri.hashCode();
 		}
 		return resource.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return resource.toString();
 	}
 }

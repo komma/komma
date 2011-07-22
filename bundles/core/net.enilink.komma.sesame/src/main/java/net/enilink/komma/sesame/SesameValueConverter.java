@@ -6,6 +6,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
+import org.openrdf.model.impl.BNodeImpl;
 import org.openrdf.model.impl.StatementImpl;
 
 import com.google.inject.Inject;
@@ -63,9 +64,13 @@ public class SesameValueConverter {
 			if (uri != null) {
 				return toSesame(((IReference) value).getURI());
 			} else {
-				// TODO support conversion of blank nodes
+				String valueAsString = ((IReference) value).toString();
+				if (valueAsString.startsWith("_:")) {
+					return new BNodeImpl(valueAsString);
+				}
 				throw new KommaException(
-						"Cannot convert foreign blank nodes to Sesame blank nodes.");
+						"Cannot convert blank node with nominal value '"
+								+ valueAsString + "' to Sesame blank node.");
 			}
 		}
 		if (value instanceof ILiteral) {
