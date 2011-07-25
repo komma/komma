@@ -27,7 +27,7 @@ public abstract class EntitySupport implements IEntity, IEntityManagerAware {
 	public IEntityManager getEntityManager() {
 		return manager;
 	}
-
+	
 	public URI getURI() {
 		return reference.getURI();
 	}

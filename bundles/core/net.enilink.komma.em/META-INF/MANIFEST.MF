@@ -17,6 +17,7 @@ Import-Package: com.google.inject;version="2.0.0",
  com.google.inject.binder;version="2.0.0",
  com.google.inject.multibindings;version="2.0.0",
  com.google.inject.name;version="2.0.0",
+ net.enilink.komma.sesame;resolution:=optional,
  org.infinispan,
  org.infinispan.config,
  org.infinispan.lifecycle,
@@ -38,8 +39,6 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.composition.properties.komma,
  net.enilink.composition.cache;visibility:=reexport,
  net.enilink.komma.query;visibility:=reexport,
- org.junit;resolution:=optional,
- net.enilink.komma.sesame,
- org.openrdf.sesame
+ org.junit;resolution:=optional
 DynamicImport-Package: *
 Bundle-ClassPath: .
