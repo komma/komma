@@ -261,7 +261,11 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 	protected ISearchableItemProvider getSearchableItemProvider() {
 		return new SparqlSearchableItemProvider() {
 			@Override
-			protected String getSparqlFindPatterns(Object parent) {
+			protected String getQueryFindPatterns(Object parent) {
+				if (RDFS.TYPE_RESOURCE.equals(parent)
+						|| OWL.TYPE_THING.equals(parent)) {
+					return "?s a rdfs:Class";
+				}
 				return "?s rdfs:subClassOf ?parent";
 			}
 		};
@@ -273,7 +277,7 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 			if (RDFS.TYPE_RESOURCE.equals(object)) {
 				return null;
 			}
-			
+
 			// always return rdfs:Resource as parent of owl:Thing
 			if (OWL.TYPE_THING.equals(object)) {
 				return ((IEntity) object).getEntityManager().find(
