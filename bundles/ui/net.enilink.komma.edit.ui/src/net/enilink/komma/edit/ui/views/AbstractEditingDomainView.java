@@ -62,7 +62,7 @@ public class AbstractEditingDomainView extends ViewPart implements
 					}
 				}
 
-				if (editorForm.setInput(selected)) {
+				if (selected != null && editorForm.setInput(selected)) {
 					editorForm.refreshStale();
 				}
 			}

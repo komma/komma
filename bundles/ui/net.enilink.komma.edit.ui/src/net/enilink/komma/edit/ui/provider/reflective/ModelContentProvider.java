@@ -87,7 +87,7 @@ public abstract class ModelContentProvider implements IContentProvider {
 		}
 	};
 
-	private boolean executedFullRefresh = false;
+	protected boolean executedFullRefresh = false;
 	private Viewer viewer;
 	protected IModel model;
 	protected boolean listenerRegistered = false;
