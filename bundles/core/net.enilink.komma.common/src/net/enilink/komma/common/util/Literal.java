@@ -114,7 +114,7 @@ public class Literal implements ILiteral {
 	}
 
 	@Override
-	public Object getValue() {
+	public Object getInstanceValue() {
 		return value;
 	}
 
