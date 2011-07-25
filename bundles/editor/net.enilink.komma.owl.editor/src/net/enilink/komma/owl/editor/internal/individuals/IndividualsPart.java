@@ -28,6 +28,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 
+import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.SimpleCommand;
@@ -37,7 +38,7 @@ import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
-import net.enilink.komma.edit.ui.provider.reflective.IndividualsContentProvider;
+import net.enilink.komma.edit.ui.provider.reflective.StatementPatternContentProvider;
 import net.enilink.komma.edit.ui.provider.reflective.ObjectComparator;
 import net.enilink.komma.edit.ui.util.FilterWidget;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
@@ -45,6 +46,7 @@ import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.StatementPattern;
 import net.enilink.komma.core.URI;
 
 public class IndividualsPart extends AbstractEditingDomainPart {
@@ -97,7 +99,7 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 				SWT.V_SCROLL | SWT.VIRTUAL);
 
 		viewer = new TableViewer(table);
-		viewer.setContentProvider(new IndividualsContentProvider());
+		viewer.setContentProvider(new StatementPatternContentProvider());
 
 		return viewer;
 	}
@@ -257,7 +259,11 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 	}
 
 	protected void setInputToViewer(StructuredViewer viewer, IClass input) {
-		viewer.setInput(input);
+		if (input == null) {
+			viewer.setInput(null);
+		} else {
+			viewer.setInput(new StatementPattern(null, RDF.PROPERTY_TYPE, input));
+		}
 	}
 
 	protected void adapterFactoryChanged() {

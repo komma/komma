@@ -32,7 +32,7 @@ public class InstanceTreePart extends IndividualsPart {
 				int limit) {
 			SparqlSearchableItemProvider searchableProvider = new SparqlSearchableItemProvider() {
 				@Override
-				protected String getSparqlFindPatterns(Object parent) {
+				protected String getQueryFindPatterns(Object parent) {
 					return "[a ?parent; komma:hasDescendant ?s]";
 				}
 			};
