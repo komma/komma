@@ -713,6 +713,17 @@ public interface IEntityManager {
 	Object toInstance(IValue value);
 
 	/**
+	 * Checks if this entity manager has a mapping for the given
+	 * <code>role</code>
+	 * 
+	 * @param role
+	 *            Role class
+	 * @return <code>true</code> if this entity manager has a mapping for the
+	 *         given role, else <code>false</code>.
+	 */
+	boolean supportsRole(Class<?> role);
+
+	/**
 	 * Returns the Java object converted to an {@link IValue}.
 	 * 
 	 * @return the converted object value
