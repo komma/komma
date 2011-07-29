@@ -20,6 +20,7 @@
    <extension-point id="contentHandlers" name="Content Handlers" schema="schema/contentHandlers.exsd"/>
    <extension-point id="uriMapRules" name="uriMapRules" schema="schema/uriMapRules.exsd" />
    <extension-point id="modelBehaviours" name="Behaviours for different model set and model types" schema="schema/modelBehaviours.exsd"/>
+   <extension-point id="modules" name="Extension Modules" schema="schema/modules.exsd"/>
    
    <extension
          point="net.enilink.komma.model.models">

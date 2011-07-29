@@ -21,7 +21,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import net.enilink.composition.traits.Behaviour;
 
@@ -208,6 +212,27 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 			KommaModule modelSetModule = getModelSet().getModule();
 			if (modelSetModule != null) {
 				module.includeModule(modelSetModule);
+			}
+
+			// support for registering KommaModules as extensions
+			String modelUri = getURI().trimFragment().toString() + "#";
+			IExtensionPoint extensionPoint = Platform.getExtensionRegistry()
+					.getExtensionPoint(ModelCore.PLUGIN_ID, "modules");
+			if (extensionPoint != null) {
+				for (IConfigurationElement cfgElement : extensionPoint
+						.getConfigurationElements()) {
+					String namespace = cfgElement.getAttribute("uri");
+					if (modelUri.equals(namespace)) {
+						try {
+							KommaModule extensionModule = (KommaModule) cfgElement
+									.createExecutableExtension("class");
+							module.includeModule(extensionModule);
+						} catch (CoreException e) {
+							throw new KommaException(
+									"Unable to instantiate extension module", e);
+						}
+					}
+				}
 			}
 
 			try {
