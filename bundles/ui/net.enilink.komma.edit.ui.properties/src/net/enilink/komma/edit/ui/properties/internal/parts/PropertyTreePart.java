@@ -38,6 +38,7 @@ import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
+import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
@@ -244,7 +245,8 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				int response = messageBox.open();
 				if (response == SWT.YES) {
 					ICommand removeCommand = PropertyUtil.getRemoveCommand(
-							getEditingDomain(), resource,
+							getEditingDomain(),
+							(IResource) statement.getSubject(),
 							(IProperty) statement.getPredicate(),
 							statement.getObject());
 
@@ -489,7 +491,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	private ILabelProvider labelProvider;
 
 	private IResource resource;
-
+	
 	private TreeViewer treeViewer;
 
 	private Text uriText;
@@ -499,8 +501,26 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	private IAction addPropertyAction = new Action("Add property") {
 		@Override
 		public void run() {
-			PropertyNode node = new PropertyNode(resource, null, true);
-			treeViewer.insert(treeViewer.getInput(), node, 0);
+			ITreeSelection selection = (ITreeSelection) treeViewer
+					.getSelection();
+			TreePath path = selection.getPaths()[0];
+			Object selected = path.getLastSegment();
+			IResource subject = resource;
+
+			if (selected instanceof IStatement) {
+				Object object = ((IStatement) selected).getObject();
+
+				if (object instanceof IResource) {
+					subject = (IResource) object;
+				}
+				
+			} else if (selected instanceof PropertyNode) {
+				subject = ((PropertyNode) selected).getResource();
+				path = path.getParentPath();
+			}
+
+			PropertyNode node = new PropertyNode(subject, null, true);
+			treeViewer.insert(path, node, 0);
 			treeViewer.setSelection(new StructuredSelection(node), true);
 			treeViewer.editElement(node, 0);
 		}
@@ -512,6 +532,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 			ITreeSelection selection = (ITreeSelection) treeViewer
 					.getSelection();
 			Object selected = selection.getFirstElement();
+
 			if (selected instanceof PropertyNode) {
 				((PropertyNode) selected).setCreateNewStatementOnEdit(true);
 				treeViewer.editElement(selection.getPaths()[0], 1);

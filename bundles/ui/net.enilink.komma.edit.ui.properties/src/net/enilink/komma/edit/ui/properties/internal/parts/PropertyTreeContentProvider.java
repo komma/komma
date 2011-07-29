@@ -195,6 +195,19 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 		}
 	}
 
+	/**
+	 * Make <code>node</code> known to this content provider and add (subject,
+	 * predicate) to <code>node</code> association.
+	 */
+	public void registerPropertyNode(PropertyNode node) {
+		Pair<IReference, IReference> key = new Pair<IReference, IReference>(
+				node.getResource().getReference(), node.getProperty()
+						.getReference());
+		if (!subjectPredicateToNode.containsKey(key)) {
+			subjectPredicateToNode.put(key, node);
+		}
+	}
+
 	@Override
 	protected boolean removedStatement(IStatement stmt,
 			Collection<Runnable> runnables) {

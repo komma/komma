@@ -306,11 +306,13 @@ class ValueEditingSupport extends EditingSupport {
 		if (property.getRdfsRanges().contains(RDFS.TYPE_CLASS)
 				|| property.getRdfsRanges().contains(OWL.TYPE_CLASS)) {
 			currentEditor = manchesterEditor;
-		} else if (stmt.getObject() instanceof IReference
-				&& !(property instanceof DatatypeProperty)
-				|| property instanceof ObjectProperty
-				|| property.getRdfsRanges().contains(RDFS.TYPE_RESOURCE)
-				|| property.getRdfsRanges().contains(OWL.TYPE_THING)) {
+		} else if (!(property instanceof DatatypeProperty || property
+				.getRdfsRanges().contains(RDFS.TYPE_LITERAL))
+				&& (stmt.getObject() instanceof IReference
+						|| property instanceof ObjectProperty
+						|| property.getRdfsRanges()
+								.contains(RDFS.TYPE_RESOURCE) //
+				|| property.getRdfsRanges().contains(OWL.TYPE_THING))) {
 			// TODO implement correct selection strategy for resource editor in
 			// all possible cases
 			currentEditor = resourceEditor;
@@ -542,6 +544,10 @@ class ValueEditingSupport extends EditingSupport {
 											getViewer().editElement(node, 1);
 										}
 									});
+
+							((PropertyTreeContentProvider) getViewer()
+									.getContentProvider())
+									.registerPropertyNode(node);
 						} else {
 							newObjectCommand = new IdentityCommand(resource);
 						}
@@ -600,13 +606,6 @@ class ValueEditingSupport extends EditingSupport {
 							if (status.isOK()) {
 								subject.getEntityManager().getTransaction()
 										.commit();
-								// remove transitional template node
-								if (element instanceof PropertyNode
-										&& ((PropertyNode) element)
-												.isIncomplete()) {
-									((AbstractTreeViewer) getViewer())
-											.remove(element);
-								}
 							}
 
 							return new CommandResult(status);
@@ -634,9 +633,6 @@ class ValueEditingSupport extends EditingSupport {
 				}
 			}
 		}
-
-		// -- is handled by listener --
-		// getViewer().update(element, null);
 	}
 
 	public void setEditingDomain(IEditingDomain editingDomain) {
