@@ -132,7 +132,7 @@ public class AbstractEditingDomainView extends ViewPart implements
 						return part.getAdapter(IViewerMenuSupport.class);
 					}
 				}
-				return null;
+				return delegatedGetAdapter(adapter);
 			}
 		};
 		editorForm.addPart(editPart);
@@ -149,6 +149,10 @@ public class AbstractEditingDomainView extends ViewPart implements
 		this.listener = new Listener();
 		getSite().getPage().addPartListener(listener);
 		getSite().getPage().addSelectionListener(listener);
+	}
+
+	protected Object delegatedGetAdapter(Class<?> adapter) {
+		return null;
 	}
 
 	protected void installSelectionProvider() {

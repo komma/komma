@@ -51,7 +51,7 @@ public class StatementPatternContentProvider extends ModelContentProvider
 	protected boolean addedStatement(IStatement stmt,
 			Collection<Runnable> runnables) {
 		for (IStatementPattern pattern : patterns) {
-			if (stmt.matches(pattern)) {
+			if (stmt.matchesIgnoreContext(pattern)) {
 				postRefresh(runnables);
 				return false;
 			}
@@ -166,14 +166,14 @@ public class StatementPatternContentProvider extends ModelContentProvider
 			}
 		}
 
-		IModel newModel = getModelFromPatterns(patterns);
-		super.inputChanged(viewer, this.model, newModel);
-
 		if (viewer instanceof ColumnViewer) {
 			this.viewer = (ColumnViewer) viewer;
 		} else {
 			this.viewer = null;
 		}
+
+		IModel newModel = getModelFromPatterns(patterns);
+		super.inputChanged(viewer, this.model, newModel);
 
 		// virtual table viewers do not ask for element count
 		if (newInput != null && viewer instanceof AbstractTableViewer
@@ -184,6 +184,9 @@ public class StatementPatternContentProvider extends ModelContentProvider
 
 	protected IModel getModelFromPatterns(Collection<IStatementPattern> patterns) {
 		for (IStatementPattern pattern : patterns) {
+			if (pattern.getContext() instanceof IModel) {
+				return (IModel) pattern.getContext();
+			}
 			if (pattern.getSubject() instanceof IObject) {
 				return ((IObject) pattern.getSubject()).getModel();
 			}
@@ -215,7 +218,7 @@ public class StatementPatternContentProvider extends ModelContentProvider
 		// maybe broken if reasoner is used ...
 		// listener gets not notified if inferred statements are removed
 		for (IStatementPattern pattern : patterns) {
-			if (stmt.matches(pattern)) {
+			if (stmt.matchesIgnoreContext(pattern)) {
 				postRefresh(runnables);
 				return false;
 			}
@@ -237,7 +240,7 @@ public class StatementPatternContentProvider extends ModelContentProvider
 
 	@Override
 	public void updateElement(int index) {
-		if (index < instanceReferences.length) {
+		if (instanceReferences != null && index < instanceReferences.length) {
 			((AbstractTableViewer) viewer).replace(
 					resolve(instanceReferences[index]), index);
 		}
