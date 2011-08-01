@@ -1031,6 +1031,11 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	protected void setRoleMapper(RoleMapper<URI> mapper) {
 		this.mapper = mapper;
 	}
+	
+	@Override
+	public boolean supportsRole(Class<?> role) {
+		return mapper.findType(role) != null;
+	}
 
 	@Override
 	public Object toInstance(IValue value) {

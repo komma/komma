@@ -310,7 +310,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 					+ (!direct ? "	?resultR rdfs:subClassOf ?r ." : "")
 					+ "	FILTER (! bound(?otherR) && isIRI(?resultR) && ?resultR != owl:Nothing)" //
 					+ "	OPTIONAL {" //
-					+ "		?r komma:isAbstract ?abstract" //
+					+ "		?resultR komma:isAbstract ?abstract" //
 					+ "	} ." //
 					+ "	FILTER(!bound(?abstract)) " //
 					+ "}";
