@@ -20,7 +20,6 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.sail.memory.MemoryStore;
-import org.openrdf.store.StoreException;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -227,9 +226,9 @@ public class OrganizedRDFWriter implements IDataAndNamespacesVisitor<Void> {
 		}
 	}
 
-	public void setBaseURI(String baseUri) {
-		writer.setBaseURI(baseUri);
-	}
+//	public void setBaseURI(String baseUri) {
+//		writer.setBaseURI(baseUri);
+//	}
 
 	public Void visitBegin() {
 		try {
@@ -244,7 +243,7 @@ public class OrganizedRDFWriter implements IDataAndNamespacesVisitor<Void> {
 										new MemoryStore());
 								try {
 									repository.initialize();
-								} catch (StoreException e) {
+								} catch (Exception e) {
 									throw new KommaException(e);
 								}
 								bind(Repository.class).toInstance(repository);

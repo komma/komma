@@ -69,19 +69,19 @@ import net.enilink.composition.mappers.ComposedRoleMapper;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.mappers.TypeFactory;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.result.Result;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.sail.memory.MemoryStore;
-import org.openrdf.store.StoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -479,7 +479,7 @@ public class OntologyConverter implements IApplication {
 		createFiles(directory, metaInfDir, false);
 	}
 
-	protected Repository createRepository() throws StoreException {
+	protected Repository createRepository() throws Exception {
 		Repository repository = new SailRepository(new MemoryStore());
 		repository.initialize();
 		return repository;
@@ -504,7 +504,7 @@ public class OntologyConverter implements IApplication {
 		return URLClassLoader.newInstance(classpath, cl);
 	}
 
-	private Repository createRepository(ClassLoader cl) throws StoreException,
+	private Repository createRepository(ClassLoader cl) throws Exception,
 			IOException, RDFParseException {
 		Repository repository = createRepository();
 		RepositoryConnection conn = repository.getConnection();
@@ -539,11 +539,11 @@ public class OntologyConverter implements IApplication {
 	}
 
 	private void loadOntology(Repository repository, URL url)
-			throws StoreException, IOException, RDFParseException {
+			throws RepositoryException, IOException, RDFParseException {
 		String filename = url.toString();
 		RDFFormat format = formatForFileName(filename);
 		RepositoryConnection conn = repository.getConnection();
-		URIFactory uriFactory = repository.getURIFactory();
+		ValueFactory uriFactory = repository.getValueFactory();
 		try {
 			String uri = url.toExternalForm();
 			conn.add(url, uri, format, uriFactory.createURI(uri));
@@ -718,7 +718,7 @@ public class OntologyConverter implements IApplication {
 					JavaNameResolver provideNameResolver(Injector injector,
 							OwlNormalizer normalizer, ClassLoader cl,
 							RoleMapper<URI> roleMapper, LiteralConverter lc,
-							TypeFactory<URI> typeFactory) throws StoreException {
+							TypeFactory<URI> typeFactory) throws Exception {
 						JavaNameResolverImpl resolver = new JavaNameResolverImpl(
 								cl);
 						injector.injectMembers(resolver);
@@ -950,7 +950,7 @@ public class OntologyConverter implements IApplication {
 	}
 
 	private void packOntologies(Collection<URL> rdfSources, JarOutputStream jar)
-			throws StoreException, RDFParseException, IOException {
+			throws RepositoryException, RDFParseException, IOException {
 		Map<String, URI> ontologies = new HashMap<String, URI>();
 		for (URL rdf : rdfSources) {
 			String path = "META-INF/ontologies/";
@@ -980,7 +980,7 @@ public class OntologyConverter implements IApplication {
 		return new File(URLDecoder.decode(rdf.getFile(), "UTF-8"));
 	}
 
-	private URI findOntology(URL rdf) throws StoreException, RDFParseException,
+	private URI findOntology(URL rdf) throws RepositoryException, RDFParseException,
 			IOException {
 		Repository repository = new SailRepository(new MemoryStore());
 		repository.initialize();
@@ -1009,8 +1009,8 @@ public class OntologyConverter implements IApplication {
 	}
 
 	private Statement first(RepositoryConnection conn,
-			org.openrdf.model.URI pred, Value obj) throws StoreException {
-		Result<Statement> stmts = conn.match(null, pred, obj, true);
+			org.openrdf.model.URI pred, Value obj) throws RepositoryException {
+		RepositoryResult<Statement> stmts = conn.getStatements(null, pred, obj, true);
 		try {
 			if (stmts.hasNext())
 				return stmts.next();

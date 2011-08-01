@@ -9,11 +9,11 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma,
  net.enilink.vocab.rdfs,
  net.enilink.vocab.owl,
- net.enilink.komma.swiftowlim,
+ net.enilink.komma.owlim,
  net.enilink.komma.literals,
  org.eclipse.jdt.core;resolution:=optional,
  net.enilink.komma.sesame,
- org.openrdf.sesame;bundle-version="3.0.0"
+ org.openrdf.sesame;bundle-version="2.0.0"
 Bundle-ClassPath: ., lib/commons-cli-1.1.jar
 Import-Package: com.google.inject;version="2.0.0",
  com.google.inject.binder;version="2.0.0",
