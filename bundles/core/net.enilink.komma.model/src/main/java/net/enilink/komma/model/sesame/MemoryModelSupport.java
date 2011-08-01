@@ -21,7 +21,6 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.RDFHandlerBase;
-import org.openrdf.rio.rdfxml.RDFXMLWriter;
 
 import com.google.inject.Inject;
 
@@ -206,8 +205,8 @@ public abstract class MemoryModelSupport implements IModel, Model,
 
 	@Override
 	public void save(OutputStream os, Map<?, ?> options) throws IOException {
-		RDFXMLWriter rdfWriter = new RDFXMLWriter(new OutputStreamWriter(os,
-				"UTF-8"));
+		RDFXMLPrettyWriter rdfWriter = new RDFXMLPrettyWriter(
+				new OutputStreamWriter(os, "UTF-8"));
 
 		try {
 			final IDataManager dm = ((IModelSet.Internal) getModelSet())

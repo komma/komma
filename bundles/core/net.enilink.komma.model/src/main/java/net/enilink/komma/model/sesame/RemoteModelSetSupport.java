@@ -34,7 +34,6 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 					HTTPRepository repo = new HTTPRepository(
 							"http://192.168.56.101:8080/openrdf-sesame",
 							"owlim-max");
-					repo.setReadOnly(false);
 					repo.initialize();
 					return repo;
 					// RemoteRepositoryManager man = RemoteRepositoryManager

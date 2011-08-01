@@ -10,13 +10,13 @@ import java.util.Properties;
 import org.eclipse.core.runtime.Platform;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.openrdf.sail.memory.MemoryStore;
-import org.openrdf.store.StoreException;
 import org.osgi.framework.Bundle;
 
 import com.google.inject.AbstractModule;
@@ -146,7 +146,7 @@ public class ModelSetModule extends AbstractModule {
 	}
 
 	private void loadOntology(Repository repository, URL url)
-			throws StoreException, IOException, RDFParseException {
+			throws RepositoryException, IOException, RDFParseException {
 		String filename = url.toString();
 		RDFFormat format = formatForFileName(filename);
 		RepositoryConnection conn = repository.getConnection();

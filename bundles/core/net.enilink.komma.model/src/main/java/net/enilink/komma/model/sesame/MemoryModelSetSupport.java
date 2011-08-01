@@ -24,16 +24,12 @@ import org.eclipse.core.runtime.Platform;
 import net.enilink.composition.annotations.Iri;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryMetaData;
-import org.openrdf.repository.base.RepositoryMetaDataWrapper;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.sail.NotifyingSail;
-import org.openrdf.sail.federation.Federation;
 import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.openrdf.sail.memory.MemoryStore;
-import org.openrdf.store.StoreException;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
@@ -52,38 +48,9 @@ import net.enilink.komma.sesame.SesameModule;
 @Iri(MODELS.NAMESPACE + "MemoryModelSet")
 public abstract class MemoryModelSetSupport implements IModelSet,
 		IModelSet.Internal {
-	protected Repository createRepository() throws StoreException {
-		NotifyingSail sailStack = new MemoryStore();
-		sailStack = new ForwardChainingRDFSInferencer(sailStack);
-
-		Repository repository = new SailRepository(sailStack);
-		repository.initialize();
-
-		Repository federationRepository = createFederation(repository);
-		return federationRepository;
-	}
-
-	protected Repository createFederation(Repository repository)
-			throws StoreException {
-		MemoryStore owlStore = new MemoryStore();
-		SailRepository owlRepository = new SailRepository(owlStore) {
-			RepositoryMetaData metaData;
-
-			@Override
-			public RepositoryMetaData getMetaData() throws StoreException {
-				if (metaData == null) {
-					metaData = new RepositoryMetaDataWrapper(
-							super.getMetaData()) {
-						@Override
-						public boolean isReadOnly() {
-							return true;
-						}
-					};
-				}
-				return metaData;
-			}
-
-		};
+	protected Repository createRepository() throws RepositoryException {
+		MemoryStore store = new MemoryStore();
+		SailRepository owlRepository = new SailRepository(store);
 		owlRepository.initialize();
 
 		String[] bundles = { "net.enilink.vocab.owl",
@@ -132,7 +99,7 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 				}
 			} catch (IOException e) {
 				throw new KommaException("Cannot access RDF data", e);
-			} catch (StoreException e) {
+			} catch (RepositoryException e) {
 				throw new KommaException("Loading RDF failed", e);
 			} catch (RDFParseException e) {
 				throw new KommaException("Invalid RDF data", e);
@@ -140,7 +107,7 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 				if (conn != null) {
 					try {
 						conn.close();
-					} catch (StoreException e) {
+					} catch (RepositoryException e) {
 						KommaCore.log(e);
 					}
 				}
@@ -148,20 +115,9 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 
 		}
 
-		Federation federation = new Federation() {
-			@Override
-			public void initialize() throws StoreException {
-			}
-		};
-		federation.setDistinct(true);
-
-		federation.addMember(repository);
-		federation.addMember(owlRepository);
-
-		Repository federationRepository = new SailRepository(federation);
-		federationRepository.initialize();
-
-		return federationRepository;
+		// add RDFS inferencer after base knowledge was imported into the
+		// repository
+		return new SailRepository(new ForwardChainingRDFSInferencer(store));
 	}
 
 	@Override
@@ -173,12 +129,13 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 
 			}
 
+			@SuppressWarnings("unused")
 			@Singleton
 			@Provides
 			protected Repository provideRepository() {
 				try {
 					return createRepository();
-				} catch (StoreException e) {
+				} catch (RepositoryException e) {
 					throw new KommaException("Unable to create repository.", e);
 				}
 			}
