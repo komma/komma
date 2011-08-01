@@ -1,15 +1,14 @@
 package net.enilink.komma.internal.sesame.result;
 
-import org.openrdf.cursor.Cursor;
-
+import info.aduna.iteration.SingletonIteration;
 import net.enilink.komma.core.IBooleanResult;
 
 public class SesameBooleanResult extends SesameResult<Boolean, Boolean>
 		implements IBooleanResult {
 	Boolean value;
 
-	public SesameBooleanResult(Cursor<Boolean> delegate) {
-		super(delegate);
+	public SesameBooleanResult(Boolean value) {
+		super(new SingletonIteration<Boolean, Exception>(value));
 	}
 
 	@Override

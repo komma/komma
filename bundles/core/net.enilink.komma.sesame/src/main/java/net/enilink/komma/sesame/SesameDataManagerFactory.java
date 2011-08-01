@@ -1,7 +1,7 @@
 package net.enilink.komma.sesame;
 
 import org.openrdf.repository.Repository;
-import org.openrdf.store.StoreException;
+import org.openrdf.repository.RepositoryException;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -29,7 +29,7 @@ public class SesameDataManagerFactory implements IDataManagerFactory {
 			try {
 				repository.shutDown();
 				repository = null;
-			} catch (StoreException e) {
+			} catch (RepositoryException e) {
 				throw new KommaException(e);
 			}
 		}

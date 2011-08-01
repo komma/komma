@@ -7,12 +7,20 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: net.enilink.komma.core,
  net.enilink.komma.dm,
  net.enilink.komma.literals,
- org.openrdf.sesame,
  org.eclipse.core.runtime
 Import-Package: com.google.inject;version="2.0.0",
  com.google.inject.binder;version="2.0.0",
  com.google.inject.multibindings;version="2.0.0",
  com.google.inject.name;version="2.0.0",
  net.enilink.commons.iterator,
+ info.aduna.iteration;version="2.0.0",
+ org.openrdf;version="2.0.0",
+ org.openrdf.model;version="2.0.0",
+ org.openrdf.model.impl;version="2.0.0",
+ org.openrdf.query;version="2.0.0",
+ org.openrdf.query.impl;version="2.0.0",
+ org.openrdf.repository;version="2.0.0",
+ org.openrdf.repository.sail;version="2.0.0",
+ org.openrdf.sail.memory;version="2.0.0",
  org.slf4j
 Export-Package: net.enilink.komma.sesame

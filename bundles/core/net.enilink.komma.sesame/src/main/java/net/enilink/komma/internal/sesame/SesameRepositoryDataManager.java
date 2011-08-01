@@ -14,8 +14,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryMetaData;
-import org.openrdf.store.StoreException;
+import org.openrdf.repository.RepositoryException;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -53,6 +52,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 
 	private boolean includeInferred = true;
 
+	@Inject(optional=true)
 	protected InferencingCapability inferencing;
 
 	@Inject
@@ -71,7 +71,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 			IDataChangeSupport changeSupport) {
 		try {
 			connection = repository.getConnection();
-		} catch (StoreException e) {
+		} catch (Exception e) {
 			throw new KommaException(e);
 		}
 		this.changeSupport = changeSupport;
@@ -93,7 +93,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 						.getObject());
 
 				if (changeSupport.isEnabled(this)) {
-					if (!conn.hasMatch(subject, predicate, object, false,
+					if (!conn.hasStatement(subject, predicate, object, false,
 							readCtx)) {
 						changeSupport.add(this, stmt.getSubject(),
 								stmt.getPredicate(), (IValue) stmt.getObject(),
@@ -105,7 +105,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 			if (changeSupport.isEnabled(this) && !getTransaction().isActive()) {
 				changeSupport.commit(this);
 			}
-		} catch (StoreException e) {
+		} catch (Exception e) {
 			throw new KommaException(e);
 		}
 		return this;
@@ -123,7 +123,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 			}
 
 			getConnection().clearNamespaces();
-		} catch (StoreException e) {
+		} catch (Exception e) {
 			throw new KommaException(e);
 		}
 		return this;
@@ -136,7 +136,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 		}
 		try {
 			connection.close();
-		} catch (StoreException e) {
+		} catch (Exception e) {
 			throw new KommaException(e);
 		} finally {
 			connection = null;
@@ -162,7 +162,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 			SesameQuery<R> result = new SesameQuery<R>(sesameQuery);
 			injector.injectMembers(result);
 			return result;
-		} catch (StoreException e) {
+		} catch (RepositoryException e) {
 			throw new KommaException(e);
 		} catch (MalformedQueryException e) {
 			throw new KommaException("Invalid query format", e);
@@ -182,24 +182,19 @@ public class SesameRepositoryDataManager implements IDataManager {
 	public InferencingCapability getInferencing() {
 		if (inferencing == null) {
 			try {
-				RepositoryMetaData metaData = getConnection().getRepository()
-						.getMetaData();
-				final boolean doesOWL = metaData.isOWLInferencing();
-				final boolean doesRDFS = metaData.isRDFSInferencing()
-						|| metaData.isInferencing();
-
 				inferencing = new InferencingCapability() {
 					@Override
 					public boolean doesOWL() {
-						return doesOWL;
+						return false;
 					}
 
 					@Override
 					public boolean doesRDFS() {
-						return doesRDFS;
+						// assume that RDFS is supported
+						return true;
 					}
 				};
-			} catch (StoreException e) {
+			} catch (Exception e) {
 				throw new KommaException(
 						"Error while determining inferencing capabilities", e);
 			}
@@ -216,7 +211,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 						.createURI(namespaceURI);
 			}
 			return null;
-		} catch (StoreException e) {
+		} catch (Exception e) {
 			throw new KommaException(e);
 		}
 	}
@@ -242,7 +237,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 					return ns == null;
 				}
 			});
-		} catch (StoreException e) {
+		} catch (Exception e) {
 			throw new KommaException(e);
 		}
 	}
@@ -254,7 +249,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 		if (reference instanceof SesameReference) {
 			return ((SesameReference) reference).getSesameResource();
 		} else if (reference instanceof net.enilink.komma.core.URI) {
-			return repository.getURIFactory().createURI(reference.toString());
+			return repository.getValueFactory().createURI(reference.toString());
 		}
 		return null;
 	}
@@ -268,11 +263,11 @@ public class SesameRepositoryDataManager implements IDataManager {
 	public boolean hasMatch(IReference subject, IReference predicate,
 			IValue object) {
 		try {
-			return getConnection().hasMatch(
+			return getConnection().hasStatement(
 					(Resource) valueConverter.toSesame(subject),
 					(URI) valueConverter.toSesame(predicate),
 					valueConverter.toSesame(object), includeInferred, readCtx);
-		} catch (StoreException e) {
+		} catch (Exception e) {
 			throw new KommaException(e);
 		}
 	}
@@ -287,13 +282,13 @@ public class SesameRepositoryDataManager implements IDataManager {
 			IReference predicate, IValue object) {
 		try {
 			SesameGraphResult result = new SesameGraphResult(getConnection()
-					.match((Resource) valueConverter.toSesame(subject),
+					.getStatements((Resource) valueConverter.toSesame(subject),
 							(URI) valueConverter.toSesame(predicate),
 							valueConverter.toSesame(object), includeInferred,
 							readCtx));
 			injector.injectMembers(result);
 			return result;
-		} catch (StoreException e) {
+		} catch (Exception e) {
 			throw new KommaException(e);
 		}
 	}
@@ -303,12 +298,12 @@ public class SesameRepositoryDataManager implements IDataManager {
 			IReference predicate, IValue object) {
 		try {
 			SesameGraphResult result = new SesameGraphResult(getConnection()
-					.match((Resource) valueConverter.toSesame(subject),
+					.getStatements((Resource) valueConverter.toSesame(subject),
 							(URI) valueConverter.toSesame(predicate),
 							valueConverter.toSesame(object), false, readCtx));
 			injector.injectMembers(result);
 			return result;
-		} catch (StoreException e) {
+		} catch (Exception e) {
 			throw new KommaException(e);
 		}
 	}
@@ -342,12 +337,12 @@ public class SesameRepositoryDataManager implements IDataManager {
 								existing.getContext());
 					}
 				}
-				conn.removeMatch(subject, predicate, object, addCtx);
+				conn.remove(subject, predicate, object, addCtx);
 			}
 			if (changeSupport.isEnabled(this) && !getTransaction().isActive()) {
 				changeSupport.commit(this);
 			}
-		} catch (StoreException e) {
+		} catch (Exception e) {
 			throw new KommaException(e);
 		}
 		return this;
@@ -370,7 +365,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 			if (changeSupport.isEnabled(this)) {
 				changeSupport.commit(this);
 			}
-		} catch (StoreException e) {
+		} catch (Exception e) {
 			throw new KommaException(e);
 		}
 		return this;
@@ -406,7 +401,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 			if (changeSupport.isEnabled(this)) {
 				changeSupport.commit(this);
 			}
-		} catch (StoreException e) {
+		} catch (Exception e) {
 			throw new KommaException(e);
 		}
 		return this;

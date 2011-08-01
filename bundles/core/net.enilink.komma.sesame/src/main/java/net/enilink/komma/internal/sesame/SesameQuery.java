@@ -10,12 +10,10 @@
  *******************************************************************************/
 package net.enilink.komma.internal.sesame;
 
+import org.openrdf.query.BooleanQuery;
+import org.openrdf.query.GraphQuery;
 import org.openrdf.query.Query;
-import org.openrdf.result.BooleanResult;
-import org.openrdf.result.GraphResult;
-import org.openrdf.result.Result;
-import org.openrdf.result.TupleResult;
-import org.openrdf.store.StoreException;
+import org.openrdf.query.TupleQuery;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -49,22 +47,20 @@ public class SesameQuery<R> implements IDataManagerQuery<R> {
 	@Override
 	public IExtendedIterator<R> evaluate() {
 		try {
-			Result<?> result = query.evaluate();
-
 			IExtendedIterator<R> convertedResult;
-			if (result instanceof TupleResult) {
+			if (query instanceof TupleQuery) {
 				convertedResult = (IExtendedIterator<R>) new SesameTupleResult(
-						(TupleResult) result);
-			} else if (result instanceof GraphResult) {
+						((TupleQuery) query).evaluate());
+			} else if (query instanceof GraphQuery) {
 				convertedResult = (IExtendedIterator<R>) new SesameGraphResult(
-						(GraphResult) result);
+						((GraphQuery)query).evaluate());
 			} else {
 				convertedResult = (IExtendedIterator<R>) new SesameBooleanResult(
-						(BooleanResult) result);
+						((BooleanQuery)query).evaluate());
 			}
 			injector.injectMembers(convertedResult);
 			return convertedResult;
-		} catch (StoreException e) {
+		} catch (Exception e) {
 			throw new KommaException(e);
 		}
 	}

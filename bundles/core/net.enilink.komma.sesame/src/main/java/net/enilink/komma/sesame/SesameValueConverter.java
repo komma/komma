@@ -1,11 +1,10 @@
 package net.enilink.komma.sesame;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BNodeImpl;
 import org.openrdf.model.impl.StatementImpl;
 
@@ -22,15 +21,11 @@ import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.URI;
 
 public class SesameValueConverter {
-	protected LiteralFactory literalFactory;
-
-	protected URIFactory uriFactory;
+	protected ValueFactory valueFactory;
 
 	@Inject
-	public SesameValueConverter(URIFactory uriFactory,
-			LiteralFactory literalFactory) {
-		this.uriFactory = uriFactory;
-		this.literalFactory = literalFactory;
+	public SesameValueConverter(ValueFactory valueFactory) {
+		this.valueFactory = valueFactory;
 	}
 
 	public IValue fromSesame(Value value) {
@@ -80,10 +75,10 @@ public class SesameValueConverter {
 			ILiteral literal = (ILiteral) value;
 			String language = literal.getLanguage();
 			if (language != null) {
-				return literalFactory.createLiteral(literal.getLabel(),
+				return valueFactory.createLiteral(literal.getLabel(),
 						language);
 			} else {
-				return literalFactory
+				return valueFactory
 						.createLiteral(literal.getLabel(),
 								(org.openrdf.model.URI) toSesame(literal
 										.getDatatype()));
@@ -97,7 +92,7 @@ public class SesameValueConverter {
 		if (uri == null) {
 			return null;
 		}
-		return uriFactory.createURI(uri.toString());
+		return valueFactory.createURI(uri.toString());
 
 	}
 }

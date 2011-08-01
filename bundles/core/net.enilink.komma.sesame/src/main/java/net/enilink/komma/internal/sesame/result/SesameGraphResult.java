@@ -1,7 +1,8 @@
 package net.enilink.komma.internal.sesame.result;
 
+import info.aduna.iteration.CloseableIteration;
+
 import org.openrdf.model.Statement;
-import org.openrdf.result.Result;
 
 import com.google.inject.Inject;
 
@@ -14,7 +15,8 @@ public class SesameGraphResult extends SesameResult<Statement, IStatement>
 		implements IGraphResult {
 	protected SesameValueConverter valueConverter;
 
-	public SesameGraphResult(Result<Statement> result) {
+	public SesameGraphResult(
+			CloseableIteration<Statement, ? extends Exception> result) {
 		super(result);
 	}
 

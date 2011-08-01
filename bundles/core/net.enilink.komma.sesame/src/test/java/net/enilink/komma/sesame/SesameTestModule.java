@@ -1,9 +1,9 @@
 package net.enilink.komma.sesame;
 
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
-import org.openrdf.store.StoreException;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -24,7 +24,7 @@ public class SesameTestModule extends AbstractModule {
 		Repository repository = new SailRepository(new MemoryStore());
 		try {
 			repository.initialize();
-		} catch (StoreException e) {
+		} catch (RepositoryException e) {
 			throw new KommaException(e);
 		}
 

@@ -1,16 +1,15 @@
 package net.enilink.komma.internal.sesame.result;
 
-import org.openrdf.cursor.Cursor;
-
+import info.aduna.iteration.CloseableIteration;
 import net.enilink.commons.iterator.NiceIterator;
 import net.enilink.komma.core.KommaException;
 
 public abstract class SesameResult<S, T> extends NiceIterator<T> {
-	private Cursor<S> delegate;
+	private CloseableIteration<S, ? extends Exception> delegate;
 
-	private S next, current;
+	private S current;
 
-	public SesameResult(Cursor<S> delegate) {
+	public SesameResult(CloseableIteration<S, ? extends Exception> delegate) {
 		this.delegate = delegate;
 		if (!hasNext()) {
 			close();
@@ -31,7 +30,7 @@ public abstract class SesameResult<S, T> extends NiceIterator<T> {
 
 	public boolean hasNext() {
 		try {
-			return next != null || (next = delegate.next()) != null;
+			return delegate.hasNext();
 		} catch (RuntimeException e) {
 			throw e;
 		} catch (Exception e) {
@@ -41,8 +40,7 @@ public abstract class SesameResult<S, T> extends NiceIterator<T> {
 
 	public T next() {
 		try {
-			current = next;
-			next = null;
+			current = delegate.next();
 			if (!hasNext()) {
 				close();
 			}

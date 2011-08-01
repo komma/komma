@@ -28,7 +28,7 @@
  */
 package net.enilink.komma.internal.sesame;
 
-import org.openrdf.store.StoreException;
+import org.openrdf.repository.RepositoryException;
 
 import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.core.ITransaction;
@@ -54,8 +54,8 @@ public class SesameTransaction implements ITransaction {
 		try {
 			if (isActive())
 				throw new IllegalStateException("Transaction already started");
-			dm.getConnection().begin();
-		} catch (StoreException e) {
+			dm.getConnection().setAutoCommit(false);
+		} catch (RepositoryException e) {
 			throw new KommaException(e);
 		}
 	}
@@ -65,13 +65,13 @@ public class SesameTransaction implements ITransaction {
 			if (!isActive())
 				throw new IllegalStateException(
 						"Transaction has not been started");
-			dm.getConnection().commit();
+			dm.getConnection().setAutoCommit(true);
 			rollbackOnly = false;
 
 			if (changeSupport.isEnabled(dm)) {
 				changeSupport.commit(dm);
 			}
-		} catch (StoreException e) {
+		} catch (RepositoryException e) {
 			throw new RollbackException(e);
 		}
 	}
@@ -87,7 +87,7 @@ public class SesameTransaction implements ITransaction {
 			if (changeSupport.isEnabled(dm)) {
 				changeSupport.rollback(dm);
 			}
-		} catch (StoreException e) {
+		} catch (RepositoryException e) {
 			throw new KommaException(e);
 		}
 	}
@@ -107,7 +107,7 @@ public class SesameTransaction implements ITransaction {
 	public boolean isActive() {
 		try {
 			return !dm.getConnection().isAutoCommit();
-		} catch (StoreException e) {
+		} catch (RepositoryException e) {
 			throw new KommaException(e);
 		}
 	}

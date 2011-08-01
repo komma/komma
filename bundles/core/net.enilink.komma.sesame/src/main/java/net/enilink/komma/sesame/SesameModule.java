@@ -1,7 +1,6 @@
 package net.enilink.komma.sesame;
 
-import org.openrdf.model.LiteralFactory;
-import org.openrdf.model.URIFactory;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
 
 import com.google.inject.AbstractModule;
@@ -20,12 +19,7 @@ public class SesameModule extends AbstractModule {
 	}
 
 	@Provides
-	LiteralFactory provideLiteralFactory(Repository repository) {
-		return repository.getLiteralFactory();
-	}
-
-	@Provides
-	URIFactory provideURIFactory(Repository repository) {
-		return repository.getURIFactory();
+	ValueFactory provideValueFactory(Repository repository) {
+		return repository.getValueFactory();
 	}
 }
