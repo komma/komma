@@ -25,6 +25,17 @@ public interface IStatementPattern {
 	boolean matches(IStatementPattern pattern);
 
 	/**
+	 * Matches this pattern or statement against a given pattern and ignores the
+	 * context.
+	 * 
+	 * @param other
+	 *            The pattern used for matching.
+	 * @return <tt>true</tt> if this pattern or statement matches the given
+	 *         pattern while ignoring the context.
+	 */
+	boolean matchesIgnoreContext(IStatementPattern pattern);
+
+	/**
 	 * Compares this pattern object to another object.
 	 * 
 	 * @param other

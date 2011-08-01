@@ -112,6 +112,20 @@ public abstract class StatementBase implements IStatementPattern {
 
 	@Override
 	public boolean matches(IStatementPattern pattern) {
+		if (!matchesIgnoreContext(pattern)) {
+			return false;
+		}
+
+		Object pContext = pattern.getContext();
+		if (pContext != null && !pContext.equals(getContext())) {
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
+	public boolean matchesIgnoreContext(IStatementPattern pattern) {
 		Object pObject = pattern.getObject();
 		if (pObject != null && !pObject.equals(getObject())) {
 			return false;
@@ -124,11 +138,6 @@ public abstract class StatementBase implements IStatementPattern {
 
 		Object pPredicate = pattern.getPredicate();
 		if (pPredicate != null && !pPredicate.equals(getPredicate())) {
-			return false;
-		}
-
-		Object pContext = pattern.getContext();
-		if (pContext != null && !pContext.equals(getContext())) {
 			return false;
 		}
 

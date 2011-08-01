@@ -16,52 +16,6 @@ package net.enilink.komma.core;
  */
 public interface IStatement extends IStatementPattern {
 	/**
-	 * Compares a statement object to another object.
-	 * 
-	 * @param other
-	 *            The object to compare this statement to.
-	 * @return <tt>true</tt> if the other object is an instance of
-	 *         {@link IStatement} and if their subjects, predicates and objects
-	 *         are equal.
-	 */
-	boolean equals(Object other);
-
-	/**
-	 * Gets the context of this statement.
-	 * 
-	 * @return The statement's context, or <tt>null</tt>.
-	 */
-	IReference getContext();
-
-	/**
-	 * Gets the object of this statement.
-	 * 
-	 * @return The statement's object.
-	 */
-	Object getObject();
-
-	/**
-	 * Gets the predicate of this statement.
-	 * 
-	 * @return The statement's predicate.
-	 */
-	IReference getPredicate();
-
-	/**
-	 * Gets the subject of this statement.
-	 * 
-	 * @return The statement's subject.
-	 */
-	IReference getSubject();
-
-	/**
-	 * Computes the hash code of this statement.
-	 * 
-	 * @return A hash code for the statement.
-	 */
-	int hashCode();
-
-	/**
 	 * Returns whether this statement is inferred or not
 	 * 
 	 * @return <code>true<</code> if this statement is inferred
