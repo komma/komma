@@ -379,6 +379,11 @@ public class ThreadLocalEntityManager implements IEntityManager {
 	}
 
 	@Override
+	public boolean supportsRole(Class<?> role) {
+		return getDelegate().supportsRole(role);
+	}
+
+	@Override
 	public Object toInstance(IValue value) {
 		return getDelegate().toInstance(value);
 	}
