@@ -13,24 +13,16 @@ package net.enilink.komma.tests;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.memory.MemoryStore;
-import org.openrdf.store.StoreException;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import com.google.inject.Module;
 
 import net.enilink.komma.em.DecoratingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.IUnitOfWork;
-import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.sesame.SesameModule;
 import net.enilink.komma.util.UnitOfWork;
 
 public abstract class EntityManagerTestCase extends KommaTestCase {
@@ -38,34 +30,35 @@ public abstract class EntityManagerTestCase extends KommaTestCase {
 	protected IEntityManager manager;
 	protected UnitOfWork uow;
 
+	// defines the default module for configuring the storage backend
+	private static final String DEFAULT_STORAGE_MODULE = "net.enilink.komma.sesame.SesameTestModule";
+
+	private Module createStorageModule() {
+		try {
+			return (Module) getClass().getClassLoader()
+					.loadClass(DEFAULT_STORAGE_MODULE).newInstance();
+		} catch (Exception e) {
+			throw new RuntimeException("Unable to instantiate storage module: "
+					+ DEFAULT_STORAGE_MODULE, e);
+		}
+	}
+
 	@Override
 	protected void setUp() throws Exception {
 		uow = new UnitOfWork();
 		uow.begin();
 		factory = Guice.createInjector(
-				new SesameModule(),
+				createStorageModule(),
 				new EntityManagerFactoryModule(createModule(), null,
 						new DecoratingEntityManagerModule()),
 				new AbstractModule() {
 					@Override
 					protected void configure() {
-						bind(IUnitOfWork.class).toInstance(uow);
+						UnitOfWork uow = new UnitOfWork();
+						uow.begin();
+
 						bind(UnitOfWork.class).toInstance(uow);
-					}
-
-					@SuppressWarnings("unused")
-					@Singleton
-					@Provides
-					Repository provideRepository() {
-						Repository repository = new SailRepository(
-								new MemoryStore());
-						try {
-							repository.initialize();
-						} catch (StoreException e) {
-							throw new KommaException(e);
-						}
-
-						return repository;
+						bind(IUnitOfWork.class).toInstance(uow);
 					}
 				}).getInstance(IEntityManagerFactory.class);
 
