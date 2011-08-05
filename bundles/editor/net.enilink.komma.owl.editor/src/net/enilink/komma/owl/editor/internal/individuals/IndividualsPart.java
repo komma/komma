@@ -140,9 +140,8 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 	}
 
 	void addItem() {
-		Object type = viewer.getInput();
-		if (type instanceof IClass) {
-			final IClass parent = (IClass) type;
+		if (input instanceof IClass) {
+			final IClass parent = (IClass) input;
 			NewObjectWizard wizard = new NewObjectWizard(
 					((IObject) parent).getModel()) {
 				@Override
