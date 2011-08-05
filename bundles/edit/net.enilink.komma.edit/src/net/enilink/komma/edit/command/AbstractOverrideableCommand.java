@@ -46,8 +46,7 @@ public abstract class AbstractOverrideableCommand extends AbstractCommand
 			IReference property) {
 		Pair<Integer, Integer> cardinality = owner
 				.getApplicableCardinality(property);
-		if (owner.hasApplicableProperty(property)
-				&& cardinality.getSecond() != 1) {
+		if (cardinality.getSecond() != 1) {
 			Object value = owner.get(property);
 			if (value instanceof Collection<?>) {
 				return (Collection<Object>) value;
@@ -223,8 +222,7 @@ public abstract class AbstractOverrideableCommand extends AbstractCommand
 
 	public final Collection<?> getChildrenToCopy() {
 		Collection<?> result = overrideCommand instanceof IChildrenToCopyProvider ? ((IChildrenToCopyProvider) overrideCommand)
-				.getChildrenToCopy()
-				: doGetChildrenToCopy();
+				.getChildrenToCopy() : doGetChildrenToCopy();
 
 		return result;
 	}
