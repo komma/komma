@@ -415,11 +415,13 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		if (baseURI == null) {
 			return stringValue;
 		}
-		if (stringValue.equals(baseURI)) {
-			return "";
-		}
-		if (stringValue.length() > baseURI.length() && '#' == stringValue.charAt(baseURI.length())) {
-			return stringValue.substring(baseURI.length());
+		if (stringValue.startsWith(baseURI)) {
+			if (stringValue.length() == baseURI.length()) {
+				return "";
+			}
+			if (stringValue.length() > baseURI.length() && '#' == stringValue.charAt(baseURI.length())) {
+				return stringValue.substring(baseURI.length());
+			}
 		}
 		if (relativeURI == null) {
 			return stringValue;
