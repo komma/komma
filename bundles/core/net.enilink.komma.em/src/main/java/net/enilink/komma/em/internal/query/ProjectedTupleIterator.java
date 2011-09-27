@@ -28,10 +28,12 @@
  */
 package net.enilink.komma.em.internal.query;
 
+import java.util.Iterator;
 import java.util.List;
 
 import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.komma.em.internal.IEntityManagerInternal;
+import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.ITupleResult;
 import net.enilink.komma.core.IValue;
@@ -43,45 +45,46 @@ import net.enilink.komma.core.IValue;
  * @author Ken Wenzel
  */
 public class ProjectedTupleIterator extends
-		ConvertingIterator<IValue[], Object> implements ITupleResult<Object> {
+		ConvertingIterator<IBindings<IValue>, Object> implements
+		ITupleResult<Object> {
 	private IEntityManagerInternal manager;
 
 	private int maxResults;
 
 	private int position;
 
-	private ITupleResult<IValue[]> result;
+	private ITupleResult<IBindings<IValue>> result;
 
-	private ResultInfo[] resultInfos;
+	private ResultInfo resultInfo;
 
 	public ProjectedTupleIterator(IEntityManagerInternal manager,
-			ITupleResult<IValue[]> result, int maxResults,
-			ResultInfo[] resultInfos) {
+			ITupleResult<IBindings<IValue>> result, int maxResults,
+			ResultInfo resultInfo) {
 		super(result);
 		this.result = result;
 		this.manager = manager;
 		this.maxResults = maxResults;
-		this.resultInfos = resultInfos;
+		this.resultInfo = resultInfo;
 	}
 
 	@Override
-	protected Object convert(IValue[] solution) {
-		IValue value = solution[0];
+	protected Object convert(IBindings<IValue> solution) {
+		Iterator<IValue> it = solution.iterator();
+
+		IValue value = it.hasNext() ? it.next() : null;
 		if (value == null) {
 			return null;
 		}
-		if (resultInfos != null) {
+		if (resultInfo != null) {
 			if (value instanceof IReference) {
-				if (resultInfos[0].typeRestricted) {
+				if (resultInfo.typeRestricted) {
 					return manager.findRestricted((IReference) value,
-							resultInfos[0].types);
+							resultInfo.types);
 				} else {
-					return manager.find((IReference) value,
-							resultInfos[0].types);
+					return manager.find((IReference) value, resultInfo.types);
 				}
 			} else {
-				return manager.toInstance(value, resultInfos[0].types.get(0),
-						null);
+				return manager.toInstance(value, resultInfo.types.get(0), null);
 			}
 		}
 		return manager.toInstance(value, null, null);

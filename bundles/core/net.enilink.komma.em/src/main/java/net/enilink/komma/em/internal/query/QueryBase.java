@@ -12,6 +12,8 @@ package net.enilink.komma.em.internal.query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.enilink.komma.core.IQueryBase;
 
@@ -19,41 +21,38 @@ public abstract class QueryBase<Q extends IQueryBase<Q>> implements
 		IQueryBase<Q> {
 	protected int firstResult;
 	protected int maxResults;
-	protected ResultInfo[] resultInfos;
+	protected Map<String, ResultInfo> resultInfos;
 
 	@SuppressWarnings("unchecked")
 	protected <T, NQ extends IQueryBase<NQ>> NQ doBindResultType(
 			Class<T> resultType, Class<?>... resultTypes) {
-		ensureResultInfos(1);
-
 		ResultInfo resultInfo = new ResultInfo(false, new ArrayList<Class<?>>(
 				1 + resultTypes.length));
 		resultInfo.types.add(resultType);
 		for (Class<?> type : resultTypes) {
 			resultInfo.types.add(type);
 		}
-		this.resultInfos[0] = resultInfo;
+		ensureResultInfos().put(null, resultInfo);
 
 		return (NQ) this;
 	}
 
 	@SuppressWarnings("unchecked")
-	public Q bindResultType(int column, Class<?>... resultTypes) {
-		ensureResultInfos(column);
+	public Q bindResultType(String name, Class<?>... resultTypes) {
+		ensureResultInfos();
 
 		ResultInfo resultInfo = new ResultInfo(false,
 				Arrays.asList(resultTypes));
-		this.resultInfos[column] = resultInfo;
+		ensureResultInfos().put(name, resultInfo);
 
 		return (Q) this;
 	}
 
-	protected void ensureResultInfos(int column) {
+	protected Map<String, ResultInfo> ensureResultInfos() {
 		if (resultInfos == null) {
-			resultInfos = new ResultInfo[column + 1];
-		} else if (resultInfos.length <= column) {
-			resultInfos = Arrays.copyOf(resultInfos, column);
+			resultInfos = new HashMap<String, ResultInfo>();
 		}
+		return resultInfos;
 	}
 
 	public int getFirstResult() {
@@ -67,8 +66,6 @@ public abstract class QueryBase<Q extends IQueryBase<Q>> implements
 	@SuppressWarnings("unchecked")
 	protected <T, NQ extends IQueryBase<NQ>> NQ doRestrictResultType(
 			Class<T> resultType, Class<?>... resultTypes) {
-		ensureResultInfos(1);
-
 		ResultInfo resultInfo = new ResultInfo(true, new ArrayList<Class<?>>(
 				1 + resultTypes.length));
 		resultInfo.types.add(resultType);
@@ -76,17 +73,15 @@ public abstract class QueryBase<Q extends IQueryBase<Q>> implements
 			resultInfo.types.add(type);
 		}
 
-		this.resultInfos[0] = resultInfo;
+		ensureResultInfos().put(null, resultInfo);
 
 		return (NQ) this;
 	}
 
 	@SuppressWarnings("unchecked")
-	public Q restrictResultType(int column, Class<?>... resultTypes) {
-		ensureResultInfos(column);
-
+	public Q restrictResultType(String name, Class<?>... resultTypes) {
 		ResultInfo resultInfo = new ResultInfo(true, Arrays.asList(resultTypes));
-		this.resultInfos[column] = resultInfo;
+		ensureResultInfos().put(name, resultInfo);
 
 		return (Q) this;
 	}

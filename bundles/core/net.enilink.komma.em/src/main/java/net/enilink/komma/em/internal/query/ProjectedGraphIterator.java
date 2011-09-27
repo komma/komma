@@ -70,8 +70,10 @@ public class ProjectedGraphIterator extends NiceIterator<Object> implements
 
 	private IGraph resultGraph;
 
+	private ResultInfo resultInfo;
+
 	protected ProjectedGraphIterator(IEntityManagerInternal manager,
-			IGraph resultGraph, int maxResults) {
+			IGraph resultGraph, int maxResults, ResultInfo resultInfo) {
 		this.resourceIt = new LinkedHashSet<IReference>(resultGraph.filter(
 				null, RDF.PROPERTY_TYPE, RESULTS.TYPE_RESULT).subjects())
 				.iterator();
@@ -81,15 +83,18 @@ public class ProjectedGraphIterator extends NiceIterator<Object> implements
 		this.resultGraph = resultGraph;
 		this.manager = manager;
 		this.maxResults = maxResults;
+		this.resultInfo = resultInfo;
 	}
 
 	public ProjectedGraphIterator(IEntityManagerInternal manager,
-			IGraphResult result, int maxResults) {
-		this(manager, asGraph(result), maxResults);
+			IGraphResult result, int maxResults, ResultInfo resultInfo) {
+		this(manager, asGraph(result), maxResults, resultInfo);
 	}
 
 	protected Object convert(IReference resource) {
-		return manager.toInstance(resource, null, resultGraph);
+		return manager.toInstance(resource,
+				resultInfo != null ? resultInfo.types.get(0) : null,
+				resultGraph);
 	}
 
 	@Override

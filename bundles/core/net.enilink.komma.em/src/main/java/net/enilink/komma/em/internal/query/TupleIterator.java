@@ -28,13 +28,17 @@
  */
 package net.enilink.komma.em.internal.query;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.komma.em.internal.IEntityManagerInternal;
+import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.ITupleResult;
 import net.enilink.komma.core.IValue;
+import net.enilink.komma.core.LinkedHashBindings;
 
 /**
  * Converts the repository result into an array of Objects.
@@ -42,21 +46,22 @@ import net.enilink.komma.core.IValue;
  * @author James Leigh
  * 
  */
-public class TupleIterator extends ConvertingIterator<IValue[], Object[]>
-		implements ITupleResult<Object[]> {
+public class TupleIterator extends
+		ConvertingIterator<IBindings<IValue>, IBindings<Object>> implements
+		ITupleResult<IBindings<Object>> {
 	private IEntityManagerInternal manager;
 
 	private int maxResults;
 
 	private int position;
 
-	private ITupleResult<IValue[]> result;
+	private ITupleResult<IBindings<IValue>> result;
 
-	private ResultInfo[] resultInfos;
+	private Map<String, ResultInfo> resultInfos;
 
 	public TupleIterator(IEntityManagerInternal manager,
-			ITupleResult<IValue[]> result, int maxResults,
-			ResultInfo[] resultInfos) {
+			ITupleResult<IBindings<IValue>> result, int maxResults,
+			Map<String, ResultInfo> resultInfos) {
 		super(result);
 		this.result = result;
 		this.manager = manager;
@@ -65,28 +70,36 @@ public class TupleIterator extends ConvertingIterator<IValue[], Object[]>
 	}
 
 	@Override
-	protected Object[] convert(IValue[] sol) {
-		Object[] result = new Object[sol.length];
-		for (int i = 0; i < result.length; i++) {
-			IValue value = sol[i];
+	protected IBindings<Object> convert(IBindings<IValue> sol) {
+		LinkedHashBindings<Object> result = new LinkedHashBindings<Object>();
+
+		Iterator<String> keys = sol.getKeys().iterator();
+		ResultInfo resultInfo;
+		for (IValue value : sol) {
+			String varName = keys.next();
+
+			Object converted;
 			if (value == null) {
-				result[i] = null;
-			} else if (resultInfos != null && i < resultInfos.length) {
+				converted = null;
+			} else if (resultInfos != null
+					&& (resultInfo = resultInfos.get(varName)) != null) {
 				if (value instanceof IReference) {
-					if (resultInfos[i].typeRestricted) {
-						result[i] = manager.findRestricted((IReference) value,
-								resultInfos[i].types);
+					if (resultInfos.get(varName).typeRestricted) {
+						converted = manager.findRestricted((IReference) value,
+								resultInfo.types);
 					} else {
-						result[i] = manager.find((IReference) value,
-								resultInfos[i].types);
+						converted = manager.find((IReference) value,
+								resultInfo.types);
 					}
 				} else {
-					result[i] = manager.toInstance(value,
-							resultInfos[i].types.get(0), null);
+					converted = manager.toInstance(value,
+							resultInfo.types.get(0), null);
 				}
 			} else {
-				result[i] = manager.toInstance(value, null, null);
+				converted = manager.toInstance(value, null, null);
 			}
+
+			result.put(varName, converted);
 		}
 		return result;
 	}
@@ -106,7 +119,7 @@ public class TupleIterator extends ConvertingIterator<IValue[], Object[]>
 	}
 
 	@Override
-	public Object[] next() {
+	public IBindings<Object> next() {
 		try {
 			position++;
 			return super.next();

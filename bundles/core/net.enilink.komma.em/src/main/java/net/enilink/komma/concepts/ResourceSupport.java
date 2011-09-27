@@ -360,7 +360,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		query.setParameter("subj", this);
 		query.setParameter("pred", property);
 		query.setIncludeInferred(includeInferred);
-		query.bindResultType(property != null ? 0 : 1, IValue.class);
+		query.bindResultType("obj", IValue.class);
 
 		return new ConvertingIterator<Object, IStatement>(query.evaluate()) {
 			@Override

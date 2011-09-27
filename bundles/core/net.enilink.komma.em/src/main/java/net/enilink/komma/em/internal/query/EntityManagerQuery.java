@@ -2,6 +2,7 @@ package net.enilink.komma.em.internal.query;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -23,6 +24,7 @@ import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.dm.IDataManagerQuery;
 import net.enilink.komma.em.internal.IEntityManagerInternal;
 import net.enilink.komma.core.FlushModeType;
+import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IBooleanResult;
 import net.enilink.komma.core.IGraphResult;
 import net.enilink.komma.core.IQuery;
@@ -75,12 +77,13 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 			resultInfo.types.add(type);
 		}
 
-		return evaluateQuery(resultType, resultInfo);
+		return evaluateQuery(resultType,
+				Collections.singletonMap((String) null, resultInfo));
 	}
 
 	@SuppressWarnings("unchecked")
 	private <T> IExtendedIterator<T> evaluateQuery(Class<T> resultType,
-			ResultInfo... resultInfos) {
+			Map<String, ResultInfo> resultInfos) {
 		IExtendedIterator<?> iter;
 		IExtendedIterator<?> result = query.evaluate();
 		int max = maxResults <= 0 ? 0 : maxResults + firstResult;
@@ -89,18 +92,21 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 			if ((resultType == null || resultType.isArray())
 					&& ((ITupleResult<?>) result).getBindingNames().size() > 1) {
 				iter = new TupleIterator(manager,
-						(ITupleResult<IValue[]>) result, max, resultInfos);
+						(ITupleResult<IBindings<IValue>>) result, max,
+						resultInfos);
 			} else {
 				iter = new ProjectedTupleIterator(manager,
-						(ITupleResult<IValue[]>) result, max, resultInfos);
+						(ITupleResult<IBindings<IValue>>) result, max,
+						resultInfos != null ? resultInfos.get(null) : null);
 			}
 		} else if (result instanceof IGraphResult) {
 			if (resultType == null || IStatement.class.equals(resultType)) {
 				iter = new GraphIterator(manager, (IGraphResult) result, max,
-						!resultInfos[0].typeRestricted);
+						!resultInfos.get(null).typeRestricted);
 			} else {
 				iter = new ProjectedGraphIterator(manager,
-						(IGraphResult) result, max);
+						(IGraphResult) result, max,
+						resultInfos != null ? resultInfos.get(null) : null);
 			}
 		} else {
 			iter = new BooleanIterator(((IBooleanResult) result).asBoolean());
@@ -125,7 +131,8 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 			resultInfo.types.add(type);
 		}
 
-		return evaluateQuery(resultType, resultInfo);
+		return evaluateQuery(resultType,
+				Collections.singletonMap((String) null, resultInfo));
 	}
 
 	public int executeUpdate() {
