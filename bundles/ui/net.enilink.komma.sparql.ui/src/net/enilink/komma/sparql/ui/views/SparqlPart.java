@@ -67,6 +67,7 @@ import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelDescription;
 import net.enilink.komma.parser.sparql.SparqlParser;
 import net.enilink.komma.query.SparqlBuilder;
+import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IBooleanResult;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
@@ -162,7 +163,13 @@ class SparqlPart extends AbstractEditorPart {
 											.getBindingNames().size()]);
 					data = new ArrayList<Object[]>();
 					while (result.hasNext()) {
-						data.add((Object[]) result.next());
+						IBindings<?> bindings = (IBindings<?>) result.next();
+
+						Object[] row = new Object[columnNames.length];
+						for (int i = 0; i < columnNames.length; i++) {
+							row[i] = bindings.get(columnNames[i]);
+						}
+						data.add(row);
 					}
 					result.close();
 				} else if (query instanceof IBooleanResult) {
