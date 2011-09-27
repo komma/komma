@@ -30,6 +30,7 @@ import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.dm.IDataManagerQuery;
+import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
@@ -152,16 +153,10 @@ public class OrganizedRDFWriter implements IDataAndNamespacesVisitor<Void> {
 	public void print(String queryString, String binding) {
 		IDataManagerQuery<?> query = dm.createQuery(queryString, null);
 		ITupleResult<?> result = (ITupleResult<?>) query.evaluate();
-		int i = 0;
-		for (String name : result.getBindingNames()) {
-			if (name.equals(binding)) {
-				break;
-			}
-			i++;
-		}
 		try {
 			while (result.hasNext()) {
-				IValue subj = ((IValue[]) result.next())[i];
+				IValue subj = (IValue) ((IBindings<?>) result.next())
+						.get(binding);
 				if (!covered.contains(subj)) {
 					print((IReference) subj);
 				}
@@ -226,9 +221,9 @@ public class OrganizedRDFWriter implements IDataAndNamespacesVisitor<Void> {
 		}
 	}
 
-//	public void setBaseURI(String baseUri) {
-//		writer.setBaseURI(baseUri);
-//	}
+	// public void setBaseURI(String baseUri) {
+	// writer.setBaseURI(baseUri);
+	// }
 
 	public Void visitBegin() {
 		try {
