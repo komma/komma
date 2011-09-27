@@ -11,9 +11,9 @@
 package net.enilink.komma.core;
 
 public interface IQueryBase<Q extends IQueryBase<Q>> {
-	Q bindResultType(int column, Class<?>... resultTypes);
+	Q bindResultType(String name, Class<?>... resultTypes);
 
-	Q restrictResultType(int column, Class<?>... resultTypes);
+	Q restrictResultType(String name, Class<?>... resultTypes);
 
 	/**
 	 * Terminates the result list after reading <code>maxResult</code>

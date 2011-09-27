@@ -43,20 +43,17 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 	transient Set<GraphStatement> statements;
 
 	public LinkedHashGraph() {
-		super();
 		values = new HashMap<Object, GraphNode>();
 		statements = new LinkedHashSet<GraphStatement>();
 	}
 
-	public LinkedHashGraph(Collection<? extends Statement> c) {
-		super();
+	public LinkedHashGraph(Collection<? extends IStatement> c) {
 		values = new HashMap<Object, GraphNode>(c.size() * 2);
 		statements = new LinkedHashSet<GraphStatement>(c.size());
 		addAll(c);
 	}
 
 	public LinkedHashGraph(int size) {
-		super();
 		values = new HashMap<Object, GraphNode>(size * 2);
 		statements = new LinkedHashSet<GraphStatement>(size);
 	}
