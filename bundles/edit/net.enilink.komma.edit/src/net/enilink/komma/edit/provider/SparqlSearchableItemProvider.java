@@ -21,7 +21,9 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 	}
 
 	protected void setQueryParameters(IQuery<?> query, Object parent) {
-		query.setParameter("parent", parent);
+		if (parent != null) {
+			query.setParameter("parent", parent);
+		}
 	}
 
 	@Override
