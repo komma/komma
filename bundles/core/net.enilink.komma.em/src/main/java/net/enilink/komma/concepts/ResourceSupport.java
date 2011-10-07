@@ -29,6 +29,7 @@ import net.enilink.commons.iterator.UniqueExtendedIterator;
 import net.enilink.vocab.owl.FunctionalProperty;
 import net.enilink.komma.em.internal.behaviours.OrderedPropertySet;
 import net.enilink.komma.results.ResultDescriptor;
+import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
@@ -220,14 +221,15 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 		int min = 0;
 		int max = Integer.MAX_VALUE;
-		for (Iterator<?> it = query.evaluate(); it.hasNext();) {
-			Object[] values = (Object[]) it.next();
+		for (Iterator<IBindings> it = query.evaluate(IBindings.class); it
+				.hasNext();) {
+			IBindings<?> values = it.next();
 
-			if (values[0] instanceof Number) {
-				min = Math.max(min, ((Number) values[0]).intValue());
+			if (values.get("min") instanceof Number) {
+				min = Math.max(min, ((Number) values.get("min")).intValue());
 			}
-			if (values[1] instanceof Number) {
-				max = Math.min(max, ((Number) values[1]).intValue());
+			if (values.get("max") instanceof Number) {
+				max = Math.min(max, ((Number) values.get("max")).intValue());
 			}
 		}
 
@@ -335,8 +337,8 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public boolean hasApplicableProperty(IReference property) {
-		IQuery<?> query = getEntityManager()
-				.createQuery(HAS_APPLICABLE_PROPERTY);
+		IQuery<?> query = getEntityManager().createQuery(
+				HAS_APPLICABLE_PROPERTY);
 		query.setParameter("resource", this);
 		query.setParameter("property", property);
 
@@ -365,10 +367,11 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		return new ConvertingIterator<Object, IStatement>(query.evaluate()) {
 			@Override
 			protected IStatement convert(Object value) {
-				if (value instanceof Object[]) {
-					Object[] values = (Object[]) value;
+				if (value instanceof IBindings<?>) {
+					IBindings<?> values = (IBindings<?>) value;
 					return new Statement(getBehaviourDelegate(),
-							(IReference) values[0], values[1], includeInferred);
+							(IReference) values.get("pred"), values.get("obj"),
+							includeInferred);
 				}
 				return new Statement(getBehaviourDelegate(), property, value,
 						includeInferred);
