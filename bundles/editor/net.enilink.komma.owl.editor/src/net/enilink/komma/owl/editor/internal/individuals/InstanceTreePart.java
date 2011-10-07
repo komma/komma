@@ -20,7 +20,7 @@ import net.enilink.komma.util.ISparqlConstants;
 public class InstanceTreePart extends IndividualsPart {
 	static String QUERY_INSTANCES = ISparqlConstants.PREFIX
 			+ "SELECT DISTINCT ?r WHERE {"
-			+ "?r a ?c . OPTIONAL {?other komma:contains ?r} FILTER (!bound(?other)) }";
+			+ "?r a ?c FILTER NOT EXISTS {[a ?c; komma:contains ?r]} }";
 
 	class ContentProvider extends LazyAdapterFactoryContentProvider implements
 			ISearchableItemProvider {
