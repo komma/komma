@@ -57,7 +57,8 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 
 public abstract class AbstractModelSupport implements IModel, IModel.Internal,
-		INotificationBroadcaster<INotification>, Model, Behaviour<IModel> {
+		INotificationBroadcaster<INotification>, Model,
+		Behaviour<IModel.Internal> {
 	class ModelInjector implements IEntityDecorator {
 		@Override
 		public void decorate(IEntity entity) {
@@ -189,7 +190,9 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	public synchronized IEntityManager getManager() {
 		if (manager == null) {
 			manager = modelSet.getEntityManagerFactory()
-					.createChildFactory(getModule()).get();
+					// allow interception of call to getModule()
+					.createChildFactory(getBehaviourDelegate().getModule())
+					.get();
 			manager.addDecorator(new ModelInjector());
 		}
 		return manager;

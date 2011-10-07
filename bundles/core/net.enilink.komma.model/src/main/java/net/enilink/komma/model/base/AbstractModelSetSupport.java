@@ -193,7 +193,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	@Override
 	public void collectInjectionModules(Collection<Module> modules) {
 		modules.add(new CacheModule());
-		modules.add(new EntityManagerFactoryModule(createModule(), null,
+		modules.add(new EntityManagerFactoryModule(getModule(), null,
 				new CachingEntityManagerModule() {
 					@Override
 					protected boolean isInjectManager() {
@@ -239,22 +239,6 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 		} else {
 			return null;
 		}
-	}
-
-	protected KommaModule createModule() {
-		// Attention: Do not use getClass().getClassLoader() here, since
-		// the actual class is a generated behavior and has a class definer
-		// as class loader -> including this module then within modules of
-		// models would cause mixing of "meta-model behaviors" and
-		// "model behaviors".
-		module = new KommaModule(AbstractModelSetSupport.class.getClassLoader());
-		module.includeModule(KommaUtil.getCoreModule());
-
-		module.addReadableGraph(null);
-
-		module.addBehaviour(ObjectSupport.class);
-		module.addConcept(IObject.class);
-		return module;
 	}
 
 	/**
@@ -413,7 +397,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	public IDataChangeTracker getDataChangeTracker() {
 		return dataChangeTracker;
 	}
-	
+
 	@Override
 	public Injector getInjector() {
 		return injector;
@@ -538,6 +522,21 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	}
 
 	public KommaModule getModule() {
+		if (module == null) {
+			// Attention: Do not use getClass().getClassLoader() here, since
+			// the actual class is a generated behavior and has a class definer
+			// as class loader -> including this module then within modules of
+			// models would cause mixing of "meta-model behaviors" and
+			// "model behaviors".
+			module = new KommaModule(
+					AbstractModelSetSupport.class.getClassLoader());
+			module.includeModule(KommaUtil.getCoreModule());
+
+			module.addReadableGraph(null);
+
+			module.addBehaviour(ObjectSupport.class);
+			module.addConcept(IObject.class);
+		}
 		return module;
 	}
 
