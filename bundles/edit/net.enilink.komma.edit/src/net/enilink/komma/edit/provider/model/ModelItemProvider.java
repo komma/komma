@@ -52,6 +52,7 @@ import net.enilink.komma.edit.provider.ItemProviderAdapter;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelAware;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.util.ISparqlConstants;
 
@@ -291,8 +292,7 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 	 */
 	@Override
 	public String getText(Object object) {
-		IModel model = (IModel) object;
-		return model.getURI() == null ? "" : model.getURI().toString();
+		return ModelUtil.getLabel(object);
 	}
 
 	/**
