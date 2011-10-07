@@ -17,6 +17,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
 public abstract class FinishInUIJob extends Job {
+	private Display display = PlatformUI.getWorkbench().getDisplay();
+
 	protected FinishInUIJob(String name) {
 		super(name);
 	}
@@ -28,15 +30,14 @@ public abstract class FinishInUIJob extends Job {
 			result[0] = runAsync(monitor);
 			return result[0];
 		} finally {
-			if (PlatformUI.isWorkbenchRunning()) {
-				Display display = PlatformUI.getWorkbench().getDisplay();
-				if (display != null) {
-					display.syncExec(new Runnable() {
-						public void run() {
+			if (display != null && !display.isDisposed()) {
+				display.syncExec(new Runnable() {
+					public void run() {
+						if (PlatformUI.isWorkbenchRunning()) {
 							finishInUI(result[0]);
 						}
-					});
-				}
+					}
+				});
 			}
 		}
 	}

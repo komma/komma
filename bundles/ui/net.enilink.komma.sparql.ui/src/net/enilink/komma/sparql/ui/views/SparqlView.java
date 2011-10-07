@@ -21,9 +21,13 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.ISelectionListener;
@@ -63,9 +67,29 @@ public class SparqlView extends ViewPart {
 		ISelectionService selectionService;
 		EditorForm editorForm;
 
+		CTabFolder tabFolder;
+		CTabItem plusTab;
+
 		QueryPage(IModelSet modelSet, ISelectionService selectionService) {
 			this.modelSet = modelSet;
 			this.selectionService = selectionService;
+		}
+
+		void addQueryTab() {
+			plusTab.dispose();
+
+			SparqlPart newPart = new SparqlPart();
+			newPart.setInput(((IModelSet.Internal) modelSet)
+					.getEntityManagerFactory());
+			createTab(editorForm, tabFolder, newPart);
+
+			plusTab = createPlusTab();
+		}
+
+		CTabItem createPlusTab() {
+			CTabItem plusTab = new CTabItem(tabFolder, SWT.NONE);
+			plusTab.setText("+");
+			return plusTab;
 		}
 
 		void createContents() {
@@ -75,15 +99,21 @@ public class SparqlView extends ViewPart {
 
 			editorForm = new EditorForm(page, widgetFactory);
 
-			final CTabFolder tabFolder = widgetFactory.createTabFolder(page,
-					SWT.TOP);
+			tabFolder = widgetFactory.createTabFolder(page, SWT.TOP);
 			tabFolder.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseDoubleClick(MouseEvent e) {
-					SparqlPart newPart = new SparqlPart();
-					newPart.setInput(((IModelSet.Internal) modelSet)
-							.getEntityManagerFactory());
-					createTab(editorForm, tabFolder, newPart);
+					addQueryTab();
+				}
+			});
+			plusTab = createPlusTab();
+			tabFolder.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					if (e.item == plusTab) {
+						e.doit = false;
+						addQueryTab();
+					}
 				}
 			});
 
