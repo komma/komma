@@ -46,7 +46,6 @@ public class LazyAdapterFactoryContentProvider extends
 			children = (Object[]) element;
 		} else {
 			parentToChildren.remove(element);
-
 			children = super.getChildren(element);
 			parentToChildren.put(element, children);
 		}

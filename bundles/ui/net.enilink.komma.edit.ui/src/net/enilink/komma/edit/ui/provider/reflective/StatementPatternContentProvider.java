@@ -110,15 +110,15 @@ public class StatementPatternContentProvider extends ModelContentProvider
 					int i = 0;
 					for (IStatementPattern pattern : patterns) {
 						if (pattern.getSubject() != null) {
-							query.setParameter("?s" + i, pattern.getSubject());
+							query.setParameter("s" + i, pattern.getSubject());
 						}
 
 						if (pattern.getPredicate() != null) {
-							query.setParameter("?p" + i, pattern.getPredicate());
+							query.setParameter("p" + i, pattern.getPredicate());
 						}
 
 						if (pattern.getObject() != null) {
-							query.setParameter("?o" + i, pattern.getObject());
+							query.setParameter("o" + i, pattern.getObject());
 						}
 
 						i++;
