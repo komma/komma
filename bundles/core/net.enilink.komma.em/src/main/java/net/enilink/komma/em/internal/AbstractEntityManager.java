@@ -320,8 +320,15 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		Collection<URI> entityTypes = new ArrayList<URI>();
 		if (!restrictTypes) {
 			if (graph != null) {
-				entityTypes.addAll((Collection<URI>) (Collection<?>) graph
-						.filter(resource, RDF.PROPERTY_TYPE, null).objects());
+				// this ensures that only types with an IRI are added to
+				// entityTypes
+				for (IReference type : (Collection<IReference>) (Collection<?>) graph
+						.filter(resource, RDF.PROPERTY_TYPE, null).objects()) {
+					URI typeUri = type.getURI();
+					if (typeUri != null) {
+						entityTypes.add(typeUri);
+					}
+				}
 			}
 
 			if (entityTypes.isEmpty()) {
@@ -922,7 +929,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		} else {
 			resource = getReferenceOrFail(entity);
 		}
-		
+
 		if (resource != null) {
 			Queue<IReference> nodes = new LinkedList<IReference>();
 			nodes.add(((IReference) resource));
@@ -1031,7 +1038,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	protected void setRoleMapper(RoleMapper<URI> mapper) {
 		this.mapper = mapper;
 	}
-	
+
 	@Override
 	public boolean supportsRole(Class<?> role) {
 		return mapper.findType(role) != null;
