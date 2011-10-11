@@ -32,10 +32,10 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 		if (expression instanceof String && em != null) {
 			String findPatterns = getQueryFindPatterns(parent);
 			String queryStr = ISparqlConstants.PREFIX
-					+ "SELECT DISTINCT ?s WHERE {{"
+					+ "SELECT DISTINCT ?s WHERE {{" //
 					+ findPatterns
-					+ " FILTER regex(str(?s), ?uriPattern)}" + " UNION {"
-					+ findPatterns 
+					+ " FILTER regex(str(?s), ?uriPattern)} UNION {"
+					+ findPatterns
 					+ " { ?s rdfs:label ?l } FILTER regex(str(?l), ?template)}"
 					+ "}";
 
@@ -63,7 +63,7 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 			IQuery<?> query = em.createQuery(queryStr);
 			setQueryParameters(query, parent);
 			return query.setParameter("uriPattern", uriPattern) //
-					.setParameter("template", "^" + pattern) //
+					.setParameter("template", pattern) //
 					.evaluate();
 		}
 		return WrappedIterator.emptyIterator();

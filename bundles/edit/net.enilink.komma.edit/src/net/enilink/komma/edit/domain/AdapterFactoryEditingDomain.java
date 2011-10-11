@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import com.google.inject.Guice;
+
 import net.enilink.vocab.rdfs.Resource;
 import net.enilink.komma.common.adapter.IAdapter;
 import net.enilink.komma.common.adapter.IAdapterFactory;
@@ -51,8 +53,12 @@ import net.enilink.komma.edit.provider.IWrapperItemProvider;
 import net.enilink.komma.edit.provider.ItemProviderAdapter;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.IModelSetFactory;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
+import net.enilink.komma.model.MODELS;
+import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.model.change.ChangeRecorder;
 import net.enilink.komma.core.URIImpl;
 
@@ -237,6 +243,8 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 	private EditingDomainProviderAdapter domainProvider;
 
 	private ChangeRecorder recorder;
+
+	private IModelSet clipboardModelSet;
 
 	/**
 	 * Create an instance from the adapter factory, the specialized command
@@ -461,13 +469,27 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 	}
 
 	@Override
-	public IModel getClipboardModel() {
-		IModel model = getModelSet().getModel(URIImpl.createURI(CLIPBOARD_URI),
-				false);
+	public synchronized IModel getClipboardModel() {
+		// TODO use a shared clipboard model set for the whole application
+		if (clipboardModelSet == null) {
+			IModelSetFactory factory = Guice
+					.createInjector(
+							new ModelSetModule(ModelCore
+									.createModelSetModule(getClass()
+											.getClassLoader()))).getInstance(
+							IModelSetFactory.class);
+
+			clipboardModelSet = factory.createModelSet(URIImpl
+					.createURI(MODELS.NAMESPACE + "OwlimModelSet" //
+					));
+		}
+
+		IModel model = clipboardModelSet.getModel(
+				URIImpl.createURI(CLIPBOARD_URI), false);
 		if (model != null) {
 			return model;
 		}
-		return getModelSet().createModel(URIImpl.createURI(CLIPBOARD_URI));
+		return clipboardModelSet.createModel(URIImpl.createURI(CLIPBOARD_URI));
 	}
 
 	/**
