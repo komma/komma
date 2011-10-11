@@ -51,13 +51,14 @@ public class ModelUtil {
 								uri.namespace());
 					}
 
-					if (prefix != null && prefix.length() > 0) {
+					String localPart = uri.localPart();
+					boolean hasLocalPart = localPart != null
+							&& localPart.length() > 0;
+					if (prefix != null && prefix.length() > 0 && hasLocalPart) {
 						text.append(prefix).append(":");
 					}
 
-					String fragment = uri.localPart();
-
-					text.append(fragment != null ? fragment : uri.toString());
+					text.append(hasLocalPart ? localPart : uri.toString());
 				} else {
 					text.append(resource.toString());
 				}
