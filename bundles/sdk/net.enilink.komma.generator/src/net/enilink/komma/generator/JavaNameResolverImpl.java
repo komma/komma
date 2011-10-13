@@ -187,9 +187,15 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 	}
 
 	public String getPackageName(URI uri) {
-		if (packages.containsKey(uri.namespace().toString())) {
-			return packages.get(uri.namespace().toString());
+		String packageName = packages.get(uri.toString());
+		if (packageName != null) {
+			return packageName;
 		}
+		packageName = packages.get(uri.namespace().toString());
+		if (packageName != null) {
+			return packageName;
+		}
+
 		Class<?> javaClass = findJavaClass(uri);
 		if (javaClass == null || javaClass.getPackage() == null) {
 			log.error("Unable to determine Java class for {}", uri);

@@ -783,12 +783,7 @@ public class OntologyConverter implements IApplication {
 							throws Exception {
 						OwlNormalizer normalizer = new OwlNormalizer();
 						injector.injectMembers(normalizer);
-
-						try {
-							normalizer.normalize();
-						} catch (Exception e) {
-							e.printStackTrace(System.err);
-						}
+						normalizer.normalize();
 
 						return normalizer;
 					}
@@ -980,8 +975,8 @@ public class OntologyConverter implements IApplication {
 		return new File(URLDecoder.decode(rdf.getFile(), "UTF-8"));
 	}
 
-	private URI findOntology(URL rdf) throws RepositoryException, RDFParseException,
-			IOException {
+	private URI findOntology(URL rdf) throws RepositoryException,
+			RDFParseException, IOException {
 		Repository repository = new SailRepository(new MemoryStore());
 		repository.initialize();
 		loadOntology(repository, rdf);
@@ -1010,7 +1005,8 @@ public class OntologyConverter implements IApplication {
 
 	private Statement first(RepositoryConnection conn,
 			org.openrdf.model.URI pred, Value obj) throws RepositoryException {
-		RepositoryResult<Statement> stmts = conn.getStatements(null, pred, obj, true);
+		RepositoryResult<Statement> stmts = conn.getStatements(null, pred, obj,
+				true);
 		try {
 			if (stmts.hasNext())
 				return stmts.next();

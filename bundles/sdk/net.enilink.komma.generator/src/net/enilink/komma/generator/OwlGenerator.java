@@ -310,7 +310,7 @@ public class OwlGenerator {
 			Iri ann = desc.getReadMethod().getAnnotation(Iri.class);
 			uri = URIImpl.createURI(ann.value());
 		} else {
-			uri = domain.appendFragment(desc.getName());
+			uri = domain.appendLocalPart(desc.getName());
 		}
 		URI ns = URIImpl.createURI(getNamespace(desc.getReadMethod()
 				.getDeclaringClass()));

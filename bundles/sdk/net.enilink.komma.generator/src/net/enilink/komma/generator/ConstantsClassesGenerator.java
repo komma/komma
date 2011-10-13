@@ -131,7 +131,7 @@ public class ConstantsClassesGenerator implements IGenerator {
 
 				jcb.code("\tpublic static final ").code(jcb.imports(URI.class))
 						.code(" ").code(name)
-						.code(" = NAMESPACE_URI.appendFragment(\"")
+						.code(" = NAMESPACE_URI.appendLocalPart(\"")
 						.code(entity.getURI().localPart()).code("\");\n\n");
 			}
 

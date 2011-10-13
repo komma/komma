@@ -244,8 +244,8 @@ public class OwlNormalizer {
 		if (prefix != null) {
 			localName = initcap(prefix) + initcap(localName);
 		}
-		URI nc = URIImpl.createURI(findNamespace(ont))
-				.appendFragment(localName);
+		URI nc = URIImpl.createURI(findNamespace(ont)).appendLocalPart(
+				localName);
 		aliases.put(nc, obj);
 		if (obj.equals(RDFS.TYPE_RESOURCE)) {
 			Class base = manager.createNamed(nc, Class.class);
@@ -387,7 +387,7 @@ public class OwlNormalizer {
 			log.debug("found ontology " + ont);
 			ontologies.put(ont.getURI(), ont);
 			ontologies.put(ont.getURI().trimFragment(), ont);
-			ontologies.put(ont.getURI().namespace(), ont);
+			ontologies.put(ont.getURI().appendFragment(""), ont);
 			Set<URI> spaces = new HashSet<URI>();
 			query.setParameter("ont", ont);
 			IExtendedIterator<IReference> result = query
@@ -493,6 +493,9 @@ public class OwlNormalizer {
 	}
 
 	private URI guessNamespace(IEntity bean) {
+		if (bean instanceof Ontology) {
+			return bean.getURI();
+		}
 		return bean.getURI().namespace();
 	}
 
@@ -679,7 +682,7 @@ public class OwlNormalizer {
 				comp = nc.getURI();
 			}
 			String name = "Not" + comp.localPart();
-			return rename(clazz, comp.namespace().appendFragment(name));
+			return rename(clazz, comp.namespace().appendLocalPart(name));
 		}
 		return null;
 	}
@@ -754,7 +757,7 @@ public class OwlNormalizer {
 		}
 		sb.setLength(sb.length() - and.length());
 		return rename(clazz,
-				URIImpl.createURI(namespace).appendFragment(sb.toString()));
+				URIImpl.createURI(namespace).appendLocalPart(sb.toString()));
 	}
 
 	private void renameClass(URI obj, URI nc) {
@@ -864,8 +867,7 @@ public class OwlNormalizer {
 				if (of instanceof Thing) {
 					Set<?> types = ((Thing) of).getRdfTypes();
 					if (types.isEmpty()) {
-						list.add(manager.find(URIImpl.createURI(OWL.NAMESPACE)
-								.appendFragment("Thing")));
+						list.add(manager.find(OWL.TYPE_THING));
 					} else {
 						list.addAll(types);
 					}
