@@ -346,13 +346,32 @@ public interface URI extends IReference {
 	/**
 	 * If this URI has a non-null {@link #fragment fragment}, returns the URI
 	 * formed by removing it while keeping the '#' symbol; If this URI has no
-	 * fragment {@link #fragment fragment}, returns the URI formed by appending
-	 * the '#' symbol; this URI unchanged, otherwise.
+	 * fragment {@link #fragment fragment}, returns the URI without its last
+	 * segment; this URI unchanged, otherwise.
 	 */
 	URI namespace();
-	
+
+	/**
+	 * Returns the URI formed from this URI and the given local part.
+	 * 
+	 * @exception java.lang.IllegalArgumentException
+	 *                if <code>localPart</code> is not a valid segment according
+	 *                to {@link #validSegment} or a valid fragment (portion)
+	 *                according to {@link #validFragment}.
+	 */
+	URI appendLocalPart(String localPart);
+
+	/**
+	 * Returns the local part of this URI.
+	 * 
+	 * <ul>
+	 * <li>If the URI has a fragment component then return it, else
+	 * <li>If the URI has a path then return the last path segment,
+	 * <li>If this fails, split after the last occurrence of the ':' character.
+	 * </ul>
+	 */
 	String localPart();
-	
+
 	/**
 	 * Resolves this URI reference against a <code>base</code> absolute
 	 * hierarchical URI, returning the resulting absolute URI. If already
