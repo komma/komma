@@ -1434,9 +1434,9 @@ public final class URIImpl implements URI {
 				&& hierarchical == uri.isHierarchical()
 				&& absolutePath == uri.hasAbsolutePath()
 				&& equals(scheme, uri.scheme(), true)
-				&& equals(authority, hierarchical ? uri.authority() : uri
-						.opaquePart()) && equals(device, uri.device())
-				&& equals(query, uri.query())
+				&& equals(authority,
+						hierarchical ? uri.authority() : uri.opaquePart())
+				&& equals(device, uri.device()) && equals(query, uri.query())
 				&& equals(fragment, uri.fragment()) && segmentsEqual(uri);
 	}
 
@@ -1733,14 +1733,31 @@ public final class URIImpl implements URI {
 	 * @see net.enilink.komma.common.util.URI#namespace()
 	 */
 	public URIImpl namespace() {
-		if (fragment != null && fragment.length() == 0) {
-			return this;
-		} else if (cachedNamespace == null) {
-			cachedNamespace = new URIImpl(hierarchical, scheme, authority,
-					device, absolutePath, segments, query, "");
+		if (cachedNamespace != null) {
+			return cachedNamespace;
+		}
+
+		if (fragment != null) {
+			if (fragment.length() == 0) {
+				cachedNamespace = this;
+			} else {
+				cachedNamespace = new URIImpl(hierarchical, scheme, authority,
+						device, absolutePath, segments, query, "");
+			}
+		} else {
+			cachedNamespace = trimSegments(1).appendSegment("");
 		}
 
 		return cachedNamespace;
+	}
+
+	public URIImpl appendLocalPart(String localPart) {
+		String last = lastSegment();
+		if (last != null && last.length() > 0) {
+			return appendFragment(localPart);
+		}
+		return last == null ? appendSegment(localPart) : trimSegments(1)
+				.appendSegment(localPart);
 	}
 
 	@Override
@@ -1868,7 +1885,7 @@ public final class URIImpl implements URI {
 				&& (segmentCount == 0
 						|| SEGMENT_EMPTY.equals(segments[segmentCount - 1])
 						|| SEGMENT_PARENT.equals(segments[segmentCount - 1]) || SEGMENT_SELF
-						.equals(segments[segmentCount - 1]))) {
+							.equals(segments[segmentCount - 1]))) {
 			stack[sp++] = SEGMENT_EMPTY;
 		}
 
@@ -2115,7 +2132,7 @@ public final class URIImpl implements URI {
 		if (sp > 0
 				&& (SEGMENT_EMPTY.equals(segments[segmentCount - 1])
 						|| SEGMENT_PARENT.equals(segments[segmentCount - 1]) || SEGMENT_SELF
-						.equals(segments[segmentCount - 1]))) {
+							.equals(segments[segmentCount - 1]))) {
 			stack[sp++] = SEGMENT_EMPTY;
 		}
 
@@ -2725,8 +2742,8 @@ public final class URIImpl implements URI {
 			int expectedBytes = 0;
 			for (int len = value.length(); i < len; i++) {
 				if (isEscaped(value, i)) {
-					char character = unescape(value.charAt(i + 1), value
-							.charAt(i + 2));
+					char character = unescape(value.charAt(i + 1),
+							value.charAt(i + 2));
 					i += 2;
 
 					if (expectedBytes > 0) {
