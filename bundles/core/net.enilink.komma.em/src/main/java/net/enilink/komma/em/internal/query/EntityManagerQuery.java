@@ -93,7 +93,14 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 					&& IBindings.class.isAssignableFrom(resultType)
 					|| (resultType == null && ((ITupleResult<?>) result)
 							.getBindingNames().size() > 1)) {
-				iter = new TupleIterator(manager,
+				// returns an iterator of IBindings objects
+				// this is the default behavior in case of multiple bindings
+				iter = new TupleBindingsIterator(manager,
+						(ITupleResult<IBindings<IValue>>) result, max,
+						resultInfos);
+			} else if (resultType != null && resultType.isArray()) {
+				// returns an iterator of Object[]
+				iter = new TupleArrayIterator(manager,
 						(ITupleResult<IBindings<IValue>>) result, max,
 						resultInfos);
 			} else {
