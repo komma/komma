@@ -27,7 +27,7 @@ public abstract class OntologySupport extends BehaviorBase implements IOntology 
 				+ "?p a ?propertyType ." //
 				+ "OPTIONAL {" //
 				+ "		?p a ?otherType . ?otherType rdfs:subClassOf ?propertyType " //
-				+ "		FILTER (?propertyType = owl:ObjectProperty && ?otherType != ?propertyType && ?otherType != rdf:Property)" //
+				+ "		FILTER (?propertyType = owl:ObjectProperty && (?otherType = owl:AnnotationProperty || ?otherType = owl:DatatypeProperty || ?otherType = rdfs:ContainerMembershipProperty))" //
 				+ "}" //
 				+ "OPTIONAL {" //
 				+ "		?p rdfs:subPropertyOf ?other " //
