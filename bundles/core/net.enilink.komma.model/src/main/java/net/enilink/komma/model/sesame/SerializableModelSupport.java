@@ -13,12 +13,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.enilink.composition.annotations.Iri;
+import net.enilink.composition.annotations.parameterTypes;
+import net.enilink.composition.concepts.Message;
 import net.enilink.composition.traits.Behaviour;
 import org.openrdf.model.Statement;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.RDFWriterFactory;
+import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 
@@ -28,6 +33,7 @@ import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.core.INamespace;
@@ -35,11 +41,12 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.sesame.SesameValueConverter;
 
-@Iri(MODELS.NAMESPACE + "MemoryModel")
-public abstract class MemoryModelSupport implements IModel, Model,
+@Iri(MODELS.NAMESPACE + "SerializableModel")
+public abstract class SerializableModelSupport implements IModel, Model,
 		Behaviour<IModel> {
 	/**
 	 * Iterator where <code>hasNext()</code> blocks until element gets available
@@ -98,8 +105,37 @@ public abstract class MemoryModelSupport implements IModel, Model,
 	@Inject
 	IUnitOfWork unitOfWork;
 
+	private RDFFormat determineFormat(Map<Object, Object> options) {
+		IURIConverter uriConverter = getModelSet().getURIConverter();
+		URI normalizedUri = uriConverter.normalize(getURI());
+
+		RDFFormat format = null;
+
+		// simply use the filename to detect the correct RDF format
+		String lastSegment = normalizedUri.lastSegment();
+		if (lastSegment != null) {
+			format = RDFFormat.forFileName(lastSegment);
+		}
+
+		// TODO maybe also use the content description to determine the correct
+		// RDF format
+		// uriConverter.contentDescription(normalizedUri, options);
+
+		return format != null ? format : RDFFormat.RDFXML;
+	}
+
+	@parameterTypes(Map.class)
+	public void load(Message msg) {
+		// determine the RDF format for the source URI and put it into the
+		// options map
+		@SuppressWarnings("unchecked")
+		Map<Object, Object> options = (Map<Object, Object>) msg.getParameters()[0];
+		options.put(RDFFormat.class.getName(), determineFormat(options));
+		msg.proceed();
+	}
+
 	@Override
-	public void load(final InputStream in, Map<?, ?> options)
+	public void load(final InputStream in, final Map<?, ?> options)
 			throws IOException {
 		final IDataManager dm = ((IModelSet.Internal) getModelSet())
 				.getDataManagerFactory().get();
@@ -121,7 +157,11 @@ public abstract class MemoryModelSupport implements IModel, Model,
 				Executors.newSingleThreadExecutor().execute(new Runnable() {
 					@Override
 					public void run() {
-						RDFParser parser = Rio.createParser(RDFFormat.RDFXML);
+						RDFFormat format = (RDFFormat) options
+								.get(RDFFormat.class.getName());
+						RDFParser parser = Rio
+								.createParser(format != null ? format
+										: RDFFormat.RDFXML);
 						parser.setRDFHandler(new RDFHandlerBase() {
 							@Override
 							public void handleStatement(Statement stmt)
@@ -203,36 +243,58 @@ public abstract class MemoryModelSupport implements IModel, Model,
 		setModelLoaded(true);
 	}
 
+	@parameterTypes(Map.class)
+	public void save(Message msg) {
+		// determine the RDF format for the source URI and put it into the
+		// options map
+		@SuppressWarnings("unchecked")
+		Map<Object, Object> options = (Map<Object, Object>) msg.getParameters()[0];
+		options.put(RDFFormat.class.getName(), determineFormat(options));
+		msg.proceed();
+	}
+
 	@Override
 	public void save(OutputStream os, Map<?, ?> options) throws IOException {
-		RDFXMLPrettyWriter rdfWriter = new RDFXMLPrettyWriter(
-				new OutputStreamWriter(os, "UTF-8"));
+		RDFFormat format = (RDFFormat) options.get(RDFFormat.class.getName());
+		if (format == null) {
+			format = RDFFormat.RDFXML;
+		}
+		RDFWriter writer;
+		if (RDFFormat.RDFXML.equals(format)) {
+			// use a special pretty writer in case of RDF/XML
+			RDFXMLPrettyWriter rdfXmlWriter = new RDFXMLPrettyWriter(
+					new OutputStreamWriter(os, "UTF-8"));
+			rdfXmlWriter.setBaseURI(getURI().toString());
+			writer = rdfXmlWriter;
+		} else {
+			RDFWriterFactory factory = RDFWriterRegistry.getInstance().get(
+					format);
+			writer = factory.getWriter(os);
+		}
 
 		try {
 			final IDataManager dm = ((IModelSet.Internal) getModelSet())
 					.getDataManagerFactory().get();
 			dm.setReadContexts(Collections.singleton(getURI()));
 
-			rdfWriter.setBaseURI(getURI().toString());
-			rdfWriter.startRDF();
+			writer.startRDF();
 
 			try {
 				for (INamespace namespace : dm.getNamespaces()) {
-					rdfWriter.handleNamespace(namespace.getPrefix(), namespace
+					writer.handleNamespace(namespace.getPrefix(), namespace
 							.getURI().toString());
 				}
 
 				IExtendedIterator<IStatement> stmts = dm.matchAsserted(null,
 						null, null);
 				while (stmts.hasNext()) {
-					rdfWriter.handleStatement(valueConverter.toSesame(stmts
-							.next()));
+					writer.handleStatement(valueConverter.toSesame(stmts.next()));
 				}
 			} finally {
 				dm.close();
 			}
 
-			rdfWriter.endRDF();
+			writer.endRDF();
 		} catch (RDFHandlerException e) {
 			throw new KommaException("Saving RDF failed", e);
 		}

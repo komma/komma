@@ -16,11 +16,11 @@ import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.core.URI;
 
-public class MemoryModelFactory implements IModel.Factory {
+public class SerializableModelFactory implements IModel.Factory {
 	@Override
 	public IModel createModel(IModelSet modelSet, URI uri) {
 		IModel model = (IModel) modelSet.getMetaDataManager().createNamed(uri,
-				MODELS.NAMESPACE_URI.appendFragment("MemoryModel"),
+				MODELS.NAMESPACE_URI.appendFragment("SerializableModel"),
 				MODELS.CLASS_MODEL, OWL.TYPE_ONTOLOGY);
 		((IModel.Internal) model)
 				.internalSetModelSet((IModelSet.Internal) modelSet);

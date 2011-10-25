@@ -35,7 +35,7 @@
    <extension
          point="net.enilink.komma.model.extensionFactories">
       <factory
-            class="net.enilink.komma.model.mem.MemoryModelFactory"
+            class="net.enilink.komma.model.mem.SerializableModelFactory"
             type="*">
       </factory>
    </extension>
@@ -59,7 +59,7 @@
             class="net.enilink.komma.model.sesame.MemoryModelSetSupport">
       </modelBehaviour>
       <modelBehaviour
-            class="net.enilink.komma.model.sesame.MemoryModelSupport">
+            class="net.enilink.komma.model.sesame.SerializableModelSupport">
       </modelBehaviour>
       <modelBehaviour
             class="net.enilink.komma.model.IModelSet">

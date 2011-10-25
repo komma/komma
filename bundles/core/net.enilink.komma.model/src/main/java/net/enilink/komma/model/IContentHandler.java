@@ -132,7 +132,7 @@ public interface IContentHandler {
 	 * @see IContentDescriber#INDETERMINATE
 	 * @see IContentDescriber#VALID
 	 */
-	String VALIDITY_PROPERTY = "org.eclipse.emf.ecore:validity";
+	String VALIDITY_PROPERTY = "net.enilink.komma.model:validity";
 
 	/**
 	 * A value specifying the validity of a
@@ -172,7 +172,7 @@ public interface IContentHandler {
 	 * @see IModel.Factory.Registry#getContentTypeToFactoryMap()
 	 * @see IModel.Factory.Registry#getFactory(URIImpl, String)
 	 */
-	String CONTENT_TYPE_PROPERTY = "org.eclipse.emf.ecore:contentType";
+	String CONTENT_TYPE_PROPERTY = "net.enilink.komma.model:contentType";
 
 	/**
 	 * A constant used to indicate that a {@link #CONTENT_TYPE_PROPERTY content
