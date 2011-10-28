@@ -77,11 +77,14 @@ import net.enilink.komma.edit.command.ReplaceCommand;
 import net.enilink.komma.edit.command.SetCommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IModelAware;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IReferenceable;
 import net.enilink.komma.core.URI;
 
 /**
@@ -667,7 +670,7 @@ public class ItemProviderAdapter extends
 	 */
 	protected List<IItemPropertyDescriptor> itemPropertyDescriptors;
 
-	protected Map<IReference, IObject> targets;
+	protected Map<IReference, IEntity> targets;
 
 	/**
 	 * This holds children wrappers that are {@link #wrap created} by this item
@@ -690,17 +693,21 @@ public class ItemProviderAdapter extends
 	}
 
 	public void addTarget(Object target) {
-		if (!(target instanceof IObject)) {
+		if (!(target instanceof IEntity)) {
 			return;
 		}
 
 		if (targets == null) {
-			targets = new WeakHashMap<IReference, IObject>();
+			targets = new WeakHashMap<IReference, IEntity>();
 		}
-		targets.put(((IObject) target).getReference(), (IObject) target);
+		targets.put(((IEntity) target).getReference(), (IEntity) target);
 
-		((IObject) target).getModel().getModelSet()
-				.addSubjectListener(((IObject) target).getReference(), this);
+		if (target instanceof IModelAware) {
+			((IModelAware) target)
+					.getModel()
+					.getModelSet()
+					.addSubjectListener(((IEntity) target).getReference(), this);
+		}
 	}
 
 	/**
@@ -1153,15 +1160,18 @@ public class ItemProviderAdapter extends
 	 * remaining children wrappers in the children store.
 	 */
 	public void dispose() {
-		Map<IReference, IObject> oldTargets = targets;
+		Map<IReference, IEntity> oldTargets = targets;
 		targets = null;
 
 		if (oldTargets != null) {
-			for (IObject otherTarget : oldTargets.values()) {
-				otherTarget
-						.getModel()
-						.getModelSet()
-						.removeSubjectListener(otherTarget.getReference(), this);
+			for (IEntity otherTarget : oldTargets.values()) {
+				if (otherTarget instanceof IModelAware) {
+					((IModelAware) otherTarget)
+							.getModel()
+							.getModelSet()
+							.removeSubjectListener(otherTarget.getReference(),
+									this);
+				}
 			}
 		}
 
@@ -2458,7 +2468,7 @@ public class ItemProviderAdapter extends
 		getPropertyDescriptor(object, property).resetPropertyValue(object);
 	}
 
-	protected IObject resolveReference(IReference reference) {
+	protected IEntity resolveReference(IReference reference) {
 		if (targets != null) {
 			return targets.get(reference);
 		}

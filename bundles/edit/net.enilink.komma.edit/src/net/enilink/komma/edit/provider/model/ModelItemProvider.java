@@ -294,7 +294,7 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 	public String getText(Object object) {
 		return ModelUtil.getLabel(object);
 	}
-
+	
 	/**
 	 * This adds {@link net.enilink.komma.edit.command.CommandParameter}s
 	 * describing the children that can be created under this object.

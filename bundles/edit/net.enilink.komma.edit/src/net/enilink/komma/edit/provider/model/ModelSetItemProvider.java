@@ -17,34 +17,42 @@
 package net.enilink.komma.edit.provider.model;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.provider.IEditingDomainItemProvider;
-import net.enilink.komma.edit.provider.IItemLabelProvider;
 import net.enilink.komma.edit.provider.IItemPropertyDescriptor;
-import net.enilink.komma.edit.provider.IItemPropertySource;
-import net.enilink.komma.edit.provider.IStructuredItemContentProvider;
-import net.enilink.komma.edit.provider.ITreeItemContentProvider;
-import net.enilink.komma.edit.provider.ItemProviderAdapter;
+import net.enilink.komma.edit.provider.IViewerNotification;
+import net.enilink.komma.edit.provider.ReflectiveItemProvider;
+import net.enilink.komma.edit.provider.ViewerNotification;
 import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.event.IStatementNotification;
+import net.enilink.komma.core.IEntity;
 
 /**
  * This is the item provider adapter for a {@link IModelSet} object.
  */
-public class ModelSetItemProvider extends ItemProviderAdapter implements
-		IEditingDomainItemProvider, IStructuredItemContentProvider,
-		ITreeItemContentProvider, IItemLabelProvider, IItemPropertySource {
+public class ModelSetItemProvider extends ReflectiveItemProvider {
 	/**
 	 * This constructs an instance from a factory and a notifier.
 	 */
 	public ModelSetItemProvider(IAdapterFactory adapterFactory) {
-		super(adapterFactory);
+		super(adapterFactory, KommaEditPlugin.INSTANCE, Collections
+				.<IClass> emptyList());
+	}
+
+	@Override
+	public void addTarget(Object target) {
+		super.addTarget(target);
+		if (target instanceof IModelSet) {
+			((IModelSet) target).addMetaDataListener(this);
+		}
 	}
 
 	/**
@@ -133,5 +141,20 @@ public class ModelSetItemProvider extends ItemProviderAdapter implements
 	@Override
 	public IResourceLocator getResourceLocator() {
 		return KommaEditPlugin.INSTANCE;
+	}
+
+	protected Collection<IViewerNotification> addViewerNotifications(
+			Collection<IViewerNotification> viewerNotifications,
+			IStatementNotification notification, boolean contentRefresh,
+			boolean labelUpdate) {
+		IEntity subject = resolveReference(notification.getSubject());
+		if (subject instanceof IModelSet) {
+			if (viewerNotifications == null) {
+				viewerNotifications = createViewerNotificationList();
+			}
+			viewerNotifications.add(new ViewerNotification(subject,
+					contentRefresh, labelUpdate));
+		}
+		return viewerNotifications;
 	}
 }

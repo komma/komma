@@ -30,6 +30,7 @@ import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 
 /**
@@ -101,7 +102,7 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 			boolean labelUpdate) {
 		Object element = notification.getSubject();
 
-		IObject object;
+		IEntity object;
 		if (element instanceof IObject) {
 			object = (IObject) element;
 		} else if (element instanceof IReference) {
@@ -110,8 +111,8 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 			return null;
 		}
 
-		if (object != null) {
-			object.refresh(notification.getPredicate());
+		if (object instanceof IObject) {
+			((IObject) object).refresh(notification.getPredicate());
 
 			if (viewerNotifications == null) {
 				viewerNotifications = createViewerNotificationList();
