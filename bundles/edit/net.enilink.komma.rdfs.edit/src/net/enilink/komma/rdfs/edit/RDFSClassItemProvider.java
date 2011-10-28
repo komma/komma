@@ -59,7 +59,7 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 		if (RDFS.PROPERTY_SUBCLASSOF.equals(notification.getPredicate())) {
 			Object element = notification.getObject();
 
-			IObject object;
+			IEntity object;
 			if (element instanceof IObject) {
 				object = (IObject) element;
 			} else if (element instanceof IReference) {

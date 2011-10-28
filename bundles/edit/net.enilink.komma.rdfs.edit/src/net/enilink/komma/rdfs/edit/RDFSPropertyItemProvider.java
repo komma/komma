@@ -40,6 +40,7 @@ import net.enilink.komma.edit.provider.ReflectiveItemProvider;
 import net.enilink.komma.edit.provider.ViewerNotification;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.event.IStatementNotification;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 
 public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
@@ -58,7 +59,7 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 		if (subPropertyOf.equals(notification.getPredicate())) {
 			Object element = notification.getObject();
 
-			IObject object;
+			IEntity object;
 			if (element instanceof IObject) {
 				object = (IObject) element;
 			} else if (element instanceof IReference) {
