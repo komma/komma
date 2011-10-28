@@ -11,6 +11,7 @@
 package net.enilink.komma.model.base;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,7 +22,8 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 
 public class URIMapRuleSet implements IURIMapRuleSet {
-	Set<IURIMapRule> rules = new HashSet<IURIMapRule>();
+	Set<IURIMapRule> rules = Collections
+			.synchronizedSet(new HashSet<IURIMapRule>());
 	IURIMapRule[] sortedRules;
 
 	class PriorityComparator implements Comparator<IURIMapRule> {

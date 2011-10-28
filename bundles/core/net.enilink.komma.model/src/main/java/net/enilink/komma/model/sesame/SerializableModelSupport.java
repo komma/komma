@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -105,7 +106,7 @@ public abstract class SerializableModelSupport implements IModel, Model,
 	@Inject
 	IUnitOfWork unitOfWork;
 
-	private RDFFormat determineFormat(Map<Object, Object> options) {
+	private RDFFormat determineFormat(Map<?, ?> options) {
 		IURIConverter uriConverter = getModelSet().getURIConverter();
 		URI normalizedUri = uriConverter.normalize(getURI());
 
@@ -128,9 +129,13 @@ public abstract class SerializableModelSupport implements IModel, Model,
 	public void load(Message msg) {
 		// determine the RDF format for the source URI and put it into the
 		// options map
-		@SuppressWarnings("unchecked")
-		Map<Object, Object> options = (Map<Object, Object>) msg.getParameters()[0];
-		options.put(RDFFormat.class.getName(), determineFormat(options));
+		Map<?, ?> options = (Map<?, ?>) msg.getParameters()[0];
+		if (options == null) {
+			options = Collections.emptyMap();
+		}
+		Map<Object, Object> newOptions = new HashMap<Object, Object>(options);
+		newOptions.put(RDFFormat.class.getName(), determineFormat(options));
+		msg.getParameters()[0] = newOptions;
 		msg.proceed();
 	}
 
@@ -161,7 +166,7 @@ public abstract class SerializableModelSupport implements IModel, Model,
 								.get(RDFFormat.class.getName());
 						RDFParser parser = Rio
 								.createParser(format != null ? format
-										: RDFFormat.RDFXML);
+										: determineFormat(options));
 						parser.setRDFHandler(new RDFHandlerBase() {
 							@Override
 							public void handleStatement(Statement stmt)
@@ -247,9 +252,13 @@ public abstract class SerializableModelSupport implements IModel, Model,
 	public void save(Message msg) {
 		// determine the RDF format for the source URI and put it into the
 		// options map
-		@SuppressWarnings("unchecked")
-		Map<Object, Object> options = (Map<Object, Object>) msg.getParameters()[0];
-		options.put(RDFFormat.class.getName(), determineFormat(options));
+		Map<?, ?> options = (Map<?, ?>) msg.getParameters()[0];
+		if (options == null) {
+			options = Collections.emptyMap();
+		}
+		Map<Object, Object> newOptions = new HashMap<Object, Object>(options);
+		newOptions.put(RDFFormat.class.getName(), determineFormat(options));
+		msg.getParameters()[0] = newOptions;
 		msg.proceed();
 	}
 
@@ -257,7 +266,7 @@ public abstract class SerializableModelSupport implements IModel, Model,
 	public void save(OutputStream os, Map<?, ?> options) throws IOException {
 		RDFFormat format = (RDFFormat) options.get(RDFFormat.class.getName());
 		if (format == null) {
-			format = RDFFormat.RDFXML;
+			format = determineFormat(options);
 		}
 		RDFWriter writer;
 		if (RDFFormat.RDFXML.equals(format)) {
