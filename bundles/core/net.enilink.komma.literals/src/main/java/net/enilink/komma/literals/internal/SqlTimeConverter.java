@@ -53,13 +53,10 @@ public class SqlTimeConverter implements IConverter<Time> {
 	@Inject
 	private ILiteralFactory lf;
 
+	@Inject
 	private DatatypeFactory factory;
 
 	private URI datatype = DATATYPE;
-
-	public SqlTimeConverter() throws Exception {
-		factory = DatatypeFactory.newInstance();
-	}
 
 	public String getJavaClassName() {
 		return Time.class.getName();

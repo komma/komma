@@ -48,12 +48,14 @@ public class XMLGregorianCalendarConverter implements
 	@Inject
 	private ILiteralFactory lf;
 
-	private DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
+	private DatatypeFactory factory;
 
 	private Class<? extends XMLGregorianCalendar> javaClass;
 
-	public XMLGregorianCalendarConverter() throws Exception {
-		javaClass = datatypeFactory.newXMLGregorianCalendar().getClass();
+	@Inject
+	public XMLGregorianCalendarConverter(DatatypeFactory factory) {
+		this.factory = factory;
+		javaClass = factory.newXMLGregorianCalendar().getClass();
 	}
 
 	public String getJavaClassName() {
@@ -85,7 +87,7 @@ public class XMLGregorianCalendarConverter implements
 	}
 
 	public XMLGregorianCalendar deserialize(String label) {
-		return datatypeFactory.newXMLGregorianCalendar(label);
+		return factory.newXMLGregorianCalendar(label);
 	}
 
 	public ILiteral serialize(XMLGregorianCalendar object) {

@@ -53,11 +53,12 @@ public class DurationConverter implements IConverter<Duration> {
 
 	private URI datatype = XMLSCHEMA.TYPE_DURATION;
 
-	public DurationConverter() throws Exception {
-		factory = DatatypeFactory.newInstance();
+	@Inject
+	public DurationConverter(DatatypeFactory factory) {
+		this.factory = factory;
 		javaClass = factory.newDuration(0).getClass();
 	}
-
+	
 	public String getJavaClassName() {
 		return javaClass.getName();
 	}

@@ -54,13 +54,10 @@ public class SqlTimestampConverter implements IConverter<Timestamp> {
 	@Inject
 	private ILiteralFactory lf;
 
+	@Inject
 	private DatatypeFactory factory;
 
 	private URI datatype = DATATYPE;
-
-	public SqlTimestampConverter() throws Exception {
-		factory = DatatypeFactory.newInstance();
-	}
 
 	public String getJavaClassName() {
 		return Timestamp.class.getName();

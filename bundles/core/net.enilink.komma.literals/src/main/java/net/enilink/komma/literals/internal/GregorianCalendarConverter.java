@@ -30,7 +30,6 @@ package net.enilink.komma.literals.internal;
 
 import java.util.GregorianCalendar;
 
-import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -46,20 +45,18 @@ import net.enilink.komma.core.URIImpl;
  * Converts {@link GregorianCalendar} to and from {@link ILiteral}.
  * 
  */
-public class GregorianCalendarConverter implements IConverter<GregorianCalendar> {
+public class GregorianCalendarConverter implements
+		IConverter<GregorianCalendar> {
 	private static final URI DATATYPE = URIImpl.createURI("java:"
 			+ GregorianCalendar.class.getName());
 
 	@Inject
 	private ILiteralFactory lf;
 
+	@Inject
 	private DatatypeFactory factory;
 
 	private URI datatype = DATATYPE;
-
-	public GregorianCalendarConverter() throws DatatypeConfigurationException {
-		factory = DatatypeFactory.newInstance();
-	}
 
 	public String getJavaClassName() {
 		return GregorianCalendar.class.getName();

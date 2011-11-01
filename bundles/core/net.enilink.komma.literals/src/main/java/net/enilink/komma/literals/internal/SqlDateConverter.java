@@ -53,13 +53,10 @@ public class SqlDateConverter implements IConverter<Date> {
 	@Inject
 	private ILiteralFactory lf;
 
+	@Inject
 	private DatatypeFactory factory;
 
 	private URI datatype = DATATYPE;
-
-	public SqlDateConverter() throws Exception {
-		factory = DatatypeFactory.newInstance();
-	}
 
 	public String getJavaClassName() {
 		return Date.class.getName();

@@ -37,6 +37,8 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -45,9 +47,12 @@ import net.enilink.composition.properties.exceptions.ObjectConversionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.google.inject.Provides;
 
+import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.literals.internal.BigDecimalConverter;
 import net.enilink.komma.literals.internal.BigIntegerConverter;
 import net.enilink.komma.literals.internal.BooleanConverter;
@@ -89,7 +94,7 @@ public class LiteralConverter implements Cloneable {
 
 	private ClassLoader cl;
 	private ConcurrentMap<String, IConverter<?>> converters = new ConcurrentHashMap<String, IConverter<?>>();
-	@Inject
+
 	Injector injector;
 
 	private ConcurrentMap<URI, Class<?>> javaClasses = new ConcurrentHashMap<URI, Class<?>>();
@@ -175,7 +180,7 @@ public class LiteralConverter implements Cloneable {
 			}
 		}
 		injector.injectMembers(converter);
-		
+
 		IConverter<?> o = converters.putIfAbsent(name, converter);
 		if (o != null) {
 			converter = (IConverter<T>) o;
@@ -209,8 +214,9 @@ public class LiteralConverter implements Cloneable {
 		return datatype;
 	}
 
+	// TODO: check if this two-part test is required
 	public boolean isDatatype(Class<?> type) {
-		return rdfTypes.containsKey(type);
+		return rdfTypes.containsKey(type) || null != findConverter(type);
 	}
 
 	public boolean isRecordedeType(URI datatype) {
@@ -278,8 +284,35 @@ public class LiteralConverter implements Cloneable {
 	}
 
 	@Inject
-	public void setClassLoader(ClassLoader cl) {
+	protected void setClassLoaderAndInjector(final ClassLoader cl,
+			Injector injector) {
 		this.cl = cl;
+		this.injector = injector = injector
+				.createChildInjector(new AbstractModule() {
+					@Override
+					protected void configure() {
+					}
+
+					@Provides
+					@SuppressWarnings("unused")
+					protected DatatypeFactory provideDatatypeFactory()
+							throws DatatypeConfigurationException {
+
+						// workaround for classloading issues w/ factory methods
+						// http://community.jboss.org/wiki/ModuleCompatibleClassloadingGuide
+
+						ClassLoader oldTCCL = Thread.currentThread()
+								.getContextClassLoader();
+						try {
+							Thread.currentThread().setContextClassLoader(cl);
+							return DatatypeFactory.newInstance();
+						} finally {
+							Thread.currentThread().setContextClassLoader(
+									oldTCCL);
+						}
+					}
+				});
+
 		try {
 			registerConverter(new BigDecimalConverter());
 			registerConverter(new BigIntegerConverter());
@@ -301,17 +334,21 @@ public class LiteralConverter implements Cloneable {
 			registerConverter(new SqlTimestampConverter());
 			registerConverter(new ClassConverter());
 
-			DurationConverter dm = new DurationConverter();
+			DurationConverter dm = injector
+					.getInstance(DurationConverter.class);
 			registerConverter(dm.getJavaClassName(), dm);
 			registerConverter(Duration.class, dm);
-			XMLGregorianCalendarConverter xgcm;
-			xgcm = new XMLGregorianCalendarConverter();
+			XMLGregorianCalendarConverter xgcm = injector
+					.getInstance(XMLGregorianCalendarConverter.class);
 			registerConverter(xgcm.getJavaClassName(), xgcm);
 			registerConverter(XMLGregorianCalendar.class, xgcm);
 			registerConverter(new StringConverter(
 					"org.codehaus.groovy.runtime.GStringImpl"));
 			registerConverter(new StringConverter("groovy.lang.GString$1"));
 			registerConverter(new StringConverter("groovy.lang.GString$2"));
+
+			registerConverter(new StringConverter("java.lang.String",
+					RDF.TYPE_XMLLITERAL));
 
 			loadDatatypes(getClass().getClassLoader(), DATATYPES_PROPERTIES);
 			loadDatatypes(cl, DATATYPES_PROPERTIES);
