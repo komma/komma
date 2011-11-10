@@ -68,6 +68,7 @@ import net.enilink.komma.parser.sparql.tree.visitor.TreeWalker;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.ILiteral;
+import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IValue;
@@ -345,19 +346,34 @@ class ValueEditingSupport extends EditingSupport {
 			}
 		}
 
+		StringBuilder sparql = new StringBuilder(ISparqlConstants.PREFIX
+				+ "SELECT DISTINCT ?s WHERE {");
+
+		if (editPredicate) {
+			sparql.append("?s a rdf:Property . ");
+		} else {
+			// TODO compute correct intersection of ranges
+			sparql.append("{?property rdfs:range ?sType FILTER (?sType != owl:Thing)}");
+			sparql.append(" UNION {?subject a [rdfs:subClassOf ?r] . ?r owl:onProperty ?property {?r owl:allValuesFrom ?sType} UNION {?r owl:someValuesFrom ?sType}}");
+			sparql.append(" ?s a ?sType . ");
+		}
+
+		sparql.append("{?s ?p ?o . FILTER regex(str(?s), ?uriPattern)}");
+		sparql.append(" UNION ");
+		sparql.append("{?s rdfs:label ?l . FILTER regex(str(?l), ?template)}");
+		sparql.append("} LIMIT " + limit);
+
 		// TODO incorporate correct ranges
-		return ((IEntity) stmt.getSubject())
-				.getEntityManager()
-				.createQuery(
-						ISparqlConstants.PREFIX
-								+ "SELECT DISTINCT ?s WHERE {{?s ?p ?o . FILTER regex(str(?s), ?uriPattern)}"
-								+ " UNION "
-								+ "{?s rdfs:label ?l . FILTER regex(str(?l), ?template)}"
-								+ (editPredicate ? "?s a rdf:Property" : "")
-								+ "} LIMIT " + limit) //
+		IQuery<?> query = ((IEntity) stmt.getSubject()).getEntityManager()
+				.createQuery(sparql.toString()) //
 				.setParameter("uriPattern", uriPattern) //
-				.setParameter("template", "^" + template) //
-				.evaluate(IResource.class);
+				.setParameter("template", "^" + template);
+		if (!editPredicate) {
+			query.setParameter("subject", stmt.getSubject());
+			query.setParameter("property", stmt.getPredicate());
+		}
+
+		return query.evaluate(IResource.class);
 	}
 
 	Object unwrap(Object itemOrData) {
