@@ -19,6 +19,7 @@ package net.enilink.komma.edit.command;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -257,8 +258,8 @@ public class AddCommand extends AbstractOverrideableCommand {
 	protected CommandResult doExecuteWithResult(
 			IProgressMonitor progressMonitor, IAdaptable info)
 			throws ExecutionException {
-		boolean transactionWasActive = owner.getEntityManager().getTransaction()
-				.isActive();
+		boolean transactionWasActive = owner.getEntityManager()
+				.getTransaction().isActive();
 		if (!transactionWasActive) {
 			owner.getEntityManager().getTransaction().begin();
 		}
@@ -306,8 +307,8 @@ public class AddCommand extends AbstractOverrideableCommand {
 	public Collection<?> doGetAffectedResources(Object type) {
 		if (IModel.class.equals(type)
 				&& (owner != null || ownerList != null || collection != null)) {
-			Collection<Object> affected = new HashSet<Object>(super
-					.doGetAffectedResources(type));
+			Collection<Object> affected = new HashSet<Object>(
+					super.doGetAffectedResources(type));
 			if (owner != null) {
 				affected.add(owner.getModel());
 			}
@@ -446,9 +447,12 @@ public class AddCommand extends AbstractOverrideableCommand {
 				// object.
 				containment |= property.isContainment();
 				if (containment) {
+					// use seen to prevent infinite loops due to invalid usage
+					// of komma:contains
+					Set<IObject> seen = new HashSet<IObject>();
 					for (IObject container = owner; container != null; container = container
 							.getContainer()) {
-						if (object.equals(container)) {
+						if (!seen.add(container) || object.equals(container)) {
 							return false;
 						}
 					}

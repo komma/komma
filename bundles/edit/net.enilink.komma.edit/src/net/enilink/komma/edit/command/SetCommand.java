@@ -109,12 +109,12 @@ public class SetCommand extends AbstractOverrideableCommand {
 			Object property, Object value, int index) {
 		if (owner instanceof IObject
 				&& property != null
-				&& ((IObject) owner).hasApplicableProperty(
-						(IReference) property)) {
+				&& ((IObject) owner)
+						.hasApplicableProperty((IReference) property)) {
 			IProperty resolvedProperty = (IProperty) ((IObject) owner)
 					.getModel().resolve((IReference) property);
-			if (((IObject) owner).getApplicableCardinality(resolvedProperty).getSecond() != 1
-					&& index == CommandParameter.NO_INDEX) {
+			if (((IObject) owner).getApplicableCardinality(resolvedProperty)
+					.getSecond() != 1 && index == CommandParameter.NO_INDEX) {
 				// We never directly set a multiplicity-many feature to a list
 				// directly. Instead, we remove the old values
 				// values, move the values that remain, and insert the new
@@ -208,208 +208,208 @@ public class SetCommand extends AbstractOverrideableCommand {
 				}
 				return compound;
 			} // end setting whole list
-			// else if (resolvedProperty instanceof ObjectProperty) {
-			// for (ObjectProperty otherEnd : ((ObjectProperty)
-			// resolvedProperty)
-			// .getOwlInverseOf()) {
-			// if (((IProperty)otherEnd).isMany()) {
-			// if (eReference.isMany()) {
-			// // For a many-to-many association, the command can
-			// // only
-			// // be undoable if the value or owner is last in its
-			// // respective list, since the undo will include an
-			// // inverse add. So, if the value is last, but the
-			// // owner
-			// // is
-			// // not, we create an undoable compound command that
-			// // removes from the opposite end and then inserts
-			// // the
-			// // new
-			// // value.
-			// //
-			// EList<?> list = (EList<?>) ((EObject) owner)
-			// .eGet(eReference);
-			// if (index == list.size() - 1) {
-			// EObject oldValue = (EObject) list.get(index);
-			// EList<?> oppositeList = (EList<?>) oldValue
-			// .eGet(eOtherEnd);
-			// if (oppositeList.get(oppositeList.size() - 1) != owner) {
-			// CompoundCommand compound = new CompoundCommand(
-			// CompoundCommand.LAST_COMMAND_ALL,
-			// LABEL, DESCRIPTION) {
-			// @Override
-			// public Collection<?> getAffectedObjects() {
-			// return Collections.singleton(owner);
-			// }
-			// };
-			// compound
-			// .append(RemoveCommand.create(
-			// domain, oldValue,
-			// eOtherEnd, owner));
-			// compound.append(AddCommand.create(domain,
-			// owner, property, value));
-			// return compound;
-			// }
-			// }
-			// } else {
-			// // For a 1-to-many association, doing the set as a
-			// // remove and add from the other end will make it
-			// // undoable.
-			// // In particular, if there is an existing non-null
-			// // value, we first need to remove it from the other
-			// // end,
-			// // so
-			// // that it will be reinserted at the correct index
-			// // on
-			// // undo.
-			// //
-			// Object oldValue = ((EObject) owner)
-			// .eGet(eReference);
-			//
-			// if (value == null || value == UNSET_VALUE) {
-			// if (oldValue == null) { // (value == null) &&
-			// // (oldValue == null)
-			// // A simple set/unset will suffice.
-			// //
-			// return domain.createCommand(
-			// SetCommand.class,
-			// new CommandParameter(owner,
-			// eReference, value));
-			// } else { // (value == null) && (oldValue !=
-			// // null)
-			// // Remove owner from the old value and unset
-			// // if
-			// // necessary.
-			// //
-			// Command removeCommand = RemoveCommand
-			// .create(domain, oldValue,
-			// eOtherEnd, Collections
-			// .singleton(owner));
-			//
-			// if (value != UNSET_VALUE
-			// || !eReference.isUnsettable()) {
-			// return removeCommand;
-			// } else {
-			// CompoundCommand compound = new CompoundCommand(
-			// LABEL, DESCRIPTION);
-			// compound.append(removeCommand);
-			// compound.append(domain.createCommand(
-			// SetCommand.class,
-			// new CommandParameter(owner,
-			// eReference, value)));
-			// return compound;
-			// }
-			// }
-			// } else { // ((value != null)
-			// Command addCommand = new CommandWrapper(
-			// AddCommand.create(domain, value,
-			// eOtherEnd, Collections
-			// .singleton(owner))) {
-			// @Override
-			// public Collection<?> getAffectedObjects() {
-			// return Collections.singleton(owner);
-			// }
-			// };
-			//
-			// if (oldValue == null) { // (value != null) &&
-			// // (oldValue == null)
-			// // Add owner to new value.
-			// //
-			// return addCommand;
-			// } else { // ((value != null) && (oldValue !=
-			// // null))
-			// // Need a compound command to remove owner
-			// // from
-			// // old value and add it to new value.
-			// //
-			// CompoundCommand compound = new CompoundCommand(
-			// CompoundCommand.LAST_COMMAND_ALL,
-			// LABEL, DESCRIPTION);
-			// compound.append(RemoveCommand.create(
-			// domain, oldValue, eOtherEnd,
-			// Collections.singleton(owner)));
-			// compound.append(addCommand);
-			// return compound;
-			// }
-			// }
-			// }
-			// } else if (eOtherEnd.isContainment()) {
-			// if (value != null && value != UNSET_VALUE) {
-			// // For consistency, we always set 1-1 container
-			// // relations from the container end.
-			// //
-			// return new CommandWrapper(SetCommand.create(domain,
-			// value, eOtherEnd, owner)) {
-			// @Override
-			// public Collection<?> getResult() {
-			// return Collections.singleton(owner);
-			// }
-			//
-			// @Override
-			// public Collection<?> getAffectedObjects() {
-			// return Collections.singleton(owner);
-			// }
-			// };
-			// }
-			// } else {
-			// // For a many-to-1 or 1-to-1 association, if the
-			// // opposite
-			// // reference on the new value is already set to
-			// // something, we need a compound command that first
-			// // explicitly removes that reference, so that it will be
-			// // restored in the undo.
-			// //
-			// if (value instanceof EObject) {
-			// EObject otherEObject = (EObject) ((EObject) value)
-			// .eGet(eOtherEnd);
-			// if (otherEObject != null) {
-			// CompoundCommand compound = new CompoundCommand(
-			// CompoundCommand.LAST_COMMAND_ALL) {
-			// @Override
-			// public boolean canUndo() {
-			// return true;
-			// }
-			// };
-			// if (eReference.isMany()) {
-			// // For a many-to-1, we use
-			// // SetCommand.create()
-			// // to create the command to remove the
-			// // opposite
-			// // reference;
-			// // a RemoveCommand on its opposite will
-			// // actually
-			// // result.
-			// //
-			// compound.append(SetCommand.create(domain,
-			// value, eOtherEnd, null));
-			// } else {
-			// // For a 1-to-1, we can directly create a
-			// // SetCommand.
-			// //
-			// compound
-			// .append(domain
-			// .createCommand(
-			// SetCommand.class,
-			// eOtherEnd
-			// .isChangeable() ? new CommandParameter(
-			// value,
-			// eOtherEnd,
-			// null)
-			// : new CommandParameter(
-			// otherEObject,
-			// eReference,
-			// null)));
-			// }
-			// compound.append(domain.createCommand(
-			// SetCommand.class,
-			// new CommandParameter(owner, eReference,
-			// value, index)));
-			// return compound;
-			// }
-			// }
-			// }
-			// }
-			// }
+				// else if (resolvedProperty instanceof ObjectProperty) {
+				// for (ObjectProperty otherEnd : ((ObjectProperty)
+				// resolvedProperty)
+				// .getOwlInverseOf()) {
+				// if (((IProperty)otherEnd).isMany()) {
+				// if (eReference.isMany()) {
+				// // For a many-to-many association, the command can
+				// // only
+				// // be undoable if the value or owner is last in its
+				// // respective list, since the undo will include an
+				// // inverse add. So, if the value is last, but the
+				// // owner
+				// // is
+				// // not, we create an undoable compound command that
+				// // removes from the opposite end and then inserts
+				// // the
+				// // new
+				// // value.
+				// //
+				// EList<?> list = (EList<?>) ((EObject) owner)
+				// .eGet(eReference);
+				// if (index == list.size() - 1) {
+				// EObject oldValue = (EObject) list.get(index);
+				// EList<?> oppositeList = (EList<?>) oldValue
+				// .eGet(eOtherEnd);
+				// if (oppositeList.get(oppositeList.size() - 1) != owner) {
+				// CompoundCommand compound = new CompoundCommand(
+				// CompoundCommand.LAST_COMMAND_ALL,
+				// LABEL, DESCRIPTION) {
+				// @Override
+				// public Collection<?> getAffectedObjects() {
+				// return Collections.singleton(owner);
+				// }
+				// };
+				// compound
+				// .append(RemoveCommand.create(
+				// domain, oldValue,
+				// eOtherEnd, owner));
+				// compound.append(AddCommand.create(domain,
+				// owner, property, value));
+				// return compound;
+				// }
+				// }
+				// } else {
+				// // For a 1-to-many association, doing the set as a
+				// // remove and add from the other end will make it
+				// // undoable.
+				// // In particular, if there is an existing non-null
+				// // value, we first need to remove it from the other
+				// // end,
+				// // so
+				// // that it will be reinserted at the correct index
+				// // on
+				// // undo.
+				// //
+				// Object oldValue = ((EObject) owner)
+				// .eGet(eReference);
+				//
+				// if (value == null || value == UNSET_VALUE) {
+				// if (oldValue == null) { // (value == null) &&
+				// // (oldValue == null)
+				// // A simple set/unset will suffice.
+				// //
+				// return domain.createCommand(
+				// SetCommand.class,
+				// new CommandParameter(owner,
+				// eReference, value));
+				// } else { // (value == null) && (oldValue !=
+				// // null)
+				// // Remove owner from the old value and unset
+				// // if
+				// // necessary.
+				// //
+				// Command removeCommand = RemoveCommand
+				// .create(domain, oldValue,
+				// eOtherEnd, Collections
+				// .singleton(owner));
+				//
+				// if (value != UNSET_VALUE
+				// || !eReference.isUnsettable()) {
+				// return removeCommand;
+				// } else {
+				// CompoundCommand compound = new CompoundCommand(
+				// LABEL, DESCRIPTION);
+				// compound.append(removeCommand);
+				// compound.append(domain.createCommand(
+				// SetCommand.class,
+				// new CommandParameter(owner,
+				// eReference, value)));
+				// return compound;
+				// }
+				// }
+				// } else { // ((value != null)
+				// Command addCommand = new CommandWrapper(
+				// AddCommand.create(domain, value,
+				// eOtherEnd, Collections
+				// .singleton(owner))) {
+				// @Override
+				// public Collection<?> getAffectedObjects() {
+				// return Collections.singleton(owner);
+				// }
+				// };
+				//
+				// if (oldValue == null) { // (value != null) &&
+				// // (oldValue == null)
+				// // Add owner to new value.
+				// //
+				// return addCommand;
+				// } else { // ((value != null) && (oldValue !=
+				// // null))
+				// // Need a compound command to remove owner
+				// // from
+				// // old value and add it to new value.
+				// //
+				// CompoundCommand compound = new CompoundCommand(
+				// CompoundCommand.LAST_COMMAND_ALL,
+				// LABEL, DESCRIPTION);
+				// compound.append(RemoveCommand.create(
+				// domain, oldValue, eOtherEnd,
+				// Collections.singleton(owner)));
+				// compound.append(addCommand);
+				// return compound;
+				// }
+				// }
+				// }
+				// } else if (eOtherEnd.isContainment()) {
+				// if (value != null && value != UNSET_VALUE) {
+				// // For consistency, we always set 1-1 container
+				// // relations from the container end.
+				// //
+				// return new CommandWrapper(SetCommand.create(domain,
+				// value, eOtherEnd, owner)) {
+				// @Override
+				// public Collection<?> getResult() {
+				// return Collections.singleton(owner);
+				// }
+				//
+				// @Override
+				// public Collection<?> getAffectedObjects() {
+				// return Collections.singleton(owner);
+				// }
+				// };
+				// }
+				// } else {
+				// // For a many-to-1 or 1-to-1 association, if the
+				// // opposite
+				// // reference on the new value is already set to
+				// // something, we need a compound command that first
+				// // explicitly removes that reference, so that it will be
+				// // restored in the undo.
+				// //
+				// if (value instanceof EObject) {
+				// EObject otherEObject = (EObject) ((EObject) value)
+				// .eGet(eOtherEnd);
+				// if (otherEObject != null) {
+				// CompoundCommand compound = new CompoundCommand(
+				// CompoundCommand.LAST_COMMAND_ALL) {
+				// @Override
+				// public boolean canUndo() {
+				// return true;
+				// }
+				// };
+				// if (eReference.isMany()) {
+				// // For a many-to-1, we use
+				// // SetCommand.create()
+				// // to create the command to remove the
+				// // opposite
+				// // reference;
+				// // a RemoveCommand on its opposite will
+				// // actually
+				// // result.
+				// //
+				// compound.append(SetCommand.create(domain,
+				// value, eOtherEnd, null));
+				// } else {
+				// // For a 1-to-1, we can directly create a
+				// // SetCommand.
+				// //
+				// compound
+				// .append(domain
+				// .createCommand(
+				// SetCommand.class,
+				// eOtherEnd
+				// .isChangeable() ? new CommandParameter(
+				// value,
+				// eOtherEnd,
+				// null)
+				// : new CommandParameter(
+				// otherEObject,
+				// eReference,
+				// null)));
+				// }
+				// compound.append(domain.createCommand(
+				// SetCommand.class,
+				// new CommandParameter(owner, eReference,
+				// value, index)));
+				// return compound;
+				// }
+				// }
+				// }
+				// }
+				// }
 		}
 		return domain.createCommand(SetCommand.class, new CommandParameter(
 				owner, property, value, index));
@@ -619,9 +619,12 @@ public class SetCommand extends AbstractOverrideableCommand {
 			// object.
 			if (result && resolvedProperty instanceof ObjectProperty
 					&& resolvedProperty.isContainment()) {
+				// use seen to prevent infinite loops due to invalid usage
+				// of komma:contains
+				Set<IObject> seen = new HashSet<IObject>();
 				for (IObject container = owner; container != null; container = container
 						.getContainer()) {
-					if (value == container) {
+					if (!seen.add(container) || value.equals(container)) {
 						result = false;
 						break;
 					}
@@ -649,8 +652,8 @@ public class SetCommand extends AbstractOverrideableCommand {
 			// this code.
 			//
 			if (oldValue instanceof Collection<?>) {
-				oldValue = new ArrayList<Object>((Collection<?>) owner
-						.get(property));
+				oldValue = new ArrayList<Object>(
+						(Collection<?>) owner.get(property));
 			} else if (oldValue != UNSET_VALUE
 					&& index == CommandParameter.NO_INDEX) {
 				oldValue = owner.get(property);
@@ -754,8 +757,8 @@ public class SetCommand extends AbstractOverrideableCommand {
 	@Override
 	public Collection<?> doGetAffectedResources(Object type) {
 		if (IModel.class.equals(type) && (owner != null || ownerList != null)) {
-			Collection<Object> affected = new HashSet<Object>(super
-					.doGetAffectedResources(type));
+			Collection<Object> affected = new HashSet<Object>(
+					super.doGetAffectedResources(type));
 			if (owner != null) {
 				affected.add(owner.getModel());
 			}
