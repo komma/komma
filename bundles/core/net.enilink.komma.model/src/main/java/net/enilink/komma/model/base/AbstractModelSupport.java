@@ -29,6 +29,13 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import net.enilink.composition.traits.Behaviour;
 
+import com.google.inject.ConfigurationException;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
+
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
@@ -92,6 +99,9 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	private KommaModule module;
 
 	protected IEntityManager manager;
+
+	@Inject
+	private Injector injector;
 
 	/*
 	 * documentation inherited
@@ -217,8 +227,9 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 				module.includeModule(modelSetModule);
 			}
 
+			String modelUri = getURI().toString();
+
 			// support for registering KommaModules as extensions
-			String modelUri = getURI().trimFragment().toString() + "#";
 			IExtensionPoint extensionPoint = Platform.getExtensionRegistry()
 					.getExtensionPoint(ModelCore.PLUGIN_ID, "modules");
 			if (extensionPoint != null) {
@@ -236,6 +247,17 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 						}
 					}
 				}
+			}
+
+			// support for registering KommaModules via Guice
+			try {
+				for (KommaModule extensionModule : injector.getInstance(Key
+						.get(new TypeLiteral<Set<KommaModule>>() {
+						}, Names.named(modelUri)))) {
+					module.includeModule(extensionModule);
+				}
+			} catch (ConfigurationException ce) {
+				// no bound modules found - ignore
 			}
 
 			try {
