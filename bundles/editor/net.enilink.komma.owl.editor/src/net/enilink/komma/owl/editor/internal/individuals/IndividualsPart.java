@@ -234,8 +234,10 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 	@Override
 	public boolean setEditorInput(Object input) {
 		if (input == null || input instanceof IClass) {
-			this.input = (IClass) input;
-			setStale(true);
+			if (this.input != input) {
+				this.input = (IClass) input;
+				setStale(true);
+			}
 			return true;
 		} else if (input instanceof IReference) {
 			if (viewer != null) {
@@ -255,6 +257,7 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 		}
 
 		setInputToViewer(viewer, input);
+		super.refresh();
 	}
 
 	protected void setInputToViewer(StructuredViewer viewer, IClass input) {
