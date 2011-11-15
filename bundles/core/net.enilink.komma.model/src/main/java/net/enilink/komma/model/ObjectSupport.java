@@ -23,23 +23,36 @@ public abstract class ObjectSupport extends BehaviorBase implements IObject,
 	private static final String SELECT_APPLICABLE_CHILD_PROPERTIES = PREFIX //
 			+ "SELECT DISTINCT ?property " //
 			+ "WHERE { " //
-			+ "?resource rdf:type ?class" //
+			// select potential child properties
 			+ "{" //
-			+ "		?property rdfs:domain ?class ." //
+			+ "?resource a ?class ." //
+			+ "{" //
+			+ "    ?property rdfs:domain ?class ." //
 			+ "} UNION {" //
-			+ "		?class rdfs:subClassOf ?restriction ."
-			+ "		?restriction owl:onProperty ?property" //
+			+ "    ?class rdfs:subClassOf [owl:onProperty ?property] ." //
 			+ "}" //
 			+ "?property rdfs:subPropertyOf komma:hasDescendant ." //
 			+ "OPTIONAL {" //
-			+ "	?otherProperty rdfs:subPropertyOf ?property ." //
-			+ "	{" //
-			+ "		?otherProperty rdfs:domain ?class ." //
-			+ "	} UNION {" //
-			+ "		?class rdfs:subClassOf [owl:onProperty ?otherProperty]" + "	}" //
+			+ "    ?otherProperty rdfs:subPropertyOf ?property ." //
+			+ "    {" //
+			+ "        ?otherProperty rdfs:domain ?class ." //
+			+ "    } UNION {" //
+			+ "        ?class rdfs:subClassOf [owl:onProperty ?otherProperty]" //
+			+ "    }" //
 			+ "	FILTER (?property != ?otherProperty)" //
 			+ "}" //
 			+ "FILTER (! bound(?otherProperty))" //
+			// select already used child properties
+			+ "} UNION {" //
+			+ "    ?resource ?property ?someObject ." //
+			+ "    ?property rdfs:subPropertyOf komma:hasDescendant ." //
+			+ "    OPTIONAL {" //
+			+ "        ?otherProperty rdfs:subPropertyOf ?property ." //
+			+ "        ?resource ?otherProperty ?someObject ." //
+			+ "        FILTER (?property != ?otherProperty)" //
+			+ "    }" //
+			+ "    FILTER (! bound(?otherProperty))" //
+			+ "}" //
 			+ "} ORDER BY ?property";
 
 	private static final String SELECT_CONTAINER = PREFIX //
@@ -51,7 +64,7 @@ public abstract class ObjectSupport extends BehaviorBase implements IObject,
 	public IExtendedIterator<IProperty> getApplicableChildProperties() {
 		IQuery<?> query = getEntityManager().createQuery(
 				SELECT_APPLICABLE_CHILD_PROPERTIES);
-		query.setParameter("resource", getBehaviourDelegate());
+		query.setParameter("resource", this);
 		query.setIncludeInferred(true);
 
 		return query.evaluate(IProperty.class);
@@ -60,7 +73,7 @@ public abstract class ObjectSupport extends BehaviorBase implements IObject,
 	@Override
 	public IObject getContainer() {
 		IQuery<?> query = getEntityManager().createQuery(SELECT_CONTAINER);
-		query.setParameter("obj", getBehaviourDelegate());
+		query.setParameter("obj", this);
 		IExtendedIterator<?> it = query.evaluate();
 		try {
 			return it.hasNext() ? (IObject) it.next() : null;
