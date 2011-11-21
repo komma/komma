@@ -27,7 +27,6 @@ import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 
 import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.komma.common.util.Literal;
 import net.enilink.komma.em.internal.ByteArrayConverter;
 import net.enilink.komma.em.internal.behaviours.EntitySupport;
 import net.enilink.komma.literals.IConverter;
@@ -35,6 +34,7 @@ import net.enilink.komma.literals.LiteralConverter;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.Literal;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 

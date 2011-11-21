@@ -366,7 +366,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	public ILiteral createLiteral(Object value,
 			net.enilink.komma.core.URI datatype, String language) {
 		if (datatype == null && language != null) {
-			return new net.enilink.komma.common.util.Literal(value,
+			return new net.enilink.komma.core.Literal(value,
 					language);
 		}
 		return literalConverter.createLiteral(value, datatype);
