@@ -65,6 +65,7 @@ public class SesameTransaction implements ITransaction {
 			if (!isActive())
 				throw new IllegalStateException(
 						"Transaction has not been started");
+			dm.getConnection().commit();
 			dm.getConnection().setAutoCommit(true);
 			rollbackOnly = false;
 
