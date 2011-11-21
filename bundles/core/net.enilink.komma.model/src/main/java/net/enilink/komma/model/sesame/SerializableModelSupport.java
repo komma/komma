@@ -18,6 +18,7 @@ import net.enilink.composition.annotations.parameterTypes;
 import net.enilink.composition.concepts.Message;
 import net.enilink.composition.traits.Behaviour;
 import org.openrdf.model.Statement;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
@@ -27,8 +28,6 @@ import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.RDFHandlerBase;
-
-import com.google.inject.Inject;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.dm.IDataManager;
@@ -40,7 +39,6 @@ import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
@@ -100,12 +98,6 @@ public abstract class SerializableModelSupport implements IModel, Model,
 		}
 	}
 
-	@Inject
-	SesameValueConverter valueConverter;
-
-	@Inject
-	IUnitOfWork unitOfWork;
-
 	private RDFFormat determineFormat(Map<?, ?> options) {
 		IURIConverter uriConverter = getModelSet().getURIConverter();
 		URI normalizedUri = uriConverter.normalize(getURI());
@@ -142,6 +134,8 @@ public abstract class SerializableModelSupport implements IModel, Model,
 	@Override
 	public void load(final InputStream in, final Map<?, ?> options)
 			throws IOException {
+		final SesameValueConverter valueConverter = new SesameValueConverter(
+				new ValueFactoryImpl());
 		final IDataManager dm = ((IModelSet.Internal) getModelSet())
 				.getDataManagerFactory().get();
 		getModelSet().getDataChangeSupport().setEnabled(dm, false);
@@ -197,7 +191,6 @@ public abstract class SerializableModelSupport implements IModel, Model,
 						});
 						try {
 							try {
-								unitOfWork.begin();
 								parser.parse(in, getURI().toString());
 							} catch (RDFParseException e) {
 								throw new KommaException("Invalid RDF data", e);
@@ -212,8 +205,6 @@ public abstract class SerializableModelSupport implements IModel, Model,
 								synchronized (queue) {
 									queue.notify();
 								}
-
-								unitOfWork.end();
 							}
 						} catch (RuntimeException e) {
 							throw e;
@@ -282,6 +273,8 @@ public abstract class SerializableModelSupport implements IModel, Model,
 		}
 
 		try {
+			final SesameValueConverter valueConverter = new SesameValueConverter(
+					new ValueFactoryImpl());
 			final IDataManager dm = ((IModelSet.Internal) getModelSet())
 					.getDataManagerFactory().get();
 			dm.setReadContexts(Collections.singleton(getURI()));

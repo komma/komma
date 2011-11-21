@@ -43,12 +43,18 @@ public interface IModelSet extends INotifier<INotification> {
 		 * {@link Injector} instance for models.
 		 */
 		void collectInjectionModules(Collection<Module> modules);
-		
+
 		Injector getInjector();
 
 		IDataManagerFactory getDataManagerFactory();
 
 		IEntityManagerFactory getEntityManagerFactory();
+
+		/**
+		 * Allow specific model sets to set their default graph in case they
+		 * cannot handle the default null.
+		 */
+		URI getDefaultGraph();
 
 		/**
 		 * Initialize the model set.
@@ -120,12 +126,13 @@ public interface IModelSet extends INotifier<INotification> {
 	void dispose();
 
 	/**
-	 * Returns change support for changes made to the underlying data repository.
+	 * Returns change support for changes made to the underlying data
+	 * repository.
 	 * 
 	 * @return the change support
 	 */
 	IDataChangeSupport getDataChangeSupport();
-	
+
 	/**
 	 * Returns tracker for changes made to the underlying data repository.
 	 * 

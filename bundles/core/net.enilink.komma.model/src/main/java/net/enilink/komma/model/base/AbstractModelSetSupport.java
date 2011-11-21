@@ -201,6 +201,11 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 					}
 				}));
 	}
+	
+	@Override
+	public URI getDefaultGraph() {
+		return null;
+	}
 
 	/*
 	 * Javadoc copied from interface.
@@ -532,7 +537,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 					AbstractModelSetSupport.class.getClassLoader());
 			module.includeModule(KommaUtil.getCoreModule());
 
-			module.addReadableGraph(null);
+			module.addReadableGraph(getBehaviourDelegate().getDefaultGraph());
 
 			module.addBehaviour(ObjectSupport.class);
 			module.addConcept(IObject.class);
