@@ -10,6 +10,8 @@
  *******************************************************************************/
 package net.enilink.komma.core;
 
+import java.util.UUID;
+
 /**
  * This class represents a generic blank node.
  * 
@@ -20,7 +22,7 @@ public class BlankNode implements IReference {
 	private String id;
 
 	public BlankNode() {
-		id = "_:komma-" + System.identityHashCode(this);
+		id = "_:komma-" + UUID.randomUUID().toString();
 	}
 
 	public BlankNode(String id) {
