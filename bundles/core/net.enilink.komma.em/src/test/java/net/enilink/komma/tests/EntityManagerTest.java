@@ -10,8 +10,8 @@
  *******************************************************************************/
 package net.enilink.komma.tests;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.After;
+import org.junit.Before;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -25,7 +25,7 @@ import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.util.UnitOfWork;
 
-public abstract class EntityManagerTestCase extends KommaTestCase {
+public abstract class EntityManagerTest {
 	protected IEntityManagerFactory factory;
 	protected IEntityManager manager;
 	protected UnitOfWork uow;
@@ -43,10 +43,8 @@ public abstract class EntityManagerTestCase extends KommaTestCase {
 		}
 	}
 
-	@Override
-	protected void setUp() throws Exception {
-		uow = new UnitOfWork();
-		uow.begin();
+	@Before
+	public void beforeTest() throws Exception {
 		factory = Guice.createInjector(
 				createStorageModule(),
 				new EntityManagerFactoryModule(createModule(), null,
@@ -69,16 +67,12 @@ public abstract class EntityManagerTestCase extends KommaTestCase {
 		return new KommaModule(getClass().getClassLoader());
 	}
 
-	@Override
-	protected void tearDown() throws Exception {
+	@After
+	public void afterTest() throws Exception {
 		try {
-			uow.end();
+			factory.getUnitOfWork().end();
 			factory.close();
 		} catch (Exception e) {
 		}
-	}
-
-	public static Test suite() throws Exception {
-		return new TestSuite();
 	}
 }
