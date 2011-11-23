@@ -20,7 +20,7 @@ import net.enilink.vocab.owl.ObjectProperty;
 import net.enilink.vocab.owl.Ontology;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.model.IObject;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.rdfs.edit.RDFSItemProviderAdapterFactory;
 import net.enilink.komma.core.URIImpl;
 
@@ -39,23 +39,23 @@ public class OWLItemProviderAdapterFactory extends
 	protected Collection<IClass> getTypes(Object object) {
 		// classes
 		if (object instanceof IClass) {
-			return Arrays.asList(((IObject) object).getModel().getManager()
-					.find(OWL.TYPE_CLASS, IClass.class));
+			return Arrays.asList(((IResource) object).getEntityManager().find(
+					OWL.TYPE_CLASS, IClass.class));
 		}
 		if (object instanceof AnnotationProperty) {
-			return Arrays.asList(((IObject) object).getModel().getManager()
-					.find(OWL.TYPE_ANNOTATIONPROPERTY, IClass.class));
+			return Arrays.asList(((IResource) object).getEntityManager().find(
+					OWL.TYPE_ANNOTATIONPROPERTY, IClass.class));
 		}
 		if (object instanceof DatatypeProperty) {
-			return Arrays.asList(((IObject) object).getModel().getManager()
-					.find(OWL.TYPE_DATATYPEPROPERTY, IClass.class));
+			return Arrays.asList(((IResource) object).getEntityManager().find(
+					OWL.TYPE_DATATYPEPROPERTY, IClass.class));
 		}
 		if (object instanceof ObjectProperty) {
-			return Arrays.asList(((IObject) object).getModel().getManager()
-					.find(OWL.TYPE_OBJECTPROPERTY, IClass.class));
+			return Arrays.asList(((IResource) object).getEntityManager().find(
+					OWL.TYPE_OBJECTPROPERTY, IClass.class));
 		}
 		// others
-		Set<IClass> classes = ((IObject) object).getDirectNamedClasses()
+		Set<IClass> classes = ((IResource) object).getDirectNamedClasses()
 				.toSet();
 		return classes;
 	}
