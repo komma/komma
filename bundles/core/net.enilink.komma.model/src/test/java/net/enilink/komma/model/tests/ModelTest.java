@@ -47,7 +47,7 @@ public class ModelTest {
 				new ModelSetModule(module)).getInstance(IModelSetFactory.class);
 
 		modelSet = factory.createModelSet(MODELS.NAMESPACE_URI
-				.appendFragment("MemoryModelSet"));
+				.appendLocalPart("MemoryModelSet"));
 	}
 
 	@After
@@ -56,7 +56,7 @@ public class ModelTest {
 	}
 
 	@Test
-	public void testModel() throws Exception {
+	public void testNotifications() throws Exception {
 		IModel model = modelSet.createModel(URIImpl
 				.createURI("http://iwu.fraunhofer.de/test/model1"));
 		final boolean[] notified = new boolean[] { false };

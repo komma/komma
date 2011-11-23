@@ -49,13 +49,6 @@
 
    <element name="module">
       <complexType>
-         <attribute name="uri" type="string" use="required">
-            <annotation>
-               <documentation>
-                  Namespace URI as String
-               </documentation>
-            </annotation>
-         </attribute>
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
@@ -104,4 +97,6 @@
          [Enter information about supplied implementation of this extension point.]
       </documentation>
    </annotation>
+
+
 </schema>
