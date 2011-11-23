@@ -10,9 +10,14 @@
  *******************************************************************************/
 package net.enilink.komma.model.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Collection;
 
-import junit.framework.Test;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.google.inject.Guice;
 
@@ -29,14 +34,12 @@ import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.tests.KommaTestCase;
 
-public class ModelTest extends KommaTestCase {
+public class ModelTest {
 	IModelSet modelSet;
 
-	protected void setUp() throws Exception {
-		super.setUp();
-
+	@Before
+	public void beforeTest() throws Exception {
 		KommaModule module = ModelCore.createModelSetModule(getClass()
 				.getClassLoader());
 
@@ -47,12 +50,12 @@ public class ModelTest extends KommaTestCase {
 				.appendFragment("MemoryModelSet"));
 	}
 
-	protected void tearDown() throws Exception {
+	@After
+	public void afterTest() throws Exception {
 		modelSet.dispose();
-
-		super.tearDown();
 	}
 
+	@Test
 	public void testModel() throws Exception {
 		IModel model = modelSet.createModel(URIImpl
 				.createURI("http://iwu.fraunhofer.de/test/model1"));
@@ -85,9 +88,5 @@ public class ModelTest extends KommaTestCase {
 		assertEquals("Resource is unequal to reference", resource, subject[0]);
 
 		assertTrue(notified[0]);
-	}
-
-	public static Test suite() throws Exception {
-		return suite(ModelTest.class);
 	}
 }

@@ -10,10 +10,14 @@
  *******************************************************************************/
 package net.enilink.komma.model.tests;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Collections;
 import java.util.List;
 
-import junit.framework.Test;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.google.inject.Guice;
 
@@ -25,14 +29,12 @@ import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.tests.KommaTestCase;
 
-public class ModelLoadTest extends KommaTestCase {
+public class ModelLoadTest {
 	IModelSet modelSet;
 
-	protected void setUp() throws Exception {
-		super.setUp();
-
+	@Before
+	public void beforeTest() throws Exception {
 		KommaModule module = ModelCore.createModelSetModule(getClass()
 				.getClassLoader());
 
@@ -43,12 +45,12 @@ public class ModelLoadTest extends KommaTestCase {
 				.appendFragment("MemoryModelSet"));
 	}
 
-	protected void tearDown() throws Exception {
+	@After
+	public void afterTest() throws Exception {
 		modelSet.dispose();
-
-		super.tearDown();
 	}
 
+	@Test
 	public void testModel() throws Exception {
 		IModel model = modelSet
 				.createModel(URIImpl
@@ -62,9 +64,5 @@ public class ModelLoadTest extends KommaTestCase {
 				.getResultList();
 
 		assertEquals("The Ontologies couldn't resolved.", 4, test.size());
-	}
-
-	public static Test suite() throws Exception {
-		return suite(ModelLoadTest.class);
 	}
 }
