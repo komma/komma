@@ -10,6 +10,7 @@ import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -68,10 +69,6 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.rdf.RDF;
-import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.vocab.xmlschema.XMLSCHEMA;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.BasicCommandStack;
 import net.enilink.komma.common.command.ICommand;
@@ -1137,9 +1134,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 				class DefaultItemProviderAdapterFactory extends
 						ReflectiveItemProviderAdapterFactory {
 					public DefaultItemProviderAdapterFactory() {
-						super(KommaEditPlugin.getPlugin(),
-								XMLSCHEMA.NAMESPACE_URI, RDF.NAMESPACE_URI,
-								RDFS.NAMESPACE_URI, OWL.NAMESPACE_URI);
+						super(KommaEditPlugin.getPlugin());
 					}
 
 					@Override
@@ -1150,6 +1145,12 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 						}
 						return super.adapt(object, type);
 					}
+
+					public boolean isFactoryForType(Object type) {
+						// support any namespace
+						return type instanceof URI
+								|| supportedTypes.contains(type);
+					}
 				}
 
 				DefaultItemProviderAdapterFactory defaultAdapterFactory;
@@ -1159,13 +1160,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 				}
 
 				@Override
-				protected IAdapterFactory delegatedGetFactoryForTypes(
-						Collection<?> types) {
-					for (Object type : types) {
-						if (!defaultAdapterFactory.isFactoryForType(type)) {
-							return null;
-						}
-					}
+				protected IAdapterFactory getDefaultAdapterFactory(Object type) {
 					// provide a default adapter factory as fallback if no
 					// specific adapter factory was found
 					return defaultAdapterFactory;
