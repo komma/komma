@@ -31,9 +31,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.WeakHashMap;
-
-import javax.management.Notification;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -82,9 +81,7 @@ import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IReferenceable;
 import net.enilink.komma.core.URI;
 
 /**
@@ -845,15 +842,21 @@ public class ItemProviderAdapter extends
 		Collection<? extends IReference> childTypes = (Collection<? extends IReference>) childDescriptor
 				.getValue();
 
-		URI name = childDescriptor.getName();
-		IEntityManager manager;
+		IModel model;
 		if (owner instanceof IModel) {
-			manager = ((IModel) owner).getManager();
+			model = (IModel) owner;
 		} else {
-			manager = ((IObject) owner).getEntityManager();
+			model = ((IObject) owner).getModel();
 		}
 
-		return manager.createNamed(name,
+		URI name = childDescriptor.getName();
+		if (name == null) {
+			// generate a default URI
+			name = model.getURI().appendLocalPart(
+					"entity_" + UUID.randomUUID().toString());
+		}
+
+		return model.getManager().createNamed(name,
 				childTypes.toArray(new IReference[childTypes.size()]));
 	}
 
@@ -2587,11 +2590,11 @@ public class ItemProviderAdapter extends
 	 * from the store. When children are added to, removed from, or moved within
 	 * a property, the indices of any others affected are
 	 * {@link #adjustWrapperIndex adjusted}. Since this method is typically
-	 * called from {@link #notifyChanged(Notification) notifyChanged}, which, in
-	 * subclasses, is often invoked repeatedly up the inheritance chain, it can
-	 * be safely called repeatedly for a single notification, and only the first
-	 * such call will have an effect. Such repeated calls may not, however,
-	 * safely be interleaved with calls for another notification.
+	 * called from {@link #notifyChanged(INotification) notifyChanged}, which,
+	 * in subclasses, is often invoked repeatedly up the inheritance chain, it
+	 * can be safely called repeatedly for a single notification, and only the
+	 * first such call will have an effect. Such repeated calls may not,
+	 * however, safely be interleaved with calls for another notification.
 	 */
 	protected void updateChildren(
 			Collection<? extends INotification> notifications) {

@@ -177,9 +177,9 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 	}
 
 	protected Object adaptEntityClass(IResource target, Object type,
-			Collection<Object> typesCache, Set<URI> seenNamespaces,
-			final Collection<IClass> seenClasses, List<IClass> classes) {
-		Object result = null;
+			Set<URI> seenNamespaces, final Collection<IClass> seenClasses,
+			List<IClass> classes) {
+		Collection<Object> typesCache = new ArrayList<Object>();
 
 		seenClasses.addAll(classes);
 		while (!classes.isEmpty()) {
@@ -202,11 +202,12 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 					typesCache.add(type);
 				}
 				IAdapterFactory delegateAdapterFactory = getFactoryForTypes(typesCache);
+
 				if (delegateAdapterFactory != null) {
-					result = delegateAdapterFactory.adapt(target, type);
-				}
-				if (result != null) {
-					return result;
+					Object result = delegateAdapterFactory.adapt(target, type);
+					if (result != null) {
+						return result;
+					}
 				}
 
 				typesCache.clear();
@@ -225,16 +226,13 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 			}
 		}
 
-		// for (final IClass resourceClass : classes) {
-		// result = adaptEntityClass(target, type, typesCache, seenNamespaces,
-		// seenClasses, sort(resourceClass
-		// .getDirectNamedSuperClasses().toList()));
-		// if (result != null) {
-		// break;
-		// }
-		// }
+		IAdapterFactory defaultAdapterFactory = getDefaultAdapterFactory(type);
+		return defaultAdapterFactory != null ? defaultAdapterFactory.adapt(
+				target, type) : null;
+	}
 
-		return result;
+	protected IAdapterFactory getDefaultAdapterFactory(Object type) {
+		return null;
 	}
 
 	protected Object adaptJavaClass(Object target, Object type,
@@ -269,6 +267,13 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 						break;
 					}
 				}
+			}
+		}
+
+		if (result == null) {
+			IAdapterFactory defaultAdapterFactory = getDefaultAdapterFactory(type);
+			if (defaultAdapterFactory != null) {
+				result = defaultAdapterFactory.adapt(target, type);
 			}
 		}
 
@@ -367,8 +372,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 			List<IClass> classes = new ArrayList<IClass>(1);
 			classes.add((IClass) target);
 			result = adaptEntityClass((IResource) target, type,
-					new ArrayList<Object>(), new HashSet<URI>(),
-					new HashSet<IClass>(), classes);
+					new HashSet<URI>(), new HashSet<IClass>(), classes);
 		}
 
 		if (result != null) {
@@ -377,8 +381,8 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 
 		if (target instanceof IResource) {
 			IResource resource = (IResource) target;
-			result = adaptEntityClass(resource, type, new ArrayList<Object>(),
-					new HashSet<URI>(), new HashSet<IClass>(), sort(resource
+			result = adaptEntityClass(resource, type, new HashSet<URI>(),
+					new HashSet<IClass>(), sort(resource
 							.getDirectNamedClasses().toList()));
 		}
 

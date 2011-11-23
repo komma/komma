@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -35,6 +36,7 @@ import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.URI;
 
 /**
  * The create copy command is used to create an uninitialized object of the same
@@ -124,7 +126,14 @@ public class CreateCopyCommand extends AbstractOverrideableCommand implements
 			targetModel = owner.getModel();
 		}
 		// reload copy to implement all types which where added before
-		copy = (IObject) targetModel.getManager().create(
+		URI copyURI = null;
+		if (owner.getURI() != null) {
+			// generate a default URI
+			copyURI = targetModel.getURI().appendLocalPart(
+					"entity_" + UUID.randomUUID().toString());
+		}
+
+		copy = (IObject) targetModel.getManager().createNamed(copyURI,
 				ownerTypes.toArray(new IReference[0]));
 		copyHelper.put(owner, copy);
 
@@ -142,8 +151,8 @@ public class CreateCopyCommand extends AbstractOverrideableCommand implements
 	@Override
 	public Collection<?> doGetAffectedResources(Object type) {
 		if (IModel.class.equals(type) && owner != null) {
-			Collection<Object> affected = new HashSet<Object>(super
-					.doGetAffectedResources(type));
+			Collection<Object> affected = new HashSet<Object>(
+					super.doGetAffectedResources(type));
 			affected.add(owner.getModel());
 			return affected;
 		}
