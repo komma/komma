@@ -63,6 +63,9 @@ public class RDFSItemProviderAdapterFactory extends
 		if (object instanceof IClass) {
 			return new RDFSClassItemProvider(this, resourceLocator, types);
 		}
-		return new RDFSPropertyItemProvider(this, resourceLocator, types);
+		if (object instanceof IProperty) {
+			return new RDFSPropertyItemProvider(this, resourceLocator, types);
+		}
+		return null;
 	}
 }
