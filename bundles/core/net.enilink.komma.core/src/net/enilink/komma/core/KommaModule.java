@@ -121,8 +121,12 @@ public class KommaModule {
 				alternatives = new LinkedHashSet<ClassLoader>();
 			}
 			if (loader instanceof CombinedClassLoader) {
-				alternatives
-						.addAll(((CombinedClassLoader) loader).alternatives);
+				if (((CombinedClassLoader) loader).alternatives != null) {
+					alternatives
+							.addAll(((CombinedClassLoader) loader).alternatives);
+				} else {
+					alternatives.add(loader.getParent());
+				}
 			} else {
 				alternatives.add(loader);
 			}
@@ -131,7 +135,7 @@ public class KommaModule {
 		@Override
 		public URL getResource(String name) {
 			URL resource = super.getResource(name);
-			if (resource == null) {
+			if (resource == null && alternatives != null) {
 				for (ClassLoader alt : alternatives) {
 					resource = alt.getResource(name);
 					if (resource != null) {
@@ -145,7 +149,7 @@ public class KommaModule {
 		@Override
 		public InputStream getResourceAsStream(String name) {
 			InputStream stream = super.getResourceAsStream(name);
-			if (stream == null) {
+			if (stream == null && alternatives != null) {
 				for (ClassLoader alt : alternatives) {
 					stream = alt.getResourceAsStream(name);
 					if (stream != null) {
@@ -163,10 +167,12 @@ public class KommaModule {
 			while (e.hasMoreElements()) {
 				list.add(e.nextElement());
 			}
-			for (ClassLoader alt : alternatives) {
-				e = alt.getResources(name);
-				while (e.hasMoreElements()) {
-					list.add(e.nextElement());
+			if (alternatives != null) {
+				for (ClassLoader alt : alternatives) {
+					e = alt.getResources(name);
+					while (e.hasMoreElements()) {
+						list.add(e.nextElement());
+					}
 				}
 			}
 			return list.elements();
@@ -177,11 +183,13 @@ public class KommaModule {
 			try {
 				return super.loadClass(name);
 			} catch (ClassNotFoundException e) {
-				for (ClassLoader alt : alternatives) {
-					try {
-						return alt.loadClass(name);
-					} catch (ClassNotFoundException e2) {
-						// ignore and try next alternative class loader
+				if (alternatives != null) {
+					for (ClassLoader alt : alternatives) {
+						try {
+							return alt.loadClass(name);
+						} catch (ClassNotFoundException e2) {
+							// ignore and try next alternative class loader
+						}
 					}
 				}
 				throw e;
