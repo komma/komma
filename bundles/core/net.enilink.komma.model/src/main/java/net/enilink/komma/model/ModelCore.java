@@ -16,13 +16,13 @@ import java.util.List;
 
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 import net.enilink.komma.common.AbstractKommaPlugin;
@@ -175,7 +175,7 @@ public class ModelCore extends AbstractKommaPlugin {
 		 *  &lt;extension point=&quot;org.eclipse.emf.ecore.generated_package&quot; &gt;
 		 *      &lt;package uri=&quot;http://www.example.org/abc/Abc.ecore&quot; class=&quot;org.example.abc.AbcPackage&quot;/&gt;
 		 *  &lt;extension&gt;
-		 *</pre>
+		 * </pre>
 		 * 
 		 * </p>
 		 * The URI is arbitrary but an absolute URI is recommended. Provision
@@ -192,7 +192,7 @@ public class ModelCore extends AbstractKommaPlugin {
 		 *  &lt;extension point=&quot;org.eclipse.emf.ecore.extension_parser&quot;&gt;
 		 *      &lt;parser type=&quot;abc&quot; class=&quot;org.example.abc.util.AbcResourceFactoryImpl&quot;/&gt;
 		 *  &lt;extension&gt;
-		 *</pre>
+		 * </pre>
 		 * 
 		 * </p>
 		 * <p>
@@ -206,7 +206,7 @@ public class ModelCore extends AbstractKommaPlugin {
 		 *  &lt;extension point=&quot;org.eclipse.emf.ecore.protocol_parser&quot; &gt;
 		 *      &lt;parser protocolName=&quot;abc&quot; class=&quot;org.example.abc.util.AbcResourceFactoryImpl&quot;/&gt;
 		 *  &lt;extension&gt;
-		 *</pre>
+		 * </pre>
 		 * 
 		 * </p>
 		 * <p>
@@ -217,26 +217,26 @@ public class ModelCore extends AbstractKommaPlugin {
 		 *  &lt;extension point=&quot;org.eclipse.emf.ecore.uri_mapping&quot; &gt;
 		 *      &lt;mapping source=&quot;//special/&quot; target=&quot;special/&quot;/&gt;
 		 *  &lt;extension&gt;
-		 *</pre>
+		 * </pre>
 		 * 
 		 * If the target is relative, it is resolved against the plugin's
 		 * installed location, resulting in a URI of the form:
 		 * 
 		 * <pre>
 		 *  platform:/plugin/plugin-name_1.2.3/...
-		 *</pre>
+		 * </pre>
 		 * 
 		 * The above registration would map
 		 * 
 		 * <pre>
 		 * // special/a/b.c
-		 *</pre>
+		 * </pre>
 		 * 
 		 * to
 		 * 
 		 * <pre>
 		 *  platform:/plugin/plugin-name_1.2.3/special/a/b.c
-		 *</pre>
+		 * </pre>
 		 * 
 		 * </p>
 		 * 
@@ -298,29 +298,23 @@ public class ModelCore extends AbstractKommaPlugin {
 
 	public static KommaModule createModelSetModule(ClassLoader classLoader) {
 		KommaModule module = new KommaModule(classLoader);
-
-		for (Class<?> behaviourClass : ModelCore.getModelBehaviours()) {
-			if (behaviourClass.isInterface()) {
-				module.addConcept(behaviourClass);
-			} else {
-				module.addBehaviour(behaviourClass);
-			}
+		for (KommaModule modelModule : ModelCore.getModelModules()) {
+			module.includeModule(modelModule);
 		}
-
 		return module;
 	}
 
 	/**
-	 * Returns models which are registered as individual ones
+	 * Returns KommaModules with concepts and behaviours for ModelSets and Models
 	 * 
-	 * @return base models
+	 * @return model modules
 	 */
-	public static Collection<? extends Class<?>> getModelBehaviours() {
-		List<Class<?>> behaviours = new ArrayList<Class<?>>();
+	public static Collection<? extends KommaModule> getModelModules() {
+		List<KommaModule> modules = new ArrayList<KommaModule>();
 
 		if (Platform.getExtensionRegistry() != null) {
 			IExtensionPoint extensionPoint = Platform.getExtensionRegistry()
-					.getExtensionPoint(PLUGIN_ID, "modelBehaviours");
+					.getExtensionPoint(PLUGIN_ID, "modelModules");
 			if (extensionPoint != null) {
 				// Loop through the config elements.
 				for (IConfigurationElement configElement : extensionPoint
@@ -328,29 +322,21 @@ public class ModelCore extends AbstractKommaPlugin {
 					String className = configElement.getAttribute("class");
 
 					if (className == null) {
-						logErrorMessage("Attribute class required for modelBehaviours: "
+						logErrorMessage("Attribute class required for module: "
 								+ configElement);
 						continue;
 					}
 
-					Class<?> behaviourClass;
 					try {
-						if (IS_ECLIPSE_RUNNING) {
-							Bundle bundle = Platform.getBundle(configElement
-									.getContributor().getName());
-
-							behaviourClass = bundle.loadClass(className);
-						} else {
-							behaviourClass = Class.forName(className);
-						}
-						behaviours.add(behaviourClass);
-					} catch (ClassNotFoundException e) {
+						modules.add((KommaModule) configElement
+								.createExecutableExtension("class"));
+					} catch (CoreException e) {
 						log(e);
 					}
 				}
 			}
 		}
 
-		return behaviours;
+		return modules;
 	}
 }
