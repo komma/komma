@@ -50,6 +50,8 @@ public class EntityManagerFactoryModule extends AbstractModule {
 		bind(DataChangeTracker.class).in(Singleton.class);
 		bind(IDataChangeSupport.class).to(DataChangeTracker.class);
 		bind(IDataChangeTracker.class).to(DataChangeTracker.class);
+		
+		install(new EntityVarModule());
 	}
 
 	@Singleton

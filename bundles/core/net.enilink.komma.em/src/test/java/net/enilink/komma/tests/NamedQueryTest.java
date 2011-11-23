@@ -10,10 +10,13 @@
  *******************************************************************************/
 package net.enilink.komma.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Set;
 
-import junit.framework.Test;
-
+import org.junit.Test;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.properties.annotations.name;
 import net.enilink.composition.properties.sparql.sparql;
@@ -24,15 +27,11 @@ import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIImpl;
 
-public class NamedQueryTest extends EntityManagerTestCase {
+public class NamedQueryTest extends EntityManagerTest {
 	private static final String NS = "urn:test:";
 	private static final String PREFIX = "PREFIX :<" + NS + ">\n";
 	private Person me;
 	private Person john;
-
-	public static Test suite() throws Exception {
-		return NamedQueryTest.suite(NamedQueryTest.class);
-	}
 
 	@Iri(NS + "Person")
 	public interface Person {
@@ -119,8 +118,8 @@ public class NamedQueryTest extends EntityManagerTestCase {
 	}
 
 	@Override
-	public void setUp() throws Exception {
-		super.setUp();
+	public void beforeTest() throws Exception {
+		super.beforeTest();
 		me = manager.createNamed(URIImpl.createURI(NS + "me"), Person.class);
 		me.setName("james");
 		me.setAge(102);
@@ -129,25 +128,30 @@ public class NamedQueryTest extends EntityManagerTestCase {
 		john.setName("john");
 		me.getFriends().add(john);
 	}
-
+	
+	@Test
 	public void testFriendByName() throws Exception {
 		assertEquals(john, me.findFriendByName("john"));
 	}
 
+	@Test
 	public void testBindingSetByName() throws Exception {
 		Object[] result = me.findByName("john");
 		assertEquals(URIImpl.createURI(NS + "john"), result[0]);
 	}
 
+	@Test
 	public void testStatementByName() throws Exception {
 		IStatement result = me.findStatementByName("john");
 		assertEquals(URIImpl.createURI(NS + "john"), result.getSubject());
 	}
-
+	
+	@Test
 	public void testIsFriend() throws Exception {
 		assertTrue(me.isFriend(john));
 	}
 
+	@Test
 	public void testFindAllPeople() throws Exception {
 		IExtendedIterator<Person> result = me.findAllPeople();
 		assertTrue(result.hasNext());
@@ -156,6 +160,7 @@ public class NamedQueryTest extends EntityManagerTestCase {
 		assertTrue(set.contains(john));
 	}
 
+	@Test
 	public void testTupleResult() throws Exception {
 		IExtendedIterator<Object[]> result = me.findAllPeopleName();
 		assertTrue(result.hasNext());
@@ -163,17 +168,20 @@ public class NamedQueryTest extends EntityManagerTestCase {
 		result.close();
 	}
 
+	@Test
 	public void testConstruct() throws Exception {
 		IExtendedIterator<?> result = me.loadAllPeople();
 		assertTrue(result.hasNext());
 		result.close();
 	}
 
+	@Test
 	public void testModel() throws Exception {
 		IGraph result = me.loadAllPeopleInGraph();
 		assertFalse(result.isEmpty());
 	}
 
+	@Test
 	public void testSet() throws Exception {
 		Set<Person> set = me.findFriends();
 		assertEquals(2, set.size());
@@ -181,16 +189,19 @@ public class NamedQueryTest extends EntityManagerTestCase {
 		assertTrue(set.contains(john));
 	}
 
+	@Test
 	public void testInt() throws Exception {
 		int age = me.getAge();
 		assertEquals(age, me.findAge(age));
 	}
 
+	@Test
 	public void testBool() throws Exception {
 		me.findNull(true);
 	}
 
-	public void testOveride() throws Exception {
+	@Test
+	public void testOverride() throws Exception {
 		Employee e = manager.createNamed(URIImpl.createURI(NS + "e"),
 				Employee.class);
 		e.setName("employee");

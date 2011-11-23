@@ -10,23 +10,20 @@
  *******************************************************************************/
 package net.enilink.komma.tests;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Set;
 
-import junit.framework.Test;
-
+import org.junit.Test;
 import net.enilink.composition.annotations.Iri;
 
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIImpl;
 
-public class BasicManagerTest extends EntityManagerTestCase {
+public class BasicManagerTest extends EntityManagerTest {
 	private static final String NS = "urn:test:";
 	private Person me;
 	private Person john;
-
-	public static Test suite() throws Exception {
-		return BasicManagerTest.suite(BasicManagerTest.class);
-	}
 
 	@Iri(NS + "Person")
 	public interface Person {
@@ -68,8 +65,8 @@ public class BasicManagerTest extends EntityManagerTestCase {
 	}
 
 	@Override
-	public void setUp() throws Exception {
-		super.setUp();
+	public void beforeTest() throws Exception {
+		super.beforeTest();
 		me = manager.createNamed(URIImpl.createURI(NS + "me"), Person.class);
 		me.setName("james");
 		me.setAge(102);
@@ -79,6 +76,7 @@ public class BasicManagerTest extends EntityManagerTestCase {
 		me.getFriends().add(john);
 	}
 
+	@Test
 	public void testFriendName() throws Exception {
 		assertEquals("james", me.getName());
 	}
