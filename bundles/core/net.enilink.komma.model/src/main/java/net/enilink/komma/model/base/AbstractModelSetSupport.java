@@ -150,13 +150,6 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	 */
 	protected IURIConverter uriConverter;
 
-	/**
-	 * A map to cache the resource associated with a specific URI.
-	 * 
-	 * @see #setURIModelMap(Map)
-	 */
-	protected Map<URI, IModel> uriModelMap;
-
 	@Override
 	public synchronized IAdapterSet adapters() {
 		if (adapterSet == null) {
@@ -201,7 +194,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 					}
 				}));
 	}
-	
+
 	@Override
 	public URI getDefaultGraph() {
 		return null;
@@ -244,21 +237,6 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 		} else {
 			return null;
 		}
-	}
-
-	/**
-	 * Returns a resolved model available outside of the model set. It is called
-	 * by {@link #getModel(URI, boolean)} after it has determined that the URI
-	 * cannot be resolved based on the existing contents of the model set.
-	 * Clients may implements this as appropriate.
-	 * 
-	 * @param uri
-	 *            the URI
-	 * @param loadOnDemand
-	 *            whether demand loading is required.
-	 */
-	protected IModel delegatedGetModel(URI uri, boolean loadOnDemand) {
-		return null;
 	}
 
 	/**
@@ -438,38 +416,16 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	 * Javadoc copied from interface.
 	 */
 	public IModel getModel(URI uri, boolean loadOnDemand) {
-		Map<URI, IModel> map = getURIModelMap();
-		if (map != null) {
-			IModel model = map.get(uri);
-			if (model != null) {
-				if (loadOnDemand && !model.isLoaded()) {
-					demandLoadHelper(model);
-				}
-				return model;
+		List<?> result = getMetaDataManager()
+				.createQuery(
+						"SELECT DISTINCT ?m WHERE {?ms <http://enilink.net/vocab/komma/models#model> ?m}")
+				.setParameter("m", uri).evaluate().toList();
+		if (!result.isEmpty()) {
+			IModel model = (IModel) result.get(0);
+			if (loadOnDemand && !model.isLoaded()) {
+				demandLoadHelper(model);
 			}
-		}
-
-		IURIConverter uriConverter = getURIConverter();
-		URI normalizedURI = uriConverter.normalize(uri);
-		for (IModel model : getModels()) {
-			if (uriConverter.normalize(model.getURI()).equals(normalizedURI)) {
-				if (loadOnDemand && !model.isLoaded()) {
-					demandLoadHelper(model);
-				}
-
-				if (map != null) {
-					map.put(uri, model);
-				}
-				return model;
-			}
-		}
-
-		IModel delegatedModel = delegatedGetModel(uri, loadOnDemand);
-		if (delegatedModel != null) {
-			if (map != null) {
-				map.put(uri, delegatedModel);
-			}
-			return delegatedModel;
+			return model;
 		}
 
 		if (loadOnDemand) {
@@ -480,10 +436,6 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 			}
 
 			demandLoadHelper(model);
-
-			if (map != null) {
-				map.put(uri, model);
-			}
 			return model;
 		}
 
@@ -585,17 +537,6 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 			uriConverter = new ExtensibleURIConverter();
 		}
 		return uriConverter;
-	}
-
-	/**
-	 * Returns the map used to cache the model {@link #getModel(URI, boolean)
-	 * associated} with a specific URI.
-	 * 
-	 * @return the map used to cache the model associated with a specific URI.
-	 * @see #setURIOntologyMap
-	 */
-	public Map<URI, IModel> getURIModelMap() {
-		return uriModelMap;
 	}
 
 	/**
@@ -762,21 +703,6 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	 */
 	public void setURIConverter(IURIConverter uriConverter) {
 		this.uriConverter = uriConverter;
-	}
-
-	/**
-	 * Sets the map used to cache the resource associated with a specific URI.
-	 * This cache is only activated if the map is not <code>null</code>. The map
-	 * will be lazily loaded by the {@link #getModel(URI, boolean) getResource}
-	 * method. It is up to the client to clear the cache when it becomes
-	 * invalid, e.g., when the URI of a previously mapped resource is changed.
-	 * 
-	 * @param uriModelMap
-	 *            the new map or <code>null</code>.
-	 * @see #getURIOntologyMap
-	 */
-	public void setURIModelMap(Map<URI, IModel> uriModelMap) {
-		this.uriModelMap = uriModelMap;
 	}
 
 	/**
