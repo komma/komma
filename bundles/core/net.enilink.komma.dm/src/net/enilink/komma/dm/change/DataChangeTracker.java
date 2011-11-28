@@ -64,16 +64,16 @@ public class DataChangeTracker implements IDataChangeSupport,
 
 	@Override
 	public void commit(IDataManager dm) {
+		List<IDataChange> committed = null;
 		synchronized (activeDataManagers) {
 			List<IDataChange> changes = activeDataManagers.get(dm);
 			if (changes != null && !changes.isEmpty()) {
-				List<IDataChange> committed = new ArrayList<IDataChange>(
-						changes);
-
-				handleChanges(committed);
-
+				committed = new ArrayList<IDataChange>(changes);
 				changes.clear();
 			}
+		}
+		if (committed != null) {
+			handleChanges(committed);
 		}
 	}
 
