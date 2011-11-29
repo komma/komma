@@ -1,8 +1,8 @@
 package net.enilink.komma.em;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import net.enilink.composition.traits.Behaviour;
 
@@ -14,8 +14,6 @@ import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.FactoryProvider;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
@@ -25,23 +23,15 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IReferenceable;
 
 public class EntityVarModule extends AbstractModule {
-	interface EntityVarFactory<T> {
-		EntityVar<T> create(Field field, IReference reference);
-	}
-
 	/**
-	 * Stores a shared value that is indexed by a {@link Field} and an
+	 * Key for shared variables that are indexed by a {@link Field} and an
 	 * {@link IReference}.
 	 */
-	static class EntityVarImpl<T> implements EntityVar<T> {
-		@Inject
-		private Map<EntityVar<?>, Object> valueMap;
-
+	static class EntityVarKey {
 		private Field field;
 		private IReference reference;
 
-		@Inject
-		EntityVarImpl(@Assisted Field field, @Assisted IReference reference) {
+		public EntityVarKey(Field field, IReference reference) {
 			this.field = field;
 			this.reference = reference;
 		}
@@ -53,10 +43,6 @@ public class EntityVarModule extends AbstractModule {
 			result = prime * result + ((field == null) ? 0 : field.hashCode());
 			result = prime * result
 					+ ((reference == null) ? 0 : reference.hashCode());
-			result = prime
-					* result
-					+ ((valueMap == null) ? 0 : System
-							.identityHashCode(valueMap));
 			return result;
 		}
 
@@ -68,7 +54,7 @@ public class EntityVarModule extends AbstractModule {
 				return false;
 			if (getClass() != obj.getClass())
 				return false;
-			EntityVarImpl<?> other = (EntityVarImpl<?>) obj;
+			EntityVarKey other = (EntityVarKey) obj;
 			if (field == null) {
 				if (other.field != null)
 					return false;
@@ -79,40 +65,42 @@ public class EntityVarModule extends AbstractModule {
 					return false;
 			} else if (!reference.equals(other.reference))
 				return false;
-			if (valueMap != other.valueMap) {
-				return false;
-			}
 			return true;
 		}
+	}
 
-		@SuppressWarnings("unchecked")
+	/**
+	 * Stores a shared value that is indexed by a {@link EntityVarKey}.
+	 */
+	static class EntityVarImpl<T> implements EntityVar<T> {
+		private T value;
+
 		@Override
 		public T get() {
-			return (T) valueMap.get(this);
+			return value;
 		}
 
 		@Override
 		public void remove() {
-			set(null);
+			value = null;
 		}
 
 		@Override
 		public void set(T value) {
 			if (value == null) {
-				valueMap.remove(this);
+				remove();
 			} else {
-				valueMap.put(this, value);
+				this.value = value;
 			}
 		}
 	}
 
 	/**
 	 * Injects an {@link EntityVar} into an object's field.
-	 * 
 	 */
 	class EntityVarMembersInjector<T> implements MembersInjector<T> {
 		@Inject
-		private EntityVarFactory<?> varFactory;
+		private Map<EntityVarKey, EntityVar<Object>> varMap;
 		private Field field;
 
 		EntityVarMembersInjector(Field field) {
@@ -129,10 +117,39 @@ public class EntityVarModule extends AbstractModule {
 				IReference reference = ((IReferenceable) referenceable)
 						.getReference();
 
+				final EntityVarKey key = new EntityVarKey(field, reference);
+				EntityVar<Object> var;
+				synchronized (varMap) {
+					var = varMap.get(key);
+					if (var == null) {
+						var = new EntityVarImpl<Object>() {
+							boolean isValid = true;
+
+							public void remove() {
+								super.remove();
+								varMap.remove(key);
+								isValid = false;
+							}
+
+							@Override
+							public void set(Object value) {
+								if (!isValid && value != null) {
+									// reinsert variable into map if it was
+									// previously removed
+									varMap.put(key, this);
+									isValid = true;
+								}
+								super.set(value);
+							}
+						};
+						varMap.put(key, var);
+					}
+				}
+
 				try {
 					// suppress permission check for non-public fields
 					field.setAccessible(true);
-					field.set(target, varFactory.create(field, reference));
+					field.set(target, var);
 				} catch (Exception e) {
 					throw new ProvisionException(
 							"Error while injecting entity variable.", e);
@@ -170,19 +187,13 @@ public class EntityVarModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
-		bind(new TypeLiteral<Map<EntityVar<?>, Object>>() {
-		}).toProvider(new Provider<Map<EntityVar<?>, Object>>() {
+		bind(new TypeLiteral<Map<EntityVarKey, EntityVar<Object>>>() {
+		}).toProvider(new Provider<Map<EntityVarKey, EntityVar<Object>>>() {
 			@Override
-			public Map<EntityVar<?>, Object> get() {
-				return new ConcurrentHashMap<EntityVar<?>, Object>();
+			public Map<EntityVarKey, EntityVar<Object>> get() {
+				return new HashMap<EntityVarKey, EntityVar<Object>>();
 			}
 		}).in(Singleton.class);
-		bind(new TypeLiteral<EntityVarFactory<?>>() {
-		}).toProvider(
-				FactoryProvider.newFactory(
-						new TypeLiteral<EntityVarFactory<?>>() {
-						}, new TypeLiteral<EntityVarImpl<?>>() {
-						}));
 		EntityVarTypeListener varTypeListener = new EntityVarTypeListener();
 		requestInjection(varTypeListener);
 		bindListener(Matchers.any(), varTypeListener);
