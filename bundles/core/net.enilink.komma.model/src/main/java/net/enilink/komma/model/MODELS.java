@@ -41,5 +41,5 @@ public interface MODELS {
 	public static final URI CLASS_MODELSET = NAMESPACE_URI
 			.appendFragment("ModelSet");
 
-	public static final URI CLASS_MODEL = NAMESPACE_URI.appendFragment("Model");
+	public static final URI TYPE_MODEL = NAMESPACE_URI.appendFragment("Model");
 }

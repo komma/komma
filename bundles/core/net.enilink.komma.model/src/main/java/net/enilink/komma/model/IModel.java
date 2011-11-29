@@ -541,11 +541,6 @@ public interface IModel {
 	 */
 	interface Internal extends IModel {
 		/**
-		 * Sets the model to be contained by the given model set.
-		 */
-		void internalSetModelSet(IModelSet.Internal modelSet);
-
-		/**
 		 * Indicates whether the resource is currently being loaded.
 		 * <p>
 		 * This will be <code>true</code> during a call to

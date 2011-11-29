@@ -62,6 +62,7 @@ import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ObjectSupport;
 import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.model.concepts.ModelSet;
+import net.enilink.komma.core.EntityVar;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.IReference;
@@ -96,52 +97,52 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	private final static Logger log = LoggerFactory
 			.getLogger(AbstractModelSetSupport.class);
 
-	/**
-	 * The registered adapter factories.
-	 * 
-	 * @see #getAdapterFactories
+	/** 
+	 * Represents the transient state of this resource 
 	 */
-	protected List<IAdapterFactory> adapterFactories;
+	public static class State {
+		/**
+		 * The registered adapter factories.
+		 * 
+		 * @see #getAdapterFactories
+		 */
+		protected List<IAdapterFactory> adapterFactories;
 
-	private IAdapterSet adapterSet;
+		private IAdapterSet adapterSet;
 
-	protected IDataChangeTracker dataChangeTracker;
+		protected IDataChangeTracker dataChangeTracker;
 
-	private Injector injector;
+		/**
+		 * The load options.
+		 * 
+		 * @see #getLoadOptions
+		 */
+		protected Map<Object, Object> loadOptions;
 
-	/**
-	 * The load options.
-	 * 
-	 * @see #getLoadOptions
-	 */
-	protected Map<Object, Object> loadOptions;
+		protected NotificationSupport<INotification> metaDataNotificationSupport = new NotificationSupport<INotification>();
 
-	@Inject
-	private IDataManagerFactory metaDataManagerFactory;
+		/**
+		 * The local resource factory registry.
+		 * 
+		 * @see #getResourceFactoryRegistry
+		 */
+		protected IModel.Factory.Registry modelFactoryRegistry;
 
-	protected NotificationSupport<INotification> metaDataNotificationSupport = new NotificationSupport<INotification>();
+		/**
+		 * The parent module with basic concepts and behaviors shared by all
+		 * models.
+		 */
+		protected KommaModule module;
 
-	/**
-	 * The local resource factory registry.
-	 * 
-	 * @see #getResourceFactoryRegistry
-	 */
-	protected IModel.Factory.Registry modelFactoryRegistry;
+		protected NotificationSupport<INotification> notificationSupport = new NotificationSupport<INotification>();
 
-	/**
-	 * The parent module with basic concepts and behaviors shared by all models.
-	 */
-	protected KommaModule module;
+		private ReferenceMap sharedReferences = new ReferenceMap(
+				ReferenceMap.WEAK, ReferenceMap.WEAK);
 
-	protected NotificationSupport<INotification> notificationSupport = new NotificationSupport<INotification>();
+		protected Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = new WeakHashMap<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>>();
+	}
 
-	private ReferenceMap sharedReferences = new ReferenceMap(ReferenceMap.WEAK,
-			ReferenceMap.WEAK);
-
-	protected Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = new WeakHashMap<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>>();
-
-	@Inject
-	IUnitOfWork unitOfWork;
+	protected EntityVar<State> state;
 
 	/**
 	 * The URI converter.
@@ -150,29 +151,48 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	 */
 	protected IURIConverter uriConverter;
 
+	@Inject
+	private IUnitOfWork unitOfWork;
+
+	private Injector injector;
+
+	@Inject
+	private IDataManagerFactory metaDataManagerFactory;
+
+	protected State state() {
+		synchronized (state) {
+			State s = state.get();
+			if (s == null) {
+				state.set(s = new State());
+			}
+			return s;
+		}
+	}
+
 	@Override
 	public synchronized IAdapterSet adapters() {
-		if (adapterSet == null) {
-			adapterSet = new AdapterSet(getBehaviourDelegate());
+		if (state().adapterSet == null) {
+			state().adapterSet = new AdapterSet(getBehaviourDelegate());
 		}
-		return adapterSet;
+		return state().adapterSet;
 	}
 
 	@Override
 	public void addListener(INotificationListener<INotification> listener) {
-		notificationSupport.addListener(listener);
+		state().notificationSupport.addListener(listener);
 	}
 
 	@Override
 	public void addMetaDataListener(
 			INotificationListener<INotification> listener) {
-		metaDataNotificationSupport.addListener(listener);
+		state().metaDataNotificationSupport.addListener(listener);
 	}
 
 	@Override
 	public void addSubjectListener(IReference subject,
 			INotificationListener<INotification> listener) {
 		CopyOnWriteArraySet<INotificationListener<INotification>> listeners;
+		Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = state().subjectListeners;
 		synchronized (subjectListeners) {
 			listeners = subjectListeners.get(subject);
 			if (listeners == null) {
@@ -232,7 +252,10 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 				}
 			}
 
+			((Model) result)
+					.setModelModelSet((ModelSet) getBehaviourDelegate());
 			getModels().add(result);
+
 			return result;
 		} else {
 			return null;
@@ -293,7 +316,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 
 	@Override
 	public void dispose() {
-		if (metaDataManagerFactory != null) {
+		if (state.get() != null) {
 			removeAndUnloadAllModels();
 			getUnitOfWork().end();
 
@@ -307,7 +330,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 			} catch (Exception e) {
 				KommaCore.log(e);
 			}
-			metaDataManagerFactory = null;
+			state.remove();
 		}
 	}
 
@@ -323,7 +346,9 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	@Override
 	public void fireNotifications(
 			Collection<? extends INotification> notifications) {
-		notificationSupport.fireNotifications(notifications);
+		state().notificationSupport.fireNotifications(notifications);
+
+		Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = state().subjectListeners;
 
 		// notify subject listeners if required
 		synchronized (subjectListeners) {
@@ -368,7 +393,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	 * Javadoc copied from interface.
 	 */
 	public List<IAdapterFactory> getAdapterFactories() {
-		return adapterFactories;
+		return state().adapterFactories;
 	}
 
 	@Override
@@ -378,7 +403,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 
 	@Override
 	public IDataChangeTracker getDataChangeTracker() {
-		return dataChangeTracker;
+		return state().dataChangeTracker;
 	}
 
 	@Override
@@ -400,11 +425,11 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	 * Javadoc copied from interface.
 	 */
 	public Map<Object, Object> getLoadOptions() {
-		if (loadOptions == null) {
-			loadOptions = new HashMap<Object, Object>();
+		if (state().loadOptions == null) {
+			state().loadOptions = new HashMap<Object, Object>();
 		}
 
-		return loadOptions;
+		return state().loadOptions;
 	}
 
 	@Override
@@ -446,8 +471,8 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	 * Javadoc copied from interface.
 	 */
 	public IModel.Factory.Registry getModelFactoryRegistry() {
-		if (modelFactoryRegistry == null) {
-			modelFactoryRegistry = new ModelFactoryRegistry() {
+		if (state().modelFactoryRegistry == null) {
+			state().modelFactoryRegistry = new ModelFactoryRegistry() {
 				@Override
 				protected IModel.Factory delegatedGetFactory(URI uri,
 						String contentTypeIdentifier) {
@@ -475,17 +500,17 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 				}
 			};
 		}
-		return modelFactoryRegistry;
+		return state().modelFactoryRegistry;
 	}
 
 	public KommaModule getModule() {
-		if (module == null) {
+		if (state().module == null) {
 			// Attention: Do not use getClass().getClassLoader() here, since
 			// the actual class is a generated behavior and has a class definer
 			// as class loader -> including this module then within modules of
 			// models would cause mixing of "meta-model behaviors" and
 			// "model behaviors".
-			module = new KommaModule(
+			KommaModule module = new KommaModule(
 					AbstractModelSetSupport.class.getClassLoader());
 			module.includeModule(KommaUtil.getCoreModule());
 
@@ -493,8 +518,10 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 
 			module.addBehaviour(ObjectSupport.class);
 			module.addConcept(IObject.class);
+
+			state().module = module;
 		}
-		return module;
+		return state().module;
 	}
 
 	/*
@@ -513,6 +540,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 		if (reference == null) {
 			return null;
 		}
+		ReferenceMap sharedReferences = state().sharedReferences;
 		synchronized (sharedReferences) {
 			IReference sharedReference = (IReference) sharedReferences
 					.get(reference);
@@ -600,7 +628,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	}
 
 	protected void removeAndUnloadAllModels() {
-		if (metaDataManagerFactory == null || getModels().isEmpty()) {
+		if (state.get() == null || getModels().isEmpty()) {
 			return;
 		}
 		List<IModel> models = new ArrayList<IModel>(getModels());
@@ -622,18 +650,20 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 
 	@Override
 	public void removeListener(INotificationListener<INotification> listener) {
-		notificationSupport.removeListener(listener);
+		state().notificationSupport.removeListener(listener);
 	}
 
 	@Override
 	public void removeMetaDataListener(
 			INotificationListener<INotification> listener) {
-		metaDataNotificationSupport.removeListener(listener);
+		state().metaDataNotificationSupport.removeListener(listener);
 	}
 
 	@Override
 	public void removeSubjectListener(IReference subject,
 			INotificationListener<INotification> listener) {
+		Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = state().subjectListeners;
+
 		CopyOnWriteArraySet<INotificationListener<INotification>> listeners;
 		synchronized (subjectListeners) {
 			listeners = subjectListeners.get(subject);
@@ -644,8 +674,8 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	}
 
 	public void setDataChangeTracker(IDataChangeTracker changeTracker) {
-		dataChangeTracker = changeTracker;
-		dataChangeTracker.addChangeListener(new IDataChangeListener() {
+		state().dataChangeTracker = changeTracker;
+		state().dataChangeTracker.addChangeListener(new IDataChangeListener() {
 			@Override
 			public void dataChanged(List<IDataChange> changes) {
 				AbstractModelSetSupport.this
@@ -684,7 +714,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 		changeTracker.addChangeListener(new IDataChangeListener() {
 			@Override
 			public void dataChanged(List<IDataChange> changes) {
-				metaDataNotificationSupport
+				state().metaDataNotificationSupport
 						.fireNotifications(transformChanges(changes));
 			}
 		});
@@ -695,7 +725,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	 */
 	public void setModelFactoryRegistry(
 			IModel.Factory.Registry modelFactoryRegistry) {
-		this.modelFactoryRegistry = modelFactoryRegistry;
+		state().modelFactoryRegistry = modelFactoryRegistry;
 	}
 
 	/*

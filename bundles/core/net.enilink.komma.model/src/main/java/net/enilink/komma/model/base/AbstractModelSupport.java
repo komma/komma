@@ -51,6 +51,7 @@ import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.concepts.Model;
+import net.enilink.komma.core.EntityVar;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
 import net.enilink.komma.core.IEntityManager;
@@ -89,19 +90,28 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 		}
 	}
 
-	/**
-	 * The containing model set.
-	 * 
-	 * @see #getModelSet
+	/** 
+	 * Represents the transient state of this resource 
 	 */
-	protected IModelSet.Internal modelSet;
+	static class State {
+		private KommaModule module;
+		protected IEntityManager manager;
+	}
 
-	private KommaModule module;
-
-	protected IEntityManager manager;
+	protected EntityVar<State> state;
 
 	@Inject
 	private Injector injector;
+
+	protected State state() {
+		synchronized (state) {
+			State s = state.get();
+			if (s == null) {
+				state.set(s = new State());
+			}
+			return s;
+		}
+	}
 
 	/*
 	 * documentation inherited
@@ -198,12 +208,14 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	 */
 	@Override
 	public synchronized IEntityManager getManager() {
+		IEntityManager manager = state().manager;
 		if (manager == null) {
-			manager = modelSet.getEntityManagerFactory()
+			manager = getModelSet().getEntityManagerFactory()
 					// allow interception of call to getModule()
 					.createChildFactory(getBehaviourDelegate().getModule())
 					.get();
 			manager.addDecorator(new ModelInjector());
+			state().manager = manager;
 		}
 		return manager;
 	}
@@ -212,12 +224,13 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	 * documentation inherited
 	 */
 	@Override
-	public IModelSet getModelSet() {
-		return modelSet;
+	public IModelSet.Internal getModelSet() {
+		return (IModelSet.Internal) getModelModelSet();
 	}
 
 	@Override
 	public synchronized KommaModule getModule() {
+		KommaModule module = state().module;
 		if (module == null) {
 			module = new KommaModule(
 					AbstractModelSupport.class.getClassLoader());
@@ -261,7 +274,7 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 			}
 
 			try {
-				IDataManager dm = modelSet.getDataManagerFactory().get();
+				IDataManager dm = getModelSet().getDataManagerFactory().get();
 				dm.setReadContexts(Collections.singleton(getURI()));
 				try {
 					IExtendedIterator<IStatement> imports = dm.match(null,
@@ -304,6 +317,8 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 			}
 
 			module.addWritableGraph(getURI());
+
+			state().module = module;
 		}
 		return module;
 	}
@@ -328,21 +343,6 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	@Override
 	public Set<IDiagnostic> getWarnings() {
 		return getModelWarnings();
-	}
-
-	/*
-	 * documentation inherited
-	 */
-	@Override
-	public void internalSetModelSet(IModelSet.Internal modelSet) {
-		if (this.modelSet != null && this.modelSet.equals(modelSet)) {
-			return;
-		}
-
-		this.modelSet = modelSet;
-
-		// ensure komma manager is reinitialized
-		unloadManager();
 	}
 
 	@Override
@@ -704,13 +704,14 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 				// setTimeStamp(IURIConverter.NULL_TIME_STAMP);
 			}
 		}
+		state.remove();
 	}
 
 	protected synchronized void unloadManager() {
-		module = null;
-		if (manager != null) {
-			manager.close();
-			manager = null;
+		state().module = null;
+		if (state().manager != null) {
+			state().manager.close();
+			state().manager = null;
 		}
 	}
 }

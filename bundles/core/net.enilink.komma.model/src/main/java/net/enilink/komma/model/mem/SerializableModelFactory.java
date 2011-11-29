@@ -10,7 +10,6 @@
  *******************************************************************************/
 package net.enilink.komma.model.mem;
 
-import net.enilink.vocab.owl.OWL;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.MODELS;
@@ -21,9 +20,7 @@ public class SerializableModelFactory implements IModel.Factory {
 	public IModel createModel(IModelSet modelSet, URI uri) {
 		IModel model = (IModel) modelSet.getMetaDataManager().createNamed(uri,
 				MODELS.NAMESPACE_URI.appendFragment("SerializableModel"),
-				MODELS.CLASS_MODEL, OWL.TYPE_ONTOLOGY);
-		((IModel.Internal) model)
-				.internalSetModelSet((IModelSet.Internal) modelSet);
+				MODELS.TYPE_MODEL);
 		return model;
 	}
 }
