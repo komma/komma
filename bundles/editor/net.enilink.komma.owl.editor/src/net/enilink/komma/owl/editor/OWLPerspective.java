@@ -13,21 +13,32 @@ public class OWLPerspective implements IPerspectiveFactory {
 		// Get the editor area.
 		String editorArea = layout.getEditorArea();
 
-		IFolderLayout topLeft = layout.createFolder("topLeft",
-				IPageLayout.LEFT, 0.25f, editorArea);
-		initTopLeftFolder(topLeft);
+		if (!CommonsUi.IS_RAP_RUNNING) {
+			IFolderLayout topLeft = layout.createFolder("topLeft",
+					IPageLayout.LEFT, 0.25f, editorArea);
+			initTopLeftFolder(topLeft);
+			// Top left: Resource Navigator view and Bookmarks view placeholder
+			topLeft.addView(IPageLayout.ID_RES_NAV);
+			topLeft.addPlaceholder(IPageLayout.ID_BOOKMARKS);
+		}
 
 		// Bottom left: Outline view and Property Sheet view
-		IFolderLayout bottomLeft = layout.createFolder("bottomLeft",
-				IPageLayout.BOTTOM, 0.50f, "topLeft");
-		bottomLeft.addView(OWLViews.ID_CLASSES);
-		bottomLeft.addView(OWLViews.ID_OBJECTPROPERTIES);
-		bottomLeft.addView(OWLViews.ID_DATATYPEPROPERTIES);
-		bottomLeft.addView(OWLViews.ID_OTHERPROPERTIES);
-		bottomLeft.addView(IPageLayout.ID_OUTLINE);
+		IFolderLayout left;
+		if (!CommonsUi.IS_RAP_RUNNING) {
+			left = layout.createFolder("left", IPageLayout.BOTTOM, 0.50f,
+					"topLeft");
+		} else {
+			left = layout.createFolder("left", IPageLayout.LEFT, 0.25f,
+					editorArea);
+		}
+		left.addView(OWLViews.ID_CLASSES);
+		left.addView(OWLViews.ID_OBJECTPROPERTIES);
+		left.addView(OWLViews.ID_DATATYPEPROPERTIES);
+		left.addView(OWLViews.ID_OTHERPROPERTIES);
+		left.addView(IPageLayout.ID_OUTLINE);
 
 		layout.addView(OWLViews.ID_INDIVIDUALS, IPageLayout.BOTTOM, 0.5f,
-				"bottomLeft");
+				"left");
 
 		// Bottom right: Task List view
 		IFolderLayout bottom = layout.createFolder("bottom",

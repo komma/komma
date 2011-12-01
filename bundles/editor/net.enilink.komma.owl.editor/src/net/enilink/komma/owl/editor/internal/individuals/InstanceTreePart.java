@@ -34,7 +34,7 @@ public class InstanceTreePart extends IndividualsPart {
 			SparqlSearchableItemProvider searchableProvider = new SparqlSearchableItemProvider() {
 				@Override
 				protected String getQueryFindPatterns(Object parent) {
-					return "[a ?parent; komma:containsTransitive ?s]";
+					return "?instance a ?parent . ?instance komma:containsTransitive ?s";
 				}
 			};
 			return searchableProvider.find(expression, currentInput, 20);
@@ -69,8 +69,8 @@ public class InstanceTreePart extends IndividualsPart {
 			viewer.setInput(null);
 		} else {
 			List<IObject> instances = input.getEntityManager()
-					.createQuery(QUERY_INSTANCES).setIncludeInferred(true)
-					.setParameter("c", input).evaluate(IObject.class).toList();
+					.createQuery(QUERY_INSTANCES).setParameter("c", input)
+					.evaluate(IObject.class).toList();
 
 			viewer.setInput(instances.toArray());
 		}

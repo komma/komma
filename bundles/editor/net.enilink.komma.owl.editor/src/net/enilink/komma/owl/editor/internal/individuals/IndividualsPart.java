@@ -10,6 +10,9 @@
  *******************************************************************************/
 package net.enilink.komma.owl.editor.internal.individuals;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -38,8 +41,8 @@ import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
-import net.enilink.komma.edit.ui.provider.reflective.StatementPatternContentProvider;
 import net.enilink.komma.edit.ui.provider.reflective.ObjectComparator;
+import net.enilink.komma.edit.ui.provider.reflective.StatementPatternContentProvider;
 import net.enilink.komma.edit.ui.util.FilterWidget;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
@@ -98,7 +101,23 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 		Table table = getWidgetFactory().createTable(parent,
 				SWT.V_SCROLL | SWT.VIRTUAL);
 
-		viewer = new TableViewer(table);
+		viewer = new TableViewer(table) {
+			@Override
+			protected void setSelectionToWidget(List list, boolean reveal) {
+				// FIX - do only select existing items to prevent instantiation
+				// of all virtual elements
+				List<Object> existing = null;
+				if (list != null) {
+					existing = new ArrayList<Object>(list.size());
+					for (Object toSelect : list) {
+						if (doFindItem(toSelect) != null) {
+							existing.add(toSelect);
+						}
+					}
+				}
+				super.setSelectionToWidget(existing, reveal);
+			}
+		};
 		viewer.setContentProvider(new StatementPatternContentProvider());
 
 		return viewer;
