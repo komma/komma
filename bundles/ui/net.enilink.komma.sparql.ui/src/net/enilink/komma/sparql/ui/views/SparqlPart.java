@@ -145,7 +145,6 @@ class SparqlPart extends AbstractEditorPart {
 
 			try {
 				IQuery<?> query = managerForQuery.createQuery(sparql);
-				query.setIncludeInferred(true);
 				if (selectedObjects.size() > 0) {
 					int i = 0;
 					for (Object selected : selectedObjects) {
