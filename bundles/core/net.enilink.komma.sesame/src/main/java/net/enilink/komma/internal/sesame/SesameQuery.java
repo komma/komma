@@ -10,6 +10,7 @@
  *******************************************************************************/
 package net.enilink.komma.internal.sesame;
 
+import org.openrdf.model.Value;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.Query;
@@ -53,10 +54,10 @@ public class SesameQuery<R> implements IDataManagerQuery<R> {
 						((TupleQuery) query).evaluate());
 			} else if (query instanceof GraphQuery) {
 				convertedResult = (IExtendedIterator<R>) new SesameGraphResult(
-						((GraphQuery)query).evaluate());
+						((GraphQuery) query).evaluate());
 			} else {
 				convertedResult = (IExtendedIterator<R>) new SesameBooleanResult(
-						((BooleanQuery)query).evaluate());
+						((BooleanQuery) query).evaluate());
 			}
 			injector.injectMembers(convertedResult);
 			return convertedResult;
@@ -77,7 +78,12 @@ public class SesameQuery<R> implements IDataManagerQuery<R> {
 
 	@Override
 	public IDataManagerQuery<R> setParameter(String name, IValue value) {
-		query.setBinding(name, valueConverter.toSesame(value));
+		Value boundValue = valueConverter.toSesame(value);
+		if (boundValue == null) {
+			query.removeBinding(name);
+		} else {
+			query.setBinding(name, boundValue);
+		}
 		return this;
 	}
 
