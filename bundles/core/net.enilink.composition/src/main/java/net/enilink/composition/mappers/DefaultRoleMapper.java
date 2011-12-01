@@ -206,12 +206,12 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		if (role.isInterface())
 			throw new ConfigException(role.getSimpleName()
 					+ " is an interface and not a behaviour");
-		for (Method method : role.getDeclaredMethods()) {
-			if (isAnnotationPresent(method)
-					&& method.getName().startsWith("get"))
-				throw new ConfigException(role.getSimpleName()
-						+ " cannot have a property annotation");
-		}
+//		for (Method method : role.getDeclaredMethods()) {
+//			if (isAnnotationPresent(method)
+//					&& method.getName().startsWith("get"))
+//				throw new ConfigException(role.getSimpleName()
+//						+ " cannot have a property annotation");
+//		}
 	}
 
 	/*
