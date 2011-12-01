@@ -123,14 +123,12 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	public Collection<IResource> getInstances() {
 		IQuery<?> query = getEntityManager().createQuery(SELECT_INSTANCES);
 		query.setParameter("class", this);
-		query.setIncludeInferred(true);
 		return query.evaluate(IResource.class).toSet();
 	}
 
 	public Collection<IReference> getInstancesAsReferences() {
 		IQuery<?> query = getEntityManager().createQuery(SELECT_INSTANCES);
 		query.setParameter("class", this);
-		query.setIncludeInferred(true);
 		return query.evaluateRestricted(IReference.class).toSet();
 	}
 
@@ -168,9 +166,9 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 			System.out.println(queryString);
 		}
 
-		IQuery<?> query = getEntityManager().createQuery(queryString);
+		IQuery<?> query = getEntityManager().createQuery(queryString,
+				includeInferred);
 		query.setParameter("superClass", this);
-		query.setIncludeInferred(includeInferred);
 
 		return query.evaluate(IClass.class);
 	}
@@ -179,8 +177,7 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	public Boolean hasNamedSubClasses() {
 		return getEntityManager()
 				.createQuery(HAS_NAMED_SUBCLASSES_DESC().toQueryString())
-				.setParameter("superClass", this).setIncludeInferred(true)
-				.getBooleanResult();
+				.setParameter("superClass", this).getBooleanResult();
 	}
 
 	@Override
@@ -197,9 +194,8 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	protected IExtendedIterator<IClass> getLeafSubClasses(
 			boolean includeInferred, boolean named) {
 		IQuery<?> query = getEntityManager().createQuery(
-				SELECT_LEAF_SUBCLASSES(named));
+				SELECT_LEAF_SUBCLASSES(named), includeInferred);
 		query.setParameter("superClass", getBehaviourDelegate());
-		query.setIncludeInferred(includeInferred);
 
 		return query.evaluate(IClass.class);
 	}
@@ -211,7 +207,7 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 		return getEntityManager()
 				.createQuery(DIRECT_NAMED_SUPERCLASSES_DESC().toQueryString())
 				.setParameter("subClass", getBehaviourDelegate())
-				.setIncludeInferred(true).evaluate(IClass.class);
+				.evaluate(IClass.class);
 	}
 
 	@Override
@@ -232,9 +228,8 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 		}
 		IQuery<?> query = getEntityManager().createQuery(
 				direct ? SELECT_DIRECT_SUPERCLASSES(named)
-						: SELECT_SUPERCLASSES(named));
+						: SELECT_SUPERCLASSES(named), includeInferred);
 		query.setParameter("subClass", getBehaviourDelegate());
-		query.setIncludeInferred(includeInferred);
 
 		return query.evaluate(IClass.class);
 	}
@@ -256,9 +251,8 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 		}
 		try {
 			IQuery<?> query = getEntityManager().createQuery(
-					HAS_SUBCLASSES(named));
+					HAS_SUBCLASSES(named), includeInferred);
 			query.setParameter("superClass", this);
-			query.setIncludeInferred(includeInferred);
 
 			return query.getBooleanResult();
 		} catch (Exception e) {
@@ -269,9 +263,8 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	public boolean hasDeclaredProperties(boolean includeInferred) {
 		try {
 			IQuery<?> query = getEntityManager().createQuery(
-					HAS_DECLARED_PROPERTIES);
+					HAS_DECLARED_PROPERTIES, includeInferred);
 			query.setParameter("class", this);
-			query.setIncludeInferred(includeInferred);
 
 			return query.getBooleanResult();
 		} catch (Exception e) {
@@ -283,9 +276,8 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	public IExtendedIterator<IProperty> getDeclaredProperties(
 			boolean includeInferred) {
 		IQuery<?> query = getEntityManager().createQuery(
-				SELECT_DECLARED_PROPERTIES);
+				SELECT_DECLARED_PROPERTIES, includeInferred);
 		query.setParameter("class", getBehaviourDelegate());
-		query.setIncludeInferred(includeInferred);
 
 		return (IExtendedIterator<IProperty>) query.evaluate();
 	}
@@ -298,7 +290,8 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	@Override
 	public IResource newInstance(URI uri) {
 		if (uri == null) {
-			return (IResource) getEntityManager().create(getBehaviourDelegate());
+			return (IResource) getEntityManager()
+					.create(getBehaviourDelegate());
 		}
 		return (IResource) getEntityManager().createNamed(uri,
 				getBehaviourDelegate());

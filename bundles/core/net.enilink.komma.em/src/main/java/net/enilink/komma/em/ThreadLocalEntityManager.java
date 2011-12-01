@@ -131,6 +131,17 @@ public class ThreadLocalEntityManager implements IEntityManager {
 	}
 
 	@Override
+	public IQuery<?> createQuery(String query, boolean includeInferred) {
+		return getDelegate().createQuery(query, includeInferred);
+	}
+
+	@Override
+	public IQuery<?> createQuery(String query, String baseURI,
+			boolean includeInferred) {
+		return getDelegate().createQuery(query, baseURI, includeInferred);
+	}
+
+	@Override
 	public <T> T designateEntity(Object entity, Class<T> concept,
 			Class<?>... concepts) {
 		return getDelegate().designateEntity(entity, concept, concepts);

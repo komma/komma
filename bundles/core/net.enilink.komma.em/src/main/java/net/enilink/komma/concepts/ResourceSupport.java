@@ -266,9 +266,9 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public IExtendedIterator<IClass> getClasses(boolean includeInferred) {
-		IQuery<?> query = getEntityManager().createQuery(SELECT_CLASSES(false));
-		query.setParameter("resource", getBehaviourDelegate())
-				.setIncludeInferred(includeInferred);
+		IQuery<?> query = getEntityManager().createQuery(SELECT_CLASSES(false),
+				includeInferred);
+		query.setParameter("resource", getBehaviourDelegate());
 
 		return query.evaluate(IClass.class);
 	}
@@ -278,7 +278,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		return getEntityManager()
 				.createQuery(DIRECT_CLASSES_DESC().toQueryString())
 				.setParameter("resource", getBehaviourDelegate())
-				.setIncludeInferred(true).evaluate(IClass.class);
+				.evaluate(IClass.class);
 	}
 
 	@Override
@@ -286,7 +286,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		return getEntityManager()
 				.createQuery(DIRECT_NAMED_CLASSES_DESC().toQueryString())
 				.setParameter("resource", getBehaviourDelegate())
-				.setIncludeInferred(true).evaluate(IClass.class);
+				.evaluate(IClass.class);
 	}
 
 	@Override
@@ -328,10 +328,10 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	public IExtendedIterator<IValue> getPropertyValues(IReference property,
 			boolean includeInferred) {
 		IQuery<IValue> query = getEntityManager().createQuery(
-				SELECT_PROPERTY_OBJECTS).bindResultType(IValue.class);
+				SELECT_PROPERTY_OBJECTS, includeInferred).bindResultType(
+				IValue.class);
 		query.setParameter("subj", this);
 		query.setParameter("pred", property);
-		query.setIncludeInferred(includeInferred);
 		return query.evaluate();
 	}
 
@@ -348,20 +348,19 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	@Override
 	public boolean hasProperty(IReference property, Object obj,
 			boolean includeInferred) {
-		return getEntityManager().createQuery("ASK {?s ?p ?o}")
+		return getEntityManager()
+				.createQuery("ASK {?s ?p ?o}", includeInferred)
 				.setParameter("s", this).setParameter("p", property)
-				.setParameter("o", obj).setIncludeInferred(includeInferred)
-				.getBooleanResult();
+				.setParameter("o", obj).getBooleanResult();
 	}
 
 	protected IExtendedIterator<IStatement> internalGetPropertyStmts(
 			final IEntity property, final boolean includeInferred) {
 		IQuery<?> query = getEntityManager().createQuery(
 				property != null ? SELECT_PROPERTY_OBJECTS
-						: SELECT_PROPERTIES_AND_OBJECTS);
+						: SELECT_PROPERTIES_AND_OBJECTS, includeInferred);
 		query.setParameter("subj", this);
 		query.setParameter("pred", property);
-		query.setIncludeInferred(includeInferred);
 		query.bindResultType("obj", IValue.class);
 
 		return new ConvertingIterator<Object, IStatement>(query.evaluate()) {

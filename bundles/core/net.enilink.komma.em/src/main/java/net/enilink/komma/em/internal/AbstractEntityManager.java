@@ -366,8 +366,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	public ILiteral createLiteral(Object value,
 			net.enilink.komma.core.URI datatype, String language) {
 		if (datatype == null && language != null) {
-			return new net.enilink.komma.core.Literal(value,
-					language);
+			return new net.enilink.komma.core.Literal(value, language);
 		}
 		return literalConverter.createLiteral(value, datatype);
 	}
@@ -403,16 +402,35 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	public IQuery<?> createQuery(String query) {
-		return createQuery(query, null);
+		return createQuery(query, null, true);
 	}
 
 	public IQuery<?> createQuery(String query, String baseURI) {
+		return createQuery(query, baseURI, true);
+	}
+
+	public IQuery<?> createQuery(String query, boolean includeInferred) {
+		return createQuery(query, null, includeInferred);
+	}
+
+	public IQuery<?> createQuery(String query, String baseURI,
+			boolean includeInferred) {
 		System.out.println("query: " + query);
 
-		IQuery<?> result = new EntityManagerQuery<Object>(this, dm.createQuery(
-				query, baseURI));
-		injector.injectMembers(result);
-		return result;
+		boolean dmIncludeInferred = dm.getIncludeInferred();
+		if (dmIncludeInferred != includeInferred) {
+			dm.setIncludeInferred(includeInferred);
+		}
+		try {
+			IQuery<?> result = new EntityManagerQuery<Object>(this,
+					dm.createQuery(query, baseURI));
+			injector.injectMembers(result);
+			return result;
+		} finally {
+			if (dmIncludeInferred != includeInferred) {
+				dm.setIncludeInferred(dmIncludeInferred);
+			}
+		}
 	}
 
 	@Override

@@ -41,8 +41,6 @@ import net.enilink.komma.core.URI;
 
 public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 		IQuery<R> {
-	protected boolean includeInferred;
-
 	protected IEntityManagerInternal manager;
 
 	private WeakHashMap<IExtendedIterator<?>, Object> opened = new WeakHashMap<IExtendedIterator<?>, Object>(
@@ -165,10 +163,6 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 		return null;
 	}
 
-	public boolean getIncludeInferred() {
-		return includeInferred;
-	}
-
 	@Override
 	public LockModeType getLockMode() {
 		return null;
@@ -211,12 +205,6 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 	}
 
 	public IQuery<R> setHint(String hintName, Object value) {
-		return this;
-	}
-
-	public IQuery<R> setIncludeInferred(boolean include) {
-		this.includeInferred = include;
-		query.setIncludeInferred(include);
 		return this;
 	}
 

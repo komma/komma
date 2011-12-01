@@ -60,10 +60,9 @@ public class ResultDescriptor<R> extends QueryBase<IResultDescriptor<R>>
 	public IExtendedIterator<R> evaluate(IEntityManager manager) {
 		if (results == null) {
 			String sparql = toQueryString();
-			IQuery<?> query = manager.createQuery(sparql);
+			IQuery<?> query = manager.createQuery(sparql, getIncludeInferred());
 
 			((QueryBase<?>) query).initializeFrom(this);
-			query.setIncludeInferred(getIncludeInferred());
 			if (parameters != null) {
 				for (Map.Entry<String, Object> entry : parameters.entrySet()) {
 					query.setParameter(entry.getKey(), entry.getValue());
@@ -127,7 +126,8 @@ public class ResultDescriptor<R> extends QueryBase<IResultDescriptor<R>>
 		} else {
 			getSparqlBuilder().optional(property,
 					descriptor.getResultVariable(),
-					descriptor.getParameterVariable(), descriptor.toQueryString());
+					descriptor.getParameterVariable(),
+					descriptor.toQueryString());
 		}
 
 		return this;

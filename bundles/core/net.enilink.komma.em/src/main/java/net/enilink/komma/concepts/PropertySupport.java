@@ -118,7 +118,6 @@ public abstract class PropertySupport extends BehaviorBase implements
 
 		IQuery<?> query = getEntityManager().createQuery(IS_CONTAINMENT);
 		query.setParameter("property", this);
-		query.setIncludeInferred(true);
 
 		return query.getBooleanResult();
 	}
@@ -128,9 +127,8 @@ public abstract class PropertySupport extends BehaviorBase implements
 			boolean includeInferred) {
 		IQuery<?> query = getEntityManager().createQuery(
 				direct ? SELECT_DIRECT_SUBPROPERTIES(true)
-						: SELECT_SUBPROPERTIES(true));
+						: SELECT_SUBPROPERTIES(true), includeInferred);
 		query.setParameter("superProperty", getBehaviourDelegate());
-		query.setIncludeInferred(includeInferred);
 
 		return (IExtendedIterator<IProperty>) query.evaluate();
 	}
@@ -160,9 +158,8 @@ public abstract class PropertySupport extends BehaviorBase implements
 			boolean includeInferred) {
 		IQuery<?> query = getEntityManager().createQuery(
 				direct ? SELECT_DIRECT_SUPERPROPERTIES(true)
-						: SELECT_SUPERPROPERTIES(true));
+						: SELECT_SUPERPROPERTIES(true), includeInferred);
 		query.setParameter("subProperty", getBehaviourDelegate());
-		query.setIncludeInferred(includeInferred);
 
 		return (IExtendedIterator<IProperty>) query.evaluate();
 	}
@@ -180,7 +177,6 @@ public abstract class PropertySupport extends BehaviorBase implements
 		IQuery<?> query = getEntityManager()
 				.createQuery(IS_ORDERED_CONTAINMENT);
 		query.setParameter("property", this);
-		query.setIncludeInferred(true);
 
 		return query.getBooleanResult();
 	}
@@ -192,7 +188,6 @@ public abstract class PropertySupport extends BehaviorBase implements
 					.createQuery(IS_DOMAIN_INSTANCE);
 			query.setParameter("property", getBehaviourDelegate());
 			query.setParameter("object", object);
-			query.setIncludeInferred(true);
 
 			return query.getBooleanResult();
 		}
@@ -276,7 +271,6 @@ public abstract class PropertySupport extends BehaviorBase implements
 			IQuery<?> query = getEntityManager().createQuery(IS_RANGE_INSTANCE);
 			query.setParameter("property", getBehaviourDelegate());
 			query.setParameter("object", object);
-			query.setIncludeInferred(true);
 
 			return query.getBooleanResult();
 		}
@@ -381,7 +375,6 @@ public abstract class PropertySupport extends BehaviorBase implements
 		}
 		IQuery<?> query = getEntityManager().createQuery(HAS_LIST_RANGE_QUERY);
 		query.setParameter("property", this);
-		query.setIncludeInferred(true);
 
 		return query.getBooleanResult();
 	}
