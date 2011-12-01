@@ -59,7 +59,7 @@ import net.enilink.komma.core.Statement;
 public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	private static final int CACHE_LIMIT = 10;
 
-	protected static final String QUERY = "SELECT DISTINCT ?o WHERE {?s ?p ?o}";
+	protected static final String QUERY = "SELECT DISTINCT ?o WHERE { ?s ?p ?o }";
 	protected final IReference bean;
 	private List<E> cache;
 
@@ -145,7 +145,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 			return true;
 		}
 		try {
-			return manager.createQuery("ASK {?s ?p ?o}")
+			return manager.createQuery("ASK { ?s ?p ?o }")
 					.setParameter("s", bean).setParameter("p", property)
 					.setParameter("o", convertInstance(o)).getBooleanResult();
 		} catch (KommaException e) {
