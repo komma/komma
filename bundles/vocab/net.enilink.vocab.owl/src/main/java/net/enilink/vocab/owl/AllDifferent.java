@@ -10,19 +10,19 @@
  *******************************************************************************/
 package net.enilink.vocab.owl;
 
-import java.util.List;
-
 import net.enilink.composition.annotations.Iri;
+
+import net.enilink.vocab.rdf.List;
 
 @Iri("http://www.w3.org/2002/07/owl#AllDifferent")
 public interface AllDifferent extends Thing {
-
 
 	/** http://www.w3.org/2002/07/owl#distinctMembers */
 	@Iri("http://www.w3.org/2002/07/owl#distinctMembers")
 	public abstract List<Thing> getOwlDistinctMembers();
 
 	/** http://www.w3.org/2002/07/owl#distinctMembers */
-	public abstract void setOwlDistinctMembers(List<? extends Thing> value);
+	public abstract void setOwlDistinctMembers(
+			java.util.List<? extends Thing> value);
 
 }

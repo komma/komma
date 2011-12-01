@@ -11,10 +11,10 @@
 package net.enilink.vocab.owl;
 
 import java.math.BigInteger;
-import java.util.List;
 
 import net.enilink.composition.annotations.Iri;
 
+import net.enilink.vocab.rdf.List;
 import net.enilink.vocab.rdfs.Class;
 import net.enilink.komma.core.IValue;
 
@@ -97,14 +97,15 @@ public interface Restriction extends net.enilink.vocab.owl.Class {
 
 	/** http://www.w3.org/2002/07/owl#onProperties */
 	public abstract void setOwlOnProperties(
-			List<? extends DatatypeProperty> properties);
+			java.util.List<? extends DatatypeProperty> properties);
 
 	/** http://www.w3.org/2002/07/owl#onClass */
 	@Iri("http://www.w3.org/2002/07/owl#onClass")
 	public abstract net.enilink.vocab.owl.Class getOwlOnClass();
 
 	/** http://www.w3.org/2002/07/owl#onClass */
-	public abstract void setOwlOnClass(net.enilink.vocab.owl.Class onClass);
+	public abstract void setOwlOnClass(
+			net.enilink.vocab.owl.Class onClass);
 
 	/** http://www.w3.org/2002/07/owl#onDataRange */
 	@Iri("http://www.w3.org/2002/07/owl#onDataRange")
