@@ -491,7 +491,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	private ILabelProvider labelProvider;
 
 	private IResource resource;
-	
+
 	private TreeViewer treeViewer;
 
 	private Text uriText;
@@ -503,20 +503,24 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 		public void run() {
 			ITreeSelection selection = (ITreeSelection) treeViewer
 					.getSelection();
-			TreePath path = selection.getPaths()[0];
-			Object selected = path.getLastSegment();
+
+			TreePath path = TreePath.EMPTY;
 			IResource subject = resource;
+			if (!selection.isEmpty()) {
+				path = selection.getPaths()[0];
+				Object selected = path.getLastSegment();
 
-			if (selected instanceof IStatement) {
-				Object object = ((IStatement) selected).getObject();
+				if (selected instanceof IStatement) {
+					Object object = ((IStatement) selected).getObject();
 
-				if (object instanceof IResource) {
-					subject = (IResource) object;
+					if (object instanceof IResource) {
+						subject = (IResource) object;
+					}
+
+				} else if (selected instanceof PropertyNode) {
+					subject = ((PropertyNode) selected).getResource();
+					path = path.getParentPath();
 				}
-				
-			} else if (selected instanceof PropertyNode) {
-				subject = ((PropertyNode) selected).getResource();
-				path = path.getParentPath();
 			}
 
 			PropertyNode node = new PropertyNode(subject, null, true);
