@@ -46,10 +46,6 @@ public interface IQueryBase<Q extends IQueryBase<Q>> {
 	 */
 	Q setFirstResult(int startPosition);
 
-	Q setIncludeInferred(boolean include);
-
-	boolean getIncludeInferred();
-
 	/**
 	 * Assigns an entity or literal to the given name.
 	 * 

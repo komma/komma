@@ -22,6 +22,10 @@ public interface IResultDescriptor<R> extends IQueryBase<IResultDescriptor<R>> {
 
 	String getResultVariable();
 
+	IResultDescriptor<R> setIncludeInferred(boolean includeInferred);
+
+	boolean getIncludeInferred();
+
 	/**
 	 * Initializes a property of the result objects.
 	 * 

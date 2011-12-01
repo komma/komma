@@ -134,7 +134,8 @@ public interface IEntityManager {
 	IEntity createNamed(URI uri, IReference... concepts);
 
 	/**
-	 * Creates an IKommaQuery to evaluate the query string.
+	 * Creates an {@link IQuery} to evaluate the query string against asserted
+	 * and inferred statements.
 	 * 
 	 * @param query
 	 *            rdf query in the configured language - default SPARQL.
@@ -143,7 +144,8 @@ public interface IEntityManager {
 	IQuery<?> createQuery(String query);
 
 	/**
-	 * Creates an IKommaQuery to evaluate the query string.
+	 * Creates an {@link IQuery} to evaluate the query string against asserted
+	 * and inferred statements.
 	 * 
 	 * @param query
 	 *            rdf query in the configured language - default SPARQL.
@@ -153,6 +155,34 @@ public interface IEntityManager {
 	 * @return {@link IQuery}.
 	 */
 	IQuery<?> createQuery(String query, String baseURI);
+
+	/**
+	 * Creates an {@link IQuery} to evaluate the query string.
+	 * 
+	 * @param query
+	 *            rdf query in the configured language - default SPARQL.
+	 * @param includeInferred
+	 *            Controls if inferred statements should be included to compute
+	 *            the results or not.
+	 * @return {@link IQuery}.
+	 */
+	IQuery<?> createQuery(String query, boolean includeInferred);
+
+	/**
+	 * Creates an {@link IQuery} to evaluate the query string against asserted
+	 * statements.
+	 * 
+	 * @param query
+	 *            rdf query in the configured language - default SPARQL.
+	 * @param baseURI
+	 *            base URI for relative URIs or <code>null</code> if the query
+	 *            does not contain relative URIs
+	 * @param includeInferred
+	 *            Controls if inferred statements should be included to compute
+	 *            the results or not.
+	 * @return {@link IQuery}.
+	 */
+	IQuery<?> createQuery(String query, String baseURI, boolean includeInferred);
 
 	/**
 	 * Assigns <code>concept</code> to the given entity and return a new object
