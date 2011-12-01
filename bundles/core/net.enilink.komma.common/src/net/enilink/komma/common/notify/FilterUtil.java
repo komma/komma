@@ -54,16 +54,11 @@ public final class FilterUtil {
 			NotificationFilter<? super T> filter, Collection<T> cache) {
 		Collection<T> result;
 
-		if (filter == NotificationFilter.any()) {
+		if (filter == null || filter == NotificationFilter.any()) {
 			result = (Collection<T>) notifications;
 		} else {
 			result = cache;
 			result.clear();
-
-			if (filter == null) {
-				// the default filter
-				filter = NotificationFilter.any();
-			}
 
 			for (T next : notifications) {
 				if (filter.accept(next)) {
