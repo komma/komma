@@ -109,9 +109,9 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 					+ "} ORDER BY ?property";
 
 			IExtendedIterator<IProperty> result = ((IEntity) inputElement)
-					.getEntityManager().createQuery(SELECT_PROPERTIES)
+					.getEntityManager()
+					.createQuery(SELECT_PROPERTIES, includeInferred)
 					.setParameter("resource", (IEntity) inputElement)
-					.setIncludeInferred(includeInferred)
 					.evaluate(IProperty.class);
 
 			Map<Pair<IReference, IReference>, PropertyNode> nodes = new LinkedHashMap<Pair<IReference, IReference>, PropertyNode>();
