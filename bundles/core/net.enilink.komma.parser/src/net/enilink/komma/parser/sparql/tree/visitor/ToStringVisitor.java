@@ -324,6 +324,7 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 			Expression expr = it.next();
 
 			if (expr instanceof LogicalExpr
+			// add parentheses for precedence if required
 					&& logicalExpr.getOperator().ordinal() > ((LogicalExpr) expr)
 							.getOperator().ordinal()) {
 				data.append("(");

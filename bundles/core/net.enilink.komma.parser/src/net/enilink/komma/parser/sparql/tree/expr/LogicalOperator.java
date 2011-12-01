@@ -11,13 +11,13 @@
 package net.enilink.komma.parser.sparql.tree.expr;
 
 public enum LogicalOperator {
-	AND("&&"), OR("||"), NOT("!");
+	OR("||"), AND("&&"), NOT("!");
 	String symbol;
 
 	private LogicalOperator(String symbol) {
 		this.symbol = symbol;
 	}
-	
+
 	public String getSymbol() {
 		return symbol;
 	}
