@@ -128,10 +128,9 @@ public class InitializeCopyCommand extends AbstractOverrideableCommand {
 
 	@SuppressWarnings("unchecked")
 	protected Collection<? extends IProperty> getPropertiesToCopy() {
-		return (Collection<IProperty>) getOwner().getEntityManager().createQuery(
-				"SELECT DISTINCT ?p WHERE {?s ?p ?o}")
-				.setIncludeInferred(false).setParameter("s", getOwner())
-				.evaluate().toList();
+		return (Collection<IProperty>) getOwner().getEntityManager()
+				.createQuery("SELECT DISTINCT ?p WHERE {?s ?p ?o}", false)
+				.setParameter("s", getOwner()).evaluate().toList();
 	}
 
 	/**
@@ -170,8 +169,7 @@ public class InitializeCopyCommand extends AbstractOverrideableCommand {
 						for (Object item : valueList) {
 							Object target = item instanceof IObject ? copyHelper
 									.getCopyTarget((IObject) item,
-											copiedTargetRequired)
-									: item;
+											copiedTargetRequired) : item;
 							if (target == null) {
 								break; // if one is null, they'll all be null
 							}
@@ -209,8 +207,8 @@ public class InitializeCopyCommand extends AbstractOverrideableCommand {
 	@Override
 	public Collection<?> doGetAffectedResources(Object type) {
 		if (IModel.class.equals(type) && owner != null) {
-			Collection<Object> affected = new HashSet<Object>(super
-					.doGetAffectedResources(type));
+			Collection<Object> affected = new HashSet<Object>(
+					super.doGetAffectedResources(type));
 			affected.add(owner.getModel());
 			return affected;
 		}

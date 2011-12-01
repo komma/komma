@@ -971,7 +971,7 @@ public class ItemProviderAdapter extends
 					.getValue();
 			result = createCreateChildCommand(domain,
 					commandParameter.getOwnerObject(),
-					(IProperty) newChildParameter.getProperty(),
+					(IReference) newChildParameter.getProperty(),
 					newChildParameter.getValue(), newChildParameter.getIndex(),
 					commandParameter.getCollection());
 		}

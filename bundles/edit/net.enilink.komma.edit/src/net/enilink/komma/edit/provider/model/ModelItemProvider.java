@@ -220,8 +220,7 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 						"full/obj16/Classes.png").toString()), classes));
 
 		List<IObject> properties = (List<IObject>) ((IModel) object)
-				.getManager().createQuery(QUERY_PROPERTIES)
-				.setIncludeInferred(true).evaluate().toList();
+				.getManager().createQuery(QUERY_PROPERTIES).evaluate().toList();
 		children.add(new ItemProvider(getRootAdapterFactory(), "Properties",
 				URIImpl.createURI(getResourceLocator().getImage(
 						"full/obj16/Properties.png").toString()), properties));
@@ -294,7 +293,7 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 	public String getText(Object object) {
 		return ModelUtil.getLabel(object);
 	}
-	
+
 	/**
 	 * This adds {@link net.enilink.komma.edit.command.CommandParameter}s
 	 * describing the children that can be created under this object.
