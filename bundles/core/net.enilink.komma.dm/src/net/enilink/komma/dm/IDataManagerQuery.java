@@ -21,18 +21,6 @@ public interface IDataManagerQuery<R> {
 	IDataManagerQuery<R> setFirstResult(int startPosition);
 
 	/**
-	 * Enables or disables the inclusion of inferred statements within the
-	 * results.
-	 * 
-	 * @param include
-	 *            <code>true</code> if inferred statements should be included,
-	 *            else <code>false</code>
-	 * 
-	 * @return This query object.
-	 */
-	IDataManagerQuery<R> setIncludeInferred(boolean include);
-
-	/**
 	 * Terminates the result list after reading <code>maxResult</code>
 	 * 
 	 * @param maxResult
@@ -50,16 +38,6 @@ public interface IDataManagerQuery<R> {
 	 *            managed entity or literal.
 	 */
 	IDataManagerQuery<R> setParameter(String name, IValue value);
-
-	/**
-	 * Returns <code>true</code> if the method
-	 * {@link IDataManagerQuery#setIncludeInferred(boolean)} is supported.
-	 * 
-	 * @return <code>true</code> if
-	 *         {@link IDataManagerQuery#setIncludeInferred(boolean)} is
-	 *         supported, else <code>false</code>
-	 */
-	boolean supportsIncludeInferred();
 
 	/**
 	 * Returns <code>true</code> if the methods
