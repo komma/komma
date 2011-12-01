@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.eclipse.jface.viewers.AbstractTableViewer;
 import org.eclipse.jface.viewers.ColumnViewer;
+import org.eclipse.jface.viewers.IIndexableLazyContentProvider;
 import org.eclipse.jface.viewers.ILazyContentProvider;
 import org.eclipse.jface.viewers.ILazyTreeContentProvider;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -40,7 +41,8 @@ import net.enilink.komma.core.IValue;
 
 public class StatementPatternContentProvider extends ModelContentProvider
 		implements IStructuredContentProvider, ILazyContentProvider,
-		ILazyTreeContentProvider, ISearchableItemProvider {
+		IIndexableLazyContentProvider, ILazyTreeContentProvider,
+		ISearchableItemProvider {
 	protected Set<IStatementPattern> patterns = new HashSet<IStatementPattern>();
 
 	protected Object[] instanceReferences;
@@ -308,5 +310,20 @@ public class StatementPatternContentProvider extends ModelContentProvider
 	public Object getParent(Object element) {
 		// TODO find a reasonable pattern based implementation for this method
 		return null;
+	}
+
+	@Override
+	public int findElement(Object element) {
+		if (instanceReferences == null) {
+			return -1;
+		}
+		int i = 0;
+		for (Object ref : instanceReferences) {
+			if (ref != null && ref.equals(element)) {
+				return i;
+			}
+			i++;
+		}
+		return -1;
 	}
 }
