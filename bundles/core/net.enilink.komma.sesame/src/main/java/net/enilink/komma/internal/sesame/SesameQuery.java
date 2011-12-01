@@ -71,12 +71,6 @@ public class SesameQuery<R> implements IDataManagerQuery<R> {
 	}
 
 	@Override
-	public IDataManagerQuery<R> setIncludeInferred(boolean include) {
-		query.setIncludeInferred(include);
-		return this;
-	}
-
-	@Override
 	public IDataManagerQuery<R> setMaxResults(int maxResult) {
 		throw new UnsupportedOperationException();
 	}
@@ -85,11 +79,6 @@ public class SesameQuery<R> implements IDataManagerQuery<R> {
 	public IDataManagerQuery<R> setParameter(String name, IValue value) {
 		query.setBinding(name, valueConverter.toSesame(value));
 		return this;
-	}
-
-	@Override
-	public boolean supportsIncludeInferred() {
-		return true;
 	}
 
 	@Override

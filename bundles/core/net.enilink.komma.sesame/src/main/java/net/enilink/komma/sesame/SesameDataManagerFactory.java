@@ -13,10 +13,10 @@ import net.enilink.komma.core.KommaException;
 
 public class SesameDataManagerFactory implements IDataManagerFactory {
 	@Inject
-	Injector injector;
+	protected Injector injector;
 
 	@Inject
-	Repository repository;
+	protected Repository repository;
 
 	@Override
 	public IDataManager get() {

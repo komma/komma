@@ -40,11 +40,11 @@ public class SesameRepositoryDataManager implements IDataManager {
 	private static final URI[] ALL_CONTEXTS = new URI[0];
 
 	protected URI[] addCtx = ALL_CONTEXTS;
-	
+
 	protected URI[] readCtx = ALL_CONTEXTS;
 
 	protected net.enilink.komma.core.URI[] changeCtx;
-	
+
 	@Inject
 	protected IDataChangeSupport changeSupport;
 
@@ -52,7 +52,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 
 	private boolean includeInferred = true;
 
-	@Inject(optional=true)
+	@Inject(optional = true)
 	protected InferencingCapability inferencing;
 
 	@Inject
@@ -77,7 +77,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 		this.changeSupport = changeSupport;
 		this.transaction = new SesameTransaction(this, changeSupport);
 	}
-
+	
 	@Override
 	public IDataManager add(Iterable<? extends IStatement> statements) {
 		try {
@@ -169,7 +169,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 		}
 	}
 
-	RepositoryConnection getConnection() {
+	protected RepositoryConnection getConnection() {
 		return connection;
 	}
 

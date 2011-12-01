@@ -23,4 +23,6 @@ Import-Package: com.google.inject;version="2.0.0",
  org.openrdf.repository.sail;version="2.0.0",
  org.openrdf.sail.memory;version="2.0.0",
  org.slf4j
-Export-Package: net.enilink.komma.sesame
+Export-Package: net.enilink.komma.internal.sesame,
+ net.enilink.komma.internal.sesame.result,
+ net.enilink.komma.sesame
