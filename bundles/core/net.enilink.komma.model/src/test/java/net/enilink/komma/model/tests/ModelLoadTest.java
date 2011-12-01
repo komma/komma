@@ -21,6 +21,7 @@ import org.junit.Test;
 
 import com.google.inject.Guice;
 
+import net.enilink.komma.concepts.CONCEPTS;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelSetFactory;
@@ -28,7 +29,6 @@ import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.URIImpl;
 
 public class ModelLoadTest {
 	IModelSet modelSet;
@@ -52,17 +52,17 @@ public class ModelLoadTest {
 
 	@Test
 	public void testModel() throws Exception {
-		IModel model = modelSet
-				.createModel(URIImpl
-						.createURI("http://www.tu-chemnitz.de/ontologies/tessi/tessi-ooa"));
+		IModel model = modelSet.createModel(CONCEPTS.NAMESPACE_URI
+				.trimFragment());
 		model.load(Collections.emptyMap());
 
 		List<?> test = model
 				.getManager()
 				.createQuery(
-						"SELECT DISTINCT ?o WHERE { <http://www.tu-chemnitz.de/ontologies/tessi/tessi-core#hasColor> a ?o }")
+						"SELECT DISTINCT ?property WHERE { ?property a owl:ObjectProperty } LIMIT 2")
 				.getResultList();
 
-		assertEquals("The Ontologies couldn't resolved.", 4, test.size());
+		assertEquals("The object properties couldn't be resolved.", 2,
+				test.size());
 	}
 }

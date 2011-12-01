@@ -35,6 +35,7 @@ import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.adapter.AdapterSet;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.adapter.IAdapterSet;
+import net.enilink.komma.common.notify.FilterUtil;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.common.notify.INotificationListener;
@@ -97,8 +98,8 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	private final static Logger log = LoggerFactory
 			.getLogger(AbstractModelSetSupport.class);
 
-	/** 
-	 * Represents the transient state of this resource 
+	/**
+	 * Represents the transient state of this resource
 	 */
 	public static class State {
 		/**
@@ -381,8 +382,13 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 					listeners = subjectListeners.get(entry.getKey());
 				}
 				if (listeners != null) {
+					List<INotification> cache = new ArrayList<INotification>();
 					for (INotificationListener<INotification> listener : listeners) {
-						listener.notifyChanged(entry.getValue());
+						Collection<INotification> filtered = FilterUtil.select(
+								notifications, listener.getFilter(), cache);
+						if (!filtered.isEmpty()) {
+							listener.notifyChanged(entry.getValue());
+						}
 					}
 				}
 			}

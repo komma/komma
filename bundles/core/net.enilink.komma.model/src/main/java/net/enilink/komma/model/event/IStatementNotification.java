@@ -23,7 +23,7 @@ public interface IStatementNotification extends INotification {
 
 	Object getObject();
 
-	IReference[] getContexts();
+	IReference getContext();
 
 	boolean isAdd();
 }

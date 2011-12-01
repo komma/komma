@@ -206,7 +206,7 @@ public interface IModelSet extends INotifier<INotification> {
 	/**
 	 * Returns the direct {@link IModel}s being managed.
 	 * <p>
-	 * A model added to this set will be {@link IModel#getOntologySet contained}
+	 * A model added to this set will be {@link IModel#getModelSet contained}
 	 * by this model set. If it was previously contained by a model set, it will
 	 * have been removed.
 	 * </p>

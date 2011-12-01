@@ -10,19 +10,17 @@
  *******************************************************************************/
 package net.enilink.komma.internal.model.event;
 
-import java.util.Arrays;
-
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.IReference;
 
 public class StatementNotification implements IStatementNotification {
-	private IModelSet modelSet;
-
 	private boolean add;
 
-	private IReference[] ctx;
+	private IReference ctx;
+
+	private IModelSet modelSet;
 
 	private Object obj;
 
@@ -31,7 +29,7 @@ public class StatementNotification implements IStatementNotification {
 	private IReference subj;
 
 	public StatementNotification(IModelSet modelSet, boolean add,
-			IReference subj, IReference pred, Object obj, IReference... ctx) {
+			IReference subj, IReference pred, Object obj, IReference ctx) {
 		this.modelSet = modelSet;
 		this.add = add;
 		this.subj = subj;
@@ -46,30 +44,35 @@ public class StatementNotification implements IStatementNotification {
 			return true;
 		if (obj == null)
 			return false;
-		if (!(obj instanceof IStatementNotification))
+		if (getClass() != obj.getClass())
 			return false;
-		IStatementNotification other = (IStatementNotification) obj;
-		if (!Arrays.equals(ctx, other.getContexts()))
+		StatementNotification other = (StatementNotification) obj;
+		if (add != other.add)
+			return false;
+		if (ctx == null) {
+			if (other.ctx != null)
+				return false;
+		} else if (!ctx.equals(other.ctx))
 			return false;
 		if (this.obj == null) {
-			if (other.getObject() != null)
+			if (other.obj != null)
 				return false;
-		} else if (!this.obj.equals(other.getObject()))
+		} else if (!this.obj.equals(other.obj))
 			return false;
 		if (pred == null) {
-			if (other.getPredicate() != null)
+			if (other.pred != null)
 				return false;
-		} else if (!pred.equals(other.getPredicate()))
+		} else if (!pred.equals(other.pred))
 			return false;
 		if (subj == null) {
-			if (other.getSubject() != null)
+			if (other.subj != null)
 				return false;
-		} else if (!subj.equals(other.getSubject()))
+		} else if (!subj.equals(other.subj))
 			return false;
 		return true;
 	}
 
-	public IReference[] getContexts() {
+	public IReference getContext() {
 		return ctx;
 	}
 
@@ -93,7 +96,8 @@ public class StatementNotification implements IStatementNotification {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + Arrays.hashCode(ctx);
+		result = prime * result + (add ? 1231 : 1237);
+		result = prime * result + ((ctx == null) ? 0 : ctx.hashCode());
 		result = prime * result + ((obj == null) ? 0 : obj.hashCode());
 		result = prime * result + ((pred == null) ? 0 : pred.hashCode());
 		result = prime * result + ((subj == null) ? 0 : subj.hashCode());

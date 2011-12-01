@@ -65,7 +65,6 @@ public abstract class ObjectSupport extends BehaviorBase implements IObject,
 		IQuery<?> query = getEntityManager().createQuery(
 				SELECT_APPLICABLE_CHILD_PROPERTIES);
 		query.setParameter("resource", this);
-		query.setIncludeInferred(true);
 
 		return query.evaluate(IProperty.class);
 	}
