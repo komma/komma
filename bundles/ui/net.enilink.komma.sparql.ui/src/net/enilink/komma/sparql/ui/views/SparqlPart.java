@@ -65,7 +65,7 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelDescription;
-import net.enilink.komma.parser.sparql.SparqlParser;
+import net.enilink.komma.parser.sparql.Sparql11Parser;
 import net.enilink.komma.query.SparqlBuilder;
 import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IBooleanResult;
@@ -508,7 +508,7 @@ class SparqlPart extends AbstractEditorPart {
 		ContentProposals.enableContentProposal(
 				queryText,
 				new ParboiledProposalProvider(Parboiled.createParser(
-						SparqlParser.class).Query(), new SparqlProposals()),
+						Sparql11Parser.class).Query(), new SparqlProposals()),
 				null);
 
 		Button button = getWidgetFactory().createButton(queryComposite, "Run",
