@@ -46,6 +46,7 @@ import net.enilink.komma.parser.sparql.tree.Variable;
 import net.enilink.komma.parser.sparql.tree.expr.BuiltInCall;
 import net.enilink.komma.parser.sparql.tree.expr.Expression;
 import net.enilink.komma.parser.sparql.tree.expr.FunctionCall;
+import net.enilink.komma.parser.sparql.tree.expr.GraphPatternExpr;
 import net.enilink.komma.parser.sparql.tree.expr.LogicalExpr;
 import net.enilink.komma.parser.sparql.tree.expr.NegateExpr;
 import net.enilink.komma.parser.sparql.tree.expr.NumericExpr;
@@ -345,4 +346,7 @@ public class TreeWalker<T> implements Visitor<Boolean, T> {
 		return variable.getPropertyList().accept(this, data);
 	}
 
+	public Boolean graphPatternExpr(GraphPatternExpr graphPatternExpr, T data) {
+		return graphPatternExpr.getPattern().accept(this, data);
+	}
 }

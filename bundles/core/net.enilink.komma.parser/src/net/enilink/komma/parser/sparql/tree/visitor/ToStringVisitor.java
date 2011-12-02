@@ -49,6 +49,7 @@ import net.enilink.komma.parser.sparql.tree.Variable;
 import net.enilink.komma.parser.sparql.tree.expr.BuiltInCall;
 import net.enilink.komma.parser.sparql.tree.expr.Expression;
 import net.enilink.komma.parser.sparql.tree.expr.FunctionCall;
+import net.enilink.komma.parser.sparql.tree.expr.GraphPatternExpr;
 import net.enilink.komma.parser.sparql.tree.expr.LogicalExpr;
 import net.enilink.komma.parser.sparql.tree.expr.LogicalOperator;
 import net.enilink.komma.parser.sparql.tree.expr.NegateExpr;
@@ -279,9 +280,15 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 		}
 
 		for (Expression filter : graphPattern.getFilters()) {
-			data.append(newLine()).append("FILTER (");
+			boolean addParens = !(filter instanceof GraphPatternExpr); 
+			data.append(newLine()).append("FILTER ");
+			if (addParens) {
+				data.append(" (");
+			}
 			filter.accept(this, data);
-			data.append(")");
+			if (addParens) {
+				data.append(")");
+			}
 		}
 
 		dedent();
@@ -335,8 +342,8 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 			}
 
 			if (it.hasNext()) {
-				data.append(" ").append(logicalExpr.getOperator().getSymbol())
-						.append(" ");
+				data.append(' ').append(logicalExpr.getOperator().getSymbol())
+						.append(' ');
 			}
 		}
 		return data;
@@ -495,7 +502,8 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 		Expression right = relationalExpr.getRight();
 
 		left.accept(this, data);
-		data.append(relationalExpr.getOperator().getSymbol());
+		data.append(' ').append(relationalExpr.getOperator().getSymbol())
+				.append(' ');
 		right.accept(this, data);
 
 		return data;
@@ -556,4 +564,16 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 		return variable.getPropertyList().accept(this, data);
 	}
 
+	@Override
+	public StringBuilder graphPatternExpr(GraphPatternExpr graphPatternExpr,
+			StringBuilder data) {
+		switch (graphPatternExpr.getType()) {
+		case EXISTS:
+			data.append("EXISTS ");
+			// case NOT_EXISTS
+		default:
+			data.append("NOT EXISTS ");
+		}
+		return graphPatternExpr.getPattern().accept(this, data);
+	}
 }

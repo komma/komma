@@ -37,6 +37,7 @@ import net.enilink.komma.parser.sparql.tree.UnionGraph;
 import net.enilink.komma.parser.sparql.tree.Variable;
 import net.enilink.komma.parser.sparql.tree.expr.BuiltInCall;
 import net.enilink.komma.parser.sparql.tree.expr.FunctionCall;
+import net.enilink.komma.parser.sparql.tree.expr.GraphPatternExpr;
 import net.enilink.komma.parser.sparql.tree.expr.LogicalExpr;
 import net.enilink.komma.parser.sparql.tree.expr.NegateExpr;
 import net.enilink.komma.parser.sparql.tree.expr.NumericExpr;
@@ -104,4 +105,6 @@ public interface Visitor<R, T> {
 	R unionGraph(UnionGraph unionGraph, T data);
 
 	R variable(Variable variable, T data);
+
+	R graphPatternExpr(GraphPatternExpr graphPatternExpr, T data);
 }
