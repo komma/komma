@@ -139,6 +139,8 @@ class ValueEditingSupport extends EditingSupport {
 		}
 	}
 
+	private static final int PROPOSAL_DELAY = 1000;
+
 	private Object currentElement;
 	private boolean createNew;
 	private IEditingDomain editingDomain;
@@ -199,6 +201,8 @@ class ValueEditingSupport extends EditingSupport {
 				});
 		resourceEditor.getContentProposalAdapter().setProposalAcceptanceStyle(
 				ContentProposalAdapter.PROPOSAL_REPLACE);
+		resourceEditor.getContentProposalAdapter().setAutoActivationDelay(
+				PROPOSAL_DELAY);
 		addListener(resourceEditor);
 
 		ManchesterProposals manchesterProposals = new ManchesterProposals() {
@@ -244,6 +248,9 @@ class ValueEditingSupport extends EditingSupport {
 		manchesterEditor.getContentProposalAdapter()
 				.setProposalAcceptanceStyle(
 						ContentProposalAdapter.PROPOSAL_IGNORE);
+		manchesterEditor.getContentProposalAdapter().setAutoActivationDelay(
+				PROPOSAL_DELAY);
+
 		addListener(manchesterEditor);
 		manchesterEditor.setStyle(SWT.MULTI | SWT.WRAP);
 	}
