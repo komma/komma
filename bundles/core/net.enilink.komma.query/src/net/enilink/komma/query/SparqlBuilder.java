@@ -30,6 +30,7 @@ import org.parboiled.common.StringUtils;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
+import net.enilink.komma.parser.sparql.Sparql11Parser;
 import net.enilink.komma.parser.sparql.SparqlParser;
 import net.enilink.komma.parser.sparql.tree.AbstractGraphNode;
 import net.enilink.komma.parser.sparql.tree.BNode;
@@ -129,7 +130,7 @@ public class SparqlBuilder {
 
 	protected SparqlParser getParser() {
 		if (parser == null) {
-			parser = Parboiled.createParser(SparqlParser.class);
+			parser = Parboiled.createParser(Sparql11Parser.class);
 		}
 		return parser;
 	}
