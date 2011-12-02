@@ -198,6 +198,7 @@ public class FilterWidget {
 								.size()]);
 					}
 				}, null, null);
+		proposalAdapter.setAutoActivationDelay(750);
 		proposalAdapter
 				.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_IGNORE);
 		proposalAdapter

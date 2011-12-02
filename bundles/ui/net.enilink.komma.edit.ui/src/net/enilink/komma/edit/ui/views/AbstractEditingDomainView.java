@@ -190,35 +190,22 @@ public class AbstractEditingDomainView extends ViewPart implements
 		return editPart;
 	}
 
-	protected void setEditingDomainProvider(
+	protected boolean setEditingDomainProvider(
 			IEditingDomainProvider editingDomainProvider, IWorkbenchPart part) {
 		IEditingDomainProvider lastProvider = this.editingDomainProvider;
 
 		if (editingDomainProvider == null) {
 			this.part = null;
 			this.editingDomainProvider = null;
-			this.model = null;
 		} else if (lastProvider != null
 				&& lastProvider.getEditingDomain().equals(
 						editingDomainProvider.getEditingDomain())) {
-			return;
+			return false;
 		} else {
 			this.part = part;
 			this.editingDomainProvider = editingDomainProvider;
-
-			Set<IModel> models = editingDomainProvider.getEditingDomain()
-					.getModelSet().getModels();
-			if (!models.isEmpty()) {
-				this.model = models.iterator().next();
-			}
 		}
-		if (editPart != null) {
-			selectionProvider.setInternalSelection(StructuredSelection.EMPTY);
-
-			editorForm.setInput(null);
-			editPart.setInput(this.model);
-			editorForm.refreshStale();
-		}
+		return true;
 	}
 
 	public void setEditPart(AbstractEditingDomainPart viewPart) {
@@ -231,15 +218,45 @@ public class AbstractEditingDomainView extends ViewPart implements
 	}
 
 	protected void setWorkbenchPart(final IWorkbenchPart part) {
+		boolean domainChanged = false;
 		if (part == null) {
-			setEditingDomainProvider(null, null);
+			domainChanged = setEditingDomainProvider(null, null);
 		} else if (part instanceof IEditingDomainProvider) {
-			setEditingDomainProvider((IEditingDomainProvider) part, part);
-		} else if (part != null) {
+			domainChanged = setEditingDomainProvider(
+					(IEditingDomainProvider) part, part);
+		} else {
 			IEditingDomainProvider provider = (IEditingDomainProvider) part
 					.getAdapter(IEditingDomainProvider.class);
 			if (provider != null) {
-				setEditingDomainProvider(provider, part);
+				domainChanged = setEditingDomainProvider(provider, part);
+			}
+		}
+
+		if (part == null) {
+			this.model = null;
+		} else {
+			IModel model = (IModel) part.getAdapter(IModel.class);
+			if (domainChanged && model == null && editingDomainProvider != null) {
+				Set<IModel> models = editingDomainProvider.getEditingDomain()
+						.getModelSet().getModels();
+				if (!models.isEmpty()) {
+					model = models.iterator().next();
+				}
+			}
+			boolean changed = domainChanged;
+			if (domainChanged || model != null) {
+				changed |= this.model != model || this.model != null
+						&& !this.model.equals(model);
+				this.model = model;
+			}
+
+			if (changed && editPart != null) {
+				selectionProvider
+						.setInternalSelection(StructuredSelection.EMPTY);
+
+				editorForm.setInput(null);
+				editPart.setInput(this.model);
+				editorForm.refreshStale();
 			}
 		}
 	}

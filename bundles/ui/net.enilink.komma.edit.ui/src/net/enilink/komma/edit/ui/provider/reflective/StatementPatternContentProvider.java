@@ -10,9 +10,12 @@
  *******************************************************************************/
 package net.enilink.komma.edit.ui.provider.reflective;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jface.viewers.AbstractTableViewer;
@@ -46,8 +49,10 @@ public class StatementPatternContentProvider extends ModelContentProvider
 	protected Set<IStatementPattern> patterns = new HashSet<IStatementPattern>();
 
 	protected Object[] instanceReferences;
+	protected Map<Object, Integer> instanceToIndex;
 
 	protected StructuredViewer viewer;
+	protected boolean isVirtualTableViewer;
 
 	@Override
 	protected boolean addedStatement(IStatement stmt,
@@ -58,7 +63,26 @@ public class StatementPatternContentProvider extends ModelContentProvider
 				return false;
 			}
 		}
+		doUpdate(stmt, runnables);
+
 		return true;
+	}
+
+	protected void doUpdate(IStatement stmt, Collection<Runnable> runnables) {
+		if (instanceToIndex != null) {
+			int index = findElement(stmt.getSubject());
+			if (index >= 0) {
+				postRefresh(Arrays.asList(stmt.getSubject()), true, runnables);
+			}
+			index = findElement(stmt.getPredicate());
+			if (index >= 0) {
+				postRefresh(Arrays.asList(stmt.getPredicate()), true, runnables);
+			}
+			index = findElement(stmt.getObject());
+			if (index >= 0) {
+				postRefresh(Arrays.asList(stmt.getObject()), true, runnables);
+			}
+		}
 	}
 
 	@Override
@@ -157,6 +181,7 @@ public class StatementPatternContentProvider extends ModelContentProvider
 
 	@Override
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+		instanceToIndex = null;
 		instanceReferences = null;
 		patterns.clear();
 		if (newInput instanceof IStatementPattern) {
@@ -173,6 +198,8 @@ public class StatementPatternContentProvider extends ModelContentProvider
 		} else {
 			this.viewer = null;
 		}
+		this.isVirtualTableViewer = this.viewer instanceof AbstractTableViewer
+				&& (this.viewer.getControl().getStyle() & SWT.VIRTUAL) != 0;
 
 		IModel newModel = getModelFromPatterns(patterns);
 		super.inputChanged(viewer, this.model, newModel);
@@ -225,6 +252,7 @@ public class StatementPatternContentProvider extends ModelContentProvider
 				return false;
 			}
 		}
+		doUpdate(stmt, runnables);
 		return true;
 	}
 
@@ -273,6 +301,12 @@ public class StatementPatternContentProvider extends ModelContentProvider
 			}
 		}
 		instanceReferences = values.toArray();
+		instanceToIndex = new HashMap<Object, Integer>(
+				instanceReferences.length);
+		int i = 0;
+		for (Object instance : instanceReferences) {
+			instanceToIndex.put(instance, i++);
+		}
 		if (viewer instanceof AbstractTableViewer) {
 			((AbstractTableViewer) viewer)
 					.setItemCount(instanceReferences.length);
@@ -285,8 +319,7 @@ public class StatementPatternContentProvider extends ModelContentProvider
 	@Override
 	protected void postRefresh(Collection<Runnable> runnables) {
 		// correctly refresh elements in case of virtual table viewer
-		if (viewer instanceof AbstractTableViewer
-				&& (viewer.getControl().getStyle() & SWT.VIRTUAL) != 0) {
+		if (isVirtualTableViewer) {
 			// remove all previous update operations
 			runnables.clear();
 
@@ -314,16 +347,10 @@ public class StatementPatternContentProvider extends ModelContentProvider
 
 	@Override
 	public int findElement(Object element) {
-		if (instanceReferences == null) {
+		if (instanceToIndex == null) {
 			return -1;
 		}
-		int i = 0;
-		for (Object ref : instanceReferences) {
-			if (ref != null && ref.equals(element)) {
-				return i;
-			}
-			i++;
-		}
-		return -1;
+		Integer index = instanceToIndex.get(element);
+		return index != null ? index : -1;
 	}
 }
