@@ -17,7 +17,7 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 	}
 
 	protected String getQueryFindPatterns(Object parent) {
-		return "?parent komma:hasDescendant ?s";
+		return "?parent komma:hasDescendant ?s . ";
 	}
 
 	protected void setQueryParameters(IQuery<?> query, Object parent) {
@@ -31,26 +31,15 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 		IEntityManager em = getEntityManager(parent);
 		if (expression instanceof String && em != null) {
 			String findPatterns = getQueryFindPatterns(parent);
-			String queryStr = ISparqlConstants.PREFIX
-					+ "SELECT DISTINCT ?s WHERE {{" //
-					+ findPatterns
-					+ " FILTER regex(str(?s), ?uriPattern)} UNION {"
-					+ findPatterns
-					+ " { ?s rdfs:label ?l } FILTER regex(str(?l), ?template)}"
-					+ "}";
-
-			if (limit > 0) {
-				queryStr += " LIMIT " + limit;
-			}
 
 			String pattern = (String) expression;
 			String uriPattern = pattern;
-			if (!pattern.matches("[#/]")) {
-				uriPattern = "#" + pattern;
+			if (!pattern.matches(".*[#/].*")) {
+				uriPattern = "[#/][^#/]*" + pattern;
 
 				int colonIndex = pattern.lastIndexOf(':');
 				if (colonIndex == 0) {
-					uriPattern = "#" + pattern.substring(1);
+					uriPattern = "[#/]" + pattern.substring(1);
 				} else if (colonIndex > 0) {
 					String prefix = pattern.substring(0, colonIndex);
 					URI namespaceUri = em.getNamespace(prefix);
@@ -60,11 +49,25 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 					}
 				}
 			}
+			String queryStr = ISparqlConstants.PREFIX
+					+ "SELECT DISTINCT ?s WHERE {" //
+					+ findPatterns //
+					+ "{" //
+					+ " ?s rdfs:label ?l FILTER regex(str(?l), ?labelPattern, \"i\")" //
+					+ "} UNION {" //
+					+ " ?s ?p ?o FILTER regex(str(?s), ?uriPattern, \"i\")" //
+					+ "}" //
+					+ "}";
+
+			if (limit > 0) {
+				queryStr += " LIMIT " + limit;
+			}
+
 			IQuery<?> query = em.createQuery(queryStr);
+			query.setParameter("uriPattern", uriPattern);
+			query.setParameter("labelPattern", pattern);
 			setQueryParameters(query, parent);
-			return query.setParameter("uriPattern", uriPattern) //
-					.setParameter("template", pattern) //
-					.evaluate();
+			return query.evaluate();
 		}
 		return WrappedIterator.emptyIterator();
 	}

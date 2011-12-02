@@ -1620,8 +1620,9 @@ public class ItemProviderAdapter extends
 		for (IProperty property : getChildrenProperties(object)) {
 			IProperty resolvedProperty = (IProperty) iObject.getModel()
 					.resolve(property);
-			if (resolvedProperty.isMany(iObject)) {
-				Collection<?> children = (Collection<?>) iObject.get(property);
+			Object oneOrMultipleChildren = iObject.get(property);
+			if (oneOrMultipleChildren instanceof Collection<?>) {
+				Collection<?> children = (Collection<?>) oneOrMultipleChildren;
 				int index = 0;
 				for (Object unwrappedChild : children) {
 					Object child = wrap(iObject, property, unwrappedChild,
@@ -1634,7 +1635,7 @@ public class ItemProviderAdapter extends
 					index++;
 				}
 			} else {
-				Object child = iObject.get(property);
+				Object child = oneOrMultipleChildren;
 				if (child != null) {
 					child = wrap(iObject, property, child,
 							CommandParameter.NO_INDEX);

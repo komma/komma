@@ -181,7 +181,9 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 			List<IClass> classes) {
 		Collection<Object> typesCache = new ArrayList<Object>();
 
-		seenClasses.addAll(classes);
+		if (seenClasses != null) {
+			seenClasses.addAll(classes);
+		}
 		while (!classes.isEmpty()) {
 			IClass resourceClass = classes.remove(0);
 
@@ -213,16 +215,19 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 				typesCache.clear();
 			}
 
-			for (IClass superClass : resourceClass.getDirectNamedSuperClasses()) {
-				if (!seenClasses.add(superClass)) {
-					continue;
+			if (seenClasses != null) {
+				for (IClass superClass : resourceClass
+						.getDirectNamedSuperClasses()) {
+					if (!seenClasses.add(superClass)) {
+						continue;
+					}
+					int index = Collections.binarySearch(classes, superClass,
+							IResource.RANK_COMPARATOR);
+					if (index < 0) {
+						index = -(index + 1);
+					}
+					classes.add(index, superClass);
 				}
-				int index = Collections.binarySearch(classes, superClass,
-						IResource.RANK_COMPARATOR);
-				if (index < 0) {
-					index = -(index + 1);
-				}
-				classes.add(index, superClass);
 			}
 		}
 
@@ -372,7 +377,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 			List<IClass> classes = new ArrayList<IClass>(1);
 			classes.add((IClass) target);
 			result = adaptEntityClass((IResource) target, type,
-					new HashSet<URI>(), new HashSet<IClass>(), classes);
+					new HashSet<URI>(), null, classes);
 		}
 
 		if (result != null) {
