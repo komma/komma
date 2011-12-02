@@ -175,19 +175,18 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	private static final String SELECT_DIRECT_CLASSES(boolean named) {
 		return PREFIX //
 				+ "SELECT ?class WHERE {" //
-				+ "?resource a ?class ." //
-				+ "OPTIONAL {?resource a ?otherClass . ?otherClass rdfs:subClassOf ?class "
-				+ "		OPTIONAL {?class rdfs:subClassOf ?otherClass . ?class rdfs:subClassOf ?dummy}"
+				+ "?resource a ?class " //
+				+ (named ? "FILTER (isIRI(?class)) " : "") //
+				+ "FILTER NOT EXISTS {?resource a ?otherClass . ?otherClass rdfs:subClassOf ?class "
 				+ "FILTER (" //
 				+ (named ? "isIRI(?otherClass) && " : "") //
-				+ "!bound(?dummy) && " //
-				+ "?otherClass != ?class)}" //
-				+ "OPTIONAL {?resource a ?otherClass . FILTER ("
+				+ "?otherClass != ?class)" //
+				+ "		FILTER NOT EXISTS {?class rdfs:subClassOf ?otherClass}" //
+				+ "}" //
+				+ "FILTER NOT EXISTS {?resource a ?otherClass . FILTER ("
 				+ (named ? "isIRI(?otherClass) && " : "")
 				+ "(?class = owl:Thing || ?class = rdfs:Resource) && ?otherClass != ?class)}" //
-				+ "FILTER ("
-				+ (named ? "isIRI(?class) && " : "")
-				+ "!bound(?otherClass))}";
+				+ "}";
 	}
 
 	@Override

@@ -33,7 +33,7 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 				+ "SELECT ?subClass "
 				+ "WHERE { "
 				+ "?subClass rdfs:subClassOf ?superClass ; a rdfs:Class ."
-				+ "OPTIONAL {"
+				+ "FILTER NOT EXISTS {"
 				+ "?subClass rdfs:subClassOf ?otherSuperClass . "
 				+ "?otherSuperClass rdfs:subClassOf ?superClass ."
 				+ "FILTER (?subClass != ?otherSuperClass && ?superClass != ?otherSuperClass"
@@ -41,7 +41,7 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 				+ ")}"
 				+ " FILTER (?subClass != ?superClass && ?subClass != owl:Nothing"
 				+ (named ? " && isIRI(?subClass)" : "")
-				+ " && !bound(?otherSuperClass))}" + "ORDER BY ?subClass";
+				+ ")}" + "ORDER BY ?subClass";
 	};
 
 	private static final String SELECT_SUBCLASSES(boolean named) {
@@ -66,8 +66,7 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 				+ "SELECT DISTINCT ?superClass "
 				+ "WHERE { "
 				+ "?subClass rdfs:subClassOf ?superClass . ?superClass a rdfs:Class ."
-				+ "OPTIONAL {?superClass a owl:Restriction . ?superClass a ?dummy2FilterRestr}"
-				+ "FILTER (! bound(?dummy2FilterRestr))"
+				+ "FILTER NOT EXISTS {?superClass a owl:Restriction}"
 				+ "OPTIONAL {"
 				+ "?subClass rdfs:subClassOf ?otherSuperClass . "
 				+ "?otherSuperClass rdfs:subClassOf ?superClass ."
@@ -83,8 +82,7 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 				+ "SELECT DISTINCT ?superClass "
 				+ "WHERE { "
 				+ "?subClass rdfs:subClassOf ?superClass . ?superClass a rdfs:Class ."
-				+ "OPTIONAL {?superClass a owl:Restriction . ?superClass a ?dummy2FilterRestr}"
-				+ "FILTER (! bound(?dummy2FilterRestr))"
+				+ "FILTER NOT EXISTS {?superClass a owl:Restriction}"
 				+ "FILTER (?subClass != ?superClass"
 				+ (named ? "&& isIRI(?subClass)" : "")
 				+ ") } ORDER BY ?superClass";
