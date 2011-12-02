@@ -21,7 +21,7 @@ public class InstanceTreePart extends IndividualsPart {
 	static String QUERY_INSTANCES = ISparqlConstants.PREFIX
 	// +
 	// "CONSTRUCT {?r a <urn:komma:Result> . ?r a ?t} WHERE {?r a ?c FILTER NOT EXISTS {[a ?c; komma:contains ?r]} OPTIONAL {?r a ?t FILTER isIRI(?t)}}";
-			+ "SELECT DISTINCT ?r WHERE {?r a ?c FILTER NOT EXISTS {[a ?c; komma:contains ?r]}}";
+			+ "SELECT DISTINCT ?r WHERE {?r a ?c FILTER NOT EXISTS {[ a ?c; komma:contains ?r ]}}";
 
 	class ContentProvider extends LazyAdapterFactoryContentProvider implements
 			ISearchableItemProvider {
@@ -34,7 +34,7 @@ public class InstanceTreePart extends IndividualsPart {
 			SparqlSearchableItemProvider searchableProvider = new SparqlSearchableItemProvider() {
 				@Override
 				protected String getQueryFindPatterns(Object parent) {
-					return "?instance a ?parent . ?instance komma:containsTransitive ?s";
+					return "?instance a ?parent . ?instance komma:containsTransitive ?s . ";
 				}
 			};
 			return searchableProvider.find(expression, currentInput, 20);
