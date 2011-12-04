@@ -24,7 +24,7 @@ public abstract class OntologySupport extends BehaviorBase implements IOntology 
 	private static final String SELECT_PROPERTIES() {
 		return ISparqlConstants.PREFIX //
 				+ "SELECT DISTINCT ?p WHERE {" //
-				+ "?p a ?propertyType ." //
+				+ "?p a ?propertyType . " //
 				+ "OPTIONAL {" //
 				+ "		?p a ?otherType . ?otherType rdfs:subClassOf ?propertyType " //
 				+ "		FILTER (?propertyType = owl:ObjectProperty && (?otherType = owl:AnnotationProperty || ?otherType = owl:DatatypeProperty || ?otherType = rdfs:ContainerMembershipProperty))" //

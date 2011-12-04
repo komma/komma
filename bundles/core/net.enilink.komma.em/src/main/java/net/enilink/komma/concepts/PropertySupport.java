@@ -33,10 +33,10 @@ public abstract class PropertySupport extends BehaviorBase implements
 		return PREFIX
 				+ "SELECT DISTINCT ?subProperty "
 				+ "WHERE { "
-				+ "?subProperty rdfs:subPropertyOf ?superProperty ."
+				+ "?subProperty rdfs:subPropertyOf ?superProperty . "
 				+ "OPTIONAL {"
 				+ "?subProperty rdfs:subPropertyOf ?otherSuperProperty . "
-				+ "?otherSuperProperty rdfs:subPropertyOf ?superProperty ."
+				+ "?otherSuperProperty rdfs:subPropertyOf ?superProperty . "
 				+ "FILTER (!sameTerm(?subProperty, ?otherSuperProperty) && !sameTerm(?superProperty, ?otherSuperProperty))"
 				+ "} FILTER (!sameTerm(?subProperty, ?superProperty)"
 				+ (named ? " && isIRI(?subProperty)" : "")
@@ -45,7 +45,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 
 	private static final String SELECT_SUBPROPERTIES(boolean named) {
 		return PREFIX + "SELECT DISTINCT ?subProperty " + "WHERE { "
-				+ "?subProperty rdfs:subPropertyOf ?superProperty ."
+				+ "?subProperty rdfs:subPropertyOf ?superProperty . "
 				+ "FILTER (!sameTerm(?subProperty, ?superProperty)"
 				+ (named ? "&& isIRI(?subProperty)" : "") + ") }";
 	};
@@ -54,10 +54,10 @@ public abstract class PropertySupport extends BehaviorBase implements
 		return PREFIX
 				+ "SELECT DISTINCT ?superProperty "
 				+ "WHERE { "
-				+ "?subProperty rdfs:subPropertyOf ?superProperty ."
+				+ "?subProperty rdfs:subPropertyOf ?superProperty . "
 				+ "OPTIONAL {"
 				+ "?subProperty rdfs:subPropertyOf ?otherSuperProperty . "
-				+ "?otherSuperProperty rdfs:subPropertyOf ?superProperty ."
+				+ "?otherSuperProperty rdfs:subPropertyOf ?superProperty . "
 				+ "FILTER (!sameTerm(?subProperty, ?otherSuperClass) && !sameTerm(?superProperty, ?otherSuperProperty))"
 				+ "} FILTER (!sameTerm(?subProperty, ?superProperty)"
 				+ (named ? "&& isIRI(?superProperty)" : "")
@@ -66,7 +66,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 
 	private static final String SELECT_SUPERPROPERTIES(boolean named) {
 		return PREFIX + "SELECT DISTINCT ?superProperty " + "WHERE { "
-				+ "?subProperty rdfs:subPropertyOf ?superProperty ."
+				+ "?subProperty rdfs:subPropertyOf ?superProperty . "
 				+ "FILTER (!sameTerm(?subProperty, ?superProperty)"
 				+ (named ? "&& isIRI(?subProperty)" : "") + ") }";
 	}
