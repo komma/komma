@@ -77,7 +77,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 		this.changeSupport = changeSupport;
 		this.transaction = new SesameTransaction(this, changeSupport);
 	}
-	
+
 	@Override
 	public IDataManager add(Iterable<? extends IStatement> statements) {
 		try {
@@ -143,11 +143,16 @@ public class SesameRepositoryDataManager implements IDataManager {
 		}
 	}
 
+	protected Query prepareSesameQuery(String query, String baseURI)
+			throws MalformedQueryException, RepositoryException {
+		return getConnection().prepareQuery(QueryLanguage.SPARQL, query,
+				baseURI);
+	}
+
 	@Override
 	public <R> IDataManagerQuery<R> createQuery(String query, String baseURI) {
 		try {
-			Query sesameQuery = getConnection().prepareQuery(
-					QueryLanguage.SPARQL, query, baseURI);
+			Query sesameQuery = prepareSesameQuery(query, baseURI);
 
 			if (readCtx.length > 0) {
 				DatasetImpl ds = new DatasetImpl();
