@@ -36,7 +36,7 @@ class ModelSetFactory implements IModelSetFactory {
 
 		List<IReference> types = new ArrayList<IReference>();
 		types.addAll(Arrays.asList(modelSetTypes));
-		types.add(MODELS.CLASS_MODELSET);
+		types.add(MODELS.TYPE_MODELSET);
 		types.add(RDFS.TYPE_RESOURCE);
 
 		IModelSet modelSet = null;

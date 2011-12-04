@@ -66,7 +66,7 @@ public class ModelSetModule extends AbstractModule {
 		module.addConcept(AbstractModelSupport.class,
 				MODELS.TYPE_MODEL.toString());
 		module.addConcept(AbstractModelSetSupport.class,
-				MODELS.CLASS_MODELSET.toString());
+				MODELS.TYPE_MODELSET.toString());
 
 		module.addConcept(IModel.IDiagnostic.class,
 				MODELS.CLASS_DIAGNOSTIC.toString());

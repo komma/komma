@@ -38,7 +38,7 @@ public interface MODELS {
 	public static final URI PROPERTY_MODELSET = NAMESPACE_URI
 			.appendFragment("modelSet");
 
-	public static final URI CLASS_MODELSET = NAMESPACE_URI
+	public static final URI TYPE_MODELSET = NAMESPACE_URI
 			.appendFragment("ModelSet");
 
 	public static final URI TYPE_MODEL = NAMESPACE_URI.appendFragment("Model");
