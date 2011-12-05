@@ -76,6 +76,8 @@ class ModelSetFactory implements IModelSetFactory {
 			// create a model set if not found
 			modelSet = (IModelSet) metaDataManager.create(types
 					.toArray(new IReference[types.size()]));
+		} else {
+			modelSet = (IModelSet) metaDataManager.find((IReference) modelSet);
 		}
 
 		if (modelSet instanceof IModelSet.Internal) {
