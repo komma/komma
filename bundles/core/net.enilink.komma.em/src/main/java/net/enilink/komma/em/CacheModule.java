@@ -56,18 +56,39 @@ public class CacheModule extends AbstractModule {
 		config.setInvocationBatchingEnabled(true);
 		config.setCacheMode(Configuration.CacheMode.LOCAL);
 		config.setEvictionMaxEntries(10000);
-		return new DefaultCacheManager(globalConfig, config);
+
+		// workaround for classloading issues w/ factory methods
+		// http://community.jboss.org/wiki/ModuleCompatibleClassloadingGuide
+		ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
+		try {
+			Thread.currentThread().setContextClassLoader(
+					DefaultCacheManager.class.getClassLoader());
+			return new DefaultCacheManager(globalConfig, config);
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldTCCL);
+		}
 	}
 
 	@Provides
 	@Singleton
 	Cache<Object, Object> provideCache(CacheContainer cacheContainer) {
-		return cacheContainer.getCache();
+
+		// workaround for classloading issues w/ factory methods
+		// http://community.jboss.org/wiki/ModuleCompatibleClassloadingGuide
+		ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
+		try {
+			Thread.currentThread().setContextClassLoader(
+					DefaultCacheManager.class.getClassLoader());
+			return cacheContainer.getCache();
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldTCCL);
+		}
 	}
 
 	@Provides
 	@Singleton
 	TreeCache<Object, Object> provideTreeCache(Cache<Object, Object> cache) {
+		// ToDo: if this breaks here as well, apply the workaround as per above
 		return new TreeCacheFactory().createTreeCache(cache);
 	}
 }
