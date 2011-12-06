@@ -29,8 +29,34 @@ public class AbstractEditingDomainView extends ViewPart implements
 		@Override
 		public void partActivated(IWorkbenchPartReference partRef) {
 			IWorkbenchPart part = partRef.getPart(false);
-			if (part != null) {
+			if (AbstractEditingDomainView.this == part) {
+				if (!active) {
+					active = true;
+
+					if (setInputOnActivate) {
+						editorForm.setInput(null);
+						editPart.setInput(model);
+						editorForm.refreshStale();
+
+						setInputOnActivate = false;
+					}
+					if (selectionOnActivate != null) {
+						if (editorForm.setInput(selectionOnActivate)) {
+							editorForm.refreshStale();
+						}
+						selectionOnActivate = null;
+					}
+				}
+			} else if (part != null) {
 				setWorkbenchPart(part);
+			}
+		}
+
+		@Override
+		public void partVisible(IWorkbenchPartReference partRef) {
+			IWorkbenchPart part = partRef.getPart(false);
+			if (AbstractEditingDomainView.this == part && !active) {
+				partActivated(partRef);
 			}
 		}
 
@@ -43,6 +69,14 @@ public class AbstractEditingDomainView extends ViewPart implements
 
 		@Override
 		public void partDeactivated(IWorkbenchPartReference partRef) {
+		}
+
+		@Override
+		public void partHidden(IWorkbenchPartReference partRef) {
+			IWorkbenchPart part = partRef.getPart(false);
+			if (AbstractEditingDomainView.this == part) {
+				active = false;
+			}
 		}
 
 		@Override
@@ -62,14 +96,25 @@ public class AbstractEditingDomainView extends ViewPart implements
 					}
 				}
 
-				if (selected != null && editorForm.setInput(selected)) {
-					editorForm.refreshStale();
+				if (selected != null) {
+					if (active) {
+						if (editorForm.setInput(selected)) {
+							editorForm.refreshStale();
+						}
+					} else {
+						selectionOnActivate = selected;
+					}
 				}
 			}
 		}
 	}
 
 	private class SelectionProvider extends SelectionProviderAdapter {
+		public void setInternalSelection(ISelection selection) {
+			// set selection without propagating to other parts
+			super.setSelection(selection);
+		}
+
 		@Override
 		public void setSelection(ISelection selection) {
 			// try to propagate selection to interested parts
@@ -84,26 +129,26 @@ public class AbstractEditingDomainView extends ViewPart implements
 			}
 			// input was not accepted by any part, so we can't do anything
 		}
-
-		public void setInternalSelection(ISelection selection) {
-			// set selection without propagating to other parts
-			super.setSelection(selection);
-		}
 	}
 
-	private AbstractEditingDomainPart editPart;
+	private boolean active = true;
+	private IEditingDomainProvider editingDomainProvider;
 
 	private EditorForm editorForm;
 
+	private AbstractEditingDomainPart editPart;
+
 	private Listener listener;
 
-	private IEditingDomainProvider editingDomainProvider;
-
-	private SelectionProvider selectionProvider = new SelectionProvider();
+	protected IModel model;
 
 	protected IWorkbenchPart part;
 
-	protected IModel model;
+	private Object selectionOnActivate;
+
+	private SelectionProvider selectionProvider = new SelectionProvider();
+
+	private boolean setInputOnActivate;
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -155,10 +200,6 @@ public class AbstractEditingDomainView extends ViewPart implements
 		return null;
 	}
 
-	protected void installSelectionProvider() {
-		getSite().setSelectionProvider(selectionProvider);
-	}
-
 	@Override
 	public void dispose() {
 		if (editorForm != null) {
@@ -186,8 +227,17 @@ public class AbstractEditingDomainView extends ViewPart implements
 		return result == null ? super.getAdapter(adapter) : result;
 	}
 
+	@Override
+	public IWorkbenchPart getContributingPart() {
+		return part;
+	}
+
 	public AbstractEditingDomainPart getEditPart() {
 		return editPart;
+	}
+
+	protected void installSelectionProvider() {
+		getSite().setSelectionProvider(selectionProvider);
 	}
 
 	protected boolean setEditingDomainProvider(
@@ -254,16 +304,15 @@ public class AbstractEditingDomainView extends ViewPart implements
 				selectionProvider
 						.setInternalSelection(StructuredSelection.EMPTY);
 
-				editorForm.setInput(null);
-				editPart.setInput(this.model);
-				editorForm.refreshStale();
+				if (active) {
+					editorForm.setInput(null);
+					editPart.setInput(this.model);
+					editorForm.refreshStale();
+				} else {
+					setInputOnActivate = true;
+				}
 			}
 		}
-	}
-
-	@Override
-	public IWorkbenchPart getContributingPart() {
-		return part;
 	}
 
 }
