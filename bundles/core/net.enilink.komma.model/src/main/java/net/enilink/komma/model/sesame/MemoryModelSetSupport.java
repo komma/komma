@@ -117,8 +117,12 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 
 		// add RDFS inferencer after base knowledge was imported into the
 		// repository
-		return new SailRepository(new ForwardChainingRDFSInferencer(store));
+		return new SailRepository(Boolean.FALSE.equals(getInference()) ? store
+				: new ForwardChainingRDFSInferencer(store));
 	}
+
+	@Iri(MODELS.NAMESPACE + "inference")
+	public abstract Boolean getInference();
 
 	@Override
 	public void collectInjectionModules(Collection<Module> modules) {
