@@ -441,8 +441,8 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 									|| delta.getKind() == IResourceDelta.CHANGED
 									&& delta.getFlags() != IResourceDelta.MARKERS) {
 								IModel model = modelSet.getModel(URIImpl
-										.createURI(delta.getFullPath()
-												.toString()), false);
+										.createPlatformResourceURI(delta.getFullPath()
+												.toString(), false), false);
 								if (model != null) {
 									if (delta.getKind() == IResourceDelta.REMOVED) {
 										removedModels.add(model);
