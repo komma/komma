@@ -163,7 +163,12 @@ class EntityManagerFactory implements IEntityManagerFactory {
 		}
 		return managerInjector;
 	}
-
+	
+	@Override
+	public KommaModule getModule() {
+		return module;
+	}
+	
 	@Override
 	public Map<String, Object> getProperties() {
 		return null;

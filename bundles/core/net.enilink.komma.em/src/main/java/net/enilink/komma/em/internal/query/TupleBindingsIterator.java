@@ -21,6 +21,7 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.ITupleResult;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.LinkedHashBindings;
+import net.enilink.komma.core.URI;
 
 /**
  * Converts the repository result into a set of {@link IBindings}.
@@ -64,7 +65,10 @@ public class TupleBindingsIterator extends
 			} else if (resultInfos != null
 					&& (resultInfo = resultInfos.get(varName)) != null) {
 				if (value instanceof IReference) {
-					if (resultInfos.get(varName).typeRestricted) {
+					List<Class<?>> types = resultInfos.get(varName).types;
+					if (!types.isEmpty() && types.get(0) == URI.class) {
+						converted = ((IReference) value).getURI();
+					} else if (resultInfos.get(varName).typeRestricted) {
 						converted = manager.findRestricted((IReference) value,
 								resultInfo.types);
 					} else {

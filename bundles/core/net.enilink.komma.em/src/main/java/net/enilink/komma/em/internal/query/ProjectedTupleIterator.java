@@ -37,6 +37,7 @@ import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.ITupleResult;
 import net.enilink.komma.core.IValue;
+import net.enilink.komma.core.URI;
 
 /**
  * Converts the repository result into a single Bean.
@@ -77,7 +78,10 @@ public class ProjectedTupleIterator extends
 		}
 		if (resultInfo != null) {
 			if (value instanceof IReference) {
-				if (resultInfo.typeRestricted) {
+				if (!resultInfo.types.isEmpty()
+						&& resultInfo.types.get(0) == URI.class) {
+					return ((IReference) value).getURI();
+				} else if (resultInfo.typeRestricted) {
 					return manager.findRestricted((IReference) value,
 							resultInfo.types);
 				} else {

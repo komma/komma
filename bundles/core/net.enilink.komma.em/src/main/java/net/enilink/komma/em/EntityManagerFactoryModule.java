@@ -32,7 +32,7 @@ public class EntityManagerFactoryModule extends AbstractModule {
 	Module managerModule;
 
 	KommaModule module;
-
+	
 	public EntityManagerFactoryModule(KommaModule module, Locale locale) {
 		this(module, locale, null);
 	}
@@ -57,7 +57,7 @@ public class EntityManagerFactoryModule extends AbstractModule {
 	@Singleton
 	@Provides
 	IEntityManagerFactory provideFactory(Injector injector) {
-		EntityManagerFactory factory = new EntityManagerFactory(module, locale,
+		IEntityManagerFactory factory = new EntityManagerFactory(module, locale,
 				managerModule);
 		injector.injectMembers(factory);
 		return factory;

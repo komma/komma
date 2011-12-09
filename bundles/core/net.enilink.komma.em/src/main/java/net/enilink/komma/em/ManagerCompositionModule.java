@@ -141,12 +141,6 @@ public class ManagerCompositionModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	protected KommaModule provideKommaModule() {
-		return module;
-	}
-
-	@Provides
-	@Singleton
 	protected ClassLoader provideClassLoader() {
 		return module.getClassLoader();
 	}
