@@ -90,6 +90,14 @@ public interface IEntityManagerFactory {
 			KommaModule... modules);
 
 	/**
+	 * Returns the {@link KommaModule} that is used by {@link IEntityManager}s
+	 * created by this factory.
+	 * 
+	 * @return {@link KommaModule} used by this factory.
+	 */
+	KommaModule getModule();
+
+	/**
 	 * Get the properties and associated values that are in effect for the
 	 * entity manager factory. Changing the contents of the map does not change
 	 * the configuration in effect.
