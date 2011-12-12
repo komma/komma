@@ -57,17 +57,28 @@ public class CachingEntityManager extends DecoratingEntityManager implements
 	}
 
 	public IEntity createBean(IReference resource, Collection<URI> types,
-			boolean restrictTypes, IGraph graph) {
+			Collection<Class<?>> concepts, boolean restrictTypes, IGraph graph) {
 		Object element = cache.get(Fqn.fromRelativeElements(baseFqn, resource),
 				"");
 		if (element != null) {
-			if (graph != null) {
-				initializeBean((IEntity) element, graph);
+			boolean hasValidTypes = true;
+			if (concepts != null && !concepts.isEmpty()) {
+				for (Class<?> concept : concepts) {
+					if (!concept.isAssignableFrom(element.getClass())) {
+						hasValidTypes = false;
+						break;
+					}
+				}
 			}
-			return (IEntity) element;
+			if (hasValidTypes) {
+				if (graph != null) {
+					initializeBean((IEntity) element, graph);
+				}
+				return (IEntity) element;
+			}
 		}
-		IEntity entity = super
-				.createBean(resource, types, restrictTypes, graph);
+		IEntity entity = super.createBean(resource, types, concepts,
+				restrictTypes, graph);
 		// do not cache entities created during transactions or with restricted
 		// types
 		if (!(restrictTypes || getTransaction().isActive())) {

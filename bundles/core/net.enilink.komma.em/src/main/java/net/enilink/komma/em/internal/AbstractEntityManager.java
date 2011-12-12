@@ -309,15 +309,18 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			throw new KommaException(e);
 		}
 
-		IEntity bean = createBean(resource, types, false, null);
-		assert assertConceptsRecorded(bean, combine(concept, concepts));
+		Class<?>[] allConcepts = combine(concept, concepts);
+		IEntity bean = createBean(resource, types, null, false, null);
+		assert assertConceptsRecorded(bean, allConcepts);
 		return (T) bean;
 	}
 
 	@SuppressWarnings("unchecked")
-	public IEntity createBean(IReference resource, Collection<URI> types,
-			boolean restrictTypes, IGraph graph) {
-		Collection<URI> entityTypes = new ArrayList<URI>();
+	public IEntity createBean(IReference resource, Collection<URI> entityTypes,
+			Collection<Class<?>> concepts, boolean restrictTypes, IGraph graph) {
+		if (entityTypes == null) {
+			entityTypes = new ArrayList<URI>();
+		}
 		if (!restrictTypes) {
 			if (graph != null) {
 				// this ensures that only types with an IRI are added to
@@ -335,8 +338,21 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				entityTypes.addAll(typeManager.getTypes(resource));
 			}
 		}
-		if (types != null) {
-			entityTypes.addAll(types);
+		if (concepts != null && !concepts.isEmpty()) {
+			for (Class<?> concept : concepts) {
+				if (IValue.class.equals(concept)
+						|| IReference.class.equals(concept)) {
+					continue;
+				}
+
+				URI type = mapper.findType(concept);
+				if (type != null) {
+					entityTypes.add(type);
+				} else {
+					logger.warn("Unknown rdf type for concept class: "
+							+ concept);
+				}
+			}
 		}
 
 		IEntity bean = createBeanForClass(resource,
@@ -398,7 +414,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			}
 			throw new KommaException(e);
 		}
-		return createBean(resource, null, false, null);
+		return createBean(resource, null, null, false, null);
 	}
 
 	public IQuery<?> createQuery(String query) {
@@ -464,8 +480,9 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			}
 		}
 
-		IEntity bean = createBean(resource, types, false, null);
-		assert assertConceptsRecorded(bean, concepts);
+		Class<?>[] allConcepts = combine(concept, concepts);
+		IEntity bean = createBean(resource, types, null, false, null);
+		assert assertConceptsRecorded(bean, allConcepts);
 		return (T) bean;
 	}
 
@@ -481,7 +498,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	public IEntity find(IReference reference) {
-		return createBean(reference, null, false, null);
+		return createBean(reference, null, null, false, null);
 	}
 
 	@Override
@@ -494,21 +511,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	public IEntity find(IReference reference, Collection<Class<?>> concepts) {
-		Set<URI> types = new LinkedHashSet<URI>(concepts.size());
-		for (Class<?> concept : concepts) {
-			if (IValue.class.equals(concept)
-					|| IReference.class.equals(concept)) {
-				continue;
-			}
-
-			URI type = mapper.findType(concept);
-			if (type != null) {
-				types.add(type);
-			} else {
-				logger.warn("Unknown rdf type for concept class: " + concept);
-			}
-		}
-		return createBean(reference, types, false, null);
+		return createBean(reference, null, concepts, false, null);
 	}
 
 	public <T> IExtendedIterator<T> findAll(final Class<T> concept) {
@@ -524,9 +527,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	@SuppressWarnings("unchecked")
 	public <T> T findRestricted(IReference reference, Class<T> concept,
 			Class<?>... concepts) {
-		Class<?>[] allConcepts = Arrays.copyOf(concepts, concepts.length + 1);
-		allConcepts[allConcepts.length - 1] = concept;
-		return (T) findRestricted(reference, Arrays.asList(allConcepts));
+		return (T) findRestricted(reference,
+				Arrays.asList(combine(concept, concepts)));
 	}
 
 	@Override
@@ -542,11 +544,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			}
 		}
 
-		List<URI> types = new ArrayList<URI>(concepts.size());
-		for (Class<?> concept : concepts) {
-			types.add(mapper.findType(concept));
-		}
-		return createBean(reference, types, true, null);
+		return createBean(reference, null, concepts, true, null);
 	}
 
 	@Override
@@ -851,7 +849,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				for (URI type : types) {
 					typeManager.addType(resource, type);
 				}
-				Object result = createBean(resource, types, false, null);
+				Object result = createBean(resource, types, null, false, null);
 				if (result instanceof Mergeable) {
 					((Mergeable) result).merge(bean);
 				}
@@ -1008,7 +1006,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		IReference after = resourceManager.createResource(uri);
 		resourceManager.renameResource(before, after);
 
-		T newBean = (T) createBean(after, null, false, null);
+		T newBean = (T) createBean(after, null, null, false, null);
 		((IEntityManagerAware) bean).initReference(((IReferenceable) newBean)
 				.getReference());
 
@@ -1080,7 +1078,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				}
 			}
 
-			IEntity bean = createBean((IReference) value, types, false, graph);
+			IEntity bean = createBean((IReference) value, types, null, false,
+					graph);
 			if (logger.isDebugEnabled()) {
 				if (!createQuery("ASK {?s ?p ?o}").setParameter("s",
 						(IReference) value).getBooleanResult()) {
