@@ -13,6 +13,7 @@ package net.enilink.komma.model.concepts;
 import net.enilink.composition.annotations.Iri;
 
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.URI;
 
 /**
  * 
@@ -34,4 +35,19 @@ public interface ModelSet extends IEntity {
 	 * @generated
 	 */
 	void setPersistent(boolean persistent);
+	
+	/**
+	 * Returns the meta data context.
+	 * 
+	 * @generated
+	 */
+	@Iri("http://enilink.net/vocab/komma/models#metaDataContext")
+	URI getMetaDataContext();
+
+	/**
+	 * Sets the meta data context.
+	 * 
+	 * @generated
+	 */
+	void setMetaDataContext(URI metaDataContext);
 }

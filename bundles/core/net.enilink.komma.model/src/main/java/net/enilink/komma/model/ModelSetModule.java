@@ -27,8 +27,8 @@ import com.google.inject.Singleton;
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.em.EagerCachingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
-import net.enilink.komma.model.base.AbstractModelSetSupport;
-import net.enilink.komma.model.base.AbstractModelSupport;
+import net.enilink.komma.model.base.ModelSetSupport;
+import net.enilink.komma.model.base.ModelSupport;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
@@ -63,9 +63,9 @@ public class ModelSetModule extends AbstractModule {
 		// module.addJarFileUrl(libraryUrl);
 		// }
 
-		module.addConcept(AbstractModelSupport.class,
+		module.addConcept(ModelSupport.class,
 				MODELS.TYPE_MODEL.toString());
-		module.addConcept(AbstractModelSetSupport.class,
+		module.addConcept(ModelSetSupport.class,
 				MODELS.TYPE_MODELSET.toString());
 
 		module.addConcept(IModel.IDiagnostic.class,
@@ -78,7 +78,7 @@ public class ModelSetModule extends AbstractModule {
 
 		module.includeModule(KommaUtil.getCoreModule());
 
-		return injector.createChildInjector(
+		ModelSetFactory factory = injector.createChildInjector(
 				new AbstractModule() {
 					@Override
 					protected void configure() {
@@ -95,6 +95,7 @@ public class ModelSetModule extends AbstractModule {
 				new EntityManagerFactoryModule(module, null,
 						new EagerCachingEntityManagerModule())).getInstance(
 				ModelSetFactory.class);
+		return factory;
 	}
 
 	/**

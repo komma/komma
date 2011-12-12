@@ -11,9 +11,9 @@ import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.concepts.IResource;
-import net.enilink.komma.core.IGraph;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.core.IGraph;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.LinkedHashGraph;
@@ -81,16 +81,16 @@ class ModelSetFactory implements IModelSetFactory {
 		}
 
 		if (modelSet instanceof IModelSet.Internal) {
-			((IModelSet.Internal) modelSet).init();
+			modelSet = ((IModelSet.Internal) modelSet).create();
 		}
 
 		return modelSet;
 	}
-	
+
 	@Inject
 	protected void setUnitOfWork(UnitOfWork unitOfWork) {
 		// start unit of work if it is not already active
-		if (! unitOfWork.isActive()) {
+		if (!unitOfWork.isActive()) {
 			unitOfWork.begin();
 		}
 	}

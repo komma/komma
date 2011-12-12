@@ -60,7 +60,6 @@ import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.ModelCore;
-import net.enilink.komma.model.ObjectSupport;
 import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.model.concepts.ModelSet;
 import net.enilink.komma.core.EntityVar;
@@ -92,11 +91,10 @@ import net.enilink.komma.util.KommaUtil;
  * </ul>
  * </p>
  */
-public abstract class AbstractModelSetSupport implements IModelSet.Internal,
-		ModelSet, INotificationBroadcaster<INotification>,
-		Behaviour<IModelSet.Internal> {
+public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
+		INotificationBroadcaster<INotification>, Behaviour<IModelSet.Internal> {
 	private final static Logger log = LoggerFactory
-			.getLogger(AbstractModelSetSupport.class);
+			.getLogger(ModelSetSupport.class);
 
 	/**
 	 * Represents the transient state of this resource
@@ -141,24 +139,27 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 				ReferenceMap.WEAK, ReferenceMap.WEAK);
 
 		protected Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = new WeakHashMap<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>>();
+
+		protected Injector injector;
+
+		/**
+		 * The URI converter.
+		 * 
+		 * @see #getURIConverter
+		 */
+		protected IURIConverter uriConverter;
 	}
 
 	protected EntityVar<State> state;
 
-	/**
-	 * The URI converter.
-	 * 
-	 * @see #getURIConverter
-	 */
-	protected IURIConverter uriConverter;
-
 	@Inject
 	private IUnitOfWork unitOfWork;
 
-	private Injector injector;
-
 	@Inject
 	private IDataManagerFactory metaDataManagerFactory;
+
+	@Inject
+	private Injector injector;
 
 	protected State state() {
 		synchronized (state) {
@@ -404,7 +405,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 
 	@Override
 	public IDataChangeSupport getDataChangeSupport() {
-		return injector.getInstance(IDataChangeSupport.class);
+		return state().injector.getInstance(IDataChangeSupport.class);
 	}
 
 	@Override
@@ -414,17 +415,17 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 
 	@Override
 	public Injector getInjector() {
-		return injector;
+		return state().injector;
 	}
 
 	@Override
 	public IDataManagerFactory getDataManagerFactory() {
-		return injector.getInstance(IDataManagerFactory.class);
+		return state().injector.getInstance(IDataManagerFactory.class);
 	}
 
 	@Override
 	public IEntityManagerFactory getEntityManagerFactory() {
-		return injector.getInstance(IEntityManagerFactory.class);
+		return state().injector.getInstance(IEntityManagerFactory.class);
 	}
 
 	/*
@@ -449,7 +450,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	public IModel getModel(URI uri, boolean loadOnDemand) {
 		List<?> result = getMetaDataManager()
 				.createQuery(
-						"SELECT DISTINCT ?m WHERE {?ms <http://enilink.net/vocab/komma/models#model> ?m}")
+						"SELECT DISTINCT ?m WHERE { ?ms <http://enilink.net/vocab/komma/models#model> ?m }")
 				.setParameter("m", uri).evaluate().toList();
 		if (!result.isEmpty()) {
 			IModel model = (IModel) result.get(0);
@@ -517,13 +518,10 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 			// models would cause mixing of "meta-model behaviors" and
 			// "model behaviors".
 			KommaModule module = new KommaModule(
-					AbstractModelSetSupport.class.getClassLoader());
+					ModelSetSupport.class.getClassLoader());
 			module.includeModule(KommaUtil.getCoreModule());
 
 			module.addReadableGraph(getBehaviourDelegate().getDefaultGraph());
-
-			module.addBehaviour(ObjectSupport.class);
-			module.addConcept(IObject.class);
 
 			state().module = module;
 		}
@@ -567,10 +565,10 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	 * Javadoc copied from interface.
 	 */
 	public IURIConverter getURIConverter() {
-		if (uriConverter == null) {
-			uriConverter = new ExtensibleURIConverter();
+		if (state().uriConverter == null) {
+			state().uriConverter = new ExtensibleURIConverter();
 		}
-		return uriConverter;
+		return state().uriConverter;
 	}
 
 	/**
@@ -622,14 +620,45 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 		throw wrappedException;
 	}
 
+	@Override
+	public Internal create() {
+		List<Module> modules = new ArrayList<Module>();
+		((Internal) getBehaviourDelegate()).collectInjectionModules(modules);
+
+		Injector modelSetInjector = injector.getParent().getParent()
+				.createChildInjector(modules);
+
+		IModelSet.Internal result = getBehaviourDelegate();
+
+		URI metaDataContext = getMetaDataContext();
+		if (metaDataContext != null) {
+			KommaModule module = new KommaModule();
+			// reuse module with model concepts and behaviours
+			module.includeModule(getEntityManager().getFactory().getModule());
+			module.addWritableGraph(metaDataContext);
+			module.addReadableGraph(metaDataContext);
+			IEntityManager newMetaDataManager = modelSetInjector
+					.getInstance(IEntityManagerFactory.class)
+					.createChildFactory(module).get();
+			// merge data (rdf:type, etc.) into other repository
+			result = newMetaDataManager.merge(result);
+		}
+
+		((IModelSet.Internal) result).init(modelSetInjector);
+
+		// create a model for the meta data context
+		if (metaDataContext != null) {
+			result.createModel(metaDataContext);
+		}
+
+		return result;
+	}
+
 	/**
 	 * Initializes the injector that is used within models.
 	 */
-	public void init() {
-		List<Module> modules = new ArrayList<Module>();
-		getBehaviourDelegate().collectInjectionModules(modules);
-
-		injector = injector.createChildInjector(modules);
+	public void init(Injector injector) {
+		state().injector = injector;
 		setDataChangeTracker(injector.getInstance(IDataChangeTracker.class));
 	}
 
@@ -682,9 +711,11 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	public void setDataChangeTracker(IDataChangeTracker changeTracker) {
 		state().dataChangeTracker = changeTracker;
 		state().dataChangeTracker.addChangeListener(new IDataChangeListener() {
+			URI metaDataContext = getMetaDataContext();
+
 			@Override
 			public void dataChanged(List<IDataChange> changes) {
-				AbstractModelSetSupport.this
+				ModelSetSupport.this
 						.fireNotifications(transformChanges(changes));
 
 				Set<IReference> changedModels = new HashSet<IReference>();
@@ -698,7 +729,8 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 					}
 				}
 				for (IReference changedModel : changedModels) {
-					if (changedModel.getURI() != null) {
+					if (changedModel.getURI() != null
+							&& !changedModel.getURI().equals(metaDataContext)) {
 						IModel model = getModel(changedModel.getURI(), false);
 						if (model != null && model.isLoaded()) {
 							model.setModified(true);
@@ -707,12 +739,6 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 				}
 			}
 		});
-	}
-
-	@Inject
-	protected void setInjector(Injector injector) {
-		// TODO
-		this.injector = injector.getParent().getParent();
 	}
 
 	@Inject
@@ -738,7 +764,7 @@ public abstract class AbstractModelSetSupport implements IModelSet.Internal,
 	 * Javadoc copied from interface.
 	 */
 	public void setURIConverter(IURIConverter uriConverter) {
-		this.uriConverter = uriConverter;
+		state().uriConverter = uriConverter;
 	}
 
 	/**

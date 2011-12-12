@@ -27,7 +27,7 @@ import net.enilink.komma.common.util.WrappedException;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.dm.change.IDataChangeTracker;
-import net.enilink.komma.model.base.AbstractModelSetSupport;
+import net.enilink.komma.model.base.ModelSetSupport;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.IReference;
@@ -57,9 +57,20 @@ public interface IModelSet extends INotifier<INotification> {
 		URI getDefaultGraph();
 
 		/**
-		 * Initialize the model set.
+		 * Creates a model set instance from this model set template.
+		 * 
+		 * @return The model set instance
 		 */
-		void init();
+		IModelSet.Internal create();
+
+		/**
+		 * Initialize the model set.
+		 * 
+		 * @param injector
+		 *            The injector that is can be used to retrieve an
+		 *            {@link IEntityManagerFactory}.
+		 */
+		void init(Injector injector);
 	}
 
 	/**
@@ -164,16 +175,16 @@ public interface IModelSet extends INotifier<INotification> {
 	 * {@link #getURIConverter URI converter} to {@link IURIConverter#normalize
 	 * normalize} the URI and then to compare it with the normalized URI of each
 	 * resource; if it finds a match, that resource becomes the result. Failing
-	 * that, it {@link AbstractModelSetSupport#delegatedGetModel delegates} to
+	 * that, it {@link ModelSetSupport#delegatedGetModel delegates} to
 	 * allow the URI to be resolved elsewhere. The important point is that an
 	 * arbitrary implementation may resolve the URI to any model, not
 	 * necessarily to one contained by this particular model set. If the
 	 * delegation step fails to provide a result, and if
 	 * <code>loadOnDemand</code> is <code>true</code>, a model is
-	 * {@link AbstractModelSetSupport#demandCreateModel created} and that model
+	 * {@link ModelSetSupport#demandCreateModel created} and that model
 	 * becomes the result. If <code>loadOnDemand</code> is <code>true</code> and
 	 * the result model is not {@link IModel#isLoaded loaded}, it will be
-	 * {@link AbstractModelSetSupport#demandLoad loaded} before it is returned.
+	 * {@link ModelSetSupport#demandLoad loaded} before it is returned.
 	 * </p>
 	 * 
 	 * @param uri
@@ -206,8 +217,8 @@ public interface IModelSet extends INotifier<INotification> {
 	/**
 	 * Returns the direct {@link IModel}s being managed.
 	 * <p>
-	 * A model added to this set will be {@link IModel#getModelSet contained}
-	 * by this model set. If it was previously contained by a model set, it will
+	 * A model added to this set will be {@link IModel#getModelSet contained} by
+	 * this model set. If it was previously contained by a model set, it will
 	 * have been removed.
 	 * </p>
 	 * 

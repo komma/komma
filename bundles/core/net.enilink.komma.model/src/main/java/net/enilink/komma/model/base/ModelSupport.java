@@ -50,6 +50,7 @@ import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ObjectSupport;
 import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.core.EntityVar;
 import net.enilink.komma.core.IEntity;
@@ -64,7 +65,7 @@ import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 
-public abstract class AbstractModelSupport implements IModel, IModel.Internal,
+public abstract class ModelSupport implements IModel, IModel.Internal,
 		INotificationBroadcaster<INotification>, Model,
 		Behaviour<IModel.Internal> {
 	class ModelInjector implements IEntityDecorator {
@@ -90,8 +91,8 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 		}
 	}
 
-	/** 
-	 * Represents the transient state of this resource 
+	/**
+	 * Represents the transient state of this resource
 	 */
 	static class State {
 		private KommaModule module;
@@ -232,8 +233,11 @@ public abstract class AbstractModelSupport implements IModel, IModel.Internal,
 	public synchronized KommaModule getModule() {
 		KommaModule module = state().module;
 		if (module == null) {
-			module = new KommaModule(
-					AbstractModelSupport.class.getClassLoader());
+			module = new KommaModule(ModelSupport.class.getClassLoader());
+
+			// add support for IObject interface
+			module.addConcept(IObject.class);
+			module.addBehaviour(ObjectSupport.class);
 
 			KommaModule modelSetModule = getModelSet().getModule();
 			if (modelSetModule != null) {
