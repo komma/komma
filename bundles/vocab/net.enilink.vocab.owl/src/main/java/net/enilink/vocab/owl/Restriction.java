@@ -54,7 +54,7 @@ public interface Restriction extends net.enilink.vocab.owl.Class {
 	public abstract IValue getOwlHasValue();
 
 	/** http://www.w3.org/2002/07/owl#hasValue */
-	public abstract void setOwlHasValue(Object value);
+	public abstract void setOwlHasValue(IValue value);
 
 	/** http://www.w3.org/2002/07/owl#maxCardinality */
 	@Iri("http://www.w3.org/2002/07/owl#maxCardinality")
