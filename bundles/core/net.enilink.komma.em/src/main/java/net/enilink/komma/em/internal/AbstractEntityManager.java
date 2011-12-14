@@ -148,11 +148,14 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				.iterator()) {
 			@Override
 			protected IStatement convert(IStatement stmt) {
-				if (stmt.getObject() instanceof IValue) {
+				if (!(stmt.getSubject() instanceof Behaviour || stmt
+						.getPredicate() instanceof Behaviour)
+						&& stmt.getObject() instanceof IValue) {
 					return stmt;
 				}
-				return new Statement(stmt.getSubject(), stmt.getPredicate(),
-						toValue(stmt.getObject()), stmt.getContext());
+				return new Statement(getReference(stmt.getSubject()),
+						getReference(stmt.getPredicate()), toValue(stmt
+								.getObject()), stmt.getContext());
 			}
 		});
 	}
@@ -896,11 +899,14 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				.iterator()) {
 			@Override
 			protected IStatement convert(IStatement stmt) {
-				if (stmt.getObject() instanceof IValue) {
+				if (!(stmt.getSubject() instanceof Behaviour || stmt
+						.getPredicate() instanceof Behaviour)
+						&& stmt.getObject() instanceof IValue) {
 					return stmt;
 				}
-				return new Statement(stmt.getSubject(), stmt.getPredicate(),
-						toValue(stmt.getObject()), stmt.getContext());
+				return new Statement(getReference(stmt.getSubject()),
+						getReference(stmt.getPredicate()), toValue(stmt
+								.getObject()), stmt.getContext());
 			}
 		});
 	}
