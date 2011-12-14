@@ -153,14 +153,15 @@ public abstract class SerializableModelSupport implements IModel, Model,
 				// new Job("Load model") {
 				// @Override
 				// public IStatus run(IProgressMonitor monitor) {
+				final RDFFormat[] format = { (RDFFormat) options.get(RDFFormat.class
+						.getName()) };
+				if (format[0] == null) {
+					format[0] = determineFormat(options);
+				}
 				Executors.newSingleThreadExecutor().execute(new Runnable() {
 					@Override
 					public void run() {
-						RDFFormat format = (RDFFormat) options
-								.get(RDFFormat.class.getName());
-						RDFParser parser = Rio
-								.createParser(format != null ? format
-										: determineFormat(options));
+						RDFParser parser = Rio.createParser(format[0]);
 						parser.setRDFHandler(new RDFHandlerBase() {
 							@Override
 							public void handleStatement(Statement stmt)
