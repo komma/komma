@@ -30,6 +30,7 @@ package net.enilink.composition.properties.behaviours;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -113,8 +114,9 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		String fieldName = getFactoryField();
 
 		FieldNode factoryField = new FieldNode(Opcodes.ACC_PRIVATE
-				| Opcodes.ACC_STATIC, fieldName, Type
-				.getDescriptor(propertySetDescriptorFactoryClass), null, null);
+				| Opcodes.ACC_STATIC, fieldName,
+				Type.getDescriptor(propertySetDescriptorFactoryClass), null,
+				null);
 		node.addField(factoryField);
 
 		Type factoryType = Type.getType(propertySetDescriptorFactoryClass);
@@ -122,8 +124,8 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		MethodNodeGenerator gen = node.getClassInitGen();
 		gen.newInstance(factoryType);
 		gen.dup();
-		gen.invokeConstructor(factoryType, org.objectweb.asm.commons.Method
-				.getMethod("void <init>()"));
+		gen.invokeConstructor(factoryType,
+				org.objectweb.asm.commons.Method.getMethod("void <init>()"));
 		gen.putStatic(node.getType(), fieldName, factoryType);
 	}
 
@@ -140,8 +142,8 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		String fieldName = getDescriptorField(property);
 
 		FieldNode descriptorField = new FieldNode(Opcodes.ACC_PRIVATE
-				| Opcodes.ACC_STATIC, fieldName, propertySetDescType
-				.getDescriptor(), null, null);
+				| Opcodes.ACC_STATIC, fieldName,
+				propertySetDescType.getDescriptor(), null, null);
 		node.addField(descriptorField);
 
 		MethodNodeGenerator gen = node.getClassInitGen();
@@ -329,7 +331,8 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.getStatic(descriptorField.name, Type.getType(descriptorField.desc));
 
 		gen.loadBean();
-		gen.invokeInterface(Type.getType(PropertySetDescriptor.class),
+		gen.invokeInterface(
+				Type.getType(PropertySetDescriptor.class),
 				new org.objectweb.asm.commons.Method(
 						PropertySetDescriptor.CREATE_PROPERTY_SET, Type
 								.getType(PropertySet.class),
@@ -341,16 +344,16 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 	}
 
 	private void loadFactory(BehaviourClassNode node, MethodNodeGenerator gen) {
-		gen.getStatic(node.getType(), getFactoryField(), Type
-				.getType(propertySetDescriptorFactoryClass));
+		gen.getStatic(node.getType(), getFactoryField(),
+				Type.getType(propertySetDescriptorFactoryClass));
 	}
 
 	private void mergeProperty(String property, Class<?> type,
 			BehaviourMethodGenerator gen) throws Exception {
-		FieldNode field = gen.getMethod().getOwner().getField(
-				getPropertyFieldName(property));
-		FieldNode descriptorField = gen.getMethod().getOwner().getField(
-				getDescriptorField(property));
+		FieldNode field = gen.getMethod().getOwner()
+				.getField(getPropertyFieldName(property));
+		FieldNode descriptorField = gen.getMethod().getOwner()
+				.getField(getDescriptorField(property));
 		if (type.isPrimitive()) {
 			lazyInitializePropertySet(field, descriptorField, gen);
 			persistValue(field, type, gen);
@@ -374,8 +377,24 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 	private void overrideMergeMethod(BehaviourClassNode node) throws Exception {
 		Method merge = Mergeable.class.getMethod("merge", Object.class);
-		BehaviourMethodGenerator gen = new BehaviourMethodGenerator(node
-				.addExtendedMethod(merge, definer));
+		BehaviourMethodGenerator gen = new BehaviourMethodGenerator(
+				node.addExtendedMethod(merge, definer));
+
+		try {
+			// check if there is an already implemented merge method
+			Method implementedMerge = node.getParentClass().getMethod("merge",
+					Object.class);
+			if ((implementedMerge.getModifiers() & Modifier.ABSTRACT) == 0) {
+				// invoke super.merge()
+				gen.loadThis();
+				gen.loadArgs();
+				gen.invokeSpecial(node.getParentType(),
+						org.objectweb.asm.commons.Method
+								.getMethod(implementedMerge));
+			}
+		} catch (NoSuchMethodException e) {
+			// continue
+		}
 
 		gen.loadArg(0);
 		gen.instanceOf(node.getParentType());
@@ -399,8 +418,23 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 	private void overrideRefreshMethod(BehaviourClassNode node)
 			throws Exception {
 		Method refresh = Refreshable.class.getMethod("refresh");
-		BehaviourMethodGenerator gen = new BehaviourMethodGenerator(node
-				.addExtendedMethod(refresh, definer));
+		BehaviourMethodGenerator gen = new BehaviourMethodGenerator(
+				node.addExtendedMethod(refresh, definer));
+
+		try {
+			// check if there is an already implemented refresh method
+			Method implementedRefresh = node.getParentClass().getMethod(
+					"refresh");
+			if ((implementedRefresh.getModifiers() & Modifier.ABSTRACT) == 0) {
+				// invoke super.refresh()
+				gen.loadThis();
+				gen.invokeSpecial(node.getParentType(),
+						org.objectweb.asm.commons.Method
+								.getMethod(implementedRefresh));
+			}
+		} catch (NoSuchMethodException e) {
+			// continue
+		}
 
 		for (FieldNode field : getPropertySetFields(node)) {
 			gen.loadThis();
