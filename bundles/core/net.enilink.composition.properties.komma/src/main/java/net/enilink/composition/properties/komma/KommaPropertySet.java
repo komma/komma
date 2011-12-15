@@ -36,20 +36,27 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.exceptions.PropertyException;
+import net.enilink.composition.properties.traits.Mergeable;
 
 import com.google.inject.Inject;
 
 import net.enilink.commons.iterator.ConvertingIterator;
+import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.IClosableIterator;
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.commons.iterator.WrappedIterator;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IReferenceable;
+import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
+import net.enilink.komma.core.URI;
 
 /**
  * A set for a given subject and predicate.
@@ -66,21 +73,27 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	@Inject
 	protected IEntityManager manager;
 
+	@Inject
+	protected RoleMapper<URI> roleMapper;
+
 	protected IReference property;
 
 	protected Class<E> valueType;
 
+	protected URI rdfValueType;
+
 	public KommaPropertySet(IReference bean, IReference property) {
-		this(bean, property, null);
+		this(bean, property, null, null);
 	}
 
 	public KommaPropertySet(IReference bean, IReference property,
-			Class<E> valueType) {
+			Class<E> valueType, URI rdfValueType) {
 		assert bean != null;
 		assert property != null;
 		this.bean = bean;
 		this.property = property;
 		this.valueType = valueType;
+		this.rdfValueType = rdfValueType;
 	}
 
 	/**
@@ -168,17 +181,72 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 		return true;
 	}
 
+	protected Collection<Class<?>> findConcepts(URI rdfType) {
+		Collection<Class<?>> roles = new HashSet<Class<?>>();
+		roleMapper.findRoles(rdfType, roles);
+		return WrappedIterator.create(roles.iterator())
+				.filterKeep(new Filter<Class<?>>() {
+					@Override
+					public boolean accept(Class<?> o) {
+						return o.isInterface();
+					}
+				}).toList();
+	}
+
 	protected Object convertInstance(Object instance) {
+		// handle the explicit rdf:type set with the @Type annotation
+		if (rdfValueType != null
+				&& !(instance instanceof IReference || instance instanceof IReferenceable)) {
+			Collection<Class<?>> roles = findConcepts(rdfValueType);
+			if (!roles.isEmpty()) {
+				// test if instance already has the required roles
+				boolean hasValidType = true;
+				for (Class<?> role : roles) {
+					if (!role.isAssignableFrom(instance.getClass())) {
+						hasValidType = false;
+						break;
+					}
+				}
+				if (!hasValidType) {
+					// create a new instance with correct rdf:type
+					IEntity newEntity = (IEntity) manager.create(rdfValueType);
+					if (newEntity instanceof Mergeable) {
+						try {
+							((Mergeable) newEntity).merge(instance);
+						} catch (Exception e) {
+							throw new KommaException(e);
+						}
+					}
+					return newEntity;
+				}
+			}
+		}
 		return instance;
 	}
 
 	@SuppressWarnings("unchecked")
+	protected IExtendedIterator<E> evaluateQueryForTypes(IQuery<?> query) {
+		// handle the explicit rdf:type set from the @Type annotation
+		if (rdfValueType != null) {
+			Collection<Class<?>> roles = findConcepts(rdfValueType);
+			if (!roles.isEmpty()) {
+				Iterator<Class<?>> it = roles.iterator();
+				Class<?> role1 = it.next();
+				it.remove();
+				return (IExtendedIterator<E>) query.evaluate(role1,
+						roles.toArray(new Class<?>[0]));
+			}
+		}
+		if (valueType != null) {
+			return query.evaluate(valueType);
+		}
+		return (IExtendedIterator<E>) query.evaluate();
+	}
+
 	protected IExtendedIterator<E> createElementsIterator() {
 		IQuery<?> query = manager.createQuery(QUERY).setParameter("s", bean)
 				.setParameter("p", property);
-		return new ConvertingIterator<E, E>(
-				valueType == null ? (IExtendedIterator<E>) query.evaluate()
-						: query.evaluate(valueType)) {
+		return new ConvertingIterator<E, E>(evaluateQueryForTypes(query)) {
 			private List<E> list = new ArrayList<E>(Math.min(CACHE_LIMIT,
 					getCacheLimit()));
 			private E current;

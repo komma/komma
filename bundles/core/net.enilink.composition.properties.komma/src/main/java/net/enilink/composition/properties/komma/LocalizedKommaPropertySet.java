@@ -42,10 +42,10 @@ import com.google.inject.Inject;
 
 import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.KommaException;
 
 /**
@@ -58,7 +58,7 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 	ILiteralFactory lf;
 
 	public LocalizedKommaPropertySet(IReference bean, IReference property) {
-		super(bean, property, String.class);
+		super(bean, property, String.class, null);
 	}
 
 	private int addBestValues(ILiteral literal, String language, int best,

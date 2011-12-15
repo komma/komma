@@ -13,12 +13,12 @@ package net.enilink.composition.properties.komma;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetDescriptor;
+import net.enilink.composition.properties.annotations.Type;
 import net.enilink.composition.properties.annotations.localized;
 import net.enilink.composition.properties.util.UnmodifiablePropertySet;
 
@@ -37,6 +37,8 @@ class KommaPropertySetDescriptor<E> implements PropertySetDescriptor<E> {
 
 	private URI predicate;
 
+	private URI rdfValueType;
+
 	public KommaPropertySetDescriptor(PropertyDescriptor property,
 			String predicate) {
 		Method getter = property.getReadMethod();
@@ -53,11 +55,18 @@ class KommaPropertySetDescriptor<E> implements PropertySetDescriptor<E> {
 
 		name = property.getName();
 		type = property.getPropertyType();
+
+		Type typeSpec = getter.getAnnotation(Type.class);
+		if (typeSpec != null) {
+			rdfValueType = URIImpl.createURI(typeSpec.value());
+		}
+
 		if (Set.class.equals(type)) {
-			Type t = property.getReadMethod().getGenericReturnType();
+			java.lang.reflect.Type t = property.getReadMethod()
+					.getGenericReturnType();
 			if (t instanceof ParameterizedType) {
 				ParameterizedType pt = (ParameterizedType) t;
-				Type[] args = pt.getActualTypeArguments();
+				java.lang.reflect.Type[] args = pt.getActualTypeArguments();
 				if (args.length == 1 && args[0] instanceof Class<?>) {
 					type = (Class<?>) args[0];
 				}
@@ -74,7 +83,7 @@ class KommaPropertySetDescriptor<E> implements PropertySetDescriptor<E> {
 					(IReference) bean, predicate);
 		} else {
 			propertySet = new KommaPropertySet<E>((IReference) bean, predicate,
-					(Class<E>) type);
+					(Class<E>) type, rdfValueType);
 		}
 
 		if (readOnly) {
