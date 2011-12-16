@@ -10,10 +10,11 @@
  *******************************************************************************/
 package net.enilink.vocab.owl;
 
-import net.enilink.vocab.rdf.List;
+import java.util.List;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
+import net.enilink.composition.properties.annotations.Type;
 
 @Iri("http://www.w3.org/2002/07/owl#Class")
 public interface Class extends net.enilink.vocab.rdfs.Class, Thing {
@@ -41,24 +42,26 @@ public interface Class extends net.enilink.vocab.rdfs.Class, Thing {
 
 	/** http://www.w3.org/2002/07/owl#intersectionOf */
 	@Iri("http://www.w3.org/2002/07/owl#intersectionOf")
+	@Type("http://www.w3.org/1999/02/22-rdf-syntax-ns#List")
 	public abstract List<Class> getOwlIntersectionOf();
 
 	/** http://www.w3.org/2002/07/owl#intersectionOf */
-	public abstract void setOwlIntersectionOf(
-			java.util.List<? extends Class> value);
+	public abstract void setOwlIntersectionOf(List<? extends Class> value);
 
 	/** http://www.w3.org/2002/07/owl#oneOf */
 	@Iri("http://www.w3.org/2002/07/owl#oneOf")
+	@Type("http://www.w3.org/1999/02/22-rdf-syntax-ns#List")
 	public abstract List<Object> getOwlOneOf();
 
 	/** http://www.w3.org/2002/07/owl#oneOf */
-	public abstract void setOwlOneOf(java.util.List<?> value);
+	public abstract void setOwlOneOf(List<?> value);
 
 	/** http://www.w3.org/2002/07/owl#unionOf */
 	@Iri("http://www.w3.org/2002/07/owl#unionOf")
+	@Type("http://www.w3.org/1999/02/22-rdf-syntax-ns#List")
 	public abstract List<Class> getOwlUnionOf();
 
 	/** http://www.w3.org/2002/07/owl#unionOf */
-	public abstract void setOwlUnionOf(java.util.List<? extends Class> value);
+	public abstract void setOwlUnionOf(List<? extends Class> value);
 
 }
