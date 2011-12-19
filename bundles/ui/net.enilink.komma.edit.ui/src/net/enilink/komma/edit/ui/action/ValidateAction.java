@@ -47,6 +47,7 @@ import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.DiagnosticChain;
 import net.enilink.komma.concepts.IClass;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
@@ -201,8 +202,7 @@ public class ValidateAction extends AbstractActionHandler {
 		progressMonitor.beginTask("", count);
 
 		IAdapterFactory adapterFactory = domain instanceof AdapterFactoryEditingDomain ? ((AdapterFactoryEditingDomain) domain)
-				.getAdapterFactory()
-				: null;
+				.getAdapterFactory() : null;
 		Diagnostician diagnostician = createDiagnostician(adapterFactory,
 				progressMonitor);
 
@@ -220,8 +220,8 @@ public class ValidateAction extends AbstractActionHandler {
 		Map<Object, Object> context = diagnostician.createDefaultContext();
 		for (IObject eObject : selectedObjects) {
 			progressMonitor.setTaskName(KommaEditUIPlugin.INSTANCE.getString(
-					"_UI_Validating_message", new Object[] { diagnostician
-							.getObjectLabel(eObject) }));
+					"_UI_Validating_message",
+					new Object[] { diagnostician.getObjectLabel(eObject) }));
 			diagnostician.validate(eObject, diagnostic, context);
 		}
 		return diagnostic;
@@ -232,7 +232,7 @@ public class ValidateAction extends AbstractActionHandler {
 			final IProgressMonitor progressMonitor) {
 		return new Diagnostician(ModelCore.getDefault().getValidatorRegistry()) {
 			@Override
-			public String getObjectLabel(IObject object) {
+			public String getObjectLabel(IResource object) {
 				if (adapterFactory != null) {
 					IItemLabelProvider itemLabelProvider = (IItemLabelProvider) adapterFactory
 							.adapt(object, IItemLabelProvider.class);
@@ -246,7 +246,7 @@ public class ValidateAction extends AbstractActionHandler {
 
 			@Override
 			public boolean validate(Collection<? extends IClass> classes,
-					IObject object, DiagnosticChain diagnostics,
+					IResource object, DiagnosticChain diagnostics,
 					Map<Object, Object> context) {
 				progressMonitor.worked(1);
 				return super.validate(classes, object, diagnostics, context);
