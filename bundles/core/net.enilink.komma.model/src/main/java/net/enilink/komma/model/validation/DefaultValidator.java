@@ -16,7 +16,7 @@ import java.util.Map;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.DiagnosticChain;
 import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.model.IObject;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.core.IReference;
 
@@ -26,13 +26,13 @@ public class DefaultValidator implements IValidator {
 	public static final IValidator INSTANCE = new DefaultValidator();
 
 	@Override
-	public boolean validate(IObject object, DiagnosticChain diagnostics,
+	public boolean validate(IResource object, DiagnosticChain diagnostics,
 			Map<Object, Object> context) {
 		return true;
 	}
 
 	@Override
-	public boolean validate(Collection<? extends IClass> clazz, IObject object,
+	public boolean validate(Collection<? extends IClass> clazz, IResource object,
 			DiagnosticChain diagnostics, Map<Object, Object> context) {
 		return true;
 	}

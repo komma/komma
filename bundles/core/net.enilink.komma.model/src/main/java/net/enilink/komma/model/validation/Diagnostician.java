@@ -27,6 +27,7 @@ import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.DiagnosticChain;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.IReference;
@@ -42,7 +43,7 @@ public class Diagnostician implements IValidator.SubstitutionLabelProvider,
 		this.validatorRegistry = validatorRegistry;
 	}
 
-	public String getObjectLabel(IObject object) {
+	public String getObjectLabel(IResource object) {
 		return ModelUtil.getLabel(object);
 	}
 
@@ -67,7 +68,7 @@ public class Diagnostician implements IValidator.SubstitutionLabelProvider,
 	/**
 	 * @since 2.4
 	 */
-	public BasicDiagnostic createDefaultDiagnostic(IObject object) {
+	public BasicDiagnostic createDefaultDiagnostic(IResource object) {
 		return new BasicDiagnostic(DefaultValidator.DIAGNOSTIC_SOURCE, 0,
 				KommaCore.getDefault().getString(
 						"_UI_DiagnosticRoot_diagnostic",
@@ -96,7 +97,7 @@ public class Diagnostician implements IValidator.SubstitutionLabelProvider,
 	/**
 	 * @since 2.4
 	 */
-	public Diagnostic validate(IObject object, Map<?, ?> contextEntries) {
+	public Diagnostic validate(IResource object, Map<?, ?> contextEntries) {
 		BasicDiagnostic diagnostics = createDefaultDiagnostic(object);
 		Map<Object, Object> context = createDefaultContext();
 		context.putAll(contextEntries);
@@ -104,14 +105,14 @@ public class Diagnostician implements IValidator.SubstitutionLabelProvider,
 		return diagnostics;
 	}
 
-	public boolean validate(IObject object, DiagnosticChain diagnostics,
+	public boolean validate(IResource object, DiagnosticChain diagnostics,
 			Map<Object, Object> context) {
 		return validate(object.getDirectNamedClasses().toList(), object,
 				diagnostics, context);
 	}
 
 	public boolean validate(Collection<? extends IClass> classes,
-			IObject object, DiagnosticChain diagnostics,
+			IResource object, DiagnosticChain diagnostics,
 			Map<Object, Object> context) {
 		Set<IClass> seenClasses = new HashSet<IClass>();
 		Queue<IClass> classesQueue = new LinkedList<IClass>(classes);
@@ -146,12 +147,12 @@ public class Diagnostician implements IValidator.SubstitutionLabelProvider,
 		return true;
 	}
 
-	protected boolean doValidateContents(IObject object,
+	protected boolean doValidateContents(IResource object,
 			DiagnosticChain diagnostics, Map<Object, Object> context) {
-		Collection<IObject> contents = object.getContents();
+		Collection<IResource> contents = object.getContents();
 		if (!contents.isEmpty()) {
-			Iterator<IObject> i = contents.iterator();
-			IObject child = i.next();
+			Iterator<IResource> i = contents.iterator();
+			IResource child = i.next();
 			boolean result = validate(child, diagnostics, context);
 			while (i.hasNext() && (result || diagnostics != null)) {
 				child = i.next();

@@ -17,7 +17,7 @@ import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.DiagnosticChain;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.model.IObject;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IReference;
 
 /**
@@ -90,7 +90,7 @@ public interface IValidator {
 		/**
 		 * Returns the label to identify an object.
 		 */
-		String getObjectLabel(IObject object);
+		String getObjectLabel(IResource object);
 
 		/**
 		 * Returns the label used to identify a feature.
@@ -125,10 +125,10 @@ public interface IValidator {
 	 *            cache is supported.
 	 * @return whether the object is valid.
 	 */
-	boolean validate(IObject object, DiagnosticChain diagnostics,
+	boolean validate(IResource object, DiagnosticChain diagnostics,
 			Map<Object, Object> context);
 
-	boolean validate(Collection<? extends IClass> clazz, IObject object,
+	boolean validate(Collection<? extends IClass> clazz, IResource object,
 			DiagnosticChain diagnostics, Map<Object, Object> context);
 
 	Diagnostic validate(IReference datatype, Object value);
