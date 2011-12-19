@@ -84,23 +84,6 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		}
 	}
 
-	public static final IResultDescriptor<IClass> DIRECT_CLASSES_DESC() {
-		return new ResultDescriptor<IClass>(SELECT_DIRECT_CLASSES(false),
-				"urn:komma:directClasses", "class", "resource")
-				.bindResultType(IClass.class);
-	}
-
-	public static final IResultDescriptor<IClass> DIRECT_NAMED_CLASSES_DESC() {
-		return new ResultDescriptor<IClass>(SELECT_DIRECT_CLASSES(true),
-				"urn:komma:directNamedClasses", "class", "resource")
-				.bindResultType(IClass.class);
-	}
-
-	@Inject
-	private Injector injector;
-
-	private ConcurrentHashMap<IReference, PropertyInfo> properties;
-
 	private static final String HAS_APPLICABLE_PROPERTY = PREFIX //
 			+ "ASK { " //
 			+ "{?property a owl:AnnotationProperty "
@@ -136,6 +119,41 @@ public abstract class ResourceSupport extends BehaviorBase implements
 			+ "?restriction owl:qualifiedCardinality ?max ." + //
 			"}}} ORDER BY DESC(?min) ?max";
 
+	private static final String SELECT_APPLICABLE_CHILD_PROPERTIES = PREFIX //
+			+ "SELECT DISTINCT ?property " //
+			+ "WHERE { " //
+			// select potential child properties
+			+ "{" //
+			+ "?resource a ?class ." //
+			+ "{" //
+			+ "    ?property rdfs:domain ?class ." //
+			+ "} UNION {" //
+			+ "    ?class rdfs:subClassOf [owl:onProperty ?property] ." //
+			+ "}" //
+			+ "?property rdfs:subPropertyOf komma:hasDescendant ." //
+			+ "OPTIONAL {" //
+			+ "    ?otherProperty rdfs:subPropertyOf ?property ." //
+			+ "    {" //
+			+ "        ?otherProperty rdfs:domain ?class ." //
+			+ "    } UNION {" //
+			+ "        ?class rdfs:subClassOf [owl:onProperty ?otherProperty]" //
+			+ "    }" //
+			+ "	FILTER (?property != ?otherProperty)" //
+			+ "}" //
+			+ "FILTER (! bound(?otherProperty))" //
+			// select already used child properties
+			+ "} UNION {" //
+			+ "    ?resource ?property ?someObject ." //
+			+ "    ?property rdfs:subPropertyOf komma:hasDescendant ." //
+			+ "    OPTIONAL {" //
+			+ "        ?otherProperty rdfs:subPropertyOf ?property ." //
+			+ "        ?resource ?otherProperty ?someObject ." //
+			+ "        FILTER (?property != ?otherProperty)" //
+			+ "    }" //
+			+ "    FILTER (! bound(?otherProperty))" //
+			+ "}" //
+			+ "} ORDER BY ?property";
+
 	private static final String SELECT_APPLICABLE_PROPERTIES = PREFIX //
 			+ "SELECT DISTINCT ?property " //
 			+ "WHERE { " //
@@ -159,11 +177,26 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 			+ "}} ORDER BY ?property";
 
+	private static final String SELECT_CONTAINER = PREFIX //
+			+ "SELECT ?container WHERE { ?container komma:contains ?obj . }";
+
 	private static final String SELECT_PROPERTIES_AND_OBJECTS = PREFIX //
 			+ "SELECT ?pred ?obj WHERE { ?subj ?pred ?obj . }";
 
 	private static final String SELECT_PROPERTY_OBJECTS = PREFIX //
 			+ "SELECT ?obj WHERE { ?subj ?pred ?obj . }";
+
+	public static final IResultDescriptor<IClass> DIRECT_CLASSES_DESC() {
+		return new ResultDescriptor<IClass>(SELECT_DIRECT_CLASSES(false),
+				"urn:komma:directClasses", "class", "resource")
+				.bindResultType(IClass.class);
+	}
+
+	public static final IResultDescriptor<IClass> DIRECT_NAMED_CLASSES_DESC() {
+		return new ResultDescriptor<IClass>(SELECT_DIRECT_CLASSES(true),
+				"urn:komma:directNamedClasses", "class", "resource")
+				.bindResultType(IClass.class);
+	}
 
 	private static final String SELECT_CLASSES(boolean named) {
 		return PREFIX //
@@ -188,6 +221,11 @@ public abstract class ResourceSupport extends BehaviorBase implements
 				+ "(?class = owl:Thing || ?class = rdfs:Resource) && ?otherClass != ?class)}" //
 				+ "}";
 	}
+
+	@Inject
+	private Injector injector;
+
+	private ConcurrentHashMap<IReference, PropertyInfo> properties;
 
 	@Override
 	public void addProperty(IReference property, Object obj) {
@@ -239,9 +277,9 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	}
 
 	@Override
-	public IExtendedIterator<IProperty> getRelevantProperties() {
+	public IExtendedIterator<IProperty> getApplicableChildProperties() {
 		IQuery<?> query = getEntityManager().createQuery(
-				SELECT_APPLICABLE_PROPERTIES);
+				SELECT_APPLICABLE_CHILD_PROPERTIES);
 		query.setParameter("resource", this);
 
 		return query.evaluate(IProperty.class);
@@ -270,6 +308,18 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		query.setParameter("resource", getBehaviourDelegate());
 
 		return query.evaluate(IClass.class);
+	}
+
+	@Override
+	public IResource getContainer() {
+		IQuery<?> query = getEntityManager().createQuery(SELECT_CONTAINER);
+		query.setParameter("obj", this);
+		IExtendedIterator<?> it = query.evaluate();
+		try {
+			return it.hasNext() ? (IResource) it.next() : null;
+		} finally {
+			it.close();
+		}
 	}
 
 	@Override
@@ -332,6 +382,15 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		query.setParameter("subj", this);
 		query.setParameter("pred", property);
 		return query.evaluate();
+	}
+
+	@Override
+	public IExtendedIterator<IProperty> getRelevantProperties() {
+		IQuery<?> query = getEntityManager().createQuery(
+				SELECT_APPLICABLE_PROPERTIES);
+		query.setParameter("resource", this);
+
+		return query.evaluate(IProperty.class);
 	}
 
 	@Override

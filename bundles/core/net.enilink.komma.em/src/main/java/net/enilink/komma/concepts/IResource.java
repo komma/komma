@@ -11,6 +11,8 @@
 package net.enilink.komma.concepts;
 
 import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.cache.annotations.Cacheable;
@@ -109,4 +111,30 @@ public interface IResource extends Resource {
 	void refresh(IReference property);
 
 	void set(IReference property, Object value);
+
+	/* support for containment and partial ordering */
+
+	@Iri(CONCEPTS.NAMESPACE + "containsTransitive")
+	Set<IResource> getAllContents();
+
+	IExtendedIterator<IProperty> getApplicableChildProperties();
+
+	IResource getContainer();
+
+	@Iri(CONCEPTS.NAMESPACE + "contains")
+	Set<IResource> getContents();
+
+	List<IResource> getOrderedContents();
+
+	void setOrderedContents();
+
+	@Iri(CONCEPTS.NAMESPACE + "precedes")
+	Set<IResource> getPrecedes();
+
+	@Iri(CONCEPTS.NAMESPACE + "precedesTransitive")
+	Set<IResource> getPrecedesTransitive();
+
+	void setContents(Set<IResource> contents);
+
+	void setPrecedes(Set<IResource> precedes);
 }
