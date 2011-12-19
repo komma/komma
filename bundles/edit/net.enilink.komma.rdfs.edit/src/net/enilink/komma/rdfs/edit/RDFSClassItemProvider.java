@@ -31,6 +31,7 @@ import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.command.AddCommand;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.command.CreateChildCommand;
@@ -41,7 +42,6 @@ import net.enilink.komma.edit.provider.IViewerNotification;
 import net.enilink.komma.edit.provider.ReflectiveItemProvider;
 import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
 import net.enilink.komma.edit.provider.ViewerNotification;
-import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
@@ -60,8 +60,8 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 			Object element = notification.getObject();
 
 			IEntity object;
-			if (element instanceof IObject) {
-				object = (IObject) element;
+			if (element instanceof IEntity) {
+				object = (IEntity) element;
 			} else if (element instanceof IReference) {
 				object = resolveReference((IReference) element);
 			} else {
@@ -91,18 +91,19 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 			ICollector<Object> newChildDescriptors, Object object) {
 		if (object instanceof IClass) {
 			newChildDescriptors.add(createChildParameter(
-					((IObject) object).getModel().resolve(
+					((IEntity) object).getEntityManager().find(
 							RDFS.PROPERTY_SUBCLASSOF),
 					new ChildDescriptor(Arrays
-							.asList((IClass) ((IObject) object).getModel()
-									.resolve(OWL.TYPE_CLASS)), true)));
+							.asList((IClass) ((IEntity) object)
+									.getEntityManager().find(OWL.TYPE_CLASS)),
+							true)));
 		}
 		newChildDescriptors.done();
 	}
 
 	@Override
 	protected ICommand createCreateChildCommand(IEditingDomain domain,
-			IObject owner, IReference property, Object value, int index,
+			IResource owner, IReference property, Object value, int index,
 			Collection<?> collection) {
 		if (RDFS.PROPERTY_SUBCLASSOF.equals(property)) {
 			return new CreateChildCommand(domain, owner, property, value,
@@ -188,8 +189,8 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 			if (owner instanceof IClass && value instanceof IClass
 					&& !owner.equals(value)
 					&& !((IClass) owner).getRdfsSubClassOf().contains(value)) {
-				addCommand.add(new AddCommand(domain, (IObject) value,
-						((IObject) value).getModel().resolve(
+				addCommand.add(new AddCommand(domain, (IResource) value,
+						((IResource) value).getEntityManager().find(
 								RDFS.PROPERTY_SUBCLASSOF),
 						Arrays.asList(owner), CommandParameter.NO_INDEX) {
 					@Override
@@ -220,7 +221,7 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 	@Override
 	protected ICommand factorRemoveCommand(IEditingDomain domain,
 			CommandParameter commandParameter) {
-		final IObject owner = commandParameter.getOwnerObject();
+		final IResource owner = commandParameter.getOwnerResource();
 		CompositeCommand removeCommand = new CompositeCommand();
 		for (Object value : commandParameter.getCollection()) {
 			if (owner.equals(value)) {
@@ -229,8 +230,8 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 			}
 			removeCommand.add(createRemoveCommand(
 					domain,
-					(IObject) value,
-					((IObject) value).getModel().resolve(
+					(IResource) value,
+					((IResource) value).getEntityManager().find(
 							RDFS.PROPERTY_SUBCLASSOF),
 					Arrays.asList(commandParameter.getOwner())));
 		}

@@ -31,6 +31,7 @@ import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.command.AddCommand;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.command.CreateChildCommand;
@@ -112,7 +113,7 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 
 	@Override
 	protected ICommand createCreateChildCommand(IEditingDomain domain,
-			IObject owner, IReference property, Object value, int index,
+			IResource owner, IReference property, Object value, int index,
 			Collection<?> collection) {
 		if (subPropertyOf.equals(property)) {
 			return new CreateChildCommand(domain, owner, property, value,
@@ -197,15 +198,15 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 	@Override
 	protected ICommand factorRemoveCommand(IEditingDomain domain,
 			CommandParameter commandParameter) {
-		final IObject owner = commandParameter.getOwnerObject();
+		final IResource owner = commandParameter.getOwnerResource();
 		CompositeCommand removeCommand = new CompositeCommand();
 		for (Object value : commandParameter.getCollection()) {
 			if (owner.equals(value)) {
 				removeCommand.dispose();
 				return UnexecutableCommand.INSTANCE;
 			}
-			removeCommand.add(createRemoveCommand(domain, (IObject) value,
-					((IObject) value).getModel().resolve(subPropertyOf),
+			removeCommand.add(createRemoveCommand(domain, (IResource) value,
+					((IResource) value).getEntityManager().find(subPropertyOf),
 					Arrays.asList(commandParameter.getOwner())));
 		}
 		return removeCommand.reduce();

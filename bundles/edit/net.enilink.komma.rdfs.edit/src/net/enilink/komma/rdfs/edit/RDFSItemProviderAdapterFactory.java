@@ -17,6 +17,7 @@ import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.provider.ReflectiveItemProviderAdapterFactory;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.URI;
 
 /**
@@ -44,12 +45,12 @@ public class RDFSItemProviderAdapterFactory extends
 	protected Collection<IClass> getTypes(Object object) {
 		// classes
 		if (object instanceof IClass) {
-			return Arrays.asList((IClass) ((IObject) object).getModel()
-					.getManager().find(RDFS.TYPE_CLASS));
+			return Arrays.asList((IClass) ((IEntity) object).getEntityManager()
+					.find(RDFS.TYPE_CLASS));
 		}
 		if (object instanceof IProperty) {
-			return Arrays.asList((IClass) ((IObject) object).getModel()
-					.getManager().find(RDF.TYPE_PROPERTY));
+			return Arrays.asList((IClass) ((IEntity) object).getEntityManager()
+					.find(RDF.TYPE_PROPERTY));
 		}
 		// others
 		Set<IClass> classes = ((IObject) object).getDirectNamedClasses()
