@@ -31,6 +31,7 @@ import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.concepts.CONCEPTS;
 import net.enilink.komma.concepts.IClass;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
@@ -73,12 +74,12 @@ public class CreateCopyCommand extends AbstractOverrideableCommand implements
 	/**
 	 * This is the object being copied.
 	 */
-	protected IObject owner;
+	protected IResource owner;
 
 	/**
 	 * This is the copy.
 	 */
-	protected IObject copy;
+	protected IResource copy;
 
 	/**
 	 * This is a map of objects to their copies
@@ -89,7 +90,7 @@ public class CreateCopyCommand extends AbstractOverrideableCommand implements
 	 * This constructs a command that will create an object that is a copy of
 	 * the given object.
 	 */
-	public CreateCopyCommand(IEditingDomain domain, IObject owner,
+	public CreateCopyCommand(IEditingDomain domain, IResource owner,
 			CopyCommand.Helper copyHelper) {
 		super(domain, LABEL, DESCRIPTION);
 
@@ -100,7 +101,7 @@ public class CreateCopyCommand extends AbstractOverrideableCommand implements
 	/**
 	 * This is the object being copied.
 	 */
-	public IObject getOwner() {
+	public IResource getOwner() {
 		return owner;
 	}
 
@@ -122,8 +123,8 @@ public class CreateCopyCommand extends AbstractOverrideableCommand implements
 			throws ExecutionException {
 		Set<? extends IClass> ownerTypes = owner.getClasses(false).toSet();
 		IModel targetModel = copyHelper.getTargetModel();
-		if (targetModel == null) {
-			targetModel = owner.getModel();
+		if (targetModel == null && owner instanceof IObject) {
+			targetModel = ((IObject) owner).getModel();
 		}
 		// reload copy to implement all types which where added before
 		URI copyURI = null;
@@ -133,7 +134,7 @@ public class CreateCopyCommand extends AbstractOverrideableCommand implements
 					"entity_" + UUID.randomUUID().toString());
 		}
 
-		copy = (IObject) targetModel.getManager().createNamed(copyURI,
+		copy = (IResource) targetModel.getManager().createNamed(copyURI,
 				ownerTypes.toArray(new IReference[0]));
 		copyHelper.put(owner, copy);
 
@@ -150,10 +151,10 @@ public class CreateCopyCommand extends AbstractOverrideableCommand implements
 
 	@Override
 	public Collection<?> doGetAffectedResources(Object type) {
-		if (IModel.class.equals(type) && owner != null) {
+		if (IModel.class.equals(type) && owner instanceof IObject) {
 			Collection<Object> affected = new HashSet<Object>(
 					super.doGetAffectedResources(type));
-			affected.add(owner.getModel());
+			affected.add(((IObject)owner).getModel());
 			return affected;
 		}
 		return super.doGetAffectedResources(type);

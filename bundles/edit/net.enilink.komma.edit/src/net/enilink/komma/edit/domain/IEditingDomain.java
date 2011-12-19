@@ -26,6 +26,7 @@ import net.enilink.komma.edit.command.IOverrideableCommand;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.change.ChangeRecorder;
+import net.enilink.komma.core.IEntity;
 
 /**
  * An editing domain manages a self-contained set of interrelated EMF models and
@@ -107,11 +108,16 @@ public interface IEditingDomain {
 	 * This sets the clipboard of the editing domain.
 	 */
 	void setClipboard(Collection<Object> clipboard);
-
+	
 	/**
 	 * This returns whether the model is read only in editing domain.
 	 */
 	boolean isReadOnly(IModel model);
+
+	/**
+	 * This returns whether the entity is read only in editing domain.
+	 */
+	boolean isReadOnly(IEntity entity);
 
 	/**
 	 * Disposes of this editing domain and any resources that it has allocated.

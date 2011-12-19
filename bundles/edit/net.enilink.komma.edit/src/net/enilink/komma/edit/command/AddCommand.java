@@ -31,6 +31,7 @@ import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -153,7 +154,7 @@ public class AddCommand extends AbstractOverrideableCommand {
 	 * null in the case that we are dealing with an
 	 * {@link net.enilink.komma.rmf.common.util.EList}.
 	 */
-	protected IObject owner;
+	protected IResource owner;
 
 	/**
 	 * This is the list to which the command will add the collection.
@@ -214,7 +215,7 @@ public class AddCommand extends AbstractOverrideableCommand {
 	 * This constructs a primitive command to add a collection of values to the
 	 * specified many-valued feature of the owner.
 	 */
-	public AddCommand(IEditingDomain domain, IObject owner,
+	public AddCommand(IEditingDomain domain, IResource owner,
 			IReference property, Collection<?> collection) {
 		this(domain, owner, property, collection, CommandParameter.NO_INDEX);
 	}
@@ -223,7 +224,7 @@ public class AddCommand extends AbstractOverrideableCommand {
 	 * This constructs a primitive command to insert a collection of values into
 	 * the specified many-valued feature of the owner.
 	 */
-	public AddCommand(IEditingDomain domain, IObject owner,
+	public AddCommand(IEditingDomain domain, IResource owner,
 			IReference property, Collection<?> collection, int index) {
 		super(domain, LABEL, DESCRIPTION);
 
@@ -239,7 +240,7 @@ public class AddCommand extends AbstractOverrideableCommand {
 	 * This constructs a primitive command to add a particular value to the
 	 * specified many-valued feature of the owner.
 	 */
-	public AddCommand(IEditingDomain domain, IObject owner,
+	public AddCommand(IEditingDomain domain, IResource owner,
 			IReference property, Object value) {
 		this(domain, owner, property, Collections.singleton(value),
 				CommandParameter.NO_INDEX);
@@ -249,7 +250,7 @@ public class AddCommand extends AbstractOverrideableCommand {
 	 * This constructs a primitive command to insert particular value into the
 	 * specified many-valued feature of the owner.
 	 */
-	public AddCommand(IEditingDomain domain, IObject owner,
+	public AddCommand(IEditingDomain domain, IResource owner,
 			IReference property, Object value, int index) {
 		this(domain, owner, property, Collections.singleton(value), index);
 	}
@@ -309,8 +310,8 @@ public class AddCommand extends AbstractOverrideableCommand {
 				&& (owner != null || ownerList != null || collection != null)) {
 			Collection<Object> affected = new HashSet<Object>(
 					super.doGetAffectedResources(type));
-			if (owner != null) {
-				affected.add(owner.getModel());
+			if (owner instanceof IObject) {
+				affected.add(((IObject) owner).getModel());
 			}
 
 			if (ownerList != null) {
@@ -375,7 +376,7 @@ public class AddCommand extends AbstractOverrideableCommand {
 
 	protected Class getListType() {
 		if (ownerList == null) {
-			IProperty property = (IProperty) owner.getModel().resolve(
+			IProperty property = (IProperty) owner.getEntityManager().find(
 					this.property);
 
 			for (Class clazz : property.getNamedRanges(owner, true)) {
@@ -393,7 +394,7 @@ public class AddCommand extends AbstractOverrideableCommand {
 	 * be null in the case that we are dealing with an
 	 * {@link net.enilink.komma.rmf.common.util.EList}.
 	 */
-	public IObject getOwner() {
+	public IResource getOwner() {
 		return owner;
 	}
 
@@ -425,7 +426,7 @@ public class AddCommand extends AbstractOverrideableCommand {
 		}
 
 		if (property != null) {
-			IProperty property = (IProperty) owner.getModel().resolve(
+			IProperty property = (IProperty) owner.getEntityManager().find(
 					this.property);
 			// Check each object...
 			for (Object object : collection) {
@@ -449,8 +450,8 @@ public class AddCommand extends AbstractOverrideableCommand {
 				if (containment) {
 					// use seen to prevent infinite loops due to invalid usage
 					// of komma:contains
-					Set<IObject> seen = new HashSet<IObject>();
-					for (IObject container = owner; container != null; container = container
+					Set<IResource> seen = new HashSet<IResource>();
+					for (IResource container = owner; container != null; container = container
 							.getContainer()) {
 						if (!seen.add(container) || object.equals(container)) {
 							return false;
@@ -460,7 +461,7 @@ public class AddCommand extends AbstractOverrideableCommand {
 			}
 		}
 
-		if (owner != null && getDomain().isReadOnly(owner.getModel())) {
+		if (owner != null && getDomain().isReadOnly(owner)) {
 			return false;
 		}
 

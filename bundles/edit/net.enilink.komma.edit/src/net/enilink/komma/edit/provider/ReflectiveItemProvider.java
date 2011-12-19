@@ -25,9 +25,8 @@ import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IProperty;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
-import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.IEntity;
@@ -103,16 +102,16 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 		Object element = notification.getSubject();
 
 		IEntity object;
-		if (element instanceof IObject) {
-			object = (IObject) element;
+		if (element instanceof IEntity) {
+			object = (IEntity) element;
 		} else if (element instanceof IReference) {
 			object = resolveReference((IReference) element);
 		} else {
 			return null;
 		}
 
-		if (object instanceof IObject) {
-			((IObject) object).refresh(notification.getPredicate());
+		if (object instanceof IResource) {
+			((IResource) object).refresh(notification.getPredicate());
 
 			if (viewerNotifications == null) {
 				viewerNotifications = createViewerNotificationList();
@@ -151,19 +150,16 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 			childDescription = ((ChildDescriptor) childDescription).getValue();
 		}
 
-		IProperty resolvedProperty = (IProperty) ((IObject) owner).getModel()
-				.resolve((IReference) property);
-
 		String name = "full/ctool16/Create"
 				+ getTypes(owner).iterator().next().getURI().localPart() + "_"
-				+ resolvedProperty.getURI().localPart();
+				+ ((IReference) property).getURI().localPart();
 
 		Object childType = childDescription instanceof Collection<?> ? ((Collection<?>) childDescription)
 				.iterator().next() : childDescription;
 
 		if (childType instanceof net.enilink.vocab.rdfs.Class
-				&& ((IObject) childType).getURI() != null) {
-			name += "_" + ((IObject) childType).getURI().localPart();
+				&& ((IReference) childType).getURI() != null) {
+			name += "_" + ((IReference) childType).getURI().localPart();
 		}
 
 		try {

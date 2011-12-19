@@ -42,6 +42,7 @@ import net.enilink.komma.edit.provider.IItemPropertyDescriptor.OverrideableComma
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.util.KommaUtil;
 
@@ -530,7 +531,7 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 	 * reflectively obtain the value of a feature from an object. It can be
 	 * overridden by a subclass to provide additional processing of the value.
 	 */
-	protected Object getValue(IObject object, IReference property) {
+	protected Object getValue(IResource object, IReference property) {
 		try {
 			return object.get(property);
 		} catch (Throwable exception) {
@@ -546,9 +547,9 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 	 * references.
 	 */
 	public Object getPropertyValue(Object object) {
-		IObject iObject = (IObject) object;
 		if (property instanceof DatatypeProperty) {
-			Object result = getValue(iObject, (DatatypeProperty) property);
+			Object result = getValue((IResource) object,
+					(DatatypeProperty) property);
 
 			if (result == null) {
 				return null;
@@ -557,7 +558,8 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 			}
 		} else if (parentReferences != null) {
 			for (int i = 0; i < parentReferences.length; ++i) {
-				Object result = getValue(iObject, parentReferences[i]);
+				Object result = getValue((IResource) object,
+						parentReferences[i]);
 				if (result != null) {
 					return createPropertyValueWrapper(object, result);
 				}
@@ -565,7 +567,7 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 			return "";
 		} else {
 			return createPropertyValueWrapper(object,
-					getValue(iObject, property));
+					getValue((IResource) object, property));
 		}
 	}
 
@@ -576,11 +578,9 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 	 */
 	public boolean isPropertySet(Object object) {
 		// System.out.println("isPropertySet " + object);
-		IObject iObject = (IObject) object;
-
 		if (parentReferences != null) {
 			for (int i = 0; i < parentReferences.length; ++i) {
-				Object value = iObject.get(parentReferences[i]);
+				Object value = ((IResource) object).get(parentReferences[i]);
 				if (value != null
 						&& !(value instanceof Collection<?> && ((Collection<?>) value)
 								.isEmpty())) {
@@ -589,7 +589,7 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 			}
 			return false;
 		} else {
-			Object value = iObject.get(property);
+			Object value = ((IResource) object).get(property);
 			return value != null
 					&& !(value instanceof Collection<?> && ((Collection<?>) value)
 							.isEmpty());
@@ -604,11 +604,7 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 		if (isSettable) {
 			IEditingDomain editingDomain = getEditingDomain(object);
 			if (editingDomain != null) {
-				IModel model = object instanceof IObject ? ((IObject) object)
-						.getModel()
-						: object instanceof IModel ? (IModel) object : null;
-
-				return model == null || !editingDomain.isReadOnly(model);
+				return !editingDomain.isReadOnly((IEntity) object);
 			} else {
 				return true;
 			}
@@ -685,9 +681,8 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 	}
 
 	public IEditingDomain getEditingDomain(Object object) {
-		IObject iObject = (IObject) object;
 		IEditingDomain result = AdapterFactoryEditingDomain
-				.getEditingDomainFor(iObject);
+				.getEditingDomainFor(object);
 		if (result == null) {
 			if (adapterFactory instanceof IEditingDomainProvider) {
 				result = ((IEditingDomainProvider) adapterFactory)
@@ -712,37 +707,37 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 	 * It is implemented in a generic way using the structural feature.
 	 */
 	public void setPropertyValue(Object object, Object value) {
-		IObject iObject = (IObject) object;
+		IResource resource = (IResource) object;
 		IEditingDomain editingDomain = getEditingDomain(object);
 		try {
 			if (parentReferences != null) {
 				ICommand removeCommand = null;
 				for (int i = 0; i < parentReferences.length; ++i) {
-					Object oldValue = iObject.get(parentReferences[i]);
+					Object oldValue = resource.get(parentReferences[i]);
 					if (oldValue != null) {
-						final IProperty parentReference = (IProperty) iObject
-								.getModel().resolve(parentReferences[i]);
+						final IProperty parentReference = (IProperty) resource
+								.getEntityManager().find(parentReferences[i]);
 
 						if (oldValue == value) {
 							return;
 						} else if (parentReference.isRangeCompatible(value)) {
 							if (editingDomain == null) {
-								iObject.set(parentReference, value);
+								resource.set(parentReference, value);
 							} else {
 								editingDomain.getCommandStack().execute(
 										SetCommand.create(editingDomain,
-												getCommandOwner(iObject),
+												getCommandOwner(resource),
 												parentReference, value), null,
 										null);
 							}
 							return;
 						} else {
 							if (editingDomain == null) {
-								iObject.set(parentReference, null);
+								resource.set(parentReference, null);
 							} else {
 								removeCommand = SetCommand.create(
 										editingDomain,
-										getCommandOwner(iObject),
+										getCommandOwner(resource),
 										parentReference, null);
 							}
 							break;
@@ -751,12 +746,12 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 				}
 
 				for (int i = 0; i < parentReferences.length; ++i) {
-					final IProperty parentReference = (IProperty) iObject
-							.getModel().resolve(parentReferences[i]);
+					final IProperty parentReference = (IProperty) resource
+							.getEntityManager().find(parentReferences[i]);
 
 					if (parentReference.isRangeCompatible(value)) {
 						if (editingDomain == null) {
-							iObject.set(parentReferences[i], value);
+							resource.set(parentReferences[i], value);
 						} else {
 							if (removeCommand != null) {
 								final ExtendedCompositeCommand compoundCommand = new ExtendedCompositeCommand(
@@ -764,14 +759,14 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 								compoundCommand.add(removeCommand);
 								compoundCommand.add(SetCommand.create(
 										editingDomain,
-										getCommandOwner(iObject),
+										getCommandOwner(resource),
 										parentReference, value));
 								editingDomain.getCommandStack().execute(
 										compoundCommand, null, null);
 							} else {
 								editingDomain.getCommandStack().execute(
 										SetCommand.create(editingDomain,
-												getCommandOwner(iObject),
+												getCommandOwner(resource),
 												parentReference, value), null,
 										null);
 							}
@@ -781,12 +776,13 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 				}
 			} else {
 				if (editingDomain == null) {
-					iObject.set(property, value);
+					resource.set(property, value);
 				} else {
-					editingDomain.getCommandStack().execute(
-							SetCommand.create(editingDomain,
-									getCommandOwner(iObject), property, value),
-							null, null);
+					editingDomain.getCommandStack()
+							.execute(
+									SetCommand.create(editingDomain,
+											getCommandOwner(resource),
+											property, value), null, null);
 				}
 			}
 		} catch (ExecutionException e) {
@@ -813,8 +809,8 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 	public boolean isMany(Object object) {
 		return parentReferences == null
 				&& property != null
-				&& object instanceof IObject
-				&& ((IObject) object).getApplicableCardinality(property)
+				&& object instanceof IResource
+				&& ((IResource) object).getApplicableCardinality(property)
 						.getSecond() > 1;
 	}
 

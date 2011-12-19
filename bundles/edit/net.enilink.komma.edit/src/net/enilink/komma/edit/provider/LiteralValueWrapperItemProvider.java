@@ -28,6 +28,7 @@ import net.enilink.komma.edit.command.SetCommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 
 /**
@@ -50,7 +51,7 @@ public class LiteralValueWrapperItemProvider extends WrapperItemProvider
 	/**
 	 * Creates an instance for a single-valued attribute.
 	 */
-	public LiteralValueWrapperItemProvider(Object value, IObject owner,
+	public LiteralValueWrapperItemProvider(Object value, IEntity owner,
 			IReference property, IAdapterFactory adapterFactory,
 			IResourceLocator resourceLocator) {
 		super(value, owner, property, CommandParameter.NO_INDEX,
@@ -61,7 +62,7 @@ public class LiteralValueWrapperItemProvider extends WrapperItemProvider
 	/**
 	 * Creates an instance for a value within a multi-valued attribute.
 	 */
-	public LiteralValueWrapperItemProvider(Object value, IObject owner,
+	public LiteralValueWrapperItemProvider(Object value, IEntity owner,
 			IReference property, int index, IAdapterFactory adapterFactory,
 			IResourceLocator resourceLocator) {
 		super(value, owner, property, index, adapterFactory);

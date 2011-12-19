@@ -29,6 +29,7 @@ import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ExtendedCompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
@@ -157,7 +158,7 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 	/**
 	 * This is the object to which the child will be added.
 	 */
-	protected IObject owner;
+	protected IResource owner;
 
 	/**
 	 * This is the property of the owner to which the child will be added.
@@ -177,13 +178,13 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 	 * <code>feature</code>, or <code>child</code> are <code>null</code>,
 	 * {@link #createCommand} will return {@link UnexecutableCommand#INSTANCE}
 	 * and, hence,
-	 * {@link net.enilink.komma.common.command.AbstractCommand#canExecute} will
-	 * return <code>false</code>. If non-null, <code>selection</code> is the
-	 * collection of selected objects. An internal default {@link IHelper
+	 * {@link net.enilink.komma.common.command.AbstractCommand#canExecute}
+	 * will return <code>false</code>. If non-null, <code>selection</code> is
+	 * the collection of selected objects. An internal default {@link IHelper
 	 * Helper} will provide generic implmentations for the delegated command
 	 * methods.
 	 */
-	public CreateChildCommand(IEditingDomain domain, IObject owner,
+	public CreateChildCommand(IEditingDomain domain, IResource owner,
 			IReference property, Object childDescription,
 			Collection<?> selection) {
 		this(domain, owner, property, childDescription,
@@ -196,7 +197,7 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 	 * <code>helper</code> is <code>null</code>, the internal default helper is
 	 * used.
 	 */
-	public CreateChildCommand(IEditingDomain domain, IObject owner,
+	public CreateChildCommand(IEditingDomain domain, IResource owner,
 			IReference property, Object childDescription,
 			Collection<?> selection, CreateChildCommand.IHelper helper) {
 		this(domain, owner, property, childDescription,
@@ -210,13 +211,14 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 	 * is multi-valued. If any of <code>owner</code>, <code>feature</code>, or
 	 * <code>child</code> are <code>null</code>, {@link #createCommand} will
 	 * return {@link UnexecutableCommand#INSTANCE} and, hence,
-	 * {@link net.enilink.komma.common.command.AbstractCommand#canExecute} will
-	 * return <code>false</code>. If non-null, <code>selection</code> is the
-	 * collection of selected objects. The internal default helper is used by
-	 * the command. If <code>index</code> is {@link CommandParameter#NO_INDEX},
-	 * this behaves just like the first constructor form.
+	 * {@link net.enilink.komma.common.command.AbstractCommand#canExecute}
+	 * will return <code>false</code>. If non-null, <code>selection</code> is
+	 * the collection of selected objects. The internal default helper is used
+	 * by the command. If <code>index</code> is
+	 * {@link CommandParameter#NO_INDEX}, this behaves just like the first
+	 * constructor form.
 	 */
-	public CreateChildCommand(IEditingDomain domain, IObject owner,
+	public CreateChildCommand(IEditingDomain domain, IResource owner,
 			IReference property, Object childDescription, int index,
 			Collection<?> selection) {
 		this(domain, owner, property, childDescription, index, selection, null);
@@ -228,7 +230,7 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 	 * <code>helper</code> is <code>null</code>, the internal default helper is
 	 * used.
 	 */
-	public CreateChildCommand(IEditingDomain domain, IObject owner,
+	public CreateChildCommand(IEditingDomain domain, IResource owner,
 			IReference property, Object childDescription, int index,
 			Collection<?> selection, CreateChildCommand.IHelper helper) {
 		this.domain = domain;
@@ -268,9 +270,10 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 		child = helper.createChild(owner, property, childDescription);
 
 		if (child != null) {
-			addAndExecute(doAdd ? AddCommand.create(domain, owner, property,
-					child, index) : SetCommand.create(domain, owner, property,
-					child), progressMonitor, info);
+			addAndExecute(
+					doAdd ? AddCommand.create(domain, owner, property, child,
+							index) : SetCommand.create(domain, owner, property,
+							child), progressMonitor, info);
 		}
 
 		affectedObjects = helper.getCreateChildResult(child);
@@ -315,10 +318,10 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 
 	@Override
 	public Collection<Object> getAffectedResources(Object type) {
-		if (IModel.class.equals(type) && owner != null) {
-			Collection<Object> affected = new HashSet<Object>(super
-					.getAffectedResources(type));
-			affected.add(owner.getModel());
+		if (IModel.class.equals(type) && owner instanceof IObject) {
+			Collection<Object> affected = new HashSet<Object>(
+					super.getAffectedResources(type));
+			affected.add(((IObject) owner).getModel());
 			return affected;
 		}
 		return super.getAffectedResources(type);

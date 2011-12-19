@@ -30,10 +30,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IModelAware;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.IReference;
 
@@ -137,7 +139,7 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 	 * null, in the case that we are dealing with an
 	 * {@link net.enilink.komma.rmf.common.util.EList}.
 	 */
-	protected IObject owner;
+	protected IResource owner;
 
 	/**
 	 * This is the feature of the owner object upon the command will act. It
@@ -173,7 +175,7 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 	 * This constructs a primitive command to remove a particular value from the
 	 * specified feature of the owner.
 	 */
-	public RemoveCommand(IEditingDomain domain, IObject owner,
+	public RemoveCommand(IEditingDomain domain, IResource owner,
 			IReference property, Object value) {
 		this(domain, owner, property, Collections.singleton(value));
 	}
@@ -182,7 +184,7 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 	 * This constructs a primitive command to remove a collection of values from
 	 * the specified feature of the owner.
 	 */
-	public RemoveCommand(IEditingDomain domain, IObject owner,
+	public RemoveCommand(IEditingDomain domain, IResource owner,
 			IReference property, Collection<?> collection) {
 		super(domain, LABEL, DESCRIPTION);
 
@@ -227,7 +229,7 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 	 * be null, in the case that we are dealing with an
 	 * {@link net.enilink.komma.rmf.common.util.EList}.
 	 */
-	public IObject getOwner() {
+	public IResource getOwner() {
 		return owner;
 	}
 
@@ -269,7 +271,7 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 		//
 		boolean result = ownerList != null && collection != null
 				&& ownerList.containsAll(collection)
-				&& (owner == null || !getDomain().isReadOnly(owner.getModel()));
+				&& (owner == null || !getDomain().isReadOnly(owner));
 
 		return result;
 	}
@@ -441,16 +443,17 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 
 		return result;
 	}
-	
+
 	@Override
 	public Collection<?> doGetAffectedResources(Object type) {
-		if (IModel.class.equals(type) && (owner != null || ownerList != null || collection != null)) {
-			Collection<Object> affected = new HashSet<Object>(super
-					.doGetAffectedResources(type));
-			if (owner != null) {
-				affected.add(owner.getModel());
+		if (IModel.class.equals(type)
+				&& (owner != null || ownerList != null || collection != null)) {
+			Collection<Object> affected = new HashSet<Object>(
+					super.doGetAffectedResources(type));
+			if (owner instanceof IObject) {
+				affected.add(((IObject) owner).getModel());
 			}
-			
+
 			if (ownerList != null) {
 				for (Object element : ownerList) {
 					Object object = AdapterFactoryEditingDomain.unwrap(element);
@@ -459,7 +462,7 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 					}
 				}
 			}
-			
+
 			if (collection != null) {
 				for (Object element : collection) {
 					Object object = AdapterFactoryEditingDomain.unwrap(element);

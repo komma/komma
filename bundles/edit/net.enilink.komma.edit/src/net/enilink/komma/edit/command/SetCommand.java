@@ -36,6 +36,7 @@ import net.enilink.komma.common.command.ExtendedCompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.concepts.IProperty;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -107,14 +108,13 @@ public class SetCommand extends AbstractOverrideableCommand {
 	 */
 	public static ICommand create(IEditingDomain domain, final Object owner,
 			Object property, Object value, int index) {
-		if (owner instanceof IObject
+		if (owner instanceof IResource
 				&& property != null
-				&& ((IObject) owner)
+				&& ((IResource) owner)
 						.hasApplicableProperty((IReference) property)) {
-			IProperty resolvedProperty = (IProperty) ((IObject) owner)
-					.getModel().resolve((IReference) property);
-			if (((IObject) owner).getApplicableCardinality(resolvedProperty)
-					.getSecond() != 1 && index == CommandParameter.NO_INDEX) {
+			if (((IResource) owner).getApplicableCardinality(
+					(IReference) property).getSecond() != 1
+					&& index == CommandParameter.NO_INDEX) {
 				// We never directly set a multiplicity-many feature to a list
 				// directly. Instead, we remove the old values
 				// values, move the values that remain, and insert the new
@@ -123,8 +123,8 @@ public class SetCommand extends AbstractOverrideableCommand {
 				//
 				List<?> values = value == UNSET_VALUE ? Collections.EMPTY_LIST
 						: (List<?>) value;
-				Collection<?> oldValues = (Collection<?>) ((IObject) owner)
-						.get(resolvedProperty);
+				Collection<?> oldValues = (Collection<?>) ((IResource) owner)
+						.get((IReference) property);
 
 				ExtendedCompositeCommand compound = null;
 				compound = new ExtendedCompositeCommand(
@@ -430,7 +430,7 @@ public class SetCommand extends AbstractOverrideableCommand {
 	/**
 	 * This is the owner object upon which the command will act.
 	 */
-	protected IObject owner;
+	protected IResource owner;
 
 	/**
 	 * This is the feature of the owner object upon the command will act.
@@ -473,8 +473,8 @@ public class SetCommand extends AbstractOverrideableCommand {
 	 * This constructs a primitive command to set the owner's feature to the
 	 * specified value.
 	 */
-	public SetCommand(IEditingDomain domain, IObject owner, IReference feature,
-			Object value) {
+	public SetCommand(IEditingDomain domain, IResource owner,
+			IReference feature, Object value) {
 		super(domain, LABEL, DESCRIPTION);
 
 		// Initialize all the fields from the command parameter.
@@ -489,8 +489,8 @@ public class SetCommand extends AbstractOverrideableCommand {
 	 * This constructs a primitive command to set the owner's feature to the
 	 * specified value at the given index.
 	 */
-	public SetCommand(IEditingDomain domain, IObject owner, IReference feature,
-			Object value, int index) {
+	public SetCommand(IEditingDomain domain, IResource owner,
+			IReference feature, Object value, int index) {
 		super(domain, LABEL, DESCRIPTION);
 
 		// Initialize all the fields from the command parameter.
@@ -508,7 +508,7 @@ public class SetCommand extends AbstractOverrideableCommand {
 	/**
 	 * This returns the owner object upon which the command will act.
 	 */
-	public IObject getOwner() {
+	public IResource getOwner() {
 		return owner;
 	}
 
@@ -556,12 +556,12 @@ public class SetCommand extends AbstractOverrideableCommand {
 		// If there is an owner.
 		//
 		if (owner != null) {
-			if (getDomain().isReadOnly(owner.getModel()) || property == null) {
+			if (getDomain().isReadOnly(owner) || property == null) {
 				return false;
 			}
 
-			IProperty resolvedProperty = (IProperty) owner.getModel().resolve(
-					property);
+			IProperty resolvedProperty = (IProperty) owner.getEntityManager()
+					.find(property);
 
 			// Is the feature an attribute of the owner...
 			// if (resolvedProperty.isDomainCompatible(owner)) {
@@ -621,8 +621,8 @@ public class SetCommand extends AbstractOverrideableCommand {
 					&& resolvedProperty.isContainment()) {
 				// use seen to prevent infinite loops due to invalid usage
 				// of komma:contains
-				Set<IObject> seen = new HashSet<IObject>();
-				for (IObject container = owner; container != null; container = container
+				Set<IResource> seen = new HashSet<IResource>();
+				for (IResource container = owner; container != null; container = container
 						.getContainer()) {
 					if (!seen.add(container) || value.equals(container)) {
 						result = false;
@@ -640,7 +640,7 @@ public class SetCommand extends AbstractOverrideableCommand {
 	protected CommandResult doExecuteWithResult(
 			IProgressMonitor progressMonitor, IAdaptable info)
 			throws ExecutionException {
-		property = owner.getModel().resolve(property);
+		property = owner.getEntityManager().find(property);
 
 		// Check whether there is an opposite that needs attention.
 		if (property instanceof ObjectProperty
@@ -660,19 +660,19 @@ public class SetCommand extends AbstractOverrideableCommand {
 			}
 			for (Property otherProperty : ((ObjectProperty) property)
 					.getOwlInverseOf()) {
-				if (oldValue instanceof IObject
+				if (oldValue instanceof IResource
 						&& ((IProperty) otherProperty)
-								.isMany((IObject) oldValue)) {
+								.isMany((IResource) oldValue)) {
 					// If the other end is a many, then we should remove the
 					// owner from the old value's opposite feature so that
 					// undo
 					// will put it back.
 					if (oldValue instanceof Collection<?>) {
 						@SuppressWarnings("unchecked")
-						Collection<IObject> oldValues = (Collection<IObject>) oldValue;
+						Collection<IResource> oldValues = (Collection<IResource>) oldValue;
 						if (oldValues != null && !oldValues.isEmpty()) {
 							ExtendedCompositeCommand compoundCommand = new ExtendedCompositeCommand();
-							for (IObject oldValueObject : oldValues) {
+							for (IResource oldValueObject : oldValues) {
 								compoundCommand
 										.appendIfCanExecute(new RemoveCommand(
 												getDomain(), oldValueObject,
@@ -687,15 +687,15 @@ public class SetCommand extends AbstractOverrideableCommand {
 					// undo will put it back.
 					if (value instanceof Collection<?>) {
 						@SuppressWarnings("unchecked")
-						Collection<IObject> newValues = (Collection<IObject>) value;
+						Collection<IResource> newValues = (Collection<IResource>) value;
 						if (!newValues.isEmpty()) {
 							ExtendedCompositeCommand compoundCommand = new ExtendedCompositeCommand();
-							for (IObject newValueObject : newValues) {
+							for (IResource newValueObject : newValues) {
 								compoundCommand
 										.appendIfCanExecute(new SetCommand(
 												getDomain(), newValueObject,
 												otherProperty, UNSET_VALUE));
-								IObject otherObject = (IObject) newValueObject
+								IResource otherObject = (IResource) newValueObject
 										.get(otherProperty);
 								if (otherObject != null) {
 									compoundCommand
@@ -707,9 +707,9 @@ public class SetCommand extends AbstractOverrideableCommand {
 							}
 							removeCommand = compoundCommand;
 						}
-					} else if (value instanceof IObject) {
-						IObject eObject = (IObject) value;
-						IObject otherEObject = (IObject) eObject
+					} else if (value instanceof IResource) {
+						IResource eObject = (IResource) value;
+						IResource otherEObject = (IResource) eObject
 								.get(otherProperty);
 						if (otherEObject != null) {
 							removeCommand = new SetCommand(getDomain(),
@@ -759,8 +759,8 @@ public class SetCommand extends AbstractOverrideableCommand {
 		if (IModel.class.equals(type) && (owner != null || ownerList != null)) {
 			Collection<Object> affected = new HashSet<Object>(
 					super.doGetAffectedResources(type));
-			if (owner != null) {
-				affected.add(owner.getModel());
+			if (owner instanceof IObject) {
+				affected.add(((IObject) owner).getModel());
 			}
 
 			if (ownerList != null) {

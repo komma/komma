@@ -36,6 +36,7 @@ import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.common.util.Log;
 import net.enilink.komma.concepts.IProperty;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.AbstractOverrideableCommand;
 import net.enilink.komma.edit.command.CommandParameter;
@@ -43,7 +44,6 @@ import net.enilink.komma.edit.command.CopyCommand;
 import net.enilink.komma.edit.command.DragAndDropCommand;
 import net.enilink.komma.edit.command.SetCommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.IReference;
 
 /**
@@ -342,8 +342,8 @@ public class WrapperItemProvider implements IWrapperItemProvider {
 	 * subclasses may override it to select a different icon.
 	 */
 	protected Object getPropertyImage() {
-		IProperty property = (IProperty) ((IObject) getOwner()).getModel()
-				.resolve(this.property);
+		IProperty property = (IProperty) ((IResource) getOwner())
+				.getEntityManager().find(this.property);
 		Set<String> ranges = new HashSet<String>();
 		for (net.enilink.vocab.rdfs.Class rangeClass : property
 				.getRdfsRanges()) {
@@ -691,16 +691,15 @@ public class WrapperItemProvider implements IWrapperItemProvider {
 		 */
 		@Override
 		public void setPropertyValue(Object object, Object value) {
-			IObject iObject = (IObject) owner;
 			IEditingDomain editingDomain = getEditingDomain(owner);
 
 			if (editingDomain == null) {
-				setValue(iObject, property, value);
+				setValue((IResource) object, property, value);
 			} else {
 				try {
 					editingDomain.getCommandStack().execute(
-							createSetCommand(editingDomain, iObject, property,
-									value), null, null);
+							createSetCommand(editingDomain, (IResource) object,
+									property, value), null, null);
 				} catch (ExecutionException e) {
 					Log.error(KommaEditPlugin.getPlugin(), 0,
 							"Error while setting property value", e);
@@ -713,7 +712,7 @@ public class WrapperItemProvider implements IWrapperItemProvider {
 		 * only the single value that the wrapper represents is returned.
 		 */
 		@Override
-		protected Object getValue(IObject object, IReference property) {
+		protected Object getValue(IResource object, IReference property) {
 			// When the value is changed, the property sheet page doesn't update
 			// the property sheet viewer input
 			// before refreshing, and this gets called on the obsolete wrapper.
@@ -722,7 +721,7 @@ public class WrapperItemProvider implements IWrapperItemProvider {
 			//
 			// return value;
 
-			Object result = ((IObject) owner).get(property);
+			Object result = object.get(property);
 			if (object.getApplicableCardinality(property).getSecond() != 1) {
 				// If the last object was deleted and the selection was in the
 				// property sheet view, the obsolete wrapper will
@@ -739,7 +738,7 @@ public class WrapperItemProvider implements IWrapperItemProvider {
 		 * Sets a value on a model object. If the feature is multi-valued, only
 		 * the single value that the wrapper represents is set.
 		 */
-		protected void setValue(IObject object, IReference property,
+		protected void setValue(IResource object, IReference property,
 				Object value) {
 			if (object.getApplicableCardinality(property).getSecond() != 1) {
 				@SuppressWarnings("unchecked")

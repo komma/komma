@@ -29,6 +29,7 @@ import net.enilink.vocab.owl.ObjectProperty;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.concepts.IProperty;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
@@ -65,12 +66,12 @@ public class InitializeCopyCommand extends AbstractOverrideableCommand {
 	/**
 	 * This is the object being copied.
 	 */
-	protected IObject owner;
+	protected IResource owner;
 
 	/**
 	 * This is the object (copy) being initialized.
 	 */
-	protected IObject copy;
+	protected IResource copy;
 
 	/**
 	 * This is a map of objects to their copies
@@ -81,7 +82,7 @@ public class InitializeCopyCommand extends AbstractOverrideableCommand {
 	 * This constructs an instance that will copy the attribute values of value
 	 * to those of owner.
 	 */
-	public InitializeCopyCommand(IEditingDomain domain, IObject owner,
+	public InitializeCopyCommand(IEditingDomain domain, IResource owner,
 			CopyCommand.Helper copyHelper) {
 		super(domain, LABEL, DESCRIPTION);
 
@@ -93,14 +94,14 @@ public class InitializeCopyCommand extends AbstractOverrideableCommand {
 	/**
 	 * This is the object being copied.
 	 */
-	public IObject getOwner() {
+	public IResource getOwner() {
 		return owner;
 	}
 
 	/**
 	 * This is the object (copy) being initialized.
 	 */
-	public IObject getCopy() {
+	public IResource getCopy() {
 		return copy;
 	}
 
@@ -167,8 +168,8 @@ public class InitializeCopyCommand extends AbstractOverrideableCommand {
 					} else {
 						int index = 0;
 						for (Object item : valueList) {
-							Object target = item instanceof IObject ? copyHelper
-									.getCopyTarget((IObject) item,
+							Object target = item instanceof IResource ? copyHelper
+									.getCopyTarget((IResource) item,
 											copiedTargetRequired) : item;
 							if (target == null) {
 								break; // if one is null, they'll all be null
@@ -188,9 +189,9 @@ public class InitializeCopyCommand extends AbstractOverrideableCommand {
 					}
 				} else {
 					Object item = getOwner().get(property);
-					Object target = item instanceof IObject ? copyHelper
-							.getCopyTarget((IObject) item, copiedTargetRequired)
-							: item;
+					Object target = item instanceof IResource ? copyHelper
+							.getCopyTarget((IResource) item,
+									copiedTargetRequired) : item;
 					if (target != null) {
 						copy.set(property, target);
 					}
@@ -206,10 +207,10 @@ public class InitializeCopyCommand extends AbstractOverrideableCommand {
 
 	@Override
 	public Collection<?> doGetAffectedResources(Object type) {
-		if (IModel.class.equals(type) && owner != null) {
+		if (IModel.class.equals(type) && owner instanceof IObject) {
 			Collection<Object> affected = new HashSet<Object>(
 					super.doGetAffectedResources(type));
-			affected.add(owner.getModel());
+			affected.add(((IObject) owner).getModel());
 			return affected;
 		}
 		return super.doGetAffectedResources(type);

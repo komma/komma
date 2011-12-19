@@ -23,6 +23,7 @@ import java.util.List;
 
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.ObjectProperty;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.IReference;
 
@@ -93,8 +94,8 @@ public class CommandParameter {
 	}
 
 	/**
-	 * This creates an instance specifying an owner, a property, and a collection
-	 * of values.
+	 * This creates an instance specifying an owner, a property, and a
+	 * collection of values.
 	 */
 	public CommandParameter(Object owner, Object property,
 			Collection<?> collection) {
@@ -117,8 +118,8 @@ public class CommandParameter {
 	}
 
 	/**
-	 * This creates an instance specifying an owner, a property, and a value, and
-	 * a collection.
+	 * This creates an instance specifying an owner, a property, and a value,
+	 * and a collection.
 	 */
 	public CommandParameter(Object owner, Object property, Object value,
 			Collection<?> collection) {
@@ -150,10 +151,10 @@ public class CommandParameter {
 	}
 
 	/**
-	 * This returns the specified owner as {@link IObject}
+	 * This returns the specified owner as {@link IResource}
 	 */
-	public IObject getOwnerObject() {
-		return owner instanceof IObject ? (IObject) owner : null;
+	public IResource getOwnerResource() {
+		return owner instanceof IResource ? (IResource) owner : null;
 	}
 
 	/**
@@ -178,9 +179,10 @@ public class CommandParameter {
 		if (property instanceof ObjectProperty) {
 			return (ObjectProperty) property;
 		}
-		if (!(property instanceof IObject) && getOwnerObject() != null
+		if (!(property instanceof IResource) && getOwnerResource() != null
 				&& property instanceof IReference) {
-			property = getOwnerObject().getModel().resolve((IReference) property);
+			property = getOwnerResource().getEntityManager().find(
+					(IReference) property);
 
 		}
 		return property instanceof ObjectProperty ? (ObjectProperty) property
@@ -195,9 +197,10 @@ public class CommandParameter {
 		if (property instanceof DatatypeProperty) {
 			return (DatatypeProperty) property;
 		}
-		if (!(property instanceof IObject) && getOwnerObject() != null
+		if (!(property instanceof IResource) && getOwnerResource() != null
 				&& property instanceof IReference) {
-			property = getOwnerObject().getModel().resolve((IReference) property);
+			property = getOwnerResource().getEntityManager().find(
+					(IReference) property);
 
 		}
 		return property instanceof DatatypeProperty ? (DatatypeProperty) property

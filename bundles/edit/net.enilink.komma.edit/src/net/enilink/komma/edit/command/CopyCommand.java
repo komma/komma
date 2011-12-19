@@ -31,6 +31,7 @@ import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ExtendedCompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
@@ -53,13 +54,13 @@ public class CopyCommand extends ExtendedCompositeCommand {
 	 * This helper class is used to keep track of copied objects and their
 	 * associated copies.
 	 */
-	public static class Helper extends HashMap<IObject, IObject> {
+	public static class Helper extends HashMap<IResource, IResource> {
 		private static final long serialVersionUID = 1L;
 
 		protected boolean commitTransaction;
 		protected int deferredInitializationCount;
 
-		protected ArrayList<IObject> initializationList = new ArrayList<IObject>();
+		protected ArrayList<IResource> initializationList = new ArrayList<IResource>();
 
 		protected IModel targetModel;
 
@@ -85,7 +86,7 @@ public class CopyCommand extends ExtendedCompositeCommand {
 		/**
 		 * Return the copy of the specified object if it has one.
 		 */
-		public IObject getCopy(IObject object) {
+		public IResource getCopy(IResource object) {
 			return get(object);
 		}
 
@@ -93,8 +94,8 @@ public class CopyCommand extends ExtendedCompositeCommand {
 		 * Return the copy of the specified object or the object itself if it
 		 * has no copy.
 		 */
-		public IObject getCopyTarget(IObject target, boolean copyRequired) {
-			IObject copied = getCopy(target);
+		public IResource getCopyTarget(IResource target, boolean copyRequired) {
+			IResource copied = getCopy(target);
 			if (copied == null) {
 				copied = copyRequired ? null : target;
 			}
@@ -105,18 +106,18 @@ public class CopyCommand extends ExtendedCompositeCommand {
 			++deferredInitializationCount;
 		}
 
-		public Iterator<IObject> initializationIterator() {
+		public Iterator<IResource> initializationIterator() {
 			return initializationList.iterator();
 		}
 
 		@Override
-		public IObject put(IObject key, IObject value) {
+		public IResource put(IResource key, IResource value) {
 			initializationList.add(key);
 			return super.put(key, value);
 		}
 
 		@Override
-		public IObject remove(Object key) {
+		public IResource remove(Object key) {
 			initializationList.remove(key);
 			return super.remove(key);
 		}
@@ -183,12 +184,12 @@ public class CopyCommand extends ExtendedCompositeCommand {
 	 * This keeps track of the owner in the command parameter from the
 	 * constructor.
 	 */
-	protected IObject owner;
+	protected IResource owner;
 
 	/**
 	 * This creates and instance in the given domain and for the given owner
 	 */
-	public CopyCommand(IEditingDomain domain, IObject owner, Helper copyHelper) {
+	public CopyCommand(IEditingDomain domain, IResource owner, Helper copyHelper) {
 		super(LABEL, DESCRIPTION);
 
 		this.resultIndex = 0;
@@ -200,7 +201,7 @@ public class CopyCommand extends ExtendedCompositeCommand {
 	}
 
 	protected void addCreateCopyCommands(
-			ExtendedCompositeCommand compoundCommand, IObject object) {
+			ExtendedCompositeCommand compoundCommand, IResource object) {
 		// Create a command to create a copy of the object.
 		ICommand createCopyCommand = CreateCopyCommand.create(domain, object,
 				copyHelper);
@@ -210,11 +211,11 @@ public class CopyCommand extends ExtendedCompositeCommand {
 				&& createCopyCommand.canExecute()) {
 			for (Object child : ((IChildrenToCopyProvider) createCopyCommand)
 					.getChildrenToCopy()) {
-				addCreateCopyCommands(compoundCommand, (IObject) child);
+				addCreateCopyCommands(compoundCommand, (IResource) child);
 			}
 		} else {
 			// Create commands to create copies of the children.
-			for (IObject child : object.getContents()) {
+			for (IResource child : object.getContents()) {
 				addCreateCopyCommands(compoundCommand, child);
 			}
 		}
@@ -241,8 +242,8 @@ public class CopyCommand extends ExtendedCompositeCommand {
 
 		ExtendedCompositeCommand createCommand = new ExtendedCompositeCommand(0);
 
-		boolean transactionWasActive = owner.getEntityManager().getTransaction()
-				.isActive();
+		boolean transactionWasActive = owner.getEntityManager()
+				.getTransaction().isActive();
 		if (!transactionWasActive) {
 			owner.getEntityManager().getTransaction().begin();
 			copyHelper.setCommitTransaction(true);
@@ -263,10 +264,10 @@ public class CopyCommand extends ExtendedCompositeCommand {
 				ICommand initializeCommand = new ExtendedCompositeCommand() {
 					@Override
 					public boolean prepare() {
-						for (Iterator<IObject> copiedObjects = copyHelper
+						for (Iterator<IResource> copiedObjects = copyHelper
 								.initializationIterator(); copiedObjects
 								.hasNext();) {
-							IObject object = copiedObjects.next();
+							IResource object = copiedObjects.next();
 							ICommand initializeCopyCommand = InitializeCopyCommand
 									.create(domain, object, copyHelper);
 
@@ -311,10 +312,10 @@ public class CopyCommand extends ExtendedCompositeCommand {
 
 	@Override
 	public Collection<Object> getAffectedResources(Object type) {
-		if (IModel.class.equals(type) && owner != null) {
-			Collection<Object> affected = new HashSet<Object>(super
-					.getAffectedResources(type));
-			affected.add(owner.getModel());
+		if (IModel.class.equals(type) && owner instanceof IObject) {
+			Collection<Object> affected = new HashSet<Object>(
+					super.getAffectedResources(type));
+			affected.add(((IObject) owner).getModel());
 			return affected;
 		}
 		return super.getAffectedResources(type);

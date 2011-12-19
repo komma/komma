@@ -28,6 +28,7 @@ import net.enilink.vocab.rdf.List;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.concepts.IProperty;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -107,7 +108,7 @@ public class ReplaceCommand extends AbstractOverrideableCommand {
 	 * null, in the case that we are dealing with an
 	 * {@link net.enilink.komma.rmf.common.util.EList}.
 	 */
-	protected IObject owner;
+	protected IResource owner;
 
 	/**
 	 * This is the feature of the owner object upon the command will act. It
@@ -142,7 +143,7 @@ public class ReplaceCommand extends AbstractOverrideableCommand {
 	 * This constructs a primitive command to replace a particular value in the
 	 * specified feature of the owner with the specified replacement.
 	 */
-	public ReplaceCommand(IEditingDomain domain, IObject owner,
+	public ReplaceCommand(IEditingDomain domain, IResource owner,
 			IReference feature, Object value, Object replacement) {
 		this(domain, owner, feature, value, Collections.singleton(replacement));
 	}
@@ -152,7 +153,7 @@ public class ReplaceCommand extends AbstractOverrideableCommand {
 	 * specified feature of the owner with the specified collection of
 	 * replacements.
 	 */
-	public ReplaceCommand(IEditingDomain domain, IObject owner,
+	public ReplaceCommand(IEditingDomain domain, IResource owner,
 			IReference feature, Object value, Collection<?> collection) {
 		super(domain, LABEL, DESCRIPTION);
 
@@ -198,7 +199,7 @@ public class ReplaceCommand extends AbstractOverrideableCommand {
 	 * be null, in the case that we are dealing with an
 	 * {@link net.enilink.komma.rmf.common.util.EList}.
 	 */
-	public IObject getOwner() {
+	public IResource getOwner() {
 		return owner;
 	}
 
@@ -241,7 +242,7 @@ public class ReplaceCommand extends AbstractOverrideableCommand {
 		if (ownerList == null || !ownerList.contains(value)
 				|| collection == null || collection.isEmpty()) {
 			return false;
-		} else if (owner != null && getDomain().isReadOnly(owner.getModel())) {
+		} else if (owner != null && getDomain().isReadOnly(owner)) {
 			return false;
 		} else if (property == null) {
 			// An extent allows anything to be added.
@@ -250,7 +251,7 @@ public class ReplaceCommand extends AbstractOverrideableCommand {
 		} else {
 
 			if (owner != null && property != null) {
-				IProperty property = (IProperty) owner.getModel().resolve(
+				IProperty property = (IProperty) owner.getEntityManager().find(
 						this.property);
 				// Make sure each object conforms to the range of the property.
 				for (Object replacement : collection) {
@@ -302,14 +303,14 @@ public class ReplaceCommand extends AbstractOverrideableCommand {
 	public Collection<?> doGetAffectedResources(Object type) {
 		if (IModel.class.equals(type)
 				&& (owner != null || ownerList != null || collection != null)) {
-			Collection<Object> affected = new HashSet<Object>(super
-					.doGetAffectedResources(type));
+			Collection<Object> affected = new HashSet<Object>(
+					super.doGetAffectedResources(type));
 			if (value instanceof IObject) {
 				affected.add(((IObject) value).getModel());
 			}
 
-			if (owner != null) {
-				affected.add(owner.getModel());
+			if (owner instanceof IObject) {
+				affected.add(((IObject) owner).getModel());
 			}
 
 			if (ownerList != null) {

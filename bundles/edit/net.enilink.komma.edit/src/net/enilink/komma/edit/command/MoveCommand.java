@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -101,7 +102,7 @@ public class MoveCommand extends AbstractOverrideableCommand {
 	 * null in the case that we are dealing with an
 	 * {@link net.enilink.komma.rmf.common.util.EList}.
 	 */
-	protected IObject owner;
+	protected IResource owner;
 
 	/**
 	 * This is the feature of the owner object upon the command will act. It
@@ -135,7 +136,7 @@ public class MoveCommand extends AbstractOverrideableCommand {
 	 * This constructs a primitive command to move a particular value to a
 	 * particular index of the specified many-valued feature of the owner.
 	 */
-	public MoveCommand(IEditingDomain domain, IObject owner,
+	public MoveCommand(IEditingDomain domain, IResource owner,
 			IReference property, Object value, int index) {
 		super(domain, LABEL, DESCRIPTION);
 
@@ -168,7 +169,7 @@ public class MoveCommand extends AbstractOverrideableCommand {
 	 * be null in the case that we are dealing with an
 	 * {@link net.enilink.komma.rmf.common.util.EList}.
 	 */
-	public IObject getOwner() {
+	public IResource getOwner() {
 		return owner;
 	}
 
@@ -217,7 +218,7 @@ public class MoveCommand extends AbstractOverrideableCommand {
 		boolean result = ownerList != null && ownerList instanceof List<?>
 				&& ownerList.contains(value) && index >= 0
 				&& index < ownerList.size()
-				&& (owner == null || !getDomain().isReadOnly(owner.getModel()));
+				&& (owner == null || !getDomain().isReadOnly(owner));
 
 		return result;
 	}
@@ -246,8 +247,8 @@ public class MoveCommand extends AbstractOverrideableCommand {
 				affected.add(((IObject) value).getModel());
 			}
 
-			if (owner != null) {
-				affected.add(owner.getModel());
+			if (owner instanceof IObject) {
+				affected.add(((IObject) owner).getModel());
 			}
 
 			if (ownerList != null) {

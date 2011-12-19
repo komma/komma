@@ -60,6 +60,7 @@ import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.model.change.ChangeRecorder;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.URIImpl;
 
 /**
@@ -168,9 +169,9 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 				}
 			}
 			return false;
-		} else if (object instanceof IObject) {
-			return ((IObject) object).getEntityManager() == null
-					|| !((IObject) object).getEntityManager().isOpen();
+		} else if (object instanceof IEntity) {
+			return ((IEntity) object).getEntityManager() == null
+					|| !((IEntity) object).getEntityManager().isOpen();
 		} else if (object == null) {
 			return false;
 		} else {
@@ -618,9 +619,7 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 		recorder = createChangeRecorder(modelSet);
 	}
 
-	/**
-	 * This returns whether the resource is read only.
-	 */
+	@Override
 	public boolean isReadOnly(IModel model) {
 		if (modelToReadOnlyMap == null) {
 			return false;
@@ -636,6 +635,14 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 			}
 			return Boolean.TRUE.equals(result);
 		}
+	}
+
+	@Override
+	public boolean isReadOnly(IEntity entity) {
+		if (!(entity instanceof IObject)) {
+			return false;
+		}
+		return isReadOnly(((IObject) entity).getModel());
 	}
 
 	/**

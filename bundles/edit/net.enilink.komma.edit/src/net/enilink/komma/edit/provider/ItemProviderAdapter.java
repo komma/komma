@@ -60,6 +60,7 @@ import net.enilink.komma.common.util.IList;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IProperty;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.AddCommand;
 import net.enilink.komma.edit.command.CommandParameter;
@@ -819,7 +820,7 @@ public class ItemProviderAdapter extends
 	 * {@link net.enilink.vocab.rdfs.Class}es that should be created as
 	 * named nodes.
 	 */
-	protected boolean childRequiresName(IObject subject, IReference property,
+	protected boolean childRequiresName(IResource subject, IReference property,
 			net.enilink.vocab.rdfs.Class rangeClass) {
 		return false;
 	}
@@ -828,7 +829,7 @@ public class ItemProviderAdapter extends
 	 * This creates a primitive
 	 * {@link net.enilink.komma.edit.command.AddCommand}.
 	 */
-	protected ICommand createAddCommand(IEditingDomain domain, IObject owner,
+	protected ICommand createAddCommand(IEditingDomain domain, IResource owner,
 			IReference property, Collection<?> collection, int index) {
 		return new AddCommand(domain, owner, property, collection, index);
 	}
@@ -906,7 +907,7 @@ public class ItemProviderAdapter extends
 		if (commandClass == SetCommand.class) {
 			result = createSetCommand(
 					domain,
-					commandParameter.getOwnerObject(),
+					commandParameter.getOwnerResource(),
 					commandParameter.getProperty() != null ? (IReference) commandParameter
 							.getProperty() : getSetProperty(
 							commandParameter.getOwner(),
@@ -914,20 +915,20 @@ public class ItemProviderAdapter extends
 					commandParameter.getValue(), commandParameter.getIndex());
 		} else if (commandClass == CopyCommand.class) {
 			result = createCopyCommand(domain,
-					commandParameter.getOwnerObject(),
+					commandParameter.getOwnerResource(),
 					(CopyCommand.Helper) commandParameter.getValue());
 		} else if (commandClass == CreateCopyCommand.class) {
 			result = createCreateCopyCommand(domain,
-					commandParameter.getOwnerObject(),
+					commandParameter.getOwnerResource(),
 					(CopyCommand.Helper) commandParameter.getValue());
 		} else if (commandClass == InitializeCopyCommand.class) {
 			result = createInitializeCopyCommand(domain,
-					commandParameter.getOwnerObject(),
+					commandParameter.getOwnerResource(),
 					(CopyCommand.Helper) commandParameter.getValue());
 		} else if (commandClass == RemoveCommand.class) {
 			if (commandParameter.getProperty() != null) {
 				result = createRemoveCommand(domain,
-						commandParameter.getOwnerObject(),
+						commandParameter.getOwnerResource(),
 						(IProperty) commandParameter.getProperty(),
 						commandParameter.getCollection());
 			} else {
@@ -936,7 +937,7 @@ public class ItemProviderAdapter extends
 		} else if (commandClass == AddCommand.class) {
 			if (commandParameter.getProperty() != null) {
 				result = createAddCommand(domain,
-						commandParameter.getOwnerObject(),
+						commandParameter.getOwnerResource(),
 						(IProperty) commandParameter.getProperty(),
 						commandParameter.getCollection(),
 						commandParameter.getIndex());
@@ -946,7 +947,7 @@ public class ItemProviderAdapter extends
 		} else if (commandClass == MoveCommand.class) {
 			if (commandParameter.getProperty() != null) {
 				result = createMoveCommand(domain,
-						commandParameter.getOwnerObject(),
+						commandParameter.getOwnerResource(),
 						(IProperty) commandParameter.getProperty(),
 						commandParameter.getValue(),
 						commandParameter.getIndex());
@@ -955,9 +956,9 @@ public class ItemProviderAdapter extends
 			}
 		} else if (commandClass == ReplaceCommand.class) {
 			result = createReplaceCommand(domain,
-					commandParameter.getOwnerObject(),
+					commandParameter.getOwnerResource(),
 					(IProperty) commandParameter.getProperty(),
-					(IObject) commandParameter.getValue(),
+					(IResource) commandParameter.getValue(),
 					commandParameter.getCollection());
 		} else if (commandClass == DragAndDropCommand.class) {
 			DragAndDropCommand.Detail detail = (DragAndDropCommand.Detail) commandParameter
@@ -970,7 +971,7 @@ public class ItemProviderAdapter extends
 			CommandParameter newChildParameter = (CommandParameter) commandParameter
 					.getValue();
 			result = createCreateChildCommand(domain,
-					commandParameter.getOwnerObject(),
+					commandParameter.getOwnerResource(),
 					(IReference) newChildParameter.getProperty(),
 					newChildParameter.getValue(), newChildParameter.getIndex(),
 					commandParameter.getCollection());
@@ -986,8 +987,8 @@ public class ItemProviderAdapter extends
 	 * This creates a primitive
 	 * {@link net.enilink.komma.edit.command.CopyCommand} .
 	 */
-	protected ICommand createCopyCommand(IEditingDomain domain, IObject owner,
-			CopyCommand.Helper helper) {
+	protected ICommand createCopyCommand(IEditingDomain domain,
+			IResource owner, CopyCommand.Helper helper) {
 		return new CopyCommand(domain, owner, helper);
 	}
 
@@ -996,7 +997,7 @@ public class ItemProviderAdapter extends
 	 * {@link net.enilink.komma.edit.command.CreateChildCommand}.
 	 */
 	protected ICommand createCreateChildCommand(IEditingDomain domain,
-			IObject owner, IReference property, Object value, int index,
+			IResource owner, IReference property, Object value, int index,
 			Collection<?> collection) {
 		return new CreateChildCommand(domain, owner, property, value, index,
 				collection, this);
@@ -1007,7 +1008,7 @@ public class ItemProviderAdapter extends
 	 * {@link net.enilink.komma.edit.command.CreateCopyCommand}.
 	 */
 	protected ICommand createCreateCopyCommand(IEditingDomain domain,
-			IObject owner, CopyCommand.Helper helper) {
+			IResource owner, CopyCommand.Helper helper) {
 		return new CreateCopyCommand(domain, owner, helper);
 	}
 
@@ -1027,7 +1028,7 @@ public class ItemProviderAdapter extends
 	 * {@link net.enilink.komma.edit.command.InitializeCopyCommand}.
 	 */
 	protected ICommand createInitializeCopyCommand(IEditingDomain domain,
-			IObject owner, CopyCommand.Helper helper) {
+			IResource owner, CopyCommand.Helper helper) {
 		return new InitializeCopyCommand(domain, owner, helper);
 	}
 
@@ -1053,8 +1054,8 @@ public class ItemProviderAdapter extends
 	 * This creates a primitive
 	 * {@link net.enilink.komma.edit.command.MoveCommand} .
 	 */
-	protected ICommand createMoveCommand(IEditingDomain domain, IObject owner,
-			IReference feature, Object value, int index) {
+	protected ICommand createMoveCommand(IEditingDomain domain,
+			IResource owner, IReference feature, Object value, int index) {
 		return new MoveCommand(domain, owner, feature, value, index);
 	}
 
@@ -1063,7 +1064,7 @@ public class ItemProviderAdapter extends
 	 * {@link net.enilink.komma.edit.command.RemoveCommand}.
 	 */
 	protected ICommand createRemoveCommand(IEditingDomain domain,
-			IObject owner, IReference feature, Collection<?> collection) {
+			IResource owner, IReference feature, Collection<?> collection) {
 		return new RemoveCommand(domain, owner, feature, collection);
 	}
 
@@ -1072,7 +1073,7 @@ public class ItemProviderAdapter extends
 	 * {@link net.enilink.komma.edit.command.ReplaceCommand}.
 	 */
 	protected ICommand createReplaceCommand(IEditingDomain domain,
-			IObject owner, IReference feature, IObject value,
+			IResource owner, IReference feature, IResource value,
 			Collection<?> collection) {
 		return new ReplaceCommand(domain, owner, feature, value, collection);
 	}
@@ -1090,7 +1091,7 @@ public class ItemProviderAdapter extends
 	 * {@link #createSetCommand(IEditingDomain, EObject, EStructuralFeature, Object, int)
 	 * new form}, instead.
 	 */
-	protected ICommand createSetCommand(IEditingDomain domain, IObject owner,
+	protected ICommand createSetCommand(IEditingDomain domain, IResource owner,
 			IReference feature, Object value) {
 		return new SetCommand(domain, owner, feature, value);
 	}
@@ -1099,7 +1100,7 @@ public class ItemProviderAdapter extends
 	 * This creates a primitive
 	 * {@link net.enilink.komma.edit.command.SetCommand}.
 	 */
-	protected ICommand createSetCommand(IEditingDomain domain, IObject owner,
+	protected ICommand createSetCommand(IEditingDomain domain, IResource owner,
 			IReference feature, Object value, int index) {
 		if (index == CommandParameter.NO_INDEX) {
 			return createSetCommand(domain, owner, feature, value);
@@ -1123,7 +1124,7 @@ public class ItemProviderAdapter extends
 	 * in order to wrap cross-referenced model objects here. Subclasses may also
 	 * override this method, in order to create their own specialized wrappers.
 	 */
-	protected Object createWrapper(IObject object, IProperty property,
+	protected Object createWrapper(IResource object, IProperty property,
 			Object value, int index) {
 		if (!isWrappingNeeded(object)) {
 			return value;
@@ -1224,7 +1225,7 @@ public class ItemProviderAdapter extends
 			return UnexecutableCommand.INSTANCE;
 		}
 
-		final IObject object = commandParameter.getOwnerObject();
+		final IResource object = commandParameter.getOwnerResource();
 		final List<Object> list = new ArrayList<Object>(
 				commandParameter.getCollection());
 		int index = commandParameter.getIndex();
@@ -1353,7 +1354,7 @@ public class ItemProviderAdapter extends
 	 */
 	protected ICommand factorMoveCommand(IEditingDomain domain,
 			CommandParameter commandParameter) {
-		final IObject object = commandParameter.getOwnerObject();
+		final IResource object = commandParameter.getOwnerResource();
 		final Object value = commandParameter.getValue();
 		int index = commandParameter.getIndex();
 
@@ -1396,7 +1397,7 @@ public class ItemProviderAdapter extends
 			return UnexecutableCommand.INSTANCE;
 		}
 
-		final IObject object = commandParameter.getOwnerObject();
+		final IResource object = commandParameter.getOwnerResource();
 
 		final List<Object> list = new ArrayList<Object>(
 				commandParameter.getCollection());
@@ -1416,8 +1417,8 @@ public class ItemProviderAdapter extends
 		// Iterator over all the child references to factor each child to the
 		// right reference.
 		for (IReference property : getChildrenProperties(object)) {
-			IProperty resolvedProperty = (IProperty) object.getModel().resolve(
-					property);
+			IProperty resolvedProperty = (IProperty) object.getEntityManager()
+					.find(property);
 
 			// If it is a list type value...
 			if (resolvedProperty.isMany(object)) {
@@ -1582,8 +1583,8 @@ public class ItemProviderAdapter extends
 	 */
 	protected IProperty getChildProperty(Object object, Object child) {
 		for (IProperty property : getChildrenProperties(object)) {
-			int maxCard = ((IObject) object).getApplicableCardinality(property)
-					.getSecond();
+			int maxCard = ((IResource) object).getApplicableCardinality(
+					property).getSecond();
 			if (maxCard > 0) {
 				if (isValidValue(object, child, property)) {
 					return property;
@@ -1615,20 +1616,18 @@ public class ItemProviderAdapter extends
 		store = createChildrenStore(object);
 		Collection<Object> result = store != null ? null
 				: new LinkedHashSet<Object>();
-		IObject iObject = (IObject) object;
+		IResource resource = (IResource) object;
 
 		for (IProperty property : getChildrenProperties(object)) {
-			IProperty resolvedProperty = (IProperty) iObject.getModel()
-					.resolve(property);
-			Object oneOrMultipleChildren = iObject.get(property);
+			Object oneOrMultipleChildren = resource.get(property);
 			if (oneOrMultipleChildren instanceof Collection<?>) {
 				Collection<?> children = (Collection<?>) oneOrMultipleChildren;
 				int index = 0;
 				for (Object unwrappedChild : children) {
-					Object child = wrap(iObject, property, unwrappedChild,
+					Object child = wrap(resource, property, unwrappedChild,
 							index);
 					if (store != null) {
-						store.getList(resolvedProperty).add(child);
+						store.getList(property).add(child);
 					} else {
 						result.add(child);
 					}
@@ -1637,7 +1636,7 @@ public class ItemProviderAdapter extends
 			} else {
 				Object child = oneOrMultipleChildren;
 				if (child != null) {
-					child = wrap(iObject, property, child,
+					child = wrap(resource, property, child,
 							CommandParameter.NO_INDEX);
 					if (store != null) {
 						store.setValue(property, child);
@@ -1702,8 +1701,8 @@ public class ItemProviderAdapter extends
 			child = ((ChildDescriptor) child).getValue();
 		}
 
-		IProperty resolvedProperty = (IProperty) ((IObject) owner).getModel()
-				.resolve((IReference) property);
+		IProperty resolvedProperty = (IProperty) ((IResource) owner)
+				.getEntityManager().find((IReference) property);
 
 		String childType = resolvedProperty instanceof DatatypeProperty ? getTypeText((IProperty) resolvedProperty)
 				: getTypeText(child);
@@ -1754,8 +1753,8 @@ public class ItemProviderAdapter extends
 			childDescription = ((ChildDescriptor) childDescription).getValue();
 		}
 
-		IProperty resolvedProperty = (IProperty) ((IObject) owner).getModel()
-				.resolve((IReference) property);
+		IProperty resolvedProperty = (IProperty) ((IResource) owner)
+				.getEntityManager().find((IReference) property);
 
 		String childType = resolvedProperty instanceof DatatypeProperty ? getTypeText((IProperty) resolvedProperty)
 				: getTypeText(childDescription);
@@ -1776,8 +1775,8 @@ public class ItemProviderAdapter extends
 			childDescription = ((ChildDescriptor) childDescription).getValue();
 		}
 
-		IProperty resolvedProperty = (IProperty) ((IObject) owner).getModel()
-				.resolve((IReference) feature);
+		IProperty resolvedProperty = (IProperty) ((IResource) owner)
+				.getEntityManager().find((IReference) feature);
 
 		String childType = resolvedProperty instanceof DatatypeProperty ? getTypeText((IProperty) feature)
 				: getTypeText(childDescription);
@@ -1882,8 +1881,8 @@ public class ItemProviderAdapter extends
 	public void getNewChildDescriptors(Object object,
 			IEditingDomain editingDomain, Object sibling,
 			final ICollector<Object> descriptors) {
-		if (object instanceof IObject) {
-			IObject iObject = (IObject) object;
+		if (object instanceof IResource) {
+			IResource resource = (IResource) object;
 
 			// Build the collection of new child descriptors.
 			final Collection<Object> newChildDescriptors = new ArrayList<Object>();
@@ -1931,8 +1930,8 @@ public class ItemProviderAdapter extends
 				int i = 0;
 
 				PROPERTIES_LOOP: for (IProperty property : childrenProperties) {
-					Object propertyValue = iObject.get(property);
-					if (property.isMany(iObject)) {
+					Object propertyValue = resource.get(property);
+					if (property.isMany(resource)) {
 						for (Object value : (Collection<?>) propertyValue) {
 							if (isEquivalentValue(sibling, value)) {
 								siblingPropertyIndex = i;
@@ -1954,7 +1953,7 @@ public class ItemProviderAdapter extends
 						IProperty childProperty = (IProperty) parameter
 								.getObjectProperty();
 						if (childProperty == null
-								|| !childProperty.isMany(iObject)) {
+								|| !childProperty.isMany(resource)) {
 							continue DESCRIPTORS_LOOP;
 						}
 
@@ -1964,7 +1963,7 @@ public class ItemProviderAdapter extends
 						// immediately follow it.
 
 						i = 0;
-						for (Object v : (Collection<?>) iObject
+						for (Object v : (Collection<?>) resource
 								.get(childProperty)) {
 							if (isEquivalentValue(sibling, v)) {
 								parameter.index = i + 1;
@@ -2070,7 +2069,7 @@ public class ItemProviderAdapter extends
 	 * to retrieve the children objects of the features returned from
 	 * {@link #getChildrenFeatures getChildrenFeatures}.
 	 */
-	protected Object getPropertyValue(IObject object, IReference feature) {
+	protected Object getPropertyValue(IResource object, IReference feature) {
 		return object.get(feature);
 	}
 
@@ -2781,7 +2780,7 @@ public class ItemProviderAdapter extends
 	 * {@link #createWrapper createWrapper} to specify when and with what to
 	 * wrap values.
 	 */
-	protected Object wrap(IObject object, IProperty property, Object value,
+	protected Object wrap(IResource object, IProperty property, Object value,
 			int index) {
 		if (!property.isMany(object) && index != CommandParameter.NO_INDEX) {
 			System.out.println("Bad wrap index.");

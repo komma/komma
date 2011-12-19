@@ -20,7 +20,7 @@ import java.util.Collection;
 
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.model.IObject;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.URI;
 
 /**
@@ -40,6 +40,6 @@ public class ReflectiveItemProviderAdapterFactory extends
 	}
 
 	protected Collection<IClass> getTypes(Object object) {
-		return ((IObject) object).getDirectNamedClasses().toSet();
+		return ((IResource) object).getDirectNamedClasses().toSet();
 	}
 }

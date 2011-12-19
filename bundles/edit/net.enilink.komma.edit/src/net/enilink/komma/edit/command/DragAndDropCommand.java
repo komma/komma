@@ -38,6 +38,7 @@ import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.common.util.Log;
 import net.enilink.komma.concepts.IProperty;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -346,11 +347,8 @@ public class DragAndDropCommand extends AbstractCommand implements
 	}
 
 	protected boolean isNonContainment(IReference property) {
-		if (owner instanceof IObject) {
-			property = ((IObject) owner).getModel().resolve(property);
-			return !((IProperty) property).isContainment();
-		}
-		return true;
+		property = ((IResource) owner).getEntityManager().find(property);
+		return !((IProperty) property).isContainment();
 	}
 
 	/**
@@ -467,8 +465,8 @@ public class DragAndDropCommand extends AbstractCommand implements
 					IStatus status = addAndExecute(AddCommand.create(domain,
 							owner, null, copyCommand.getCommandResult()
 									.getReturnValues()), progressMonitor, info);
-					return CommandResult.newCommandResult(status, result
-							.getReturnValue());
+					return CommandResult.newCommandResult(status,
+							result.getReturnValue());
 				}
 			};
 
@@ -519,8 +517,8 @@ public class DragAndDropCommand extends AbstractCommand implements
 						AddCommand.create(domain, owner, null, copyCommand
 								.getCommandResult().getReturnValues()),
 						progressMonitor, info);
-				return CommandResult.newCommandResult(status, result
-						.getReturnValue());
+				return CommandResult.newCommandResult(status,
+						result.getReturnValue());
 			}
 		};
 

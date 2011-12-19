@@ -53,6 +53,8 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelAware;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.util.ISparqlConstants;
 
@@ -212,18 +214,22 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 	public Collection<?> getChildren(Object object) {
 		List<Object> children = new ArrayList<Object>();
 
-		List<IObject> classes = Arrays.asList((IObject) ((IModel) object)
-				.getManager().find(RDFS.TYPE_RESOURCE));
+		if (object instanceof IModel) {
+			List<IObject> classes = Arrays.asList((IObject) ((IModel) object)
+					.getManager().find(RDFS.TYPE_RESOURCE));
 
-		children.add(new ItemProvider(getRootAdapterFactory(), "Classes",
-				URIImpl.createURI(getResourceLocator().getImage(
-						"full/obj16/Classes.png").toString()), classes));
+			children.add(new ItemProvider(getRootAdapterFactory(), "Classes",
+					URIImpl.createURI(getResourceLocator().getImage(
+							"full/obj16/Classes.png").toString()), classes));
 
-		List<IObject> properties = (List<IObject>) ((IModel) object)
-				.getManager().createQuery(QUERY_PROPERTIES).evaluate().toList();
-		children.add(new ItemProvider(getRootAdapterFactory(), "Properties",
-				URIImpl.createURI(getResourceLocator().getImage(
-						"full/obj16/Properties.png").toString()), properties));
+			List<IObject> properties = (List<IObject>) ((IModel) object)
+					.getManager().createQuery(QUERY_PROPERTIES).evaluate()
+					.toList();
+			children.add(new ItemProvider(getRootAdapterFactory(),
+					"Properties", URIImpl.createURI(getResourceLocator()
+							.getImage("full/obj16/Properties.png").toString()),
+					properties));
+		}
 
 		// List<IObject> instances = (List<IObject>) ((IModel) object)
 		// .getManager().createQuery(QUERY_INSTANCES)
@@ -251,7 +257,10 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 	 */
 	@Override
 	public Object getParent(Object object) {
-		return ((IModel) object).getModelSet();
+		if (object instanceof IModel) {
+			return ((IModel) object).getModelSet();
+		}
+		return null;
 	}
 
 	/**
@@ -259,22 +268,12 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 	 */
 	@Override
 	public Object getImage(Object object) {
-		IModel model = (IModel) object;
+		URI uri = (object instanceof IModel) ? ((IModel) object).getURI()
+				: ((IEntity) object).getURI();
+
 		Object image = URIImpl.createURI(getResourceLocator().getImage(
 				"full/obj16/Model").toString()
-				+ "#" + model.getURI().fileExtension());
-
-		// Overlay if the resource is the target for any controlled objects.
-		//
-		// for (Object o : resource.getContents()) {
-		// if (AdapterFactoryEditingDomain.isControlled(o)) {
-		// List<Object> images = new ArrayList<Object>(2);
-		// images.add(image);
-		// images.add(getImage("full/ovr16/ControlledObjectTarget"));
-		// image = new ComposedImage(images);
-		// break;
-		// }
-		// }
+				+ "#" + uri.fileExtension());
 		return image;
 	}
 
@@ -303,7 +302,7 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 			ICollector<Object> newChildDescriptors, Object object) {
 		if (object instanceof Instances) {
 			newChildDescriptors.add(createChildParameter(
-					(IProperty) ((IObject) object).getModel().resolve(
+					(IProperty) ((IEntity) object).getEntityManager().find(
 							RDFS.PROPERTY_SUBCLASSOF),
 					new ChildDescriptor(Arrays
 							.asList((IClass) ((IObject) object).getModel()

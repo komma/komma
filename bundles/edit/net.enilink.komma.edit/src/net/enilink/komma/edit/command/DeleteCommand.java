@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -114,12 +115,12 @@ public class DeleteCommand extends AbstractOverrideableCommand {
 
 				// walks object contents transitively by using a queue
 				// does not need any inferencer
-				Queue<IObject> queue = new LinkedList<IObject>(
-						((IObject) object).getContents());
+				Queue<IResource> queue = new LinkedList<IResource>(
+						((IResource) object).getContents());
 				while (!queue.isEmpty()) {
-					IObject contentObject = queue.remove();
+					IResource contentObject = queue.remove();
 
-					objects.add(contentObject);
+					objects.add((IObject) contentObject);
 					queue.addAll(contentObject.getContents());
 				}
 
@@ -133,25 +134,6 @@ public class DeleteCommand extends AbstractOverrideableCommand {
 		}
 
 		for (IModelSet modelSet : modelSets) {
-			// try {
-			// CloseableIteration<Statement, RepositoryException> it =
-			// ((IModelSet.Internal) modelSet)
-			// .getSharedRepositoyConnection().getStatements(
-			// (Resource) null,
-			// new URIImpl(KOMA.NAMESPACE
-			// + "containsTransitive"), null, true,
-			// (Resource)null);
-			//				
-			// System.out.println("<<<<<<<<");
-			// while (it.hasNext()) {
-			// System.out.println(it.next());
-			// }
-			// System.out.println(">>>>>>>>");
-			// } catch (RepositoryException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// }
-
 			for (IModel model : modelSet.getModels()) {
 				if (getDomain().isReadOnly(model)) {
 					continue;
@@ -168,8 +150,8 @@ public class DeleteCommand extends AbstractOverrideableCommand {
 	@Override
 	public Collection<?> doGetAffectedResources(Object type) {
 		if (IModel.class.equals(type) && collection != null) {
-			Collection<Object> affected = new HashSet<Object>(super
-					.doGetAffectedResources(type));
+			Collection<Object> affected = new HashSet<Object>(
+					super.doGetAffectedResources(type));
 			for (Object element : collection) {
 				Object object = AdapterFactoryEditingDomain.unwrap(element);
 				if (object instanceof IObject) {
