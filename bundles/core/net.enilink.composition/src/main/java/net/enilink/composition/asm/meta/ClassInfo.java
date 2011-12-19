@@ -16,13 +16,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MemberNode;
 import org.objectweb.asm.tree.MethodNode;
 
 /**
@@ -30,7 +31,7 @@ import org.objectweb.asm.tree.MethodNode;
  * annotations of their methods.
  * 
  */
-public class ClassInfo extends MemberNode implements ClassVisitor {
+public class ClassInfo extends ClassVisitor {
 
 	/**
 	 * The class version.
@@ -75,9 +76,29 @@ public class ClassInfo extends MemberNode implements ClassVisitor {
 	public Map<Method, MethodNode> methods;
 
 	/**
+	 * The runtime visible annotations of this class. This list is a list of
+	 * {@link AnnotationNode} objects. May be <tt>null</tt>.
+	 * 
+	 * @associates org.objectweb.asm.tree.AnnotationNode
+	 * @label visible
+	 */
+	public List<AnnotationNode> visibleAnnotations;
+
+	/**
+	 * The runtime invisible annotations of this class. This list is a list of
+	 * {@link AnnotationNode} objects. May be <tt>null</tt>.
+	 * 
+	 * @associates org.objectweb.asm.tree.AnnotationNode
+	 * @label invisible
+	 */
+	public List<AnnotationNode> invisibleAnnotations;
+
+	/**
 	 * Constructs a new {@link ClassNode}.
 	 */
 	public ClassInfo() {
+		super(Opcodes.ASM4);
+
 		this.interfaces = new ArrayList<String>();
 		this.methods = new HashMap<Method, MethodNode>();
 	}
@@ -97,6 +118,24 @@ public class ClassInfo extends MemberNode implements ClassVisitor {
 		if (interfaces != null) {
 			this.interfaces.addAll(Arrays.asList(interfaces));
 		}
+	}
+
+	@Override
+	public AnnotationVisitor visitAnnotation(final String desc,
+			final boolean visible) {
+		AnnotationNode an = new AnnotationNode(desc);
+		if (visible) {
+			if (visibleAnnotations == null) {
+				visibleAnnotations = new ArrayList<AnnotationNode>(1);
+			}
+			visibleAnnotations.add(an);
+		} else {
+			if (invisibleAnnotations == null) {
+				invisibleAnnotations = new ArrayList<AnnotationNode>(1);
+			}
+			invisibleAnnotations.add(an);
+		}
+		return an;
 	}
 
 	public MethodVisitor visitMethod(final int access, final String name,
