@@ -417,7 +417,18 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			}
 			throw new KommaException(e);
 		}
-		return createBean(resource, null, null, false, null);
+		// include at least the given concepts as rdf:types of the resulting
+		// bean
+		List<URI> types = null;
+		if (concepts.length > 0) {
+			types = new ArrayList<URI>();
+			for (IReference concept : concepts) {
+				if (concept.getURI() != null) {
+					types.add(concept.getURI());
+				}
+			}
+		}
+		return createBean(resource, types, null, false, null);
 	}
 
 	public IQuery<?> createQuery(String query) {

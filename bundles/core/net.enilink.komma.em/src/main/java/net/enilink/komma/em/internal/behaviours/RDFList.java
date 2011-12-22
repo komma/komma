@@ -30,6 +30,7 @@ package net.enilink.komma.em.internal.behaviours;
 
 import java.util.AbstractSequentialList;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
@@ -309,7 +310,20 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 	public void merge(Object source) {
 		if (source instanceof java.util.List<?>) {
 			clear();
-			addAll((java.util.List<?>) source);
+
+			// works also for the read uncommitted isolation level
+			Iterator<?> it = ((java.util.List<?>) source).iterator();
+			if (it.hasNext()) {
+				IReference current = getBehaviourDelegate();
+				addStatement(current, RDF.PROPERTY_FIRST, it.next());
+				while (it.hasNext()) {
+					IReference last = current;
+					current = getEntityManager().create();
+					addStatement(current, RDF.PROPERTY_FIRST, it.next());
+					addStatement(last, RDF.PROPERTY_REST, current);
+				}
+				addStatement(current, RDF.PROPERTY_REST, RDF.NIL);
+			}
 		}
 	}
 
