@@ -30,7 +30,6 @@ package net.enilink.composition.mappers;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -409,11 +408,6 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 				return false;
 		}
 		return true;
-	}
-
-	private boolean isAnnotationPresent(AnnotatedElement role)
-			throws ConfigException {
-		return role.isAnnotationPresent(Iri.class);
 	}
 
 	/*
