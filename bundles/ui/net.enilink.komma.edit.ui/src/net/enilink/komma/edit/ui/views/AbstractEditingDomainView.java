@@ -282,10 +282,9 @@ public class AbstractEditingDomainView extends ViewPart implements
 			}
 		}
 
-		if (part == null) {
-			this.model = null;
-		} else {
-			IModel model = (IModel) part.getAdapter(IModel.class);
+		IModel model = null;
+		if (part != null) {
+			model = (IModel) part.getAdapter(IModel.class);
 			if (domainChanged && model == null && editingDomainProvider != null) {
 				Set<IModel> models = editingDomainProvider.getEditingDomain()
 						.getModelSet().getModels();
@@ -293,26 +292,25 @@ public class AbstractEditingDomainView extends ViewPart implements
 					model = models.iterator().next();
 				}
 			}
-			boolean changed = domainChanged;
-			if (domainChanged || model != null) {
-				changed |= this.model != model || this.model != null
-						&& !this.model.equals(model);
-				this.model = model;
-			}
+		}
 
-			if (changed && editPart != null) {
-				selectionProvider
-						.setInternalSelection(StructuredSelection.EMPTY);
+		boolean changed = domainChanged;
+		if (domainChanged || model != null) {
+			changed |= this.model != model || this.model != null
+					&& !this.model.equals(model);
+			this.model = model;
+		}
 
-				if (active) {
-					editorForm.setInput(null);
-					editPart.setInput(this.model);
-					editorForm.refreshStale();
-				} else {
-					setInputOnActivate = true;
-				}
+		if (changed && editPart != null) {
+			selectionProvider.setInternalSelection(StructuredSelection.EMPTY);
+
+			if (active) {
+				editorForm.setInput(null);
+				editPart.setInput(this.model);
+				editorForm.refreshStale();
+			} else {
+				setInputOnActivate = true;
 			}
 		}
 	}
-
 }
