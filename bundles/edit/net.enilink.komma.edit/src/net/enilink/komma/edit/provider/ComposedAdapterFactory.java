@@ -17,6 +17,7 @@
 package net.enilink.komma.edit.provider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,7 +33,9 @@ import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.NotificationSupport;
 import net.enilink.komma.concepts.IClass;
+import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
 
 /**
@@ -104,7 +107,8 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 			 * 
 			 * @param types
 			 *            collections of keys, typically a pair consisting of an
-			 *            EPackage or java.lang.Package, and a java.lang.Class.
+			 *            namespace URI or java.lang.Package, and a
+			 *            {@link IClass} or java.lang.Class.
 			 * @return a descriptor that can create a factory for the types.
 			 */
 			IDescriptor getDescriptor(Collection<?> types);
@@ -176,7 +180,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 		return null;
 	}
 
-	protected Object adaptEntityClass(IResource target, Object type,
+	protected Object adaptEntity(IResource target, Object type,
 			Set<URI> seenNamespaces, final Collection<IClass> seenClasses,
 			List<IClass> classes) {
 		Collection<Object> typesCache = new ArrayList<Object>();
@@ -204,7 +208,6 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 					typesCache.add(type);
 				}
 				IAdapterFactory delegateAdapterFactory = getFactoryForTypes(typesCache);
-
 				if (delegateAdapterFactory != null) {
 					Object result = delegateAdapterFactory.adapt(target, type);
 					if (result != null) {
@@ -240,7 +243,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 		return null;
 	}
 
-	protected Object adaptJavaClass(Object target, Object type,
+	protected Object adaptJavaObject(Object target, Object type,
 			Collection<Object> failedPackages, Class<?> javaClass) {
 		Object result = null;
 
@@ -260,13 +263,13 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 		if (result == null) {
 			Class<?> superclass = javaClass.getSuperclass();
 			if (superclass != null) {
-				result = adaptJavaClass(target, type, failedPackages,
+				result = adaptJavaObject(target, type, failedPackages,
 						javaClass.getSuperclass());
 			}
 			if (result == null) {
 				Class<?>[] interfaces = javaClass.getInterfaces();
 				for (int i = 0; i < interfaces.length; ++i) {
-					result = adaptJavaClass(target, type, failedPackages,
+					result = adaptJavaObject(target, type, failedPackages,
 							interfaces[i]);
 					if (result != null) {
 						break;
@@ -373,11 +376,15 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 	protected Object internalAdapt(Object target, Object type) {
 		Object result = null;
 
-		if (target instanceof IClass) {
-			List<IClass> classes = new ArrayList<IClass>(1);
-			classes.add((IClass) target);
-			result = adaptEntityClass((IResource) target, type,
-					new HashSet<URI>(), null, classes);
+		if (target instanceof IClass || target instanceof IProperty) {
+			URI uri = ((IReference) target).getURI();
+			if (uri != null) {
+				IAdapterFactory factory = getFactoryForTypes(Arrays.asList(
+						uri.namespace(), type));
+				if (factory != null) {
+					result = factory.adapt(target, type);
+				}
+			}
 		}
 
 		if (result != null) {
@@ -386,7 +393,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 
 		if (target instanceof IResource) {
 			IResource resource = (IResource) target;
-			result = adaptEntityClass(resource, type, new HashSet<URI>(),
+			result = adaptEntity(resource, type, new HashSet<URI>(),
 					new HashSet<IClass>(), sort(resource
 							.getDirectNamedClasses().toList()));
 		}
@@ -396,7 +403,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 		}
 
 		if (target != null) {
-			result = adaptJavaClass(target, type, new HashSet<Object>(),
+			result = adaptJavaObject(target, type, new HashSet<Object>(),
 					target.getClass());
 		}
 		return result == null ? target : result;
