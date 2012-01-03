@@ -3,24 +3,50 @@ package net.enilink.komma.edit.ui.properties.support;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.parboiled.Parboiled;
+import org.parboiled.Rule;
+import org.parboiled.parserunners.BasicParseRunner;
+import org.parboiled.support.IndexRange;
+import org.parboiled.support.ParsingResult;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.IdentityCommand;
+import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.common.ui.assist.ContentProposalExt;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.provider.IItemLabelProvider;
+import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
+import net.enilink.komma.parser.BaseRdfParser;
+import net.enilink.komma.parser.sparql.tree.IriRef;
+import net.enilink.komma.parser.sparql.tree.QName;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.util.ISparqlConstants;
 
 public class ResourceEditingSupport implements IPropertyEditingSupport {
+	static class ConstructorParser extends BaseRdfParser {
+		public Rule Constructor() {
+			return Sequence(
+					FirstOf(Sequence(FirstOf(IriRef(), PN_LOCAL()), Ch('a')),
+							Ch('a')), WS_NO_COMMENT(),
+					FirstOf(IriRef(), PN_LOCAL(), Sequence(EMPTY, push(""))),
+					drop(), push(matchRange()));
+		}
+	}
+
 	class ResourceProposal extends ContentProposalExt {
 		IEntity resource;
 
@@ -47,11 +73,23 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 
 		@Override
 		public IContentProposal[] getProposals(String contents, int position) {
+			ParsingResult<Object> ctor = new BasicParseRunner<Object>(
+					createConstructorParser().Constructor()).run(contents);
+			String prefix = "";
+			if (ctor.matched) {
+				IndexRange range = (IndexRange) ctor.resultValue;
+				prefix = contents.substring(0, range.start);
+				contents = contents.substring(range.start, range.end);
+				position = contents.length();
+			}
+
 			List<IContentProposal> proposals = new ArrayList<IContentProposal>();
-			for (IEntity resource : getResourceProposals(subject, predicate,
+			for (IEntity resource : getResourceProposals(subject,
+					ctor.matched ? null : predicate,
 					contents.substring(0, position), 20)) {
 				String content = getText(resource);
 				if (content.length() > 0) {
+					content = prefix + content;
 					proposals.add(new ResourceProposal(content, content
 							.length(), resource));
 				}
@@ -139,6 +177,10 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		return query.evaluate(IResource.class);
 	}
 
+	protected ConstructorParser createConstructorParser() {
+		return Parboiled.createParser(ConstructorParser.class);
+	}
+
 	@Override
 	public ProposalSupport getProposalSupport(final IEntity subject,
 			final IReference property, Object value) {
@@ -200,15 +242,69 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		return text != null ? text : "";
 	}
 
+	protected URI toURI(IModel model, Object value) {
+		if (value instanceof IriRef) {
+			return URIImpl.createURI(((IriRef) value).getIri());
+		} else if (value instanceof QName) {
+			String prefix = ((QName) value).getPrefix();
+			String localPart = ((QName) value).getLocalPart();
+			URI ns;
+			if (prefix == null || prefix.trim().length() == 0) {
+				ns = model.getURI();
+			} else {
+				ns = model.getManager().getNamespace(prefix);
+			}
+			if (ns != null) {
+				return ns.appendLocalPart(localPart);
+			}
+			throw new IllegalArgumentException("Unknown prefix");
+		} else if (value != null) {
+			return model.getURI().appendLocalPart(value.toString());
+		}
+		return null;
+	}
+
 	@Override
-	public ICommand convertValueFromEditor(Object editorValue, IEntity subject,
-			IReference property, Object oldValue) {
+	public ICommand convertValueFromEditor(Object editorValue,
+			final IEntity subject, IReference property, Object oldValue) {
+		final URI[] newName = { null };
+		boolean createNew = false;
+		ParsingResult<Object> ctor = new BasicParseRunner<Object>(
+				createConstructorParser().Constructor())
+				.run((String) editorValue);
+		if (ctor.matched) {
+			createNew = true;
+			IndexRange range = (IndexRange) ctor.resultValue;
+			editorValue = ((String) editorValue).substring(range.start,
+					range.end);
+			// check if a name for the new resource is given
+			if (ctor.valueStack.size() > 1) {
+				if (subject instanceof IObject) {
+					newName[0] = toURI(((IObject) subject).getModel(),
+							ctor.valueStack.peek(1));
+				}
+			}
+		}
 		IExtendedIterator<IResource> resources = getResourceProposals(subject,
-				property, (String) editorValue, 1);
+				createNew ? null : property, (String) editorValue, 1);
 		if (resources.hasNext()) {
-			IEntity resource = resources.next();
-			if (!resource.equals(oldValue)
+			final IEntity resource = resources.next();
+			if (createNew
 					&& getText(resource).equals(((String) editorValue).trim())) {
+				// create a new object
+				return new SimpleCommand() {
+					@Override
+					protected CommandResult doExecuteWithResult(
+							IProgressMonitor progressMonitor, IAdaptable info)
+							throws ExecutionException {
+						return CommandResult.newOKCommandResult(subject
+								.getEntityManager().createNamed(newName[0],
+										resource));
+					}
+				};
+			} else if (!resource.equals(oldValue)
+					&& getText(resource).equals(((String) editorValue).trim())) {
+				// replace value with existing object
 				return new IdentityCommand(resource);
 			}
 		}

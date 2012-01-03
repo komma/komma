@@ -44,7 +44,6 @@ import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
 
 public class ManchesterEditingSupport extends ResourceEditingSupport {
 	class ManchesterActions implements IManchesterActions {
@@ -146,21 +145,8 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 				bNodes.put((BNode) value, reference = em.create());
 			}
 			return reference;
-		} else if (value instanceof IriRef) {
-			return URIImpl.createURI(((IriRef) value).getIri());
-		} else if (value instanceof QName) {
-			String prefix = ((QName) value).getPrefix();
-			String localPart = ((QName) value).getLocalPart();
-			URI ns;
-			if (prefix == null || prefix.trim().length() == 0) {
-				ns = model.getURI();
-			} else {
-				ns = model.getManager().getNamespace(prefix);
-			}
-			if (ns != null) {
-				return ns.appendFragment(localPart);
-			}
-			throw new IllegalArgumentException("Unknown prefix");
+		} else if (value instanceof IriRef || value instanceof QName) {
+			return toURI(model, value);
 		} else if (value instanceof Literal) {
 			final IValue[] result = new IValue[1];
 			((Literal) value).accept(new TreeWalker<Void>() {
