@@ -766,7 +766,6 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 			labelProvider = new AdapterFactoryLabelProvider(getAdapterFactory());
 			for (ValueEditingSupport editingSupport : editingSupports) {
-				editingSupport.setLabelProvider(labelProvider);
 				editingSupport.setEditingDomain(getEditingDomain());
 			}
 			// createContextMenuFor(treeViewer);
