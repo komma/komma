@@ -13,6 +13,12 @@ import org.eclipse.swt.widgets.Control;
 import net.enilink.commons.ui.CommonsUi;
 
 public class ContentProposals {
+	public static IContentProposalProvider NULL_PROPOSAL_PROVIDER = new IContentProposalProvider() {
+		public IContentProposal[] getProposals(String contents, int position) {
+			return new IContentProposal[0];
+		}
+	};
+
 	public static ContentProposalAdapter enableContentProposal(
 			final Control control,
 			IContentProposalProvider contentProposalProvider,

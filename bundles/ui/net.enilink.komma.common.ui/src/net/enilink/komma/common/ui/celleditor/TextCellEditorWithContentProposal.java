@@ -12,6 +12,10 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 	private ContentProposalAdapter contentProposalAdapter;
 	private boolean popupOpen = false; // true, iff popup is currently open
 
+	public TextCellEditorWithContentProposal(Composite parent) {
+		this(parent, ContentProposals.NULL_PROPOSAL_PROVIDER, null);
+	}
+
 	public TextCellEditorWithContentProposal(Composite parent,
 			IContentProposalProvider contentProposalProvider,
 			char[] autoActivationCharacters) {
