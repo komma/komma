@@ -313,7 +313,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		}
 
 		Class<?>[] allConcepts = combine(concept, concepts);
-		IEntity bean = createBean(resource, types, null, false, null);
+		IEntity bean = createBean(resource, types, Arrays.asList(allConcepts), false, null);
 		assert assertConceptsRecorded(bean, allConcepts);
 		return (T) bean;
 	}

@@ -460,6 +460,11 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		getEntityManager().remove(new Statement(this, property, null));
 	}
 
+	@Override
+	public void removeProperty(IReference property, Object value) {
+		getEntityManager().remove(new Statement(this, property, value));
+	}
+
 	@SuppressWarnings("unchecked")
 	public void set(IReference property, Object value) {
 		PropertyInfo propertyInfo = ensurePropertyInfo(property);
