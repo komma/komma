@@ -17,23 +17,23 @@ import net.enilink.komma.common.util.URIUtil;
 public class ModelDescription {
 	private String namespace;
 	private IConfigurationElement configElement;
-	
+
 	public ModelDescription(IConfigurationElement configElement) {
 		this.configElement = configElement;
 	}
-	
+
 	public String getNamespace() {
 		if (namespace != null) {
 			return namespace;
 		}
 		return configElement.getAttribute("namespace");
 	}
-	
+
 	public String getUri() {
 		String ns = getNamespace();
 		return ns != null ? URIUtil.namespaceToModelUri(ns) : null;
 	}
-	
+
 	public void setNamespace(String uri) {
 		this.namespace = uri;
 	}
@@ -42,10 +42,6 @@ public class ModelDescription {
 		return configElement.getAttribute("prefix");
 	}
 
-	public boolean isRequired() {
-		return "true".equalsIgnoreCase(configElement.getAttribute("required"));
-	}
-	
 	public IConfigurationElement getConfigurationElement() {
 		return configElement;
 	}
