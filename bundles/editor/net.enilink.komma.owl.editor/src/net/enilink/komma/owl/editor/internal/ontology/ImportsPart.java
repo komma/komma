@@ -36,7 +36,6 @@ import org.eclipse.swt.widgets.Tree;
 
 import net.enilink.commons.ui.dialogs.ListDialog;
 import net.enilink.vocab.owl.Ontology;
-import net.enilink.vocab.rdfs.Resource;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.SimpleCommand;
@@ -65,7 +64,6 @@ public class ImportsPart extends AbstractEditingDomainPart {
 	Action deleteItemAction, addItemAction;
 
 	private Collection<ModelDescription> modelDescriptions;
-	private Set<String> requiredOntologyUris = new HashSet<String>();
 
 	private IAdapterFactory adapterFactory;
 
@@ -86,10 +84,7 @@ public class ImportsPart extends AbstractEditingDomainPart {
 						boolean deleteEnabled = false;
 						for (Object element : ((IStructuredSelection) event
 								.getSelection()).toArray()) {
-							if (ontology.getOwlImports().contains(element)
-									&& !requiredOntologyUris
-											.contains(((Resource) element)
-													.getURI().toString())) {
+							if (ontology.getOwlImports().contains(element)) {
 								deleteEnabled = true;
 								break;
 							}
@@ -250,9 +245,7 @@ public class ImportsPart extends AbstractEditingDomainPart {
 					for (Object element : selectedElements) {
 						IResource importedOntology = (IResource) element;
 						URI importedOntUri = importedOntology.getURI();
-						if (!ontology.getOwlImports().contains(element)
-								|| requiredOntologyUris.contains(importedOntUri
-										.toString())) {
+						if (!ontology.getOwlImports().contains(element)) {
 							continue;
 						}
 						try {
