@@ -35,7 +35,6 @@ import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.IModelAware;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.IReference;
 
@@ -269,8 +268,11 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 		// This can execute if there is an owner list and a collection and the
 		// owner list contains all the objects of the collection.
 		//
-		boolean result = ownerList != null && collection != null
-				&& ownerList.containsAll(collection)
+		boolean result = ((ownerList != null && collection != null && ownerList
+				.containsAll(collection)) ||
+		// allow removal of properties with cardinality 1
+				(ownerList == null && owner != null && collection.size() == 1 && collection
+						.iterator().next().equals(owner.get(property))))
 				&& (owner == null || !getDomain().isReadOnly(owner));
 
 		return result;
@@ -289,7 +291,11 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 			}
 		}
 		try {
-			ownerList.removeAll(collection);
+			if (ownerList != null) {
+				ownerList.removeAll(collection);
+			} else {
+				owner.removeProperty(property, collection.iterator().next());
+			}
 
 			// We'd like the owner selected after this remove completes.
 			//
