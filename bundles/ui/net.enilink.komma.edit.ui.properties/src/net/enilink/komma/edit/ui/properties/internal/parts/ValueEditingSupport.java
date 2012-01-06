@@ -43,6 +43,7 @@ import net.enilink.komma.edit.ui.util.EditUIUtil;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.Statement;
 
 class ValueEditingSupport extends EditingSupport {
@@ -155,6 +156,14 @@ class ValueEditingSupport extends EditingSupport {
 			return new ResourceEditingSupport(delegatingAdapterFactory, true);
 		}
 
+		IAdapterFactory adapterFactory = getAdapterFactory();
+		IPropertyEditingSupport support = adapterFactory == null ? null
+				: (IPropertyEditingSupport) adapterFactory.adapt(
+						stmt.getPredicate(), IPropertyEditingSupport.class);
+		if (support != null) {
+			return support;
+		}
+
 		IProperty property = ((IEntity) stmt.getSubject()).getEntityManager()
 				.find(stmt.getPredicate(), IProperty.class);
 		if (property.getRdfsRanges().contains(RDFS.TYPE_CLASS)
@@ -172,14 +181,7 @@ class ValueEditingSupport extends EditingSupport {
 			return new ResourceEditingSupport(delegatingAdapterFactory);
 		}
 
-		IAdapterFactory adapterFactory = getAdapterFactory();
-		IPropertyEditingSupport support = adapterFactory == null ? null
-				: (IPropertyEditingSupport) adapterFactory.adapt(
-						stmt.getPredicate(), IPropertyEditingSupport.class);
-		if (support == null) {
-			support = new LiteralEditingSupport();
-		}
-		return support;
+		return new LiteralEditingSupport();
 	}
 
 	@Override
@@ -322,13 +324,20 @@ class ValueEditingSupport extends EditingSupport {
 				protected CommandResult doExecuteWithResult(
 						IProgressMonitor progressMonitor, IAdaptable info)
 						throws ExecutionException {
-					subject.getEntityManager().getTransaction().begin();
+					ITransaction transaction = subject.getEntityManager()
+							.getTransaction();
+					transaction.begin();
 					try {
 						CommandResult result = super.doExecuteWithResult(
 								progressMonitor, info);
 						if (!result.getStatus().isOK()) {
 							return result;
 						}
+						// ensure that previously created data is readable (if
+						// isolation != READ UNCOMMITTED)
+						transaction.commit();
+						transaction.begin();
+
 						// if stmt.getObject() == null then this is a new
 						// statement
 						// and therefore must not be removed
@@ -347,16 +356,13 @@ class ValueEditingSupport extends EditingSupport {
 											.next()), progressMonitor, info);
 						}
 						if (status.isOK()) {
-							subject.getEntityManager().getTransaction()
-									.commit();
+							transaction.commit();
 						}
 
 						return new CommandResult(status);
 					} finally {
-						if (subject.getEntityManager().getTransaction()
-								.isActive()) {
-							subject.getEntityManager().getTransaction()
-									.rollback();
+						if (transaction.isActive()) {
+							transaction.rollback();
 						}
 					}
 				}

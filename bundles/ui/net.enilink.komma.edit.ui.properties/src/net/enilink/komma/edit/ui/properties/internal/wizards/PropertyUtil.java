@@ -83,8 +83,6 @@ public class PropertyUtil {
 
 					while (!bnodes.isEmpty()) {
 						IReference node = bnodes.remove();
-						em.remove(node);
-
 						for (IStatement stmt : em.matchAsserted(node, null,
 								null)) {
 							Object o = stmt.getObject();
@@ -92,6 +90,7 @@ public class PropertyUtil {
 								bnodes.add((IReference) o);
 							}
 						}
+						em.remove(node);
 					}
 				}
 
