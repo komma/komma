@@ -315,6 +315,7 @@ class ValueEditingSupport extends EditingSupport {
 					((PropertyTreeContentProvider) getViewer()
 							.getContentProvider()).registerPropertyNode(node);
 				}
+				newObjectCommand = null;
 			}
 		}
 

@@ -27,8 +27,6 @@ import net.enilink.komma.core.Statement;
 /**
  * Tree node that represents the values of a given property for a given resource
  * as its children.
- * 
- * @author Ken Wenzel
  */
 public class PropertyNode {
 	private boolean createNewStatementOnEdit;
