@@ -313,7 +313,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		}
 
 		Class<?>[] allConcepts = combine(concept, concepts);
-		IEntity bean = createBean(resource, types, Arrays.asList(allConcepts), false, null);
+		IEntity bean = createBean(resource, types, Arrays.asList(allConcepts),
+				false, null);
 		assert assertConceptsRecorded(bean, allConcepts);
 		return (T) bean;
 	}
@@ -1107,24 +1108,25 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		}
 
 		ILiteral literal = (ILiteral) value;
-		URI datatype = literal.getDatatype() == null ? null : URIImpl
-				.createURI(literal.getDatatype().toString());
-		Object instance = literalConverter.createObject(literal.getLabel(),
-				datatype);
-		if (type != null) {
-			if (IValue.class.isAssignableFrom(type)) {
-				instance = createLiteral(instance, datatype,
-						literal.getLanguage());
-			} else if (instance == null) {
-				if (type.isPrimitive()) {
-					instance = ConversionUtil.convertValue(type, 0, null);
+		Object instance;
+		if (type != null && IValue.class.isAssignableFrom(type)) {
+			instance = createLiteral(literal.getLabel(), literal.getDatatype(),
+					literal.getLanguage());
+		} else {
+			instance = literalConverter.createObject(literal.getLabel(),
+					literal.getDatatype());
+			if (type != null) {
+				if (instance == null) {
+					if (type.isPrimitive()) {
+						instance = ConversionUtil.convertValue(type, 0, null);
+					}
+				} else if (!type.isAssignableFrom(ConversionUtil
+						.wrapperType(instance.getClass()))) {
+					// convert instance if actual type is not compatible
+					// with valueType
+					instance = ConversionUtil.convertValue(type, instance,
+							instance);
 				}
-			} else if (!type.isAssignableFrom(ConversionUtil
-					.wrapperType(instance.getClass()))) {
-				// convert instance if actual type is not compatible
-				// with valueType
-				instance = ConversionUtil
-						.convertValue(type, instance, instance);
 			}
 		}
 		return instance;

@@ -180,9 +180,6 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	private static final String SELECT_CONTAINER = PREFIX //
 			+ "SELECT ?container WHERE { ?container komma:contains ?obj . }";
 
-	private static final String SELECT_PROPERTIES_AND_OBJECTS = PREFIX //
-			+ "SELECT ?pred ?obj WHERE { ?subj ?pred ?obj . }";
-
 	private static final String SELECT_PROPERTY_OBJECTS = PREFIX //
 			+ "SELECT ?obj WHERE { ?subj ?pred ?obj . }";
 
@@ -258,8 +255,9 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 		int min = 0;
 		int max = Integer.MAX_VALUE;
-		for (Iterator<IBindings> it = query.evaluate(IBindings.class); it
-				.hasNext();) {
+		for (//
+		@SuppressWarnings("rawtypes")
+		Iterator<IBindings> it = query.evaluate(IBindings.class); it.hasNext();) {
 			IBindings<?> values = it.next();
 
 			if (values.get("min") instanceof Number) {
@@ -360,17 +358,34 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	@Override
 	public IExtendedIterator<IStatement> getPropertyStatements(
 			final IReference property, boolean includeInferred) {
-		IEntity propertyEntity = (property instanceof IEntity) ? (IEntity) property
-				: getEntityManager().find(property);
-
 		IExtendedIterator<IStatement> stmts = internalGetPropertyStmts(
-				propertyEntity, false);
+				property, false, false, false);
 		if (includeInferred) {
 			stmts = UniqueExtendedIterator.create(stmts
-					.andThen(internalGetPropertyStmts(propertyEntity, true)));
+					.andThen(internalGetPropertyStmts(property, false, false,
+							true)));
 		}
-
 		return stmts;
+	}
+
+	@Override
+	public IExtendedIterator<IStatement> getInversePropertyStatements(
+			final IReference property, boolean filterSymmetric,
+			boolean includeInferred) {
+		IExtendedIterator<IStatement> stmts = internalGetPropertyStmts(
+				property, true, filterSymmetric, false);
+		if (includeInferred) {
+			stmts = UniqueExtendedIterator.create(stmts
+					.andThen(internalGetPropertyStmts(property, true,
+							filterSymmetric, true)));
+		}
+		return stmts;
+	}
+
+	@Override
+	public IExtendedIterator<IStatement> getInversePropertyStatements(
+			final IReference property, boolean includeInferred) {
+		return getInversePropertyStatements(property, false, includeInferred);
 	}
 
 	@Override
@@ -407,33 +422,66 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	public boolean hasProperty(IReference property, Object obj,
 			boolean includeInferred) {
 		return getEntityManager()
-				.createQuery("ASK {?s ?p ?o}", includeInferred)
+				.createQuery("ASK { ?s ?p ?o }", includeInferred)
 				.setParameter("s", this).setParameter("p", property)
 				.setParameter("o", obj).getBooleanResult();
 	}
 
 	protected IExtendedIterator<IStatement> internalGetPropertyStmts(
-			final IEntity property, final boolean includeInferred) {
-		IQuery<?> query = getEntityManager().createQuery(
-				property != null ? SELECT_PROPERTY_OBJECTS
-						: SELECT_PROPERTIES_AND_OBJECTS, includeInferred);
-		query.setParameter("subj", this);
-		query.setParameter("pred", property);
-		query.bindResultType("obj", IValue.class);
+			final IReference propertyRef, final boolean inverse,
+			final boolean filterSymmetric, final boolean includeInferred) {
+		final IEntity property = (propertyRef instanceof IEntity) ? (IEntity) propertyRef
+				: getEntityManager().find(propertyRef);
+		StringBuilder sb = new StringBuilder(PREFIX);
+		sb.append("SELECT ");
+		if (property != null) {
+			sb.append("?pred ");
+		}
+		String resourceVar = inverse ? "?subj" : "?obj";
+		sb.append(resourceVar);
+		sb.append(" WHERE { ?subj ?pred ?obj . ");
+		if (filterSymmetric) {
+			sb.append("MINUS { ").append(resourceVar).append(" ?pred ")
+					.append(resourceVar).append(" }");
+		}
+		sb.append(" }");
 
-		return new ConvertingIterator<Object, IStatement>(query.evaluate()) {
-			@Override
-			protected IStatement convert(Object value) {
-				if (value instanceof IBindings<?>) {
-					IBindings<?> values = (IBindings<?>) value;
-					return new Statement(getBehaviourDelegate(),
-							(IReference) values.get("pred"), values.get("obj"),
-							includeInferred);
+		IQuery<?> query = getEntityManager().createQuery(sb.toString(),
+				includeInferred);
+		query.setParameter("pred", property);
+		if (!inverse) {
+			query.setParameter("subj", this);
+			query.bindResultType("obj", IValue.class);
+			return new ConvertingIterator<Object, IStatement>(query.evaluate()) {
+				@Override
+				protected IStatement convert(Object value) {
+					if (value instanceof IBindings<?>) {
+						IBindings<?> values = (IBindings<?>) value;
+						return new Statement(getBehaviourDelegate(),
+								(IReference) values.get("pred"),
+								values.get("obj"), includeInferred);
+					}
+					return new Statement(getBehaviourDelegate(), property,
+							value, includeInferred);
 				}
-				return new Statement(getBehaviourDelegate(), property, value,
-						includeInferred);
-			}
-		};
+			};
+		} else {
+			query.setParameter("obj", this);
+			query.bindResultType("subj", IValue.class);
+			return new ConvertingIterator<Object, IStatement>(query.evaluate()) {
+				@Override
+				protected IStatement convert(Object value) {
+					if (value instanceof IBindings<?>) {
+						IBindings<?> values = (IBindings<?>) value;
+						return new Statement((IReference) values.get("subj"),
+								(IReference) values.get("pred"),
+								getBehaviourDelegate(), includeInferred);
+					}
+					return new Statement((IReference) value, property,
+							getBehaviourDelegate(), includeInferred);
+				}
+			};
+		}
 	}
 
 	@Override

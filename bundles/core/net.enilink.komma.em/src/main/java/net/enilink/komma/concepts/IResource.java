@@ -94,6 +94,13 @@ public interface IResource extends Resource {
 	IExtendedIterator<IStatement> getPropertyStatements(IReference property,
 			boolean includeInferred);
 
+	IExtendedIterator<IStatement> getInversePropertyStatements(
+			IReference property, boolean includeInferred);
+
+	IExtendedIterator<IStatement> getInversePropertyStatements(
+			IReference property, boolean filterSymmetric,
+			boolean includeInferred);
+
 	boolean hasApplicableProperty(IReference property);
 
 	boolean hasProperty(IReference property, Object obj, boolean includeInferred);
