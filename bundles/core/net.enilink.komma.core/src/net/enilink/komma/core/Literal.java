@@ -145,7 +145,7 @@ public class Literal implements ILiteral {
 		String result = "\"" + getLabel() + "\"";
 		String suffix = "";
 		if (datatype != null) {
-			suffix = "^^" + datatype.toString();
+			suffix = "^^<" + datatype.toString() + ">";
 		} else if (language != null) {
 			suffix = "@" + language;
 		}
