@@ -271,8 +271,9 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 		boolean result = ((ownerList != null && collection != null && ownerList
 				.containsAll(collection)) ||
 		// allow removal of properties with cardinality 1
-				(ownerList == null && owner != null && collection.size() == 1 && collection
-						.iterator().next().equals(owner.get(property))))
+				(ownerList == null && owner != null && collection.size() == 1 && owner
+						.hasProperty(property, collection.iterator().next(),
+								false)))
 				&& (owner == null || !getDomain().isReadOnly(owner));
 
 		return result;
