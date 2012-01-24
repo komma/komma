@@ -10,7 +10,7 @@
  *******************************************************************************/
 package net.enilink.komma.edit.ui.properties.internal.parts;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -28,19 +28,19 @@ import net.enilink.komma.core.Statement;
  * Tree node that represents the values of a given property for a given resource
  * as its children.
  */
-public class PropertyNode {
+public class PropertyNode extends StatementNode {
 	private boolean createNewStatementOnEdit;
-	private IStatement firstStatement;
 	private Boolean hasMultipleStatements;
 
 	private boolean includeInferred;
 
 	private IProperty property;
 	private IResource resource;
-	private List<IStatement> statements;
+	private List<PropertyStatementNode> statements;
 
 	public PropertyNode(IResource resource, IProperty property,
-			boolean includeInferred) {
+			boolean inverse, boolean includeInferred) {
+		super(null, inverse);
 		this.resource = resource;
 		this.property = property;
 		this.includeInferred = includeInferred;
@@ -52,9 +52,9 @@ public class PropertyNode {
 	 * 
 	 * @return The list of all statements
 	 */
-	public Collection<IStatement> getChildren() {
+	public Collection<? extends StatementNode> getChildren() {
 		if (statements == null) {
-			firstStatement = null;
+			statement = null;
 			IStatement[] stmtAry = getStatementIterator().toList().toArray(
 					new IStatement[0]);
 			// reorder first two items in case the first is rdf:type=owl:Thing
@@ -69,11 +69,15 @@ public class PropertyNode {
 				stmtAry[0] = stmtAry[1];
 				stmtAry[1] = typeThingStmt;
 			}
-			statements = Arrays.asList(stmtAry);
+			statements = new ArrayList<PropertyStatementNode>(stmtAry.length);
+			for (int i = 0; i < stmtAry.length; i++) {
+				statements.add(new PropertyStatementNode(this, i, stmtAry[i],
+						inverse));
+			}
 			hasMultipleStatements = statements.size() > 1;
 		}
 		return statements != null ? statements : Collections
-				.<IStatement> emptyList();
+				.<StatementNode> emptyList();
 	}
 
 	/**
@@ -83,7 +87,7 @@ public class PropertyNode {
 	 * 
 	 * @return The first statement
 	 */
-	public IStatement getFirstStatement() {
+	public IStatement getStatement() {
 		if (hasMultipleStatements == null) {
 			if (statements != null) {
 				statements = null;
@@ -91,11 +95,12 @@ public class PropertyNode {
 			} else {
 				IExtendedIterator<IStatement> stmtIt = getStatementIterator();
 				if (!stmtIt.hasNext()) {
-					firstStatement = new Statement(resource, property, null);
+					statement = inverse ? new Statement(null, property,
+							resource) : new Statement(resource, property, null);
 					hasMultipleStatements = false;
-					return firstStatement;
+					return statement;
 				}
-				firstStatement = stmtIt.next();
+				statement = stmtIt.next();
 				hasMultipleStatements = stmtIt.hasNext();
 
 				// skip first statement if it's rdf:type=owl:Thing and if there
@@ -104,22 +109,20 @@ public class PropertyNode {
 				// this way, the collapsed view does not show owl:Thing as the
 				// type
 				if (hasMultipleStatements
-						&& RDF.PROPERTY_TYPE.equals(firstStatement
-								.getPredicate())
+						&& RDF.PROPERTY_TYPE.equals(statement.getPredicate())
 						&& net.enilink.vocab.owl.OWL.TYPE_THING
-								.equals(firstStatement.getObject())) {
+								.equals(statement.getObject())) {
 					IStatement secondStatement = stmtIt.next();
 					if (!secondStatement.isInferred()) {
-						firstStatement = secondStatement;
+						statement = secondStatement;
 					}
 				}
-
 				stmtIt.close();
 			}
 		}
 
 		return statements != null && statements.size() > 0 ? statements.get(0)
-				: firstStatement;
+				.getStatement() : statement;
 	}
 
 	public IProperty getProperty() {
@@ -135,8 +138,9 @@ public class PropertyNode {
 			return WrappedIterator.<IStatement> create(Collections
 					.<IStatement> emptyList().iterator());
 		}
-		return UniqueExtendedIterator.create(resource.getPropertyStatements(
-				property, includeInferred));
+		return UniqueExtendedIterator.create(inverse ? resource
+				.getInversePropertyStatements(property, true, includeInferred)
+				: resource.getPropertyStatements(property, includeInferred));
 	}
 
 	/**
@@ -149,7 +153,7 @@ public class PropertyNode {
 	 */
 	public boolean hasMultipleStatements() {
 		if (hasMultipleStatements == null) {
-			getFirstStatement();
+			getStatement();
 		}
 		return hasMultipleStatements;
 	}
@@ -159,7 +163,9 @@ public class PropertyNode {
 	}
 
 	public boolean isIncomplete() {
-		return property == null || getFirstStatement().getObject() == null;
+		return property == null
+				|| (inverse && getStatement().getSubject() == null)
+				|| (!inverse && getStatement().getObject() == null);
 	}
 
 	public boolean isInitialized() {
@@ -170,7 +176,7 @@ public class PropertyNode {
 	 * Removes all cached statements of this property node.
 	 */
 	public void refreshChildren() {
-		firstStatement = null;
+		statement = null;
 		if (statements != null) {
 			// required to mark statements as already loaded,
 			// that next reload fetches all statements and not only the first
@@ -187,7 +193,8 @@ public class PropertyNode {
 	public void setProperty(IProperty property) {
 		if (isIncomplete()) {
 			this.property = property;
-			this.firstStatement = new Statement(resource, property, null);
+			this.statement = inverse ? new Statement(null, property, resource)
+					: new Statement(resource, property, null);
 		} else {
 			throw new IllegalArgumentException(
 					"Changing the property is only allowed for incomplete statements.");

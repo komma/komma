@@ -94,12 +94,9 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 					.getFirstElement();
 
 			IResource selectedResource;
-			if (selected instanceof IStatement) {
-				selectedResource = (IResource) ((IStatement) selected)
-						.getSubject();
-			} else if (selected instanceof PropertyNode) {
-				selectedResource = (IResource) ((PropertyNode) selected)
-						.getFirstStatement().getSubject();
+			if (selected instanceof StatementNode) {
+				selectedResource = (IResource) ((StatementNode) selected)
+						.getResource();
 			} else {
 				// simply use root object
 				selectedResource = resource;
@@ -130,11 +127,8 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 			} else {
 				IStatement statement = null;
-
-				if (element instanceof PropertyNode) {
-					statement = ((PropertyNode) element).getFirstStatement();
-				} else if (element instanceof IStatement) {
-					statement = (IStatement) element;
+				if (element instanceof StatementNode) {
+					statement = ((StatementNode) element).getStatement();
 				}
 
 				if (statement != null) {
@@ -196,10 +190,8 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 					.getFirstElement();
 
 			IStatement statement = null;
-			if (selected instanceof IStatement) {
-				statement = (IStatement) selected;
-			} else if (selected instanceof PropertyNode) {
-				statement = ((PropertyNode) selected).getFirstStatement();
+			if (selected instanceof StatementNode) {
+				statement = ((StatementNode) selected).getStatement();
 			}
 
 			if (statement != null) {
@@ -230,10 +222,8 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 					.getFirstElement();
 
 			IStatement statement = null;
-			if (selected instanceof IStatement) {
-				statement = (IStatement) selected;
-			} else if (selected instanceof PropertyNode) {
-				statement = ((PropertyNode) selected).getFirstStatement();
+			if (selected instanceof StatementNode) {
+				statement = ((StatementNode) selected).getStatement();
 			}
 
 			if (statement != null) {
@@ -291,11 +281,11 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 		@Override
 		public Color getBackground(Object element) {
-			if (element instanceof IStatement) {
-				return background;
+			if (element instanceof PropertyNode) {
+				return null;
 			}
 
-			return null;
+			return background;
 		}
 
 		@Override
@@ -307,16 +297,16 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 		public Image getImage(Object element) {
 			switch (column) {
 			case 0:
-				if (element instanceof IStatement) {
-					return toImage(((IStatement) element).getPredicate());
-				} else if (element instanceof PropertyNode) {
-					if (((PropertyNode) element).getFirstStatement()
-							.getPredicate() == null) {
+				if (element instanceof PropertyNode) {
+					if (((PropertyNode) element).getStatement().getPredicate() == null) {
 						return ExtendedImageRegistry.getInstance().getImage(
 								KommaEditUIPropertiesPlugin.INSTANCE
 										.getImage(IEditUIPropertiesImages.ADD));
 					}
-					return toImage(((PropertyNode) element).getFirstStatement()
+					return toImage(((PropertyNode) element).getStatement()
+							.getPredicate());
+				} else if (element instanceof StatementNode) {
+					return toImage(((StatementNode) element).getStatement()
 							.getPredicate());
 				}
 				break;
@@ -333,9 +323,8 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 						return null;
 					}
 
-					return toImage(((PropertyNode) element).getFirstStatement()
-							.getObject());
-				} else if (element instanceof IStatement) {
+					return toImage(((PropertyNode) element).getValue());
+				} else if (element instanceof StatementNode) {
 					return toImage(element);
 				}
 				break;
@@ -347,9 +336,9 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 						return null;
 					}
 
-					element = ((PropertyNode) element).getFirstStatement();
+					element = ((PropertyNode) element).getStatement();
 				} else {
-					element = (IStatement) element;
+					element = ((StatementNode) element).getStatement();
 				}
 
 				if (((IStatement) element).isInferred()) {
@@ -370,16 +359,13 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				PropertyNode propertyNode = (PropertyNode) element;
 				switch (column) {
 				case 0:
-					return toString(propertyNode.getFirstStatement()
-							.getPredicate());
+					return (propertyNode.isInverse() ? "<- " : "")
+							+ toString(propertyNode.getStatement()
+									.getPredicate());
 				case 1:
-					if (treeViewer.getExpandedState(element)) {
-						return null;
-					}
-
 					return toString(propertyNode);
 				}
-			} else if (element instanceof IStatement) {
+			} else if (element instanceof StatementNode) {
 				switch (column) {
 				case 0:
 					return "";
@@ -403,23 +389,24 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				PropertyNode propertyNode = (PropertyNode) element;
 				switch (column) {
 				case 0:
-					target = propertyNode.getFirstStatement().getPredicate();
+					target = propertyNode.getStatement().getPredicate();
 					break;
 				case 1:
 					if (treeViewer.getExpandedState(element)) {
 						return null;
 					}
-
-					target = propertyNode.getFirstStatement().getObject();
+					target = propertyNode.getStatement().getObject();
 					break;
 				}
-			} else if (element instanceof IStatement) {
+			} else if (element instanceof StatementNode) {
 				switch (column) {
 				case 0:
-					target = ((IStatement) element).getPredicate();
+					target = ((StatementNode) element).getStatement()
+							.getPredicate();
 					break;
 				case 1:
-					target = ((IStatement) element).getObject();
+					target = ((StatementNode) element).getStatement()
+							.getObject();
 					break;
 				}
 			}
@@ -442,10 +429,10 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 			}
 
 			if (element instanceof PropertyNode) {
-				element = ((PropertyNode) element).getFirstStatement()
+				element = ((PropertyNode) element).getStatement()
 						.getPredicate();
-			} else if (element instanceof IStatement) {
-				element = ((IStatement) element).getObject();
+			} else if (element instanceof StatementNode) {
+				element = ((StatementNode) element).getValue();
 			}
 
 			return labelProvider.getImage(element);
@@ -456,16 +443,12 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				return null;
 			}
 
-			if (element instanceof PropertyNode) {
-				if (treeViewer.getExpandedState(element)) {
-					return null;
-				}
-
-				element = ((PropertyNode) element).getFirstStatement();
+			if (element instanceof PropertyNode
+					&& treeViewer.getExpandedState(element)) {
+				return null;
 			}
-
-			if (element instanceof IStatement) {
-				element = ((IStatement) element).getObject();
+			if (element instanceof StatementNode) {
+				element = ((StatementNode) element).getValue();
 			}
 			if (element instanceof ILiteral) {
 				return ((ILiteral) element).getLabel();
@@ -510,20 +493,21 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				path = selection.getPaths()[0];
 				Object selected = path.getLastSegment();
 
-				if (selected instanceof IStatement) {
-					Object object = ((IStatement) selected).getObject();
+				if (selected instanceof PropertyNode) {
+					subject = ((PropertyNode) selected).getResource();
+					path = path.getParentPath();
+				} else if (selected instanceof StatementNode) {
+					Object object = ((StatementNode) selected).getStatement()
+							.getObject();
 
 					if (object instanceof IResource) {
 						subject = (IResource) object;
 					}
 
-				} else if (selected instanceof PropertyNode) {
-					subject = ((PropertyNode) selected).getResource();
-					path = path.getParentPath();
 				}
 			}
 
-			PropertyNode node = new PropertyNode(subject, null, true);
+			PropertyNode node = new PropertyNode(subject, null, false, true);
 			treeViewer.insert(path, node, 0);
 			treeViewer.setSelection(new StructuredSelection(node), true);
 			treeViewer.editElement(node, 0);
@@ -537,7 +521,8 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 					.getSelection();
 			Object selected = selection.getFirstElement();
 
-			if (selected instanceof PropertyNode) {
+			if (selected instanceof PropertyNode
+					&& !((PropertyNode) selected).isInverse()) {
 				((PropertyNode) selected).setCreateNewStatementOnEdit(true);
 				treeViewer.editElement(selection.getPaths()[0], 1);
 			}

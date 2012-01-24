@@ -126,6 +126,11 @@ class ValueEditingSupport extends EditingSupport {
 
 	@Override
 	protected boolean canEdit(Object element) {
+		if (element instanceof StatementNode
+				&& ((StatementNode) element).isInverse()) {
+			return false;
+		}
+
 		boolean expandedNode = element instanceof PropertyNode
 				&& ((AbstractTreeViewer) getViewer()).getExpandedState(element);
 		createNew = expandedNode
@@ -251,10 +256,7 @@ class ValueEditingSupport extends EditingSupport {
 		}
 
 		element = unwrap(element);
-		if (element instanceof PropertyNode) {
-			element = ((PropertyNode) element).getFirstStatement();
-		}
-		return (IStatement) element;
+		return ((StatementNode) element).getStatement();
 	}
 
 	@Override
