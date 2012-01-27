@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.wizard.ProgressMonitorPart;
@@ -32,6 +33,7 @@ import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -505,11 +507,14 @@ class SparqlPart extends AbstractEditorPart {
 			}
 		});
 		queryText.setMenu(menuManager.createContextMenu(queryText));
-		ContentProposals.enableContentProposal(
-				queryText,
-				new ParboiledProposalProvider(Parboiled.createParser(
-						Sparql11Parser.class).Query(), new SparqlProposals()),
-				null);
+		ContentProposalAdapter proposalAdapter = ContentProposals
+				.enableContentProposal(
+						queryText,
+						new ParboiledProposalProvider(Parboiled.createParser(
+								Sparql11Parser.class).Query(),
+								new SparqlProposals()), null);
+		proposalAdapter.setAutoActivationDelay(1000);
+		proposalAdapter.setPopupSize(new Point(200, 120));
 
 		Button button = getWidgetFactory().createButton(queryComposite, "Run",
 				SWT.PUSH);
