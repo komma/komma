@@ -79,7 +79,7 @@
          class="net.enilink.komma.owl.editor.OWLPerspective"
          icon="icons/full/obj16/OWLFile.png"
          id="net.enilink.komma.owl.editor.OWLPerspective"
-         name="OWL Perspective">
+         name="OWL">
    </perspective>
 </extension>
 
