@@ -291,7 +291,7 @@ class ValueEditingSupport extends EditingSupport {
 			newObjectCommand = propertyEditingSupport.convertValueFromEditor(
 					value, (IEntity) stmt.getSubject(), stmt.getPredicate(),
 					stmt.getObject());
-			if (editPredicate) {
+			if (editPredicate && newObjectCommand != null) {
 				try {
 					newObjectCommand.execute(new NullProgressMonitor(), null);
 				} catch (ExecutionException e) {

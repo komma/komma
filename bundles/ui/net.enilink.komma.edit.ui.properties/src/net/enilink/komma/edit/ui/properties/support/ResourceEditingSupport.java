@@ -286,7 +286,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			}
 		}
 		IExtendedIterator<IResource> resources = getResourceProposals(subject,
-				createNew ? null : property, (String) editorValue, 1);
+				createNew ? null : property, (String) editorValue + "$", 1);
 		if (resources.hasNext()) {
 			final IEntity resource = resources.next();
 			if (createNew
