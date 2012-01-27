@@ -38,6 +38,7 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IQuery;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IStatementPattern;
 import net.enilink.komma.core.IValue;
@@ -52,7 +53,13 @@ public class StatementPatternContentProvider extends ModelContentProvider
 	protected Map<Object, Integer> instanceToIndex;
 
 	protected StructuredViewer viewer;
-	protected boolean isVirtualTableViewer;
+	protected boolean isVirtualViewer;
+
+	protected IReference containsProperty;
+
+	public void setContainsProperty(IReference containsProperty) {
+		this.containsProperty = containsProperty;
+	}
 
 	@Override
 	protected boolean addedStatement(IStatement stmt,
@@ -198,8 +205,7 @@ public class StatementPatternContentProvider extends ModelContentProvider
 		} else {
 			this.viewer = null;
 		}
-		this.isVirtualTableViewer = this.viewer instanceof AbstractTableViewer
-				&& (this.viewer.getControl().getStyle() & SWT.VIRTUAL) != 0;
+		this.isVirtualViewer = (this.viewer.getControl().getStyle() & SWT.VIRTUAL) != 0;
 
 		IModel newModel = getModelFromPatterns(patterns);
 		super.inputChanged(viewer, this.model, newModel);
@@ -307,19 +313,19 @@ public class StatementPatternContentProvider extends ModelContentProvider
 		for (Object instance : instanceReferences) {
 			instanceToIndex.put(instance, i++);
 		}
-		if (viewer instanceof AbstractTableViewer) {
-			((AbstractTableViewer) viewer)
-					.setItemCount(instanceReferences.length);
-		} else if (viewer instanceof TreeViewer) {
+		if (viewer instanceof TreeViewer) {
 			((TreeViewer) viewer).setChildCount(element,
 					instanceReferences.length);
+		} else if (viewer instanceof AbstractTableViewer) {
+			((AbstractTableViewer) viewer)
+					.setItemCount(instanceReferences.length);
 		}
 	}
 
 	@Override
 	protected void postRefresh(Collection<Runnable> runnables) {
-		// correctly refresh elements in case of virtual table viewer
-		if (isVirtualTableViewer) {
+		// correctly refresh elements in case of virtual viewer
+		if (isVirtualViewer) {
 			// remove all previous update operations
 			runnables.clear();
 

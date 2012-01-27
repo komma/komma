@@ -175,7 +175,11 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 						// the section.
 						public void selectionChanged(
 								SelectionChangedEvent selectionChangedEvent) {
-							setSelection(selectionChangedEvent.getSelection());
+							if (EditorSelectionProvider.this.selectionProvider != selectionChangedEvent
+									.getSelectionProvider()) {
+								setSelection(selectionChangedEvent
+										.getSelection());
+							}
 						}
 					};
 				}
@@ -441,8 +445,9 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 									|| delta.getKind() == IResourceDelta.CHANGED
 									&& delta.getFlags() != IResourceDelta.MARKERS) {
 								IModel model = modelSet.getModel(URIImpl
-										.createPlatformResourceURI(delta.getFullPath()
-												.toString(), false), false);
+										.createPlatformResourceURI(delta
+												.getFullPath().toString(),
+												false), false);
 								if (model != null) {
 									if (delta.getKind() == IResourceDelta.REMOVED) {
 										removedModels.add(model);
