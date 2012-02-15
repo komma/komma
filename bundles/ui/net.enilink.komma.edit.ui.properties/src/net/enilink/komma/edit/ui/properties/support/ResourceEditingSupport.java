@@ -47,13 +47,14 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		}
 	}
 
-	class ResourceProposal extends ContentProposalExt {
+	protected class ResourceProposal extends ContentProposalExt {
 		IEntity resource;
 
 		public ResourceProposal(String content, int cursorPosition,
 				IEntity resource) {
-			super(content, Type.REPLACE, getText(resource), getText(resource),
-					cursorPosition);
+			super(content, Type.REPLACE, ResourceEditingSupport.this
+					.getLabel(resource), ResourceEditingSupport.this
+					.getLabel(resource), cursorPosition);
 			this.resource = resource;
 		}
 
@@ -87,7 +88,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			for (IEntity resource : getResourceProposals(subject,
 					ctor.matched ? null : predicate,
 					contents.substring(0, position), 20)) {
-				String content = getText(resource);
+				String content = getLabel(resource);
 				if (content.length() > 0) {
 					content = prefix + content;
 					proposals.add(new ResourceProposal(content, content
@@ -111,7 +112,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		this.editPredicate = editPredicate;
 	}
 
-	protected String getText(Object value) {
+	protected String getLabel(Object value) {
 		if (value == null) {
 			return null;
 		}
@@ -238,7 +239,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		if (editPredicate) {
 			value = property;
 		}
-		String text = value != null ? getText(value) : null;
+		String text = value != null ? getLabel(value) : null;
 		return text != null ? text : "";
 	}
 
@@ -290,7 +291,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		if (resources.hasNext()) {
 			final IEntity resource = resources.next();
 			if (createNew
-					&& getText(resource).equals(((String) editorValue).trim())) {
+					&& getLabel(resource).equals(((String) editorValue).trim())) {
 				// create a new object
 				return new SimpleCommand() {
 					@Override
@@ -303,7 +304,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 					}
 				};
 			} else if (!resource.equals(oldValue)
-					&& getText(resource).equals(((String) editorValue).trim())) {
+					&& getLabel(resource).equals(((String) editorValue).trim())) {
 				// replace value with existing object
 				return new IdentityCommand(resource);
 			}

@@ -23,7 +23,7 @@ import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.edit.provider.IItemLabelProvider;
 import net.enilink.komma.edit.ui.assist.ParboiledProposalProvider;
-import net.enilink.komma.edit.ui.properties.internal.assist.ManchesterProposals;
+import net.enilink.komma.edit.ui.assist.ReflectiveSemanticProposals;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.parser.manchester.IManchesterActions;
@@ -76,10 +76,10 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 		}
 	}
 
-	class ManchesterResourceProposals extends ManchesterProposals {
+	class ManchesterProposals extends ReflectiveSemanticProposals {
 		IEntity subject;
 
-		public ManchesterResourceProposals(IEntity subject) {
+		public ManchesterProposals(IEntity subject) {
 			this.subject = subject;
 		}
 
@@ -95,7 +95,7 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 			List<IContentProposal> proposals = new ArrayList<IContentProposal>();
 			for (IEntity resource : getResourceProposals(subject, null, prefix,
 					20)) {
-				String label = getText(resource);
+				String label = getLabel(resource);
 				String origText = text.substring(insertPos, index);
 				// insert proposal text
 				text.replace(insertPos, index, label);
@@ -207,7 +207,7 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 			@Override
 			public IContentProposalProvider getProposalProvider() {
 				return new ParboiledProposalProvider(parser.Description(),
-						new ManchesterResourceProposals(subject));
+						new ManchesterProposals(subject));
 			}
 
 			@Override
