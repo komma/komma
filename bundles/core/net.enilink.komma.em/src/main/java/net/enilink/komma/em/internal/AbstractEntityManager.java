@@ -1144,7 +1144,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		}
 
 		if (instance instanceof IValue) {
-			return (IValue) reference;
+			return (IValue) instance;
 		}
 
 		Class<?> type = instance.getClass();
