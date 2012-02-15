@@ -1744,6 +1744,14 @@ public final class URIImpl implements URI {
 				cachedNamespace = new URIImpl(hierarchical, scheme, authority,
 						device, absolutePath, segments, query, "");
 			}
+		} else if (opaquePart() != null) {
+			String opaquePart = opaquePart();
+			int colonIndex = opaquePart.lastIndexOf(':');
+			if (colonIndex >= 0) {
+				cachedNamespace = new URIImpl(false, scheme,
+						opaquePart.substring(0, colonIndex), null,
+						absolutePath, null, null, null);
+			}
 		} else {
 			cachedNamespace = trimSegments(1).appendSegment("");
 		}
@@ -1752,12 +1760,14 @@ public final class URIImpl implements URI {
 	}
 
 	public URIImpl appendLocalPart(String localPart) {
+		if (!isHierarchical() && toString().endsWith(":")) {
+			return URIImpl.createURI(toString() + localPart);
+		}
 		String last = lastSegment();
-		if (last != null && last.length() > 0) {
+		if (last == null || last != null && last.length() > 0) {
 			return appendFragment(localPart);
 		}
-		return last == null ? appendSegment(localPart) : trimSegments(1)
-				.appendSegment(localPart);
+		return trimSegments(1).appendSegment(localPart);
 	}
 
 	@Override
@@ -1771,7 +1781,7 @@ public final class URIImpl implements URI {
 			return localName;
 		}
 		localName = toString();
-		int separatorIndex = localName.lastIndexOf(SCHEME_SEPARATOR);
+		int separatorIndex = localName.lastIndexOf(':');
 		if (separatorIndex >= 0) {
 			localName = localName.substring(separatorIndex + 1);
 		}
