@@ -39,13 +39,13 @@ public class ModelUtil {
 				text.append(label);
 			} else {
 				URI uri = resource.getURI();
-
 				if (uri != null) {
 					String prefix;
 					if (resource instanceof IObject
 							&& ((IObject) resource).getModel().getURI()
-									.namespace().equals(uri.namespace())) {
-						prefix = null;
+									.trimFragment()
+									.equals(uri.namespace().trimFragment())) {
+						prefix = "";
 					} else {
 						prefix = resource.getEntityManager().getPrefix(
 								uri.namespace());
@@ -58,7 +58,8 @@ public class ModelUtil {
 						text.append(prefix).append(":");
 					}
 
-					text.append(hasLocalPart ? localPart : uri.toString());
+					text.append(hasLocalPart && prefix != null ? localPart
+							: uri.toString());
 				} else {
 					text.append(resource.toString());
 				}
@@ -68,7 +69,6 @@ public class ModelUtil {
 		} else {
 			text.append(String.valueOf(element));
 		}
-
 		return text.toString();
 	}
 
