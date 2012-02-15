@@ -14,8 +14,11 @@ import java.util.Collection;
 
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.owl.edit.manchester.ManchesterSyntaxGenerator;
+import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelUtil;
+import net.enilink.komma.parser.manchester.ManchesterSyntaxGenerator;
 import net.enilink.komma.rdfs.edit.RDFSClassItemProvider;
+import net.enilink.komma.core.IReference;
 
 public class OWLClassItemProvider extends RDFSClassItemProvider {
 	public OWLClassItemProvider(OWLItemProviderAdapterFactory adapterFactory,
@@ -25,6 +28,27 @@ public class OWLClassItemProvider extends RDFSClassItemProvider {
 
 	@Override
 	public String getText(Object object) {
-		return ManchesterSyntaxGenerator.generateText(object);
+		if (object instanceof IReference) {
+			if (((IReference) object).getURI() == null) {
+				return new ManchesterSyntaxGenerator() {
+					protected String getPrefix(IReference reference) {
+						if (reference instanceof IObject
+								&& reference.getURI() != null
+								&& reference
+										.getURI()
+										.namespace()
+										.trimFragment()
+										.equals(((IObject) reference)
+												.getModel().getURI()
+												.trimFragment())) {
+							return "";
+						}
+						return super.getPrefix(reference);
+					}
+				}.generateText(object);
+			}
+			return ModelUtil.getLabel(object);
+		}
+		return String.valueOf(object);
 	}
 }
