@@ -1751,6 +1751,8 @@ public final class URIImpl implements URI {
 				cachedNamespace = new URIImpl(false, scheme,
 						opaquePart.substring(0, colonIndex), null,
 						absolutePath, null, null, null);
+			} else {
+				cachedNamespace = this;
 			}
 		} else {
 			cachedNamespace = trimSegments(1).appendSegment("");
