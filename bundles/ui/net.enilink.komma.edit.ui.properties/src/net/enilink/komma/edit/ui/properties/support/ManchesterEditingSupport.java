@@ -11,7 +11,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.parboiled.Parboiled;
-import org.parboiled.parserunners.BasicParseRunner;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
 import com.google.inject.Provider;
@@ -113,27 +114,20 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 		super(adapterFactory);
 	}
 
-	protected ICommand addStatements(final IModel model, final Object subject,
-			final List<Object[]> stmts) {
-		return new SimpleCommand() {
-			@Override
-			protected CommandResult doExecuteWithResult(
-					IProgressMonitor progressMonitor, IAdaptable info)
-					throws ExecutionException {
-				Map<BNode, IReference> bNodes = new HashMap<BNode, IReference>();
-				List<IStatement> realStmts = new ArrayList<IStatement>();
-				for (Object[] stmt : stmts) {
-					Object s = stmt[0], p = stmt[1], o = stmt[2];
-					realStmts.add(new Statement((IReference) toValue(model, s,
-							bNodes), (IReference) toValue(model, p, bNodes),
-							toValue(model, o, bNodes)));
+	protected CommandResult addStatements(final IModel model,
+			final Object subject, final List<Object[]> stmts) {
+		Map<BNode, IReference> bNodes = new HashMap<BNode, IReference>();
+		List<IStatement> realStmts = new ArrayList<IStatement>();
+		for (Object[] stmt : stmts) {
+			Object s = stmt[0], p = stmt[1], o = stmt[2];
+			realStmts.add(new Statement((IReference) toValue(model, s, bNodes),
+					(IReference) toValue(model, p, bNodes), toValue(model, o,
+							bNodes)));
 
-				}
-				model.getManager().add(realStmts);
-				return CommandResult.newOKCommandResult(toValue(model, subject,
-						bNodes));
-			}
-		};
+		}
+		model.getManager().add(realStmts);
+		return CommandResult
+				.newOKCommandResult(toValue(model, subject, bNodes));
 	}
 
 	protected IValue toValue(final IModel model, Object value,
@@ -239,29 +233,38 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 	}
 
 	@Override
-	public ICommand convertValueFromEditor(Object editorValue,
+	public ICommand convertValueFromEditor(final Object editorValue,
 			final IEntity subject, IReference property, Object oldValue) {
-		final List<Object[]> newStmts = new ArrayList<Object[]>();
-		ParsingResult<Object> result = new BasicParseRunner<Object>(Parboiled
-				.createParser(ManchesterSyntaxParser.class,
-						new ManchesterActions(new Provider<IModel>() {
-							@Override
-							public IModel get() {
-								return ((IObject) subject).getModel();
-							}
-						}) {
-							@Override
-							public boolean createStmt(Object subject,
-									Object predicate, Object object) {
-								newStmts.add(new Object[] { subject, predicate,
-										object });
-								return true;
-							}
-						}).Description()).run((String) editorValue);
-		if (result.resultValue != null) {
-			return addStatements(((IObject) subject).getModel(),
-					result.resultValue, newStmts);
-		}
-		return null;
+		return new SimpleCommand() {
+			@Override
+			protected CommandResult doExecuteWithResult(
+					IProgressMonitor progressMonitor, IAdaptable info)
+					throws ExecutionException {
+				final List<Object[]> newStmts = new ArrayList<Object[]>();
+				ParsingResult<Object> result = new ReportingParseRunner<Object>(
+						Parboiled.createParser(ManchesterSyntaxParser.class,
+								new ManchesterActions(new Provider<IModel>() {
+									@Override
+									public IModel get() {
+										return ((IObject) subject).getModel();
+									}
+								}) {
+									@Override
+									public boolean createStmt(Object subject,
+											Object predicate, Object object) {
+										newStmts.add(new Object[] { subject,
+												predicate, object });
+										return true;
+									}
+								}).Description()).run((String) editorValue);
+				if (result.matched && result.resultValue != null) {
+					return addStatements(((IObject) subject).getModel(),
+							result.resultValue, newStmts);
+				} else {
+					return CommandResult.newErrorCommandResult(ErrorUtils
+							.printParseErrors(result.parseErrors));
+				}
+			}
+		};
 	}
 }

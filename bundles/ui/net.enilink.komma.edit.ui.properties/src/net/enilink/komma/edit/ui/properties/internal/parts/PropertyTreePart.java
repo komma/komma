@@ -29,6 +29,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -81,7 +82,6 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.ILiteral;
-import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
@@ -266,11 +266,14 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 	class TreeLabelProvider extends ColumnLabelProvider {
 		private Color background;
+		private Color invalidBackground;
 		private int column;
 
 		public TreeLabelProvider(int column) {
 			this.column = column;
 			background = new Color(Display.getDefault(), 229, 229, 229);
+			invalidBackground = Display.getDefault().getSystemColor(
+					SWT.COLOR_YELLOW);
 		}
 
 		@Override
@@ -281,6 +284,11 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 		@Override
 		public Color getBackground(Object element) {
+			if (column == 1 && element instanceof StatementNode
+					&& !((StatementNode) element).getStatus().isOK()) {
+				return invalidBackground;
+			}
+
 			if (element instanceof PropertyNode) {
 				return null;
 			}
@@ -384,6 +392,11 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 		@Override
 		public String getToolTipText(Object element) {
+			if (column == 1 && element instanceof StatementNode
+					&& !((StatementNode) element).getStatus().isOK()) {
+				return ((StatementNode) element).getStatus().getMessage();
+			}
+
 			Object target = null;
 			if (element instanceof PropertyNode) {
 				PropertyNode propertyNode = (PropertyNode) element;
@@ -411,16 +424,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				}
 			}
 
-			if (target instanceof IReference) {
-				URI uri = ((IReference) target).getURI();
-				if (uri != null) {
-					return uri.toString();
-				}
-			} else if (target instanceof ILiteral) {
-				return target.toString();
-			}
-
-			return null;
+			return target.toString();
 		}
 
 		public Image toImage(Object element) {
@@ -448,7 +452,13 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				return null;
 			}
 			if (element instanceof StatementNode) {
-				element = ((StatementNode) element).getValue();
+				Object invalidEditorValue = ((StatementNode) element)
+						.getEditorValue();
+				if (invalidEditorValue != null) {
+					element = invalidEditorValue;
+				} else {
+					element = ((StatementNode) element).getValue();
+				}
 			}
 			if (element instanceof ILiteral) {
 				return ((ILiteral) element).getLabel();
@@ -718,7 +728,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	private void enableToolTips(Viewer viewer) {
 		try {
 			Method enableFor = ColumnViewerToolTipSupport.class.getMethod(
-					"enableFor", viewer.getClass());
+					"enableFor", ColumnViewer.class);
 			enableFor.invoke(null, viewer);
 		} catch (Exception e) {
 			// ignore

@@ -34,13 +34,16 @@ public class PropertyNode extends StatementNode {
 
 	private boolean includeInferred;
 
+	private IStatement statement;
+
 	private IProperty property;
 	private IResource resource;
-	private List<PropertyStatementNode> statements;
+	private List<PropertyStatementNode> children;
+	IStatement[] statements;
 
 	public PropertyNode(IResource resource, IProperty property,
 			boolean inverse, boolean includeInferred) {
-		super(null, inverse);
+		super(inverse);
 		this.resource = resource;
 		this.property = property;
 		this.includeInferred = includeInferred;
@@ -53,7 +56,7 @@ public class PropertyNode extends StatementNode {
 	 * @return The list of all statements
 	 */
 	public Collection<? extends StatementNode> getChildren() {
-		if (statements == null) {
+		if (children == null) {
 			statement = null;
 			IStatement[] stmtAry = getStatementIterator().toList().toArray(
 					new IStatement[0]);
@@ -69,14 +72,14 @@ public class PropertyNode extends StatementNode {
 				stmtAry[0] = stmtAry[1];
 				stmtAry[1] = typeThingStmt;
 			}
-			statements = new ArrayList<PropertyStatementNode>(stmtAry.length);
-			for (int i = 0; i < stmtAry.length; i++) {
-				statements.add(new PropertyStatementNode(this, i, stmtAry[i],
-						inverse));
+			statements = stmtAry;
+			children = new ArrayList<PropertyStatementNode>(statements.length);
+			for (int i = 0; i < statements.length; i++) {
+				children.add(new PropertyStatementNode(this, i, inverse));
 			}
-			hasMultipleStatements = statements.size() > 1;
+			hasMultipleStatements = children.size() > 1;
 		}
-		return statements != null ? statements : Collections
+		return children != null ? children : Collections
 				.<StatementNode> emptyList();
 	}
 
@@ -89,8 +92,8 @@ public class PropertyNode extends StatementNode {
 	 */
 	public IStatement getStatement() {
 		if (hasMultipleStatements == null) {
-			if (statements != null) {
-				statements = null;
+			if (children != null) {
+				children = null;
 				getChildren();
 			} else {
 				IExtendedIterator<IStatement> stmtIt = getStatementIterator();
@@ -121,7 +124,7 @@ public class PropertyNode extends StatementNode {
 			}
 		}
 
-		return statements != null && statements.size() > 0 ? statements.get(0)
+		return children != null && children.size() > 0 ? children.get(0)
 				.getStatement() : statement;
 	}
 
@@ -177,11 +180,11 @@ public class PropertyNode extends StatementNode {
 	 */
 	public void refreshChildren() {
 		statement = null;
-		if (statements != null) {
+		if (children != null) {
 			// required to mark statements as already loaded,
 			// that next reload fetches all statements and not only the first
 			// one
-			statements = Collections.emptyList();
+			children = Collections.emptyList();
 		}
 		hasMultipleStatements = null;
 	}

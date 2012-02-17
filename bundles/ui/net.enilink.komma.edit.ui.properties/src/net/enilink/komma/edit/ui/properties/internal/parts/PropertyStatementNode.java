@@ -7,10 +7,18 @@ public class PropertyStatementNode extends StatementNode {
 	protected int index;
 
 	public PropertyStatementNode(PropertyNode propertyNode, int index,
-			IStatement statement, boolean inverse) {
-		super(statement, inverse);
+			boolean inverse) {
+		super(inverse);
 		this.propertyNode = propertyNode;
 		this.index = index;
+	}
+
+	@Override
+	public IStatement getStatement() {
+		if (index < propertyNode.statements.length) {
+			return propertyNode.statements[index];
+		}
+		return null;
 	}
 
 	@Override

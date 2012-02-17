@@ -261,6 +261,11 @@ class ValueEditingSupport extends EditingSupport {
 
 	@Override
 	protected Object getValue(Object element) {
+		Object editorValue = ((StatementNode) unwrap(element)).getEditorValue();
+		if (editorValue != null) {
+			return editorValue;
+		}
+
 		IStatement stmt = getStatement(element);
 
 		IPropertyEditingSupport propertyEditingSupport = getPropertyEditingSupport(stmt);
@@ -321,6 +326,9 @@ class ValueEditingSupport extends EditingSupport {
 			}
 		}
 
+		StatementNode node = (StatementNode) unwrap(element);
+		node.setStatus(Status.OK_STATUS);
+
 		if (newObjectCommand != null) {
 			ICompositeCommand command = new CompositeCommand() {
 				@Override
@@ -380,9 +388,9 @@ class ValueEditingSupport extends EditingSupport {
 				status = EditUIUtil.createErrorStatus(exc);
 			}
 
-			if (!status.isOK()) {
-				KommaEditUIPlugin.getPlugin().log(status);
-			}
+			node.setStatus(status);
+			node.setEditorValue(status.isOK() ? null : value);
+			getViewer().update(node, null);
 		}
 	}
 

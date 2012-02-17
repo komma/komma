@@ -1,15 +1,26 @@
 package net.enilink.komma.edit.ui.properties.internal.parts;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 
-public class StatementNode {
+public abstract class StatementNode {
 	protected boolean inverse;
-	protected IStatement statement;
+	protected IStatus status = Status.OK_STATUS;
+	protected Object editorValue;
 
-	public StatementNode(IStatement statement, boolean inverse) {
-		this.statement = statement;
+	public StatementNode(boolean inverse) {
 		this.inverse = inverse;
+	}
+
+	public Object getEditorValue() {
+		return editorValue;
+	}
+
+	public void setEditorValue(Object editorValue) {
+		this.editorValue = editorValue;
 	}
 
 	public IReference getResource() {
@@ -20,9 +31,7 @@ public class StatementNode {
 				: getStatement().getSubject();
 	}
 
-	public IStatement getStatement() {
-		return statement;
-	}
+	public abstract IStatement getStatement();
 
 	public Object getValue() {
 		if (getStatement() == null) {
@@ -34,5 +43,13 @@ public class StatementNode {
 
 	public boolean isInverse() {
 		return inverse;
+	}
+
+	public IStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(IStatus status) {
+		this.status = status;
 	}
 }
