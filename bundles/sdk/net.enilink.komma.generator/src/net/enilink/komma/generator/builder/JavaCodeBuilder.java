@@ -230,27 +230,6 @@ public class JavaCodeBuilder {
 		}
 		prop.getter();
 		comment(prop, property);
-		// CodeClass range = dec.getRange(property);
-		// if (range instanceof DataRange) {
-		// List<Object> oneOf = range.getOwlOneOf();
-		// int size = oneOf.size();
-		// if (size > 0) {
-		// Object first = oneOf.get(0);
-		// if (first instanceof IEntity) {
-		// IEntity[] ar = new IEntity[size];
-		// prop.annotateEntities(oneOf.class, oneOf.toArray(ar));
-		// } else if (first instanceof String) {
-		// String[] ar = new String[size];
-		// prop.annotateLabels(oneOf.class, oneOf.toArray(ar));
-		// } else {
-		// List<String> labels = new ArrayList<String>(size);
-		// for (Object o : oneOf) {
-		// labels.add(o.toString());
-		// }
-		// prop.annotateLabels(oneOf.class, labels, range.toString());
-		// }
-		// }
-		// }
 		prop.end();
 		return this;
 	}
@@ -287,32 +266,25 @@ public class JavaCodeBuilder {
 		comment.end();
 	}
 
-	private void annotate(java.lang.Class<?> ann,
-			Collection<? extends Class> list) {
-		if (list != null && !list.isEmpty()) {
-			List<String> classes = new ArrayList<String>();
-			for (Class c : list) {
-				if (c instanceof Restriction)
-					return;
-				classes.add(resolver.getClassName(c.getURI()));
-			}
-			out.annotateClasses(ann, classes);
-		}
-	}
-
-	private void annotate(java.lang.Class<?> ann, Class complement) {
-		if (complement != null) {
-			String className = resolver.getClassName(complement.getURI());
-			out.annotateClass(ann, className);
-		}
-	}
-
 	private String getPropertyName(CodeClass code, Property param) {
+		String propertyName;
 		if (code.isFunctional(param)) {
-			return resolver.getPropertyName(param.getURI());
+			propertyName = resolver.getPropertyName(param.getURI());
 		} else {
-			return resolver.getPluralPropertyName(param.getURI());
+			propertyName = resolver.getPluralPropertyName(param.getURI());
 		}
+		// this ensures that getters and setters are renamed if the property has
+		// a different range as for its super classes
+		Collection<Class> overriddenRanges = code.getOverriddenRanges(param);
+		Class range = code.getRange(param);
+		if (range != null) {
+			overriddenRanges.remove(range);
+		}
+		if (range != null && range.getURI() != null
+				&& !overriddenRanges.isEmpty()) {
+			propertyName += "As" + resolver.getSimpleName(range.getURI());
+		}
+		return propertyName;
 	}
 
 	private String getRangeClassName(CodeClass code, Property property) {

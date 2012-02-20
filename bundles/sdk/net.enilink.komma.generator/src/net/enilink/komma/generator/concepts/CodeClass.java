@@ -28,14 +28,27 @@
  */
 package net.enilink.komma.generator.concepts;
 
+import java.util.Collection;
+
+import net.enilink.composition.cache.annotations.Cacheable;
+
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.rdf.Property;
+import net.enilink.vocab.rdfs.Class;
 import net.enilink.komma.generator.JavaNameResolver;
 
 public interface CodeClass extends net.enilink.vocab.owl.Class,
 		net.enilink.vocab.rdfs.Class {
-	Iterable<Property> getDeclaredProperties();
+	@Cacheable
+	IExtendedIterator<Property> getDeclaredProperties();
+	
+	boolean hasProperty(Property property);
 
+	CodeClass getRangeRestriction(Property property);
+	
 	CodeClass getRange(Property property);
+	
+	Collection<Class> getOverriddenRanges(Property property);
 
 	boolean isFunctional(Property property);
 

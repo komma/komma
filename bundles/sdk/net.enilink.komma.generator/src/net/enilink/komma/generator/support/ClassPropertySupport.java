@@ -29,11 +29,15 @@
 package net.enilink.komma.generator.support;
 
 import java.math.BigInteger;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.xml.namespace.QName;
 
 import net.enilink.composition.traits.Behaviour;
 
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.owl.FunctionalProperty;
 import net.enilink.vocab.owl.Restriction;
 import net.enilink.vocab.rdf.Property;
@@ -51,14 +55,68 @@ public abstract class ClassPropertySupport implements CodeClass,
 	private static final String WHERE_PROP_DOMAIN_TYPE = PREFIX
 			+ "SELECT DISTINCT ?prop WHERE { { ?prop rdfs:domain ?type } UNION { ?type rdfs:subClassOf [owl:onProperty ?prop] } } ORDER BY ?prop";
 
-	public Iterable<Property> getDeclaredProperties() {
+	public IExtendedIterator<Property> getDeclaredProperties() {
 		IQuery<?> query = getEntityManager()
 				.createQuery(WHERE_PROP_DOMAIN_TYPE);
 		query.setParameter("type", this);
 		return query.evaluate(Property.class);
 	}
 
+	@Override
+	public boolean hasProperty(Property property) {
+		for (Property declaredProperty : getDeclaredProperties()) {
+			if (property.equals(declaredProperty)) {
+				return true;
+			}
+		}
+		for (Class c : getRdfsSubClassOf()) {
+			if (c instanceof Restriction || c.equals(getBehaviourDelegate())) {
+				continue;
+			}
+			if (((CodeClass) c).hasProperty(property)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public Collection<Class> getOverriddenRanges(Property property) {
+		Collection<Class> ranges = new HashSet<Class>();
+		for (Class c : getRdfsSubClassOf()) {
+			if (c instanceof Restriction || c.equals(getBehaviourDelegate())) {
+				continue;
+			}
+			if (((CodeClass) c).hasProperty(property)) {
+				Class overriddenRange = ((CodeClass) c).getRange(property);
+				if (overriddenRange != null) {
+					ranges.add(overriddenRange);
+				}
+			}
+		}
+		return ranges;
+	}
+
 	public CodeClass getRange(Property property) {
+		CodeClass range = getRangeRestriction(property);
+		if (range != null) {
+			return range;
+		}
+		for (Class r : property.getRdfsRanges()) {
+			range = (CodeClass) r;
+		}
+		if (range != null) {
+			return range;
+		}
+		for (Property p : property.getRdfsSubPropertyOf()) {
+			CodeClass superRange = getRange(p);
+			if (superRange != null) {
+				range = superRange;
+			}
+		}
+		return range;
+	}
+
+	public CodeClass getRangeRestriction(Property property) {
 		CodeClass range = null;
 		for (Class c : getRdfsSubClassOf()) {
 			if (c instanceof Restriction) {
@@ -78,24 +136,9 @@ public abstract class ClassPropertySupport implements CodeClass,
 			if (c instanceof Restriction || c.equals(getBehaviourDelegate())) {
 				continue;
 			}
-			Class type = ((CodeClass) c).getRange(property);
+			Class type = ((CodeClass) c).getRangeRestriction(property);
 			if (type != null) {
 				range = (CodeClass) type;
-			}
-		}
-		if (range != null) {
-			return range;
-		}
-		for (Class r : property.getRdfsRanges()) {
-			range = (CodeClass) r;
-		}
-		if (range != null) {
-			return range;
-		}
-		for (Property p : property.getRdfsSubPropertyOf()) {
-			CodeClass superRange = getRange(p);
-			if (superRange != null) {
-				range = superRange;
 			}
 		}
 		return range;
@@ -106,10 +149,19 @@ public abstract class ClassPropertySupport implements CodeClass,
 			return true;
 		boolean functional = false;
 		BigInteger one = BigInteger.valueOf(1);
+
+		Set<Class> functionalForRange = new HashSet<Class>();
 		for (Class c : getRdfsSubClassOf()) {
 			if (c instanceof Restriction) {
 				Restriction r = (Restriction) c;
 				if (property.equals(r.getOwlOnProperty())) {
+					if (one.equals(r.getOwlMaxQualifiedCardinality())
+							|| one.equals(r.getOwlQualifiedCardinality())) {
+						Class onClass = r.getOwlOnClass();
+						if (onClass != null) {
+							functionalForRange.add(onClass);
+						}
+					}
 					if (one.equals(r.getOwlMaxCardinality())
 							|| one.equals(r.getOwlCardinality())) {
 						functional = true;
@@ -123,6 +175,9 @@ public abstract class ClassPropertySupport implements CodeClass,
 		CodeClass range = getRange(property);
 		if (range == null) {
 			return false;
+		}
+		if (functionalForRange.contains(range)) {
+			return true;
 		}
 		return NOTHING.equals(range.getURI());
 	}

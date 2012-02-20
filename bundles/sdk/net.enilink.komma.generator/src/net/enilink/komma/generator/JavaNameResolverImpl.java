@@ -170,7 +170,7 @@ public class JavaNameResolverImpl implements JavaNameResolver {
 			}
 		}
 		String pkg = getPackageName(name);
-		String simple = initcap(name.localPart());
+		String simple = getSimpleName(name);
 		if (pkg == null) {
 			return simple;
 		}
