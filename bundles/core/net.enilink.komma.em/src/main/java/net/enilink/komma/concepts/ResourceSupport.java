@@ -212,7 +212,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 				+ (named ? "isIRI(?otherClass) && " : "") //
 				+ "?otherClass != ?class)" //
 				+ "		FILTER NOT EXISTS {?class rdfs:subClassOf ?otherClass}" //
-				+ "}" //
+				+ "} " //
 				+ "FILTER NOT EXISTS {?resource a ?otherClass . FILTER ("
 				+ (named ? "isIRI(?otherClass) && " : "")
 				+ "(?class = owl:Thing || ?class = rdfs:Resource) && ?otherClass != ?class)}" //
@@ -434,15 +434,16 @@ public abstract class ResourceSupport extends BehaviorBase implements
 				: getEntityManager().find(propertyRef);
 		StringBuilder sb = new StringBuilder(PREFIX);
 		sb.append("SELECT ");
-		if (property != null) {
+		if (property == null) {
 			sb.append("?pred ");
 		}
-		String resourceVar = inverse ? "?subj" : "?obj";
-		sb.append(resourceVar);
+		String targetVar = inverse ? "?subj" : "?obj";
+		sb.append(targetVar);
 		sb.append(" WHERE { ?subj ?pred ?obj . ");
 		if (filterSymmetric) {
-			sb.append("MINUS { ").append(resourceVar).append(" ?pred ")
-					.append(resourceVar).append(" }");
+			String selfVar = inverse ? "?obj" : "?subj";
+			sb.append("FILTER NOT EXISTS { ").append(selfVar).append(" ?pred ")
+					.append(selfVar).append(" }");
 		}
 		sb.append(" }");
 
@@ -458,7 +459,8 @@ public abstract class ResourceSupport extends BehaviorBase implements
 					if (value instanceof IBindings<?>) {
 						IBindings<?> values = (IBindings<?>) value;
 						return new Statement(getBehaviourDelegate(),
-								(IReference) values.get("pred"),
+								property != null ? property
+										: (IReference) values.get("pred"),
 								values.get("obj"), includeInferred);
 					}
 					return new Statement(getBehaviourDelegate(), property,
@@ -474,7 +476,8 @@ public abstract class ResourceSupport extends BehaviorBase implements
 					if (value instanceof IBindings<?>) {
 						IBindings<?> values = (IBindings<?>) value;
 						return new Statement((IReference) values.get("subj"),
-								(IReference) values.get("pred"),
+								property != null ? property
+										: (IReference) values.get("pred"),
 								getBehaviourDelegate(), includeInferred);
 					}
 					return new Statement((IReference) value, property,
