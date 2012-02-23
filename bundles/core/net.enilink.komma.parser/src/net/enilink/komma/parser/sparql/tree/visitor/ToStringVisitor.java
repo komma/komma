@@ -31,6 +31,7 @@ import net.enilink.komma.parser.sparql.tree.GraphPattern;
 import net.enilink.komma.parser.sparql.tree.IntegerLiteral;
 import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.LimitModifier;
+import net.enilink.komma.parser.sparql.tree.MinusGraph;
 import net.enilink.komma.parser.sparql.tree.NamedGraph;
 import net.enilink.komma.parser.sparql.tree.OffsetModifier;
 import net.enilink.komma.parser.sparql.tree.OptionalGraph;
@@ -346,6 +347,14 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 						.append(' ');
 			}
 		}
+		return data;
+	}
+	
+	@Override
+	public StringBuilder minusGraph(MinusGraph minusGraph,
+			StringBuilder data) {
+		data.append(newLine()).append("MINUS ");
+		minusGraph.getGraph().accept(this, data);
 		return data;
 	}
 

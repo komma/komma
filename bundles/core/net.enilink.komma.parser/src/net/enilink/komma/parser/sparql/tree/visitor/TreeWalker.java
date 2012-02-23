@@ -28,6 +28,7 @@ import net.enilink.komma.parser.sparql.tree.GraphPattern;
 import net.enilink.komma.parser.sparql.tree.IntegerLiteral;
 import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.LimitModifier;
+import net.enilink.komma.parser.sparql.tree.MinusGraph;
 import net.enilink.komma.parser.sparql.tree.NamedGraph;
 import net.enilink.komma.parser.sparql.tree.OffsetModifier;
 import net.enilink.komma.parser.sparql.tree.OptionalGraph;
@@ -230,6 +231,11 @@ public class TreeWalker<T> implements Visitor<Boolean, T> {
 			}
 		}
 		return true;
+	}
+	
+	@Override
+	public Boolean minusGraph(MinusGraph minusGraph, T data) {
+		return minusGraph.getGraph().accept(this, data);
 	}
 
 	@Override

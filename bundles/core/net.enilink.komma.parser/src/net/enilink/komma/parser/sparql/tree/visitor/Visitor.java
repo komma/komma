@@ -24,6 +24,7 @@ import net.enilink.komma.parser.sparql.tree.GraphPattern;
 import net.enilink.komma.parser.sparql.tree.IntegerLiteral;
 import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.LimitModifier;
+import net.enilink.komma.parser.sparql.tree.MinusGraph;
 import net.enilink.komma.parser.sparql.tree.NamedGraph;
 import net.enilink.komma.parser.sparql.tree.OffsetModifier;
 import net.enilink.komma.parser.sparql.tree.OptionalGraph;
@@ -79,6 +80,8 @@ public interface Visitor<R, T> {
 	R limitModifier(LimitModifier limitModifier, T data);
 
 	R logicalExpr(LogicalExpr logicalExpr, T data);
+	
+	R minusGraph(MinusGraph minusGraph, T data);
 
 	R namedGraph(NamedGraph namedGraph, T data);
 
