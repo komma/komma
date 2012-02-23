@@ -30,7 +30,6 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.commons.iterator.IMap;
 import net.enilink.commons.iterator.NiceIterator;
 import net.enilink.komma.edit.provider.ISearchableItemProvider;
 import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
@@ -55,10 +54,10 @@ public class StatementPatternContentProvider extends ModelContentProvider
 	protected StructuredViewer viewer;
 	protected boolean isVirtualViewer;
 
-	protected IReference containsProperty;
+	protected IReference descendantProperty;
 
-	public void setContainsProperty(IReference containsProperty) {
-		this.containsProperty = containsProperty;
+	public void setDescendantProperty(IReference descendantProperty) {
+		this.descendantProperty = descendantProperty;
 	}
 
 	@Override
@@ -104,58 +103,17 @@ public class StatementPatternContentProvider extends ModelContentProvider
 
 				@Override
 				protected String getQueryFindPatterns(Object parent) {
-					StringBuilder sb = new StringBuilder();
-					int i = 0;
-					for (IStatementPattern pattern : patterns) {
-						sb.append("{ ");
-						if (pattern.getSubject() != null) {
-							sb.append("?s").append(i);
-						} else {
-							sb.append("?s");
-						}
-						sb.append(' ');
-
-						if (pattern.getPredicate() != null) {
-							sb.append("?p").append(i);
-						} else {
-							sb.append("?s");
-						}
-						sb.append(' ');
-
-						if (pattern.getObject() != null) {
-							sb.append("?o").append(i);
-						} else {
-							sb.append("?s");
-						}
-						sb.append(" }");
-
-						i++;
-
-						if (i < patterns.size()) {
-							sb.append(" UNION ");
-						}
+					StringBuilder sb = getTriplePatterns(descendantProperty != null ? "?root"
+							: "?s");
+					if (descendantProperty != null) {
+						sb.append(" ?root ?descendantProperty ?s .");
 					}
 					return sb.toString();
 				}
 
 				@Override
 				protected void setQueryParameters(IQuery<?> query, Object parent) {
-					int i = 0;
-					for (IStatementPattern pattern : patterns) {
-						if (pattern.getSubject() != null) {
-							query.setParameter("s" + i, pattern.getSubject());
-						}
-
-						if (pattern.getPredicate() != null) {
-							query.setParameter("p" + i, pattern.getPredicate());
-						}
-
-						if (pattern.getObject() != null) {
-							query.setParameter("o" + i, pattern.getObject());
-						}
-
-						i++;
-					}
+					setParameters(query);
 				}
 			};
 			results = results.andThen(searchableProvider.find(expression, null,
@@ -164,24 +122,85 @@ public class StatementPatternContentProvider extends ModelContentProvider
 		return results;
 	}
 
-	public Object[] getElements(Object inputElement) {
-		if (!patterns.isEmpty()) {
-			Collection<Object> values = new LinkedHashSet<Object>();
-			final IEntityManager em = model.getManager();
-			for (final IStatementPattern pattern : patterns) {
-				values.addAll(em
-						.match(pattern.getSubject(), pattern.getPredicate(),
-								pattern.getObject())
-						.mapWith(new IMap<IStatement, Object>() {
-							@Override
-							public Object map(IStatement matchedStatement) {
-								return em.toInstance(toValue(pattern,
-										matchedStatement));
-							}
-						}).toList());
+	protected StringBuilder getTriplePatterns(String subject) {
+		StringBuilder sb = new StringBuilder();
+		int i = 0;
+		for (IStatementPattern pattern : patterns) {
+			sb.append("{ ");
+			if (pattern.getSubject() != null) {
+				sb.append("?s").append(i);
+			} else {
+				sb.append(subject);
+			}
+			sb.append(' ');
+
+			if (pattern.getPredicate() != null) {
+				sb.append("?p").append(i);
+			} else {
+				sb.append(subject);
+			}
+			sb.append(' ');
+
+			if (pattern.getObject() != null) {
+				sb.append("?o").append(i);
+			} else {
+				sb.append(subject);
+			}
+			sb.append(" }");
+
+			i++;
+
+			if (i < patterns.size()) {
+				sb.append(" UNION ");
+			}
+		}
+		return sb;
+	}
+
+	protected void setParameters(IQuery<?> query) {
+		int i = 0;
+		for (IStatementPattern pattern : patterns) {
+			if (pattern.getSubject() != null) {
+				query.setParameter("s" + i, pattern.getSubject());
 			}
 
-			return values.toArray();
+			if (pattern.getPredicate() != null) {
+				query.setParameter("p" + i, pattern.getPredicate());
+			}
+
+			if (pattern.getObject() != null) {
+				query.setParameter("o" + i, pattern.getObject());
+			}
+
+			i++;
+		}
+		if (descendantProperty != null) {
+			query.setParameter("descendantProperty", descendantProperty);
+		}
+	}
+
+	protected IQuery<?> createQuery() {
+		final IEntityManager em = model.getManager();
+		StringBuilder querySb = new StringBuilder();
+		querySb.append("SELECT ?s WHERE { ");
+		querySb.append(getTriplePatterns("?s"));
+
+		if (descendantProperty != null) {
+			querySb.append(" FILTER NOT EXISTS { ");
+			querySb.append(getTriplePatterns("?other"));
+			querySb.append(" ?other ?descendantProperty ?s");
+			querySb.append(" }");
+		}
+
+		querySb.append(" }");
+		IQuery<?> query = em.createQuery(querySb.toString());
+		setParameters(query);
+		return query;
+	}
+
+	public Object[] getElements(Object inputElement) {
+		if (!patterns.isEmpty()) {
+			return createQuery().evaluate().toList().toArray();
 		}
 		return new Object[0];
 	}
@@ -235,17 +254,6 @@ public class StatementPatternContentProvider extends ModelContentProvider
 		return null;
 	}
 
-	protected IValue toValue(IStatementPattern pattern,
-			IStatement matchedStatement) {
-		if (pattern.getSubject() == null) {
-			return matchedStatement.getSubject();
-		}
-		if (pattern.getPredicate() == null) {
-			return matchedStatement.getPredicate();
-		}
-		return (IValue) matchedStatement.getObject();
-	}
-
 	@Override
 	protected boolean removedStatement(IStatement stmt,
 			Collection<Runnable> runnables) {
@@ -292,19 +300,9 @@ public class StatementPatternContentProvider extends ModelContentProvider
 	@Override
 	public void updateChildCount(Object element, int currentChildCount) {
 		Collection<Object> values = new LinkedHashSet<Object>();
-		if (model != null) {
-			for (final IStatementPattern pattern : patterns) {
-				values.addAll(model
-						.getManager()
-						.match(pattern.getSubject(), pattern.getPredicate(),
-								pattern.getObject())
-						.mapWith(new IMap<IStatement, Object>() {
-							@Override
-							public Object map(IStatement matchedStatement) {
-								return toValue(pattern, matchedStatement);
-							}
-						}).toList());
-			}
+		if (model != null && !patterns.isEmpty()) {
+			values.addAll(createQuery().evaluateRestricted(IReference.class)
+					.toList());
 		}
 		instanceReferences = values.toArray();
 		instanceToIndex = new HashMap<Object, Integer>(
@@ -328,7 +326,6 @@ public class StatementPatternContentProvider extends ModelContentProvider
 		if (isVirtualViewer) {
 			// remove all previous update operations
 			runnables.clear();
-
 			runnables.add(new Runnable() {
 				public void run() {
 					updateChildCount(viewer.getInput(), -1);
