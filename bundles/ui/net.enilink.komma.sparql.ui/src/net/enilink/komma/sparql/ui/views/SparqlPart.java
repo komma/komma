@@ -164,11 +164,12 @@ class SparqlPart extends AbstractEditorPart {
 											.getBindingNames().size()]);
 					data = new ArrayList<Object[]>();
 					while (result.hasNext()) {
-						IBindings<?> bindings = (IBindings<?>) result.next();
+						Object value = result.next();
 
 						Object[] row = new Object[columnNames.length];
 						for (int i = 0; i < columnNames.length; i++) {
-							row[i] = bindings.get(columnNames[i]);
+							row[i] = value instanceof IBindings<?> ? ((IBindings<?>) value)
+									.get(columnNames[i]) : value;
 						}
 						data.add(row);
 					}
