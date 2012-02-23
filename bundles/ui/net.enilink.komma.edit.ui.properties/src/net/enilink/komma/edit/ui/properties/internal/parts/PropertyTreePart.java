@@ -424,7 +424,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				}
 			}
 
-			return target.toString();
+			return target != null ? target.toString() : null;
 		}
 
 		public Image toImage(Object element) {
