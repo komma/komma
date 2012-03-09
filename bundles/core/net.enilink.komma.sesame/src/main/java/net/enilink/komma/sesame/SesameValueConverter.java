@@ -61,7 +61,7 @@ public class SesameValueConverter {
 			} else {
 				String valueAsString = ((IReference) value).toString();
 				if (valueAsString.startsWith("_:")) {
-					return new BNodeImpl(valueAsString);
+					return new BNodeImpl(valueAsString.substring(2));
 				}
 				throw new KommaException(
 						"Cannot convert blank node with nominal value '"
