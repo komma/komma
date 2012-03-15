@@ -51,6 +51,8 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelDescription;
+import net.enilink.komma.model.base.IURIMapRule;
+import net.enilink.komma.model.base.SimpleURIMapRule;
 import net.enilink.komma.owl.edit.IOWLEditImages;
 import net.enilink.komma.owl.edit.OWLEditPlugin;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
@@ -162,6 +164,20 @@ public class ImportsPart extends AbstractEditingDomainPart {
 			}
 
 		});
+
+		List<ModelDescription> modelDescriptions = new ArrayList<ModelDescription>(
+				this.modelDescriptions);
+
+		if (ontology != null) {
+			for (IURIMapRule rule : ((IObject) ontology).getModel()
+					.getModelSet().getURIConverter().getURIMapRules()) {
+				if (rule instanceof SimpleURIMapRule) {
+					String modelUri = ((SimpleURIMapRule) rule).getPattern();
+					modelDescriptions.add(new ModelDescription(null, modelUri));
+				}
+			}
+		}
+
 		dialog.setElements(filterExistingDescriptions(modelDescriptions)
 				.toArray());
 		dialog.setSingleSelectionMode(false);
