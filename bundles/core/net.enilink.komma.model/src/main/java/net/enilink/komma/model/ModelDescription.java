@@ -15,11 +15,17 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import net.enilink.komma.common.util.URIUtil;
 
 public class ModelDescription {
+	private String prefix;
 	private String namespace;
 	private IConfigurationElement configElement;
 
 	public ModelDescription(IConfigurationElement configElement) {
 		this.configElement = configElement;
+	}
+
+	public ModelDescription(String prefix, String namespace) {
+		this.prefix = prefix;
+		this.namespace = namespace;
 	}
 
 	public String getNamespace() {
@@ -39,7 +45,13 @@ public class ModelDescription {
 	}
 
 	public String getPrefix() {
-		return configElement.getAttribute("prefix");
+		if (prefix != null) {
+			return prefix;
+		}
+		if (configElement != null) {
+			return configElement.getAttribute("prefix");
+		}
+		return null;
 	}
 
 	public IConfigurationElement getConfigurationElement() {
