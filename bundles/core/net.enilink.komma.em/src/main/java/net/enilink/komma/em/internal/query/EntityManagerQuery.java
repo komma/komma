@@ -109,7 +109,8 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 		} else if (result instanceof IGraphResult) {
 			if (resultType == null || IStatement.class.equals(resultType)) {
 				iter = new GraphIterator(manager, (IGraphResult) result, max,
-						!resultInfos.get(null).typeRestricted);
+						resultInfos == null
+								|| !resultInfos.get(null).typeRestricted);
 			} else {
 				iter = new ProjectedGraphIterator(manager,
 						(IGraphResult) result, max,
