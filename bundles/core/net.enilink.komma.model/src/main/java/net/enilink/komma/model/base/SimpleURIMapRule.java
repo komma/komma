@@ -55,7 +55,7 @@ public class SimpleURIMapRule implements IURIMapRule {
 		return true;
 	}
 
-	protected String getPattern() {
+	public String getPattern() {
 		return pattern;
 	}
 
@@ -64,7 +64,7 @@ public class SimpleURIMapRule implements IURIMapRule {
 		return priority;
 	}
 
-	protected String getReplacement() {
+	public String getReplacement() {
 		return replacement;
 	}
 
