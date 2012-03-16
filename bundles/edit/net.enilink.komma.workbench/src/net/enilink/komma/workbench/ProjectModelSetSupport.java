@@ -83,4 +83,9 @@ public abstract class ProjectModelSetSupport implements IProjectModelSet,
 	public void setSynchronizer(ModelSetWorkbenchSynchronizer synchronizer) {
 		this.synchronizer = synchronizer;
 	}
+	
+	@Override
+	public void release() {
+		// do nothing		
+	}
 }
