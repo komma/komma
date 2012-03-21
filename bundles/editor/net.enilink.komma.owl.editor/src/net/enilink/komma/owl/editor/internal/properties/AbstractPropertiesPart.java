@@ -22,7 +22,8 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 
@@ -38,6 +39,7 @@ import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 import net.enilink.komma.edit.ui.provider.reflective.ObjectComparator;
+import net.enilink.komma.edit.ui.util.FilterWidget;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
 import net.enilink.komma.model.IModel;
@@ -58,15 +60,17 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 
 	@Override
 	public void createContents(Composite parent) {
-		parent.setLayout(new FillLayout());
+		GridLayout gridLayout = new GridLayout(1, false);
+		gridLayout.marginWidth = gridLayout.marginHeight = 0;
+		parent.setLayout(gridLayout);
 		createActions();
 
 		tree = getWidgetFactory().createTree(parent, SWT.NONE);
+		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		treeViewer = new TreeViewer(tree);
 		treeViewer.setUseHashlookup(true);
 		treeViewer.setComparator(new ObjectComparator());
-
 		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
@@ -74,7 +78,6 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 						event.getSelection());
 			}
 		});
-
 		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
 				if (deleteItemAction != null)
@@ -82,6 +85,12 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 							.setEnabled(!event.getSelection().isEmpty());
 			}
 		});
+
+		FilterWidget filterWidget = new FilterWidget();
+		filterWidget.setViewer(treeViewer);
+		filterWidget.createControl(parent);
+		filterWidget.getControl().setLayoutData(
+				new GridData(SWT.FILL, SWT.END, false, false));
 	}
 
 	public void createActions() {
@@ -217,7 +226,6 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 			if (adapterFactory == null
 					|| !adapterFactory.equals(newAdapterFactory)) {
 				adapterFactory = newAdapterFactory;
-
 				treeViewer
 						.setContentProvider(new AdapterFactoryContentProvider(
 								adapterFactory) {
@@ -231,10 +239,8 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 						});
 				treeViewer.setLabelProvider(new AdapterFactoryLabelProvider(
 						adapterFactory));
-
-				createContextMenuFor(treeViewer);
 			}
-
+			createContextMenuFor(treeViewer);
 			treeViewer.setInput(new Object[] { model.getManager().find(
 					OWL.TYPE_THING) });
 		} else if (adapterFactory != null) {

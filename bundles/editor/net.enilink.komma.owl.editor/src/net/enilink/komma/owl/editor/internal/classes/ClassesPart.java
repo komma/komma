@@ -233,15 +233,13 @@ public class ClassesPart extends AbstractEditingDomainPart {
 			if (adapterFactory == null
 					|| !adapterFactory.equals(newAdapterFactory)) {
 				adapterFactory = newAdapterFactory;
-
 				treeViewer
 						.setContentProvider(new LazyAdapterFactoryContentProvider(
 								getAdapterFactory()));
 				treeViewer.setLabelProvider(new AdapterFactoryLabelProvider(
 						getAdapterFactory()));
-
-				createContextMenuFor(treeViewer);
 			}
+			createContextMenuFor(treeViewer);
 
 			treeViewer.setInput(new Object[] { model.getManager().find(
 					RDFS.TYPE_RESOURCE //

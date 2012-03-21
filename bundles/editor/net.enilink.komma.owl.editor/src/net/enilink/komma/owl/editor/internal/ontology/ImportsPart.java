@@ -318,7 +318,7 @@ public class ImportsPart extends AbstractEditingDomainPart {
 		Set<String> importedOntologyUris = new HashSet<String>(
 				importedOntologies.size());
 		for (IEntity ont : importedOntologies) {
-			importedOntologyUris.add(ont.getURI().namespace().toString());
+			importedOntologyUris.add(ont.getURI().toString());
 		}
 
 		List<ModelDescription> additionalDescriptions = new ArrayList<ModelDescription>();
