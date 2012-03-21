@@ -36,8 +36,10 @@ import net.enilink.komma.edit.command.AddCommand;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.command.CreateChildCommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.provider.ISearchableItemProvider;
 import net.enilink.komma.edit.provider.IViewerNotification;
 import net.enilink.komma.edit.provider.ReflectiveItemProvider;
+import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
 import net.enilink.komma.edit.provider.ViewerNotification;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.event.IStatementNotification;
@@ -218,6 +220,16 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 			return ((IProperty) object).getDirectSubProperties().toSet();
 		}
 		return super.getChildren(object);
+	}
+
+	@Override
+	protected ISearchableItemProvider getSearchableItemProvider() {
+		return new SparqlSearchableItemProvider() {
+			@Override
+			protected String getQueryFindPatterns(Object parent) {
+				return "?s rdfs:subPropertyOf ?parent";
+			}
+		};
 	}
 
 	@Override
