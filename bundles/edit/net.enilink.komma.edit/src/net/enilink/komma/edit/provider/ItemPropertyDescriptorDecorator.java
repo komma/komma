@@ -142,8 +142,6 @@ public class ItemPropertyDescriptorDecorator implements IItemPropertyDescriptor 
 	/**
 	 * This does the delegated job of determining whether the property's value
 	 * consists of multi-line text.
-	 * 
-	 * @since 2.2.0
 	 */
 	public boolean isMultiLine(Object object) {
 		return itemPropertyDescriptor.isMultiLine(object);
@@ -152,8 +150,6 @@ public class ItemPropertyDescriptorDecorator implements IItemPropertyDescriptor 
 	/**
 	 * This does the delegated job of determining the choices for this property
 	 * should be sorted for display.
-	 * 
-	 * @since 2.2.0
 	 */
 	public boolean isSortChoices(Object object) {
 		return itemPropertyDescriptor.isSortChoices(object);

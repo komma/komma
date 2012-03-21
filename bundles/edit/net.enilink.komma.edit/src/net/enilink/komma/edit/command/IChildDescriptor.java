@@ -17,8 +17,6 @@ import net.enilink.komma.core.URI;
 /**
  * This interface may be used for child descriptions if the new child requires
  * an unique name.
- * 
- * @author Ken Wenzel
  */
 public interface IChildDescriptor {
 	/**

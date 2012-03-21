@@ -133,11 +133,9 @@ public class CreateCopyCommand extends AbstractOverrideableCommand implements
 			copyURI = targetModel.getURI().appendLocalPart(
 					"entity_" + UUID.randomUUID().toString());
 		}
-
 		copy = (IResource) targetModel.getManager().createNamed(copyURI,
 				ownerTypes.toArray(new IReference[0]));
 		copyHelper.put(owner, copy);
-
 		return CommandResult.newOKCommandResult(Collections.singleton(copy));
 	}
 

@@ -24,8 +24,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import net.enilink.vocab.owl.DatatypeProperty;
-import net.enilink.vocab.owl.ObjectProperty;
+import net.enilink.commons.iterator.Filter;
+import net.enilink.commons.iterator.IMap;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.concepts.IProperty;
@@ -34,7 +34,9 @@ import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.Statement;
 
 /**
  * The initialize copy command is implemented to set the values of an object
@@ -127,77 +129,45 @@ public class InitializeCopyCommand extends AbstractOverrideableCommand {
 		return CommandResult.newOKCommandResult(Collections.singleton(copy));
 	}
 
-	@SuppressWarnings("unchecked")
-	protected Collection<? extends IProperty> getPropertiesToCopy() {
-		return (Collection<IProperty>) getOwner().getEntityManager()
-				.createQuery("SELECT DISTINCT ?p WHERE {?s ?p ?o}", false)
-				.setParameter("s", getOwner()).evaluate().toList();
-	}
-
 	/**
 	 * This method will iterate over the references of the owner object and sets
 	 * them. accordingly in the copy.
 	 */
 	protected void copyProperties() {
-		for (IProperty property : getPropertiesToCopy()) {
-			if (property instanceof DatatypeProperty) {
-				for (IStatement stmt : getOwner().getPropertyStatements(
-						property, false)) {
-					getOwner().addProperty(property, stmt.getObject());
-				}
-			} else {
-				boolean hasInverse = property instanceof ObjectProperty
-						&& !((ObjectProperty) property).getOwlInverseOf()
-								.isEmpty();
+		// TODO correctly handle copies of lists
+		copy.getEntityManager().add(
+				owner.getPropertyStatements(null, false)
+						.mapWith(new IMap<IStatement, IStatement>() {
+							@Override
+							public IStatement map(IStatement stmt) {
+								Object obj = stmt.getObject();
+								if (obj instanceof IReference) {
+									Object objCopy = copyHelper
+											.getCopy((IReference) obj);
+									if (objCopy != null) {
+										obj = objCopy;
+									} else if (copy
+											.getEntityManager()
+											.find(stmt.getPredicate(),
+													IProperty.class)
+											.isContainment()) {
+										// property is a containment property
+										// meaning it is inverse functional -> a
+										// copy is required so just omit this
+										// statement
+										return null;
+									}
 
-				boolean copiedTargetRequired = hasInverse
-						|| property.isContainment();
-				if (property.isMany(getOwner())) {
-					@SuppressWarnings("unchecked")
-					Collection<Object> valueList = (Collection<Object>) getOwner()
-							.get(property);
-					@SuppressWarnings("unchecked")
-					Collection<Object> copyList = (Collection<Object>) copy
-							.get(property);
-					if (valueList.isEmpty()) {
-						// It must be an unsettable feature to be empty and
-						// considered set.
-						if (copyList != null) {
-							copyList.clear();
-						}
-					} else {
-						int index = 0;
-						for (Object item : valueList) {
-							Object target = item instanceof IResource ? copyHelper
-									.getCopyTarget((IResource) item,
-											copiedTargetRequired) : item;
-							if (target == null) {
-								break; // if one is null, they'll all be null
+								}
+								return new Statement(copy, stmt.getPredicate(),
+										obj);
 							}
-							// if (hasInverse) {
-							// int position = copyList.indexOf(target);
-							// if (position == -1) {
-							// copyList.add(index, target);
-							// } else {
-							// copyList.move(index, target);
-							// }
-							// } else {
-							copyList.add(target);
-							// }
-							++index;
-						}
-					}
-				} else {
-					Object item = getOwner().get(property);
-					Object target = item instanceof IResource ? copyHelper
-							.getCopyTarget((IResource) item,
-									copiedTargetRequired) : item;
-					if (target != null) {
-						copy.set(property, target);
-					}
-				}
-			}
-		}
+						}).filterKeep(new Filter<IStatement>() {
+							@Override
+							public boolean accept(IStatement stmt) {
+								return stmt != null;
+							}
+						}));
 	}
 
 	@Override

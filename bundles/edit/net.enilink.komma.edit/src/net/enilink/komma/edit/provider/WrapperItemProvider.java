@@ -316,8 +316,6 @@ public class WrapperItemProvider implements IWrapperItemProvider {
 	 * default, false is returned. Subclasses may use this in creating a
 	 * property descriptor, and user subclasses may override it to enable
 	 * multi-line text editing.
-	 * 
-	 * @since 2.2.0
 	 */
 	protected boolean isPropertyMultiLine() {
 		return false;
@@ -328,8 +326,6 @@ public class WrapperItemProvider implements IWrapperItemProvider {
 	 * selection. By default, false is returned. Subclasses may use this in
 	 * creating a property descriptor, and user subclasses may override it to
 	 * enable sorting.
-	 * 
-	 * @since 2.2.0
 	 */
 	protected boolean isPropertySortChoices() {
 		return false;

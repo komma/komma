@@ -109,16 +109,12 @@ public interface IItemPropertyDescriptor {
 
 	/**
 	 * Returns whether this property's value will consist of multi-line text.
-	 * 
-	 * @since 2.2.0
 	 */
 	boolean isMultiLine(Object object);
 
 	/**
 	 * Returns whether the choices for this property should be sorted for
 	 * display.
-	 * 
-	 * @since 2.2.0
 	 */
 	boolean isSortChoices(Object object);
 

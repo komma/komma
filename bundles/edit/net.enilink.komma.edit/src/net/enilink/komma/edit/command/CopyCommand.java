@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -36,6 +37,7 @@ import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.core.IReference;
 
 /**
  * The copy command logically acts upon an owner object or collection or owner
@@ -60,7 +62,7 @@ public class CopyCommand extends ExtendedCompositeCommand {
 		protected boolean commitTransaction;
 		protected int deferredInitializationCount;
 
-		protected ArrayList<IResource> initializationList = new ArrayList<IResource>();
+		protected List<IResource> initializationList = new ArrayList<IResource>();
 
 		protected IModel targetModel;
 
@@ -86,20 +88,8 @@ public class CopyCommand extends ExtendedCompositeCommand {
 		/**
 		 * Return the copy of the specified object if it has one.
 		 */
-		public IResource getCopy(IResource object) {
+		public IResource getCopy(IReference object) {
 			return get(object);
-		}
-
-		/**
-		 * Return the copy of the specified object or the object itself if it
-		 * has no copy.
-		 */
-		public IResource getCopyTarget(IResource target, boolean copyRequired) {
-			IResource copied = getCopy(target);
-			if (copied == null) {
-				copied = copyRequired ? null : target;
-			}
-			return copied;
 		}
 
 		public void incrementDeferredInitializationCount() {
@@ -241,7 +231,6 @@ public class CopyCommand extends ExtendedCompositeCommand {
 		}
 
 		ExtendedCompositeCommand createCommand = new ExtendedCompositeCommand(0);
-
 		boolean transactionWasActive = owner.getEntityManager()
 				.getTransaction().isActive();
 		if (!transactionWasActive) {
@@ -270,15 +259,12 @@ public class CopyCommand extends ExtendedCompositeCommand {
 							IResource object = copiedObjects.next();
 							ICommand initializeCopyCommand = InitializeCopyCommand
 									.create(domain, object, copyHelper);
-
 							// Record it for execution.
 							if (!this.appendIfCanExecute(initializeCopyCommand)) {
 								return false;
 							}
-
 							copiedObjects.remove();
 						}
-
 						return true;
 					}
 				};
@@ -306,7 +292,6 @@ public class CopyCommand extends ExtendedCompositeCommand {
 		if (owner == null) {
 			return false;
 		}
-
 		return true;
 	}
 

@@ -24,13 +24,12 @@ import java.util.List;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.ObjectProperty;
 import net.enilink.komma.concepts.IResource;
-import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.IReference;
 
 /**
  * This is a convenient common base class for all the command parameters need by
  * the various types of commands. It provides particular support for the
- * encodings need by the basic EMF-based command implementations.
+ * encodings need by the basic KOMMA-based command implementations.
  */
 public class CommandParameter {
 	/**

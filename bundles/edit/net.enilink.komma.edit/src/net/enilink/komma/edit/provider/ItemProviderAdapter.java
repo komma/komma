@@ -100,7 +100,7 @@ public class ItemProviderAdapter extends
 		NotificationSupport<IViewerNotification> implements IDisposable,
 		CreateChildCommand.IHelper, IResourceLocator, IAdapter,
 		INotificationListener<INotification> {
-	protected static class ChildDescriptor implements IChildDescriptor {
+	public static class ChildDescriptor implements IChildDescriptor {
 		protected URI name;
 		protected boolean requiresName;
 		protected Object value;
@@ -143,7 +143,7 @@ public class ItemProviderAdapter extends
 		}
 	}
 
-	protected static class ChildParameter extends CommandParameter implements
+	public static class ChildParameter extends CommandParameter implements
 			IChildDescriptor {
 		public ChildParameter(Object owner, Object property, Object value) {
 			super(owner, property, value);
@@ -194,10 +194,11 @@ public class ItemProviderAdapter extends
 	 */
 	protected static class ChildrenStore {
 		protected Map<IProperty, IList<Object>> map;
-		protected IObject owner;
+		protected IResource owner;
 		protected Collection<? extends IProperty> properties;
 
-		ChildrenStore(IObject owner, Collection<? extends IProperty> properties) {
+		ChildrenStore(IResource owner,
+				Collection<? extends IProperty> properties) {
 			this.owner = owner;
 			this.properties = properties;
 		}
@@ -285,7 +286,7 @@ public class ItemProviderAdapter extends
 			return map == null ? null : map.get(property);
 		}
 
-		public IObject getOwner() {
+		public IResource getOwner() {
 			return owner;
 		}
 
@@ -750,10 +751,9 @@ public class ItemProviderAdapter extends
 
 	protected void collectChildrenProperties(Object object,
 			Collection<IProperty> childrenProperties) {
-		if (object instanceof IObject) {
-			IObject iObject = (IObject) object;
-			childrenProperties.addAll(iObject.getApplicableChildProperties()
-					.toSet());
+		if (object instanceof IResource) {
+			childrenProperties.addAll(((IResource) object)
+					.getApplicableChildProperties().toSet());
 		}
 	}
 
@@ -768,17 +768,17 @@ public class ItemProviderAdapter extends
 	protected void collectNewChildDescriptors(
 			ICollector<Object> newChildDescriptors, Object object) {
 		// Subclasses may override to add descriptors.
-		if (object instanceof IObject) {
-			for (IProperty property : ((IObject) object)
+		if (object instanceof IResource) {
+			for (IProperty property : ((IResource) object)
 					.getApplicableChildProperties()) {
 				if (newChildDescriptors.cancelled()) {
 					return;
 				}
 
-				if (((IObject) object).getApplicableCardinality(property)
+				if (((IResource) object).getApplicableCardinality(property)
 						.getSecond() > 0) {
 					Set<IClass> ranges = new HashSet<IClass>(property
-							.getNamedRanges((IObject) object, false).toList());
+							.getNamedRanges((IResource) object, false).toList());
 
 					IClass[] rangeArray = ranges.toArray(new IClass[ranges
 							.size()]);
@@ -807,7 +807,7 @@ public class ItemProviderAdapter extends
 						newChildDescriptors.add(createChildParameter(
 								property,
 								new ChildDescriptor(Arrays.asList(rangeClass),
-										childRequiresName((IObject) object,
+										childRequiresName((IResource) object,
 												property, rangeClass))));
 					}
 				}
@@ -883,7 +883,7 @@ public class ItemProviderAdapter extends
 			if (childrenStoreMap == null) {
 				childrenStoreMap = new HashMap<Object, ChildrenStore>();
 			}
-			store = new ChildrenStore((IObject) object,
+			store = new ChildrenStore((IResource) object,
 					getChildrenProperties(object));
 			childrenStoreMap.put(object, store);
 		}
@@ -1037,8 +1037,6 @@ public class ItemProviderAdapter extends
 	 * multi-line and to sort choices; specifies a static image, a category, and
 	 * filter flags; and determines the cell editor from the type of the
 	 * structural feature.
-	 * 
-	 * @since 2.2.0
 	 */
 	protected ItemPropertyDescriptor createItemPropertyDescriptor(
 			IAdapterFactory adapterFactory, IResourceLocator resourceLocator,
@@ -1144,8 +1142,6 @@ public class ItemProviderAdapter extends
 	/**
 	 * This crops the given text to exclude any control characters. The first
 	 * such character and all following it are replaced by "..."
-	 * 
-	 * @since 2.2.0
 	 */
 	public String crop(String text) {
 		if (text != null) {
@@ -2007,11 +2003,11 @@ public class ItemProviderAdapter extends
 	 * object within the view (i.e. during select and reveal operation).
 	 */
 	public Object getParent(Object object) {
-		if (!(object instanceof IObject)) {
+		if (!(object instanceof IResource)) {
 			return null;
 		}
 
-		return ((IObject) object).getContainer();
+		return ((IResource) object).getContainer();
 	}
 
 	/**
@@ -2045,8 +2041,8 @@ public class ItemProviderAdapter extends
 		if (itemPropertyDescriptors == null) {
 			itemPropertyDescriptors = new ArrayList<IItemPropertyDescriptor>();
 
-			if (object instanceof IObject) {
-				for (IProperty property : ((IObject) object)
+			if (object instanceof IResource) {
+				for (IProperty property : ((IResource) object)
 						.getRelevantProperties()) {
 					itemPropertyDescriptors.add(createItemPropertyDescriptor(
 							adapterFactory, this, ModelUtil.getLabel(property),
@@ -2253,9 +2249,9 @@ public class ItemProviderAdapter extends
 				typesSb.append(ModelUtil.getLabel(type));
 			}
 			return typesSb.toString();
-		} else if (object instanceof IObject) {
+		} else if (object instanceof IResource) {
 			StringBuilder typesSb = new StringBuilder();
-			for (net.enilink.vocab.rdfs.Class rangeClass : ((IObject) object)
+			for (net.enilink.vocab.rdfs.Class rangeClass : ((IResource) object)
 					.getClasses(true)) {
 				if (typesSb.length() > 0) {
 					typesSb.append(", ");
@@ -2330,24 +2326,22 @@ public class ItemProviderAdapter extends
 	 * children. The new, optimized approach actually iterates through and tests
 	 * the {@link #getChildrenFeatures children features} directly, avoiding
 	 * accessing the children objects themselves, wherever possible.
-	 * 
-	 * @since 2.4
 	 */
 	protected boolean hasChildren(Object object, boolean optimized) {
 		if (!optimized) {
 			return !getChildren(object).isEmpty();
 		}
 
-		if (object instanceof IObject) {
-			IObject iObject = (IObject) object;
+		if (object instanceof IResource) {
+			IResource resource = (IResource) object;
 			for (IProperty property : getChildrenProperties(object)) {
-				if (property.isMany(iObject)) {
-					Collection<?> children = (Collection<?>) iObject
+				if (property.isMany(resource)) {
+					Collection<?> children = (Collection<?>) resource
 							.get(property);
 					if (children != null && !children.isEmpty()) {
 						return true;
 					}
-				} else if (iObject.get(property) != null) {
+				} else if (resource.get(property) != null) {
 					return true;
 				}
 			}
@@ -2388,9 +2382,9 @@ public class ItemProviderAdapter extends
 	 */
 	protected boolean isValidValue(Object object, Object value,
 			IReference property) {
-		IProperty resolvedProperty = (IProperty) ((IObject) object).getModel()
-				.resolve(property);
-		return resolvedProperty.isRangeCompatible((IObject) object, value);
+		IProperty resolvedProperty = (IProperty) ((IResource) object)
+				.getEntityManager().find(property);
+		return resolvedProperty.isRangeCompatible((IResource) object, value);
 	}
 
 	/**
@@ -2609,18 +2603,16 @@ public class ItemProviderAdapter extends
 			if (notification instanceof IStatementNotification) {
 				IStatementNotification stmtNotification = (IStatementNotification) notification;
 				IProperty property = (IProperty) childrenStore.getOwner()
-						.getModel()
-						.resolve((IReference) stmtNotification.getPredicate());
+						.getEntityManager()
+						.find((IReference) stmtNotification.getPredicate());
 
 				// ensure that cached data is discarded
 				childrenStore.getOwner().refresh(property);
 			} else if (notification instanceof IPropertyNotification) {
 				IPropertyNotification propertyNotification = (IPropertyNotification) notification;
-				IProperty property = (IProperty) childrenStore
-						.getOwner()
-						.getModel()
-						.resolve(
-								(IReference) propertyNotification.getProperty());
+				IProperty property = (IProperty) childrenStore.getOwner()
+						.getEntityManager()
+						.find((IReference) propertyNotification.getProperty());
 
 				// ensure that cached data is discarded
 				childrenStore.getOwner().refresh(property);

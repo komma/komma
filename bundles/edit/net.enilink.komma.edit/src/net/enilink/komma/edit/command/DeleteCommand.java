@@ -41,8 +41,6 @@ import net.enilink.komma.model.IObject;
 /**
  * This command removes an object from its parent container and to deletes all
  * other references to it from within the editing domain.
- * 
- * @since 2.2
  */
 public class DeleteCommand extends AbstractOverrideableCommand {
 	/**

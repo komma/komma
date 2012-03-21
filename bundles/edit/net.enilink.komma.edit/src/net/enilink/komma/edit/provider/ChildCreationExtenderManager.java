@@ -71,13 +71,6 @@ public class ChildCreationExtenderManager extends DelegatingResourceLocator {
 		protected int expectedModCount = modCount;
 
 		/**
-		 * Creates an empty new instance.
-		 */
-		public ChildCreationExtenderList() {
-			super();
-		}
-
-		/**
 		 * This list may not contain null.
 		 */
 		@Override
@@ -140,7 +133,7 @@ public class ChildCreationExtenderManager extends DelegatingResourceLocator {
 	}
 
 	@Override
-	protected IResourceLocator[] getDelegateResourceLocators() {
+	protected synchronized IResourceLocator[] getDelegateResourceLocators() {
 		getChildCreationExtenders();
 		return childCreationExtenders.getDelegateResourceLocators();
 	}
@@ -155,7 +148,7 @@ public class ChildCreationExtenderManager extends DelegatingResourceLocator {
 	 * 
 	 * @return a modifiable list of the child creation extenders.
 	 */
-	public List<IChildCreationExtender> getChildCreationExtenders() {
+	public synchronized List<IChildCreationExtender> getChildCreationExtenders() {
 		if (childCreationExtenders == null) {
 			childCreationExtenders = new ChildCreationExtenderList();
 			for (IChildCreationExtender.Descriptor descriptor : IChildCreationExtender.Descriptor.Registry.INSTANCE
@@ -178,7 +171,7 @@ public class ChildCreationExtenderManager extends DelegatingResourceLocator {
 	 * @return the list of new child descriptors accumulated from each of the
 	 *         child creation extenders.
 	 */
-	public List<?> getNewChildDescriptors(Object object,
+	public synchronized List<?> getNewChildDescriptors(Object object,
 			IEditingDomain editingDomain) {
 		List<Object> result = new ArrayList<Object>();
 		for (IChildCreationExtender childCreationExtender : getChildCreationExtenders()) {

@@ -37,13 +37,14 @@ abstract public class CollectorJob<T> extends Job implements ICollector<T> {
 
 	@Override
 	public void add(T element) {
-		objects.add(element);
+		synchronized (objects) {
+			objects.add(element);
+		}
 		if (begin == null) {
 			begin = System.currentTimeMillis();
 		} else if (System.currentTimeMillis() - begin >= delay) {
 			// reset begin
 			begin = System.currentTimeMillis();
-
 			handleObjects();
 		}
 	}
@@ -66,9 +67,16 @@ abstract public class CollectorJob<T> extends Job implements ICollector<T> {
 	}
 
 	private void handleObjects() {
-		if (!cancelled() && (!objects.isEmpty() || done)) {
-			final List<T> objectsSnapshot = new ArrayList<T>(objects);
-			objects.clear();
+		boolean empty;
+		synchronized (objects) {
+			empty = objects.isEmpty();
+		}
+		if (!cancelled() && (!empty || done)) {
+			final List<T> objectsSnapshot;
+			synchronized (objects) {
+				objectsSnapshot = new ArrayList<T>(objects);
+				objects.clear();
+			}
 			handleObjects(objectsSnapshot);
 		}
 	}

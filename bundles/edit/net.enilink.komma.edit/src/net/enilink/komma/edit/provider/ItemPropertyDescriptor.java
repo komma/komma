@@ -123,15 +123,11 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 
 	/**
 	 * Whether the value of this property consists of multi-line text.
-	 * 
-	 * @since 2.2.0
 	 */
 	protected boolean multiLine;
 
 	/**
 	 * Whether the choices for this property should be sorted for display.
-	 * 
-	 * @since 2.2.0
 	 */
 	protected boolean sortChoices;
 
@@ -279,8 +275,6 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 	 * to be multi-line and to sort choices; specifies a static image, a
 	 * category, and filter flags; and determines the cell editor from the type
 	 * of the structural feature.
-	 * 
-	 * @since 2.2.0
 	 */
 	public ItemPropertyDescriptor(IAdapterFactory adapterFactory,
 			IResourceLocator resourceLocator, String displayName,

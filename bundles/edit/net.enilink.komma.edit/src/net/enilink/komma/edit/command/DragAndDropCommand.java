@@ -42,7 +42,6 @@ import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.IReference;
 
 /**
@@ -179,7 +178,6 @@ public class DragAndDropCommand extends AbstractCommand implements
 			float location, int operations, int operation,
 			Collection<?> collection) {
 		super(LABEL, DESCRIPTION);
-
 		this.domain = domain;
 		this.owner = owner;
 		this.location = location;
