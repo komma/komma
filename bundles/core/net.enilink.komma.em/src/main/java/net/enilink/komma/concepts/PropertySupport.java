@@ -199,19 +199,23 @@ public abstract class PropertySupport extends BehaviorBase implements
 		if (object instanceof IResource) {
 			// query can be optimized if OWL-inferencing is supported
 			if (getEntityManager().getInferencing().doesOWL()) {
-				String query = PREFIX + "ASK {"
-						+ "?o a ?c . ?p rdfs:range ?c }";
+				String query = PREFIX
+						+ "ASK {"
+						+ "?o a ?c . " //
+						+ "{ ?p rdfs:range ?c }" //
+						+ " UNION { ?c rdfs:subClassOf ?restriction . ?restriction owl:onProperty ?p . " //
+						+ "{ ?restriction owl:allValuesFrom ?c } UNION { ?restriction owl:someValuesFrom ?c }}" //
+						+ "}";
 
 				return subject.getEntityManager().createQuery(query)
-						.setParameter("o", object)
-						.setParameter("p", getBehaviourDelegate())
+						.setParameter("o", object).setParameter("p", this)
 						.getBooleanResult();
 			}
 
 			String query = PREFIX
 					+ "SELECT DISTINCT ?r WHERE {"
 					+ "?o a ?c . ?c rdfs:subClassOf ?restriction . ?restriction owl:onProperty ?p . "
-					+ "{{?restriction owl:allValuesFrom ?r} UNION {?restriction owl:someValuesFrom ?r} OPTIONAL {?r owl:intersectionOf ?x} FILTER (!bound(?x))}"
+					+ "{{ ?restriction owl:allValuesFrom ?r } UNION { ?restriction owl:someValuesFrom ?r } FILTER NOT EXISTS { ?r owl:intersectionOf ?x }}"
 					+ "}";
 
 			@SuppressWarnings("unchecked")

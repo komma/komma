@@ -46,9 +46,9 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 
 	private static final String SELECT_SUBCLASSES(boolean named) {
 		return PREFIX + "SELECT DISTINCT ?subClass " + "WHERE { "
-				+ "?subClass rdfs:subClassOf ?superClass ; a rdfs:Class."
+				+ "?subClass rdfs:subClassOf ?superClass ; a rdfs:Class . "
 				+ "FILTER (?subClass != ?superClass"
-				+ (named ? "&& isIRI(?subClass)" : "")
+				+ (named ? " && isIRI(?subClass)" : "")
 				+ ") } ORDER BY ?subClass";
 	};
 
