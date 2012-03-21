@@ -55,9 +55,6 @@ public class Diagnostician implements IValidator.SubstitutionLabelProvider,
 		return ModelUtil.getLabel(value);
 	}
 
-	/**
-	 * @since 2.4
-	 */
 	public Map<Object, Object> createDefaultContext() {
 		Map<Object, Object> context = new HashMap<Object, Object>();
 		context.put(IValidator.SubstitutionLabelProvider.class, this);
@@ -65,9 +62,6 @@ public class Diagnostician implements IValidator.SubstitutionLabelProvider,
 		return context;
 	}
 
-	/**
-	 * @since 2.4
-	 */
 	public BasicDiagnostic createDefaultDiagnostic(IResource object) {
 		return new BasicDiagnostic(DefaultValidator.DIAGNOSTIC_SOURCE, 0,
 				KommaCore.getDefault().getString(
@@ -76,9 +70,6 @@ public class Diagnostician implements IValidator.SubstitutionLabelProvider,
 				new Object[] { object });
 	}
 
-	/**
-	 * @since 2.4
-	 */
 	public BasicDiagnostic createDefaultDiagnostic(IReference datatype,
 			Object value) {
 		return new BasicDiagnostic(DefaultValidator.DIAGNOSTIC_SOURCE, 0,
@@ -94,9 +85,6 @@ public class Diagnostician implements IValidator.SubstitutionLabelProvider,
 		return diagnostics;
 	}
 
-	/**
-	 * @since 2.4
-	 */
 	public Diagnostic validate(IResource object, Map<?, ?> contextEntries) {
 		BasicDiagnostic diagnostics = createDefaultDiagnostic(object);
 		Map<Object, Object> context = createDefaultContext();

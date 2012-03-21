@@ -57,11 +57,10 @@
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  A fully qualified name of the Java class implementing &lt;samp&gt;org.eclipse.emf.ecore.resource.Resource.Factory
-&lt;/samp&gt;.
+                  A fully qualified name of the Java class implementing &lt;samp&gt;net.enilink.komma.model.IContentHandler&lt;/samp&gt;.
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.emf.ecore.resource.Resource.Factory"/>
+                  <meta.attribute kind="java" basedOn=":net.enilink.komma.model.IContentHandler"/>
                </appInfo>
             </annotation>
          </attribute>

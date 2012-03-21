@@ -41,7 +41,6 @@ import net.enilink.komma.core.URIImpl;
  * 
  * @see URIHandler
  * @see IURIConverter
- * @since 2.4
  */
 public interface IContentHandler {
 	/**

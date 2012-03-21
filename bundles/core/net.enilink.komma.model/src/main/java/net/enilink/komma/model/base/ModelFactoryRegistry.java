@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import net.enilink.komma.model.IContentHandler;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IURIConverter;
@@ -60,7 +61,7 @@ public class ModelFactoryRegistry implements IModel.Factory.Registry {
 	public IModel.Factory getFactory(URI uri) {
 		return convert(getFactory(uri, protocolToFactoryMap,
 				extensionToFactoryMap, contentTypeIdentifierToFactoryMap,
-				ContentHandler.UNSPECIFIED_CONTENT_TYPE, true));
+				IContentHandler.UNSPECIFIED_CONTENT_TYPE, true));
 	}
 
 	/**
@@ -111,7 +112,7 @@ public class ModelFactoryRegistry implements IModel.Factory.Registry {
 				boolean contentTypeIdentifierToFactoryMapIsEmpty = contentTypeIdentifierToFactoryMap
 						.isEmpty();
 				if (!contentTypeIdentifierToFactoryMapIsEmpty) {
-					if (ContentHandler.UNSPECIFIED_CONTENT_TYPE
+					if (IContentHandler.UNSPECIFIED_CONTENT_TYPE
 							.equals(contentTypeIdentifier)) {
 						contentTypeIdentifier = getContentTypeIdentifier(uri);
 					}
@@ -146,7 +147,7 @@ public class ModelFactoryRegistry implements IModel.Factory.Registry {
 			Map<String, ?> contentDescription = getURIConverter()
 					.contentDescription(uri, getContentDescriptionOptions());
 			return (String) contentDescription
-					.get(ContentHandler.CONTENT_TYPE_PROPERTY);
+					.get(IContentHandler.CONTENT_TYPE_PROPERTY);
 		} catch (IOException e) {
 			return null;
 		}
@@ -167,15 +168,15 @@ public class ModelFactoryRegistry implements IModel.Factory.Registry {
 	/**
 	 * A constant read only map of
 	 * {@link URIConverter#contentDescription(URI, Map) options} used to request
-	 * just the {@link ContentHandler#CONTENT_TYPE_PROPERTY content type}.
+	 * just the {@link IContentHandler#CONTENT_TYPE_PROPERTY content type}.
 	 */
 	protected static final Map<?, ?> CONTENT_DESCRIPTION_OPTIONS;
 	static {
 		Map<Object, Object> contentDescriptionOptions = new HashMap<Object, Object>();
 		Set<String> requestedProperties = new HashSet<String>();
-		requestedProperties.add(ContentHandler.CONTENT_TYPE_PROPERTY);
+		requestedProperties.add(IContentHandler.CONTENT_TYPE_PROPERTY);
 		contentDescriptionOptions
-				.put(ContentHandler.OPTION_REQUESTED_PROPERTIES,
+				.put(IContentHandler.OPTION_REQUESTED_PROPERTIES,
 						requestedProperties);
 		CONTENT_DESCRIPTION_OPTIONS = Collections
 				.unmodifiableMap(contentDescriptionOptions);
@@ -194,7 +195,7 @@ public class ModelFactoryRegistry implements IModel.Factory.Registry {
 
 	/**
 	 * Returns the resource factory appropriate for the given URI and
-	 * {@link ContentHandler#CONTENT_TYPE_PROPERTY content type identifier},
+	 * {@link IContentHandler#CONTENT_TYPE_PROPERTY content type identifier},
 	 * when standard alternatives fail.
 	 * <p>
 	 * This implementation calls {@link #delegatedGetFactory(URI)}; clients are
@@ -204,7 +205,7 @@ public class ModelFactoryRegistry implements IModel.Factory.Registry {
 	 * @param uri
 	 *            the URI.
 	 * @param contentTypeIdentifier
-	 *            the {@link ContentHandler#CONTENT_TYPE_PROPERTY content type
+	 *            the {@link IContentHandler#CONTENT_TYPE_PROPERTY content type
 	 *            identifier}.
 	 * @return the resource factory appropriate for the given URI and content
 	 *         type identifier.

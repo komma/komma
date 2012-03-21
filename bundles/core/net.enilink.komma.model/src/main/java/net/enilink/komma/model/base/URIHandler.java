@@ -230,8 +230,8 @@ public class URIHandler implements IURIHandler {
 					Map<String, ?> contentDescription = contentHandler
 							.contentDescription(uri, inputStream, options,
 									context);
-					switch ((ContentHandler.Validity) contentDescription
-							.get(ContentHandler.VALIDITY_PROPERTY)) {
+					switch ((IContentHandler.Validity) contentDescription
+							.get(IContentHandler.VALIDITY_PROPERTY)) {
 					case VALID: {
 						return contentDescription;
 					}
@@ -253,7 +253,7 @@ public class URIHandler implements IURIHandler {
 			}
 		}
 
-		return result == null ? ContentHandler.INVALID_CONTENT_DESCRIPTION
+		return result == null ? IContentHandler.INVALID_CONTENT_DESCRIPTION
 				: result;
 	}
 

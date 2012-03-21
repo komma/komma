@@ -31,7 +31,6 @@ import net.enilink.komma.core.URI;
  * 
  * @see IURIConverter
  * @see ContentHandler
- * @since 2.4
  */
 public interface IURIHandler {
 

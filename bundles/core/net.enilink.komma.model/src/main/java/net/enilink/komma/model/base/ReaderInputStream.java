@@ -29,9 +29,6 @@ public class ReaderInputStream extends InputStream {
 		return matcher.lookingAt() ? matcher.group(1) : null;
 	}
 
-	/**
-	 * @since 2.4
-	 */
 	public static String getEncoding(Reader xmlReader) {
 		try {
 			xmlReader.mark(100);
@@ -64,9 +61,6 @@ public class ReaderInputStream extends InputStream {
 		this.encoding = encoding;
 	}
 
-	/**
-	 * @since 2.4
-	 */
 	public ReaderInputStream(Reader xmlReader) {
 		this.reader = xmlReader.markSupported() ? xmlReader
 				: new BufferedReader(xmlReader);

@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -13,9 +12,11 @@ import java.util.Queue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.core.runtime.content.IContentDescription;
+import org.eclipse.core.runtime.content.IContentType;
 import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.annotations.parameterTypes;
-import net.enilink.composition.concepts.Message;
 import net.enilink.composition.traits.Behaviour;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -31,10 +32,12 @@ import org.openrdf.rio.helpers.RDFHandlerBase;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.model.IContentHandler;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.MODELS;
+import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
@@ -98,37 +101,49 @@ public abstract class SerializableModelSupport implements IModel, Model,
 		}
 	}
 
-	private RDFFormat determineFormat(Map<?, ?> options) {
-		IURIConverter uriConverter = getModelSet().getURIConverter();
-		URI normalizedUri = uriConverter.normalize(getURI());
-
-		RDFFormat format = null;
-
-		// simply use the filename to detect the correct RDF format
-		String lastSegment = normalizedUri.lastSegment();
-		if (lastSegment != null) {
-			format = RDFFormat.forFileName(lastSegment);
+	private RDFFormat determineFormat(Map<?, ?> options) throws IOException {
+		RDFFormat format = (RDFFormat) options.get(RDFFormat.class);
+		if (format == null) {
+			// format was not directly specified in options
+			IURIConverter uriConverter = getModelSet().getURIConverter();
+			IContentDescription contentDescription = (IContentDescription) options
+					.get(IContentDescription.class);
+			if (contentDescription == null) {
+				IContentType contentType = (IContentType) options
+						.get(IContentType.class);
+				if (contentType == null) {
+					String contentTypeId = (String) uriConverter
+							.contentDescription(getURI(), options).get(
+									IContentHandler.CONTENT_TYPE_PROPERTY);
+					if (contentTypeId != null) {
+						contentType = Platform.getContentTypeManager()
+								.getContentType(contentTypeId);
+						if (contentType != null) {
+							contentDescription = contentType
+									.getDefaultDescription();
+						}
+					}
+				}
+			}
+			if (contentDescription != null) {
+				// try to use the content description for determining the RDF
+				// format
+				String mimeType = (String) contentDescription
+						.getProperty(new QualifiedName(ModelCore.PLUGIN_ID,
+								"mimeType"));
+				format = RDFFormat.forMIMEType(mimeType);
+			}
+			if (format == null) {
+				// use file name with extension as fall back
+				URI normalizedUri = uriConverter.normalize(getURI());
+				// simply use the filename to detect the correct RDF format
+				String lastSegment = normalizedUri.lastSegment();
+				if (lastSegment != null) {
+					format = RDFFormat.forFileName(lastSegment);
+				}
+			}
 		}
-
-		// TODO maybe also use the content description to determine the correct
-		// RDF format
-		// uriConverter.contentDescription(normalizedUri, options);
-
 		return format != null ? format : RDFFormat.RDFXML;
-	}
-
-	@parameterTypes(Map.class)
-	public void load(Message msg) {
-		// determine the RDF format for the source URI and put it into the
-		// options map
-		Map<?, ?> options = (Map<?, ?>) msg.getParameters()[0];
-		if (options == null) {
-			options = Collections.emptyMap();
-		}
-		Map<Object, Object> newOptions = new HashMap<Object, Object>(options);
-		newOptions.put(RDFFormat.class.getName(), determineFormat(options));
-		msg.getParameters()[0] = newOptions;
-		msg.proceed();
 	}
 
 	@Override
@@ -139,13 +154,10 @@ public abstract class SerializableModelSupport implements IModel, Model,
 		final IDataManager dm = ((IModelSet.Internal) getModelSet())
 				.getDataManagerFactory().get();
 		getModelSet().getDataChangeSupport().setEnabled(dm, false);
-
 		try {
 			setModelLoading(true);
-
 			if (in != null && in.available() > 0) {
 				dm.setModifyContexts(Collections.singleton(getURI()));
-
 				dm.getTransaction().begin();
 
 				final AtomicBoolean finished = new AtomicBoolean(false);
@@ -153,11 +165,7 @@ public abstract class SerializableModelSupport implements IModel, Model,
 				// new Job("Load model") {
 				// @Override
 				// public IStatus run(IProgressMonitor monitor) {
-				final RDFFormat[] format = { (RDFFormat) options.get(RDFFormat.class
-						.getName()) };
-				if (format[0] == null) {
-					format[0] = determineFormat(options);
-				}
+				final RDFFormat[] format = { determineFormat(options) };
 				Executors.newSingleThreadExecutor().execute(new Runnable() {
 					@Override
 					public void run() {
@@ -240,26 +248,9 @@ public abstract class SerializableModelSupport implements IModel, Model,
 		setModelLoaded(true);
 	}
 
-	@parameterTypes(Map.class)
-	public void save(Message msg) {
-		// determine the RDF format for the source URI and put it into the
-		// options map
-		Map<?, ?> options = (Map<?, ?>) msg.getParameters()[0];
-		if (options == null) {
-			options = Collections.emptyMap();
-		}
-		Map<Object, Object> newOptions = new HashMap<Object, Object>(options);
-		newOptions.put(RDFFormat.class.getName(), determineFormat(options));
-		msg.getParameters()[0] = newOptions;
-		msg.proceed();
-	}
-
 	@Override
 	public void save(OutputStream os, Map<?, ?> options) throws IOException {
-		RDFFormat format = (RDFFormat) options.get(RDFFormat.class.getName());
-		if (format == null) {
-			format = determineFormat(options);
-		}
+		RDFFormat format = (RDFFormat) determineFormat(options);
 		RDFWriter writer;
 		if (RDFFormat.RDFXML.equals(format)) {
 			// use a special pretty writer in case of RDF/XML
@@ -272,7 +263,6 @@ public abstract class SerializableModelSupport implements IModel, Model,
 					format);
 			writer = factory.getWriter(os);
 		}
-
 		try {
 			final SesameValueConverter valueConverter = new SesameValueConverter(
 					new ValueFactoryImpl());
@@ -296,7 +286,6 @@ public abstract class SerializableModelSupport implements IModel, Model,
 			} finally {
 				dm.close();
 			}
-
 			writer.endRDF();
 		} catch (RDFHandlerException e) {
 			throw new KommaException("Saving RDF failed", e);

@@ -46,8 +46,6 @@ public interface IURIConverter {
 	/**
 	 * An option used to pass the calling URIConverter to the {@link URIHandler}
 	 * s.
-	 * 
-	 * @since 2.4
 	 */
 	String OPTION_URI_CONVERTER = "URI_CONVERTER";
 
@@ -55,8 +53,6 @@ public interface IURIConverter {
 	 * An option to pass a {@link Map Map&lt;Object, Object>} to any of the URI
 	 * converter's methods in order to yield results in addition to the returned
 	 * value of the method.
-	 * 
-	 * @since 2.4
 	 */
 	String OPTION_RESPONSE = "RESPONSE";
 
@@ -68,8 +64,6 @@ public interface IURIConverter {
 	 * used by resource {@link IModel#load(Map) load} and
 	 * {@link IModel#save(Map) save} in order to set the
 	 * {@link IModel#getTimeStamp()}.
-	 * 
-	 * @since 2.4
 	 */
 	String RESPONSE_TIME_STAMP_PROPERTY = "TIME_STAMP";
 
@@ -159,7 +153,6 @@ public interface IURIConverter {
 	 * Returns the list of {@link IURIHandler}s.
 	 * 
 	 * @return the list of {@link IURIHandler}s.
-	 * @since 2.4
 	 */
 	Collection<IURIHandler> getURIHandlers();
 
@@ -174,7 +167,6 @@ public interface IURIConverter {
 	 *         handle the given URI.
 	 * @throws RuntimeException
 	 *             if no matching handler is found.
-	 * @since 2.4
 	 */
 	IURIHandler getURIHandler(URI uri);
 
@@ -182,7 +174,6 @@ public interface IURIConverter {
 	 * Returns the list of {@link IContentHandler}s.
 	 * 
 	 * @return the list of {@link IContentHandler}s.
-	 * @since 2.4
 	 */
 	Collection<IContentHandler> getContentHandlers();
 
@@ -219,7 +210,6 @@ public interface IURIConverter {
 	 * @return an open input stream.
 	 * @exception IOException
 	 *                if there is a problem obtaining an open input stream.
-	 * @since 2.4
 	 */
 	InputStream createInputStream(URI uri, Map<?, ?> options)
 			throws IOException;
@@ -255,7 +245,6 @@ public interface IURIConverter {
 	 * @return an open output stream.
 	 * @exception IOException
 	 *                if there is a problem obtaining an open output stream.
-	 * @since 2.4
 	 */
 	OutputStream createOutputStream(URI uri, Map<?, ?> options)
 			throws IOException;
@@ -270,7 +259,6 @@ public interface IURIConverter {
 	 *            <code>null</code> if there are no options.
 	 * @throws IOException
 	 *             if there is a problem deleting the contents.
-	 * @since 2.4
 	 */
 	void delete(URI uri, Map<?, ?> options) throws IOException;
 
@@ -290,7 +278,6 @@ public interface IURIConverter {
 	 * @throws IOException
 	 *             if there is a problem accessing the contents.
 	 * @see ContentHandler#contentDescription(URI, InputStream, Map, Map)
-	 * @since 2.4
 	 */
 	Map<String, ?> contentDescription(URI uri, Map<?, ?> options)
 			throws IOException;
@@ -306,7 +293,6 @@ public interface IURIConverter {
 	 *            options to influence how the existence determined, or
 	 *            <code>null</code> if there are no options.
 	 * @return whether the given URI has contents.
-	 * @since 2.4
 	 */
 	boolean exists(URI uri, Map<?, ?> options);
 
@@ -315,16 +301,12 @@ public interface IURIConverter {
 	 * the last time the contents of a URI were modified. The value is
 	 * represented as Long that encodes the number of milliseconds since the
 	 * epoch 00:00:00 GMT, January 1, 1970.
-	 * 
-	 * @since 2.4
 	 */
 	String ATTRIBUTE_TIME_STAMP = "timeStamp";
 
 	/**
 	 * A {@link #ATTRIBUTE_TIME_STAMP} value that indicates no time stamp is
 	 * available.
-	 * 
-	 * @since 2.4
 	 */
 	long NULL_TIME_STAMP = -1;
 
@@ -332,8 +314,6 @@ public interface IURIConverter {
 	 * The length {@link #getAttributes(URI, Map) attribute} representing the
 	 * number of bytes in the contents of a URI. It is represented as a Long
 	 * value.
-	 * 
-	 * @since 2.4
 	 */
 	String ATTRIBUTE_LENGTH = "length";
 
@@ -343,8 +323,6 @@ public interface IURIConverter {
 	 * Boolean value. If the URI's contents {@link #exists(URI, Map) exist} and
 	 * it is read only, it will not be possible to
 	 * {@link #createOutputStream(URI, Map) create} an output stream.
-	 * 
-	 * @since 2.4
 	 */
 	String ATTRIBUTE_READ_ONLY = "readOnly";
 
@@ -352,8 +330,6 @@ public interface IURIConverter {
 	 * The execute {@link #getAttributes(URI, Map) attribute} representing
 	 * whether the contents of a URI can be executed. It is represented as a
 	 * Boolean value.
-	 * 
-	 * @since 2.4
 	 */
 	String ATTRIBUTE_EXECUTABLE = "executable";
 
@@ -361,16 +337,12 @@ public interface IURIConverter {
 	 * The archive {@link #getAttributes(URI, Map) attribute} representing
 	 * whether the contents of a URI are archived. It is represented as a
 	 * Boolean value.
-	 * 
-	 * @since 2.4
 	 */
 	String ATTRIBUTE_ARCHIVE = "archive";
 
 	/**
 	 * The hidden {@link #getAttributes(URI, Map) attribute} representing
 	 * whether the URI is visible. It is represented as a Boolean value.
-	 * 
-	 * @since 2.4
 	 */
 	String ATTRIBUTE_HIDDEN = "hidden";
 
@@ -378,11 +350,9 @@ public interface IURIConverter {
 	 * The directory {@link #getAttributes(URI, Map) attribute} representing
 	 * whether the URI represents a directory rather than a file. It is
 	 * represented as a Boolean value.
-	 * 
-	 * @since 2.4
 	 */
 	String ATTRIBUTE_DIRECTORY = "directory";
-
+	
 	/**
 	 * An option passed to a {@link Set Set<String>} to
 	 * {@link #getAttributes(URI, Map)} to indicate the specific attributes to

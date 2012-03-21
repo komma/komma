@@ -61,11 +61,10 @@
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  A fully qualified name of the Java class implementing &lt;samp&gt;net.enilink.komma.ontologies.IOntModel.IFactory
-&lt;/samp&gt;.
+                  A fully qualified name of the Java class implementing &lt;samp&gt;net.enilink.komma.model.IModel.Factory&lt;/samp&gt;.
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":net.enilink.komma.ontologies.IOntModel.IFactory"/>
+                  <meta.attribute kind="java" basedOn=":net.enilink.komma.model.IModel.Factory"/>
                </appInfo>
             </annotation>
          </attribute>

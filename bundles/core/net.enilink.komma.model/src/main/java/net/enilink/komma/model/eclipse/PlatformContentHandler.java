@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescription;
 
+import net.enilink.komma.model.IContentHandler;
 import net.enilink.komma.model.base.ContentHandler;
 import net.enilink.komma.core.URI;
 
@@ -91,7 +92,7 @@ public class PlatformContentHandler extends ContentHandler {
 			return INVALID_CONTENT_DESCRIPTION;
 		} else {
 			Map<String, Object> result = createContentDescription(ContentHandler.Validity.VALID);
-			result.put(ContentHandler.CONTENT_TYPE_PROPERTY, contentDescription
+			result.put(IContentHandler.CONTENT_TYPE_PROPERTY, contentDescription
 					.getContentType().getId());
 			Set<String> requestedProperties = getRequestedProperties(options);
 			if (requestedProperties != null) {

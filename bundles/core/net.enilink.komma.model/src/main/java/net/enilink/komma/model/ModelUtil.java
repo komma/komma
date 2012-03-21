@@ -1,10 +1,15 @@
 package net.enilink.komma.model;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.core.runtime.content.IContentDescription;
+import org.eclipse.core.runtime.content.IContentType;
 import org.openrdf.model.Statement;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
@@ -155,11 +160,32 @@ public class ModelUtil {
 		}
 	}
 
-	public static String findOntology(InputStream in, String baseURI)
-			throws Exception {
-		final org.openrdf.model.URI[] ontology = { null };
+	public static IContentDescription contentDescription(
+			IURIConverter uriConverter, URI modelUri) throws IOException {
+		String contentTypeId = (String) uriConverter.contentDescription(
+				modelUri, null).get(IContentHandler.CONTENT_TYPE_PROPERTY);
+		if (contentTypeId != null) {
+			IContentType contentType = Platform.getContentTypeManager()
+					.getContentType(contentTypeId);
+			if (contentType != null) {
+				return contentType.getDefaultDescription();
+			}
+		}
+		return null;
+	}
 
-		RDFParser parser = Rio.createParser(RDFFormat.RDFXML);
+	public static String findOntology(InputStream in, String baseURI,
+			IContentDescription contentDescription) throws Exception {
+		final org.openrdf.model.URI[] ontology = { null };
+		RDFFormat format = RDFFormat.RDFXML;
+		if (contentDescription != null) {
+			String mimeType = (String) contentDescription
+					.getProperty(new QualifiedName(ModelCore.PLUGIN_ID,
+							"mimeType"));
+			format = RDFFormat.forMIMEType(mimeType, format);
+		}
+
+		RDFParser parser = Rio.createParser(format);
 		parser.setRDFHandler(new RDFHandler() {
 			@Override
 			public void startRDF() throws RDFHandlerException {

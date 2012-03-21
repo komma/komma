@@ -420,7 +420,6 @@ public interface IModel {
 			 *         the content content type, or <code>null</code> if there
 			 *         isn't one.
 			 * @see IModelSet#createModel(URI)
-			 * @since 2.4
 			 */
 			Factory getFactory(URI uri, String contentType);
 
@@ -582,7 +581,6 @@ public interface IModel {
 		 * 
 		 * @param throwable
 		 *            the exception to wrap.
-		 * @since 2.4
 		 */
 		public IOWrappedException(Throwable throwable) {
 			super(throwable.getLocalizedMessage());
