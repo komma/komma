@@ -45,9 +45,6 @@ public class CopyAction extends CommandActionHandler {
 		return CopyToClipboardCommand.create(domain, selection);
 	}
 
-	/**
-	 * @since 2.1.0
-	 */
 	public void setWorkbenchPart(IWorkbenchPart workbenchPart) {
 		super.setWorkbenchPart(workbenchPart);
 		if (workbenchPart instanceof IEditingDomainProvider) {

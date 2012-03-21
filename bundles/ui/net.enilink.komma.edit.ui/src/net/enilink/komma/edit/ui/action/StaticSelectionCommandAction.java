@@ -70,8 +70,6 @@ public abstract class StaticSelectionCommandAction extends
 	/**
 	 * This constructs an instance for a command to be executed via
 	 * workbenchPart's editing domain.
-	 * 
-	 * @since 2.1.0
 	 */
 	public StaticSelectionCommandAction(IWorkbenchPart workbenchPart,
 			ISelection selection) {
@@ -86,8 +84,6 @@ public abstract class StaticSelectionCommandAction extends
 	/**
 	 * This constructs an instance for a command to be executed via the given
 	 * editing domain.
-	 * 
-	 * @since 2.4.0
 	 */
 	public StaticSelectionCommandAction(IWorkbenchPart workbenchPart,
 			IEditingDomain editingDomain, ISelection selection) {

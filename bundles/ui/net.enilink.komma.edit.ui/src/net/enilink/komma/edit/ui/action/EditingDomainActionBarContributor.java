@@ -165,8 +165,6 @@ public class EditingDomainActionBarContributor extends
 	 * same beahviour, by default, as in EMF 2.1 and before. You should probably
 	 * override this method to return true, in order to get the new, more useful
 	 * beahviour.
-	 * 
-	 * @since 2.2
 	 */
 	protected boolean removeAllReferencesOnDelete() {
 		return true;

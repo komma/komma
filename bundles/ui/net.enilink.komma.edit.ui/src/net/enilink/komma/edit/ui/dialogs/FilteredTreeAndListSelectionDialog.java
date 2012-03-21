@@ -31,8 +31,6 @@ import org.eclipse.ui.statushandlers.StatusManager;
 /**
  * Shows a list of items to the user with a text entry field for a string
  * pattern used to filter the list of items.
- * 
- * @since 3.3
  */
 public abstract class FilteredTreeAndListSelectionDialog extends
 		SelectionStatusDialog implements IFilteredTreeAndListDescriptor {

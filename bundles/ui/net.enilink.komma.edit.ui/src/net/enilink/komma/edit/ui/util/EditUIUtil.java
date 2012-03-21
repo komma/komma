@@ -51,14 +51,11 @@ import net.enilink.komma.model.base.ExtensibleURIConverter;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 
-/**
- * @since 2.2.0
- */
 public class EditUIUtil {
 	/**
 	 * Opens the default editor for the resource that contains the specified
-	 * EObject. This method only works if the resource's URI is a platform
-	 * resource URI.
+	 * IObject. This method only works if the model's URI is a platform resource
+	 * URI.
 	 */
 	public static boolean openEditor(IObject iObject) throws PartInitException {
 		if (iObject != null) {
@@ -121,7 +118,6 @@ public class EditUIUtil {
 	 *            the file name in the system
 	 * @return the descriptor of the default editor, or <code>null</code> if not
 	 *         found
-	 * @since 2.4
 	 */
 	public static IEditorDescriptor getDefaultEditor(String fileName) {
 		return fileName != null && fileName.length() != 0 ? getDefaultEditor(
@@ -143,7 +139,6 @@ public class EditUIUtil {
 	 *            the file name associated to the contents, or <code>null</code>
 	 * @return the descriptor of the default editor, or <code>null</code> if not
 	 *         found
-	 * @since 2.4
 	 */
 	public static IEditorDescriptor getDefaultEditor(InputStream contents,
 			String fileName) {
@@ -192,7 +187,6 @@ public class EditUIUtil {
 	 *            <code>null</code>
 	 * @return the descriptor of the default editor, or <code>null</code> if not
 	 *         found
-	 * @since 2.4
 	 */
 	public static IEditorDescriptor getDefaultEditor(URI uri,
 			IURIConverter uriConverter) {
@@ -234,7 +228,6 @@ public class EditUIUtil {
 	 *            if <code>true</code>, only the default editor for each content
 	 *            type will be included in the result
 	 * @return the descriptors of the editors
-	 * @since 2.4
 	 */
 	public static IEditorDescriptor[] getEditors(String fileName,
 			boolean defaultsOnly) {
@@ -259,7 +252,6 @@ public class EditUIUtil {
 	 *            if <code>true</code>, only the default editor for each content
 	 *            type will be included in the result
 	 * @return the descriptors of the editors
-	 * @since 2.4
 	 */
 	public static IEditorDescriptor[] getEditors(InputStream contents,
 			String fileName, boolean defaultsOnly) {
@@ -317,7 +309,6 @@ public class EditUIUtil {
 	 *            if <code>true</code>, only the default editor for each content
 	 *            type will be included in the result
 	 * @return the descriptors of the editors
-	 * @since 2.4
 	 */
 	public static IEditorDescriptor[] getEditors(URI uri,
 			IURIConverter uriConverter, boolean defaultsOnly) {

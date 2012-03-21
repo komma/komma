@@ -44,8 +44,6 @@ public class DelegatingCommandAction extends Action implements
 		ISelectionListener, ISelectionChangedListener {
 	/**
 	 * This is the action delegate we're wrapping.
-	 * 
-	 * @since 2.1.0
 	 */
 	protected IActionDelegate actionDelegate;
 
@@ -56,8 +54,6 @@ public class DelegatingCommandAction extends Action implements
 
 	/**
 	 * This constructs an instance.
-	 * 
-	 * @since 2.1.0
 	 */
 	public DelegatingCommandAction(IActionDelegate actionDelegate) {
 		this.actionDelegate = actionDelegate;
@@ -87,9 +83,6 @@ public class DelegatingCommandAction extends Action implements
 		selectionChanged(selection);
 	}
 
-	/**
-	 * @since 2.1.0
-	 */
 	protected void registerSelectionListener(IWorkbenchPart workbenchPart) {
 		ISelectionProvider selectionProvider = workbenchPart.getSite()
 				.getSelectionProvider();
@@ -99,9 +92,6 @@ public class DelegatingCommandAction extends Action implements
 		}
 	}
 
-	/**
-	 * @since 2.1.0
-	 */
 	protected void unregisterSelectionListener(IWorkbenchPart workbenchPart) {
 		ISelectionProvider selectionProvider = workbenchPart.getSite()
 				.getSelectionProvider();

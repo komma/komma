@@ -334,9 +334,6 @@ public class ValidateAction extends AbstractActionHandler {
 		setEnabled(!selectedObjects.isEmpty());
 	}
 
-	/**
-	 * @since 2.1.0
-	 */
 	public void setWorkbenchPart(IWorkbenchPart workbenchPart) {
 		super.setWorkbenchPart(workbenchPart);
 

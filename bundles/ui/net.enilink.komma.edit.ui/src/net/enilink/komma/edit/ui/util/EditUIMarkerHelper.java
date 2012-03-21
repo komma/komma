@@ -23,7 +23,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 
-import net.enilink.vocab.rdfs.Resource;
 import net.enilink.komma.common.ui.MarkerHelper;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
@@ -37,9 +36,7 @@ import net.enilink.komma.core.URIImpl;
 
 /**
  * Extension of {@link MarkerHelper} that provides extra functionalities useful
- * when using EMF classes such as {@link Resource}.
- * 
- * @since 2.2.0
+ * when using KOMMA classes such as {@link IModel}.
  */
 public class EditUIMarkerHelper extends MarkerHelper {
 	@Override
@@ -141,9 +138,6 @@ public class EditUIMarkerHelper extends MarkerHelper {
 		super.deleteMarkers(object, includeSubtypes, depth);
 	}
 
-	/**
-	 * @since 2.3
-	 */
 	@Override
 	public List<?> getTargetObjects(Object object, IMarker marker) {
 		if (object instanceof AdapterFactoryEditingDomain) {

@@ -5,7 +5,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.part.MultiPageEditorPart;
 
 import net.enilink.komma.common.ui.editor.ProblemEditorPart;
 import net.enilink.komma.common.util.BasicDiagnostic;

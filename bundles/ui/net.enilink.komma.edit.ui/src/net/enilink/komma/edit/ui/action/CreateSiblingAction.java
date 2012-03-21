@@ -33,8 +33,6 @@ public class CreateSiblingAction extends CreateChildAction {
 	/**
 	 * This constructs an instance of an action that uses the workbench part's
 	 * editing domain to create a sibling specified by <code>descriptor</code>.
-	 * 
-	 * @since 2.1.0
 	 */
 	public CreateSiblingAction(IWorkbenchPart workbenchPart,
 			ISelection selection, Object descriptor) {
@@ -44,8 +42,6 @@ public class CreateSiblingAction extends CreateChildAction {
 	/**
 	 * This constructs an instance of an action that uses the given editing
 	 * domain to create a sibling specified by <code>descriptor</code>.
-	 * 
-	 * @since 2.4.0
 	 */
 	public CreateSiblingAction(IWorkbenchPart workbenchPart,
 			IEditingDomain editingDomain, ISelection selection,

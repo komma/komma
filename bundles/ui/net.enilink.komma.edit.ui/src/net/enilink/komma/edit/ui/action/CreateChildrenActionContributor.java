@@ -13,6 +13,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 
+import net.enilink.commons.ui.CommonsUi;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 
@@ -105,9 +106,7 @@ public class CreateChildrenActionContributor {
 	 * This populates the pop-up menu before it appears.
 	 */
 	public void menuAboutToShow(IMenuManager menuManager, String contributionId) {
-		MenuManager submenuManager = null;
-
-		submenuManager = new MenuManager(
+		MenuManager submenuManager = new MenuManager(
 				KommaEditUIPlugin.INSTANCE
 						.getString("_UI_CreateChild_menu_item"));
 		newChildCollector.addMenuManager(submenuManager);
@@ -118,6 +117,12 @@ public class CreateChildrenActionContributor {
 						.getString("_UI_CreateSibling_menu_item"));
 		newSiblingCollector.addMenuManager(submenuManager);
 		menuManager.insertBefore(contributionId, submenuManager);
+
+		// run action collectors
+		CommonsUi.activateCallback("newChildCollector");
+		CommonsUi.activateCallback("newSiblingCollector");
+		newChildCollector.schedule();
+		newSiblingCollector.schedule();
 	}
 
 	/**
@@ -156,9 +161,29 @@ public class CreateChildrenActionContributor {
 					}
 					return Status.OK_STATUS;
 				}
+
+				@Override
+				protected void canceling() {
+					super.canceling();
+					deactivateCallback();
+				}
+
+				@Override
+				public void done() {
+					super.done();
+					deactivateCallback();
+				}
+
+				void deactivateCallback() {
+					display.asyncExec(new Runnable() {
+						@Override
+						public void run() {
+							CommonsUi.deactivateCallback("newChildCollector");
+						}
+					});
+				}
 			};
 			newChildCollector.addMenuManager(createChildMenuManager);
-			newChildCollector.schedule();
 
 			newSiblingCollector = new MenuActionCollector<Object>(
 					"Prepare create silbing actions", selection) {
@@ -178,9 +203,29 @@ public class CreateChildrenActionContributor {
 					}
 					return Status.OK_STATUS;
 				}
+
+				@Override
+				protected void canceling() {
+					super.canceling();
+					deactivateCallback();
+				}
+
+				@Override
+				public void done() {
+					super.done();
+					deactivateCallback();
+				}
+
+				void deactivateCallback() {
+					display.asyncExec(new Runnable() {
+						@Override
+						public void run() {
+							CommonsUi.deactivateCallback("newChildCollector");
+						}
+					});
+				}
 			};
 			newSiblingCollector.addMenuManager(createSiblingMenuManager);
-			newSiblingCollector.schedule();
 		}
 	}
 }

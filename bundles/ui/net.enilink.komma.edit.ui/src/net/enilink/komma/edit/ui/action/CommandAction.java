@@ -61,8 +61,6 @@ public class CommandAction extends AbstractActionDelegate implements
 	/**
 	 * This records the editor or view with which the action is currently
 	 * associated.
-	 * 
-	 * @since 2.1.0
 	 */
 	protected IWorkbenchPart workbenchPart;
 
@@ -117,8 +115,6 @@ public class CommandAction extends AbstractActionDelegate implements
 	/**
 	 * This is called immediately after this action delegate is created. We use
 	 * this as an opportunity to record the proxy action for later use.
-	 * 
-	 * @since 2.1.0
 	 */
 	public void init(IAction action) {
 		this.action = action;
@@ -127,8 +123,6 @@ public class CommandAction extends AbstractActionDelegate implements
 	/**
 	 * This is called when this action delegate is no longer needed. This
 	 * implementation does nothing.
-	 * 
-	 * @since 2.1.0
 	 */
 	public void dispose() {
 		// Do nothing
@@ -149,8 +143,6 @@ public class CommandAction extends AbstractActionDelegate implements
 	 * For view actions, the framework calls this when the view is shown, so
 	 * that we can connect with it. We call {@link #setActiveWorkbenchPart} to
 	 * record it and its editing domain, if it can provide one.
-	 * 
-	 * @since 2.1.0
 	 */
 	public void init(IViewPart view) {
 		setWorkbenchPart(view);
@@ -159,8 +151,6 @@ public class CommandAction extends AbstractActionDelegate implements
 	/**
 	 * This records the specified workbench part, and if it is an editing domain
 	 * provider, its editing domain.
-	 * 
-	 * @since 2.1.0
 	 */
 	public void setWorkbenchPart(IWorkbenchPart workbenchPart) {
 		// If the workbench part changes...

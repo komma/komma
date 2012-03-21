@@ -250,6 +250,11 @@ public class AbstractEditingDomainView extends ViewPart implements
 		} else if (lastProvider != null
 				&& lastProvider.getEditingDomain().equals(
 						editingDomainProvider.getEditingDomain())) {
+			if (part instanceof org.eclipse.ui.IEditorPart) {
+				// prefer editors over other parts since they are able to
+				// provide additional functionality like IViewerMenuSupport
+				this.part = part;
+			}
 			return false;
 		} else {
 			this.part = part;

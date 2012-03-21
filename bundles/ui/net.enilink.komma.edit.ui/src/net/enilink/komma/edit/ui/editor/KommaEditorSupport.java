@@ -103,6 +103,7 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelSetFactory;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelSetModule;
@@ -175,8 +176,10 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 						// the section.
 						public void selectionChanged(
 								SelectionChangedEvent selectionChangedEvent) {
-							if (EditorSelectionProvider.this.selectionProvider != selectionChangedEvent
-									.getSelectionProvider()) {
+							if (editorSelection == null
+									|| !editorSelection
+											.equals(selectionChangedEvent
+													.getSelection())) {
 								setSelection(selectionChangedEvent
 										.getSelection());
 							}
@@ -598,11 +601,13 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 				|| !resourceURI.scheme().toLowerCase().startsWith("http")) {
 			InputStream in = null;
 			try {
-				in = getEditingDomain().getModelSet().getURIConverter()
-						.createInputStream(resourceURI);
+				IURIConverter uriConverter = getEditingDomain().getModelSet()
+						.getURIConverter();
+				in = uriConverter.createInputStream(resourceURI);
 
-				String ontology = ModelUtil.findOntology(in,
-						resourceURI.toString());
+				String ontology = ModelUtil
+						.findOntology(in, resourceURI.toString(), ModelUtil
+								.contentDescription(uriConverter, resourceURI));
 				if (ontology != null) {
 					getEditingDomain()
 							.getModelSet()

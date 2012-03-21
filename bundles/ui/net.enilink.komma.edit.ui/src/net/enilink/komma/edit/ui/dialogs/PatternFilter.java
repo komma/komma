@@ -27,7 +27,6 @@ import org.eclipse.jface.viewers.ViewerFilter;
  * structure to be realized.
  *  
  * @see org.eclipse.ui.dialogs.FilteredTree  
- * @since 3.2
  */
 public class PatternFilter extends ViewerFilter {
 	/*

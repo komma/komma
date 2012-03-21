@@ -150,8 +150,6 @@ public class CreateChildAction extends StaticSelectionCommandAction {
 	 * This constructs an instance of an action that uses the workbench part's
 	 * editing domain to create a child specified by <code>descriptor</code> for
 	 * the single object in the <code>selection</code>.
-	 * 
-	 * @since 2.1.0
 	 */
 	public CreateChildAction(IWorkbenchPart workbenchPart,
 			ISelection selection, Object descriptor) {
@@ -163,8 +161,6 @@ public class CreateChildAction extends StaticSelectionCommandAction {
 	 * This constructs an instance of an action that uses the given editing
 	 * domain to create a child specified by <code>descriptor</code> for the
 	 * single object in the <code>selection</code>.
-	 * 
-	 * @since 2.4.0
 	 */
 	public CreateChildAction(IWorkbenchPart workbenchPart,
 			IEditingDomain editingDomain, ISelection selection,

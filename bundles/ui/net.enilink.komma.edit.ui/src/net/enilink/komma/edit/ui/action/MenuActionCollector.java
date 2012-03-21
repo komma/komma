@@ -1,12 +1,15 @@
 package net.enilink.komma.edit.ui.action;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
@@ -15,10 +18,15 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.SubContributionItem;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.window.Window;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.progress.WorkbenchJob;
 
 import net.enilink.komma.common.util.ICollector;
+import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 import net.enilink.komma.edit.util.CollectorJob;
 
 /**
@@ -30,10 +38,47 @@ abstract public class MenuActionCollector<T> extends CollectorJob<T> {
 			new Action("loading ...") {
 			});
 
-	protected Collection<IAction> actions;
+	private static final int MAX_MENU_ENTRIES = 20;
+	protected Collection<IAction> menuActions;
+	protected Collection<IAction> allActions;
 	protected Set<IMenuManager> menuManagers = new HashSet<IMenuManager>();
 	protected volatile ISelection selection;
 	protected Display display = Display.getCurrent();
+	protected List<Job> handlers = new ArrayList<Job>();
+
+	class ShowAllCreateActions extends Action {
+		public ShowAllCreateActions() {
+			super("other...");
+		}
+
+		@Override
+		public void run() {
+			ElementListSelectionDialog selectionDialog = new ElementListSelectionDialog(
+					display.getActiveShell(), new LabelProvider() {
+						@Override
+						public String getText(Object element) {
+							return ((IAction) element).getText();
+						}
+
+						@Override
+						public Image getImage(Object element) {
+							return ExtendedImageRegistry.getInstance()
+									.getImage(
+											((IAction) element)
+													.getImageDescriptor());
+						}
+					});
+			selectionDialog.setHelpAvailable(false);
+			selectionDialog.setElements(MenuActionCollector.this.allActions
+					.toArray());
+			if (selectionDialog.open() == Window.OK) {
+				IAction selected = (IAction) selectionDialog.getFirstResult();
+				if (selected != null) {
+					selected.run();
+				}
+			}
+		}
+	};
 
 	public MenuActionCollector(String name, ISelection selection) {
 		super(name);
@@ -42,7 +87,8 @@ abstract public class MenuActionCollector<T> extends CollectorJob<T> {
 
 	public void addMenuManager(IMenuManager menuManager) {
 		if (menuManager != null && menuManagers.add(menuManager)) {
-			populateManager(menuManager, actions, loadingIndicatorItem.getId());
+			populateManager(menuManager, menuActions,
+					loadingIndicatorItem.getId());
 		}
 	}
 
@@ -85,35 +131,78 @@ abstract public class MenuActionCollector<T> extends CollectorJob<T> {
 
 	public void dispose() {
 		cancel();
-
 		for (IMenuManager menuManager : menuManagers) {
-			depopulateManager(menuManager, actions);
+			depopulateManager(menuManager, menuActions);
 		}
 		selection = null;
 	}
 
 	@Override
+	public void done() {
+		super.done();
+		synchronized (handlers) {
+			while (!handlers.isEmpty()) {
+				try {
+					handlers.wait();
+				} catch (InterruptedException e) {
+					return;
+				}
+			}
+		}
+	}
+
+	@Override
 	protected void handleObjects(final Collection<T> descriptors) {
-		new WorkbenchJob(display, "Create actions") {
+		final Job handler = new WorkbenchJob(display, "Create actions") {
 			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
-				if (selection != null) {
-					Collection<IAction> newActions = generateActions(descriptors);
-					if (actions == null) {
-						actions = newActions;
-					} else {
-						actions.addAll(newActions);
-					}
+				try {
+					if (selection != null) {
+						int startActionsSize = allActions == null ? 0
+								: allActions.size();
 
-					for (IMenuManager menuManager : menuManagers) {
-						populateManager(menuManager, newActions,
-								loadingIndicatorItem.getId());
-						menuManager.update(true);
+						Collection<IAction> newActions = generateActions(descriptors);
+						if (allActions == null) {
+							allActions = newActions;
+						} else {
+							allActions.addAll(newActions);
+						}
+
+						if (allActions.size() > MAX_MENU_ENTRIES) {
+							// show only MAX_MENU_ENTRIES
+							if (startActionsSize < MAX_MENU_ENTRIES) {
+								newActions = new ArrayList<IAction>(newActions)
+										.subList(0, MAX_MENU_ENTRIES
+												- startActionsSize);
+								newActions.add(new ShowAllCreateActions());
+							} else {
+								// do not add any more actions
+								return Status.OK_STATUS;
+							}
+						}
+						if (menuActions == null) {
+							menuActions = new ArrayList<IAction>();
+						}
+						menuActions.addAll(newActions);
+						for (IMenuManager menuManager : menuManagers) {
+							populateManager(menuManager, newActions,
+									loadingIndicatorItem.getId());
+							menuManager.update(true);
+						}
+					}
+					return Status.OK_STATUS;
+				} finally {
+					synchronized (handlers) {
+						handlers.remove(this);
+						handlers.notify();
 					}
 				}
-				return Status.OK_STATUS;
 			}
-		}.schedule();
+		};
+		synchronized (handlers) {
+			handlers.add(handler);
+		}
+		handler.schedule();
 	}
 
 	abstract protected Collection<IAction> generateActions(

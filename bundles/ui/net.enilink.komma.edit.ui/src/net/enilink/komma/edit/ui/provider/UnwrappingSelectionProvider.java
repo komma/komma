@@ -28,9 +28,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import net.enilink.komma.common.util.UniqueExtensibleList;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 
-/**
- * @since 2.3
- */
 public class UnwrappingSelectionProvider implements ISelectionProvider {
 	protected ISelection selection;
 	protected List<ISelectionChangedListener> listeners = new UniqueExtensibleList.FastCompare<ISelectionChangedListener>();

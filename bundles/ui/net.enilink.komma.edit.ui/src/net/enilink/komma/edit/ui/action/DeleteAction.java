@@ -37,14 +37,9 @@ import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 public class DeleteAction extends CommandActionHandler {
 	/**
 	 * Whether the action should clean up all references to deleted objects.
-	 * 
-	 * @since 2.2
 	 */
 	protected boolean removeAllReferences;
 
-	/**
-	 * @since 2.2
-	 */
 	public DeleteAction(IWorkbenchPage page, IEditingDomain domain,
 			boolean removeAllReferences) {
 		super(page, domain, KommaEditUIPlugin.INSTANCE
@@ -56,9 +51,6 @@ public class DeleteAction extends CommandActionHandler {
 		this(page, domain, false);
 	}
 
-	/**
-	 * @since 2.2
-	 */
 	public DeleteAction(IWorkbenchPage page, boolean removeAllReferences) {
 		this(page, null, removeAllReferences);
 	}
@@ -77,9 +69,6 @@ public class DeleteAction extends CommandActionHandler {
 		return command;
 	}
 
-	/**
-	 * @since 2.1.0
-	 */
 	public void setWorkbenchPart(IWorkbenchPart workbenchPart) {
 		super.setWorkbenchPart(workbenchPart);
 		if (workbenchPart instanceof IEditingDomainProvider) {
