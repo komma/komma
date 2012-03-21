@@ -37,6 +37,7 @@ import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.base.ExtensibleURIConverter;
 import net.enilink.komma.model.base.IURIMapRule;
 import net.enilink.komma.model.base.SimpleURIMapRule;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 
 /**
@@ -48,16 +49,13 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 		IWorkbenchURIConverter, IResourceChangeListener {
 	protected List<IContainer> inputContainers = new ArrayList<IContainer>();
 
-	protected Map<URIImpl, IURIMapRule> ruleMap = new HashMap<URIImpl, IURIMapRule>();
+	protected Map<URI, IURIMapRule> ruleMap = new HashMap<URI, IURIMapRule>();
 
-	protected Set<String> supportedExtensions = new HashSet<String>(Arrays
-			.asList("owl", "rdf", "n3"));
+	protected Set<String> supportedExtensions = new HashSet<String>(
+			Arrays.asList("owl", "rdf", "n3"));
 
 	/**
 	 * Default converter constructor, no containers.
-	 * 
-	 * 
-	 * @since 1.0.0
 	 */
 	public WorkbenchURIConverterImpl() {
 		super();
@@ -67,8 +65,6 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 	 * Construct with an input container.
 	 * 
 	 * @param inputContainer
-	 * 
-	 * @since 1.0.0
 	 */
 	public WorkbenchURIConverterImpl(IContainer inputContainer) {
 		addInputContainer(inputContainer);
@@ -103,22 +99,20 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 	}
 
 	protected void addRule(IFile file) {
-		URIImpl fileURI = URIImpl.createPlatformResourceURI(file.getFullPath()
+		URI fileURI = URIImpl.createPlatformResourceURI(file.getFullPath()
 				.toString(), true);
 		if (!supportedExtensions.contains(fileURI.fileExtension())) {
 			return;
 		}
 		String ontology;
 		try {
-			ontology = ModelUtil.findOntology(file.getContents(), fileURI
-					.toString());
-
+			ontology = ModelUtil.findOntology(file.getContents(),
+					fileURI.toString(),
+					ModelUtil.contentDescription(this, fileURI));
 			if (ontology != null) {
-				SimpleURIMapRule rule = new SimpleURIMapRule(ontology, fileURI
-						.toString());
-
+				SimpleURIMapRule rule = new SimpleURIMapRule(ontology,
+						fileURI.toString());
 				ruleMap.put(fileURI, rule);
-
 				getURIMapRules().addRule(rule);
 			}
 		} catch (Exception e) {
