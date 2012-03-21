@@ -125,26 +125,18 @@ public abstract class ResourceSupport extends BehaviorBase implements
 			// select potential child properties
 			+ "{" //
 			+ "?resource a ?class ." //
-			+ "{" //
-			+ "    ?property rdfs:domain ?class ." //
-			+ "} UNION {" //
-			+ "    ?class rdfs:subClassOf [owl:onProperty ?property] ." //
-			+ "}" //
-			+ "?property rdfs:subPropertyOf komma:hasDescendant ." //
+			+ "?class rdfs:subClassOf [owl:onProperty ?property] ." //
+			+ "?property rdfs:subPropertyOf komma:contains ." //
 			+ "OPTIONAL {" //
 			+ "    ?otherProperty rdfs:subPropertyOf ?property ." //
-			+ "    {" //
-			+ "        ?otherProperty rdfs:domain ?class ." //
-			+ "    } UNION {" //
-			+ "        ?class rdfs:subClassOf [owl:onProperty ?otherProperty]" //
-			+ "    }" //
+			+ "    ?class rdfs:subClassOf [owl:onProperty ?otherProperty]" //
 			+ "	FILTER (?property != ?otherProperty)" //
-			+ "}" //
+			+ "} " //
 			+ "FILTER (! bound(?otherProperty))" //
 			// select already used child properties
 			+ "} UNION {" //
 			+ "    ?resource ?property ?someObject ." //
-			+ "    ?property rdfs:subPropertyOf komma:hasDescendant ." //
+			+ "    ?property rdfs:subPropertyOf komma:contains ." //
 			+ "    OPTIONAL {" //
 			+ "        ?otherProperty rdfs:subPropertyOf ?property ." //
 			+ "        ?resource ?otherProperty ?someObject ." //
@@ -270,6 +262,11 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 		// if min is greater than max, then max = min
 		max = Math.max(min, max);
+		// handle functional properties
+		if (max > 1
+				&& getEntityManager().find(property) instanceof FunctionalProperty) {
+			max = 1;
+		}
 
 		return new Pair<Integer, Integer>(min, max);
 	}
@@ -430,7 +427,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	protected IExtendedIterator<IStatement> internalGetPropertyStmts(
 			final IReference propertyRef, final boolean inverse,
 			final boolean filterSymmetric, final boolean includeInferred) {
-		final IEntity property = (propertyRef instanceof IEntity) ? (IEntity) propertyRef
+		final IEntity property = (propertyRef instanceof IEntity || propertyRef == null) ? (IEntity) propertyRef
 				: getEntityManager().find(propertyRef);
 		StringBuilder sb = new StringBuilder(PREFIX);
 		sb.append("SELECT ");
