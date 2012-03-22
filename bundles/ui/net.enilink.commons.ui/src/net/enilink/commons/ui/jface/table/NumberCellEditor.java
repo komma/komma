@@ -75,8 +75,6 @@ public class NumberCellEditor extends CellEditor {
 	 * Creates a new text string cell editor with no control The cell editor
 	 * value is the string itself, which is initially the empty string.
 	 * Initially, the cell editor has no cell validator.
-	 * 
-	 * @since 2.1
 	 */
 	public <T extends Number> NumberCellEditor(Class<T> typeClass) {
 		setStyle(defaultStyle);
@@ -104,7 +102,6 @@ public class NumberCellEditor extends CellEditor {
 	 *            the parent control
 	 * @param style
 	 *            the style bits
-	 * @since 2.1
 	 */
 	public <T extends Number> NumberCellEditor(Composite parent, int style,
 			Class<T> clazz) {
@@ -343,8 +340,6 @@ public class NumberCellEditor extends CellEditor {
 	 * 
 	 * @param event
 	 *            the selection event
-	 * 
-	 * @since 3.0
 	 */
 	protected void handleDefaultSelection(SelectionEvent event) {
 		// same with enter-key handling code in keyReleaseOccured(e);

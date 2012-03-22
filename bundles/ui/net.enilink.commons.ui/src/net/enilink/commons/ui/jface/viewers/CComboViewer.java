@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.Control;
  * </p>
  * 
  * @see org.eclipse.jface.viewers.ListViewer
- * @since 3.0
  */
 public final class CComboViewer extends AbstractListViewer {
 

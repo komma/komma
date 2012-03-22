@@ -72,7 +72,6 @@ public class UiProgressMonitorWrapper implements IProgressMonitor,
 	 * method to do additional processing.
 	 * 
 	 * @see IProgressMonitorWithBlocking#clearBlocked()
-	 * @since 3.0
 	 */
 	public void clearBlocked() {
 		if (!display.isDisposed()) {
@@ -159,7 +158,6 @@ public class UiProgressMonitorWrapper implements IProgressMonitor,
 	 * method to do additional processing.
 	 * 
 	 * @see IProgressMonitorWithBlocking#setBlocked(IStatus)
-	 * @since 3.0
 	 */
 	public void setBlocked(final IStatus reason) {
 		if (!display.isDisposed()) {

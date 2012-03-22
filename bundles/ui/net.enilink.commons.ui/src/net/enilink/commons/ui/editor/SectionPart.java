@@ -27,7 +27,6 @@ import org.eclipse.ui.forms.widgets.Section;
  * <code>super</code> is required.
  * 
  * @see Section
- * @since 3.0
  */
 public class SectionPart extends AbstractEditorPart {
 	private int style;

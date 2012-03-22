@@ -337,7 +337,6 @@ class FormToolkitWrapper {
 	 * form heading using colors computed based on the current skin and
 	 * operating system.
 	 * 
-	 * @since 3.3
 	 * @param form
 	 *            the form to decorate
 	 */
@@ -459,7 +458,6 @@ class FormToolkitWrapper {
 	 * the native border is used, this margin is 0.
 	 * 
 	 * @return the margin in the parent when children have their border painted
-	 * @since 3.3
 	 */
 	public int getBorderMargin() {
 		return toolkit.getBorderMargin();
@@ -487,7 +485,6 @@ class FormToolkitWrapper {
 	 *         not set. The default orientation is inherited from the Window
 	 *         default orientation.
 	 * @see org.eclipse.jface.window.Window#getDefaultOrientation()
-	 * @since 3.1
 	 */
 
 	public int getOrientation() {
@@ -501,7 +498,6 @@ class FormToolkitWrapper {
 	 * 
 	 * @param orientation
 	 *            style for this toolkit.
-	 * @since 3.1
 	 */
 
 	public void setOrientation(int orientation) {

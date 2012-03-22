@@ -135,7 +135,6 @@ public interface IEditorForm extends IAdaptable {
 	 * form.
 	 * 
 	 * @return the message manager instance
-	 * @since 3.3
 	 */
 	IMessageManager getMessageManager();
 

@@ -83,7 +83,6 @@ public class CComboBoxCellEditor extends CellEditor {
 	 * Creates a new cell editor with no control and no st of choices.
 	 * Initially, the cell editor has no cell validator.
 	 * 
-	 * @since 2.1
 	 * @see CellEditor#setStyle
 	 * @see CellEditor#create
 	 * @see CComboBoxCellEditor#setItems
@@ -107,7 +106,6 @@ public class CComboBoxCellEditor extends CellEditor {
 	 *            the label provider of the comboviewer
 	 * @param style
 	 *            the style bits
-	 * @since 2.1
 	 */
 	public CComboBoxCellEditor(Composite parent, Object[] items,
 			IBaseLabelProvider labelProvider, int style) {
@@ -128,7 +126,6 @@ public class CComboBoxCellEditor extends CellEditor {
 	 *            the list of strings for the combo box
 	 * @param style
 	 *            the style bits
-	 * @since 2.1
 	 */
 	public CComboBoxCellEditor(Composite parent, ILabelProvider labelProvider,
 			IContentProvider contentProvider, int style) {

@@ -26,7 +26,6 @@ public interface IMessageContainer {
 	 * @param messages
 	 * 			 an optional array of children that itemize individual
 	 * 			messages or <code>null</code> for a simple message.
-	 * @since 3.3
 	 * @see Form#setMessage(String, int)
 	 */
 	void setMessage(String newMessage, int newType, IMessage[] messages);

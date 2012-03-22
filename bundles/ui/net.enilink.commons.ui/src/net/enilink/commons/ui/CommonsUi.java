@@ -11,6 +11,8 @@
 package net.enilink.commons.ui;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import org.eclipse.core.runtime.IStatus;
@@ -41,6 +43,10 @@ public class CommonsUi extends AbstractUIPlugin {
 
 	private EditorWidgetFactory dialogsWidgetFactory;
 
+	private static Method activateCallback;
+	private static Method deactivateCallback;
+	private static Method runWithDisplay;
+
 	public static final boolean IS_ECLIPSE_RUNNING;
 	static {
 		boolean result = false;
@@ -67,6 +73,21 @@ public class CommonsUi extends AbstractUIPlugin {
 			}
 		}
 		IS_RAP_RUNNING = result;
+		if (IS_RAP_RUNNING) {
+			try {
+				Class<?> uiCallback = CommonsUi.class.getClassLoader()
+						.loadClass("org.eclipse.rwt.lifecycle.UICallBack");
+				activateCallback = uiCallback.getMethod("activate",
+						String.class);
+				deactivateCallback = uiCallback.getMethod("deactivate",
+						String.class);
+				runWithDisplay = uiCallback.getMethod(
+						"runNonUIThreadWithFakeContext", Display.class,
+						Runnable.class);
+			} catch (Exception e) {
+				// ignore
+			}
+		}
 	}
 
 	/**
@@ -182,5 +203,37 @@ public class CommonsUi extends AbstractUIPlugin {
 
 	public static void log(Throwable e) {
 		log(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Internal Error", e));
+	}
+
+	public static void activateCallback(String id) {
+		if (activateCallback != null) {
+			try {
+				activateCallback.invoke(null, id);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
+	public static void deactivateCallback(String id) {
+		if (deactivateCallback != null) {
+			try {
+				deactivateCallback.invoke(null, id);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
+	public static void runWithDisplay(Display display, Runnable runnable) {
+		if (runWithDisplay != null) {
+			try {
+				runWithDisplay.invoke(null, display, runnable);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			display.asyncExec(runnable);
+		}
 	}
 }

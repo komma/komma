@@ -37,8 +37,6 @@ import org.eclipse.ui.forms.widgets.SharedScrolledComposite;
  * dialog etc.). Clients that need access to the class should not do it
  * directly. Instead, they should do it through IManagedForm interface as much
  * as possible.
- * 
- * @since 3.0
  */
 public class EditorForm implements IEditorForm {
 	private Object input;
