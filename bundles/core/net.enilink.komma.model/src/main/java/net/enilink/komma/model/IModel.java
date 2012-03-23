@@ -281,6 +281,11 @@ public interface IModel {
 	void unload();
 
 	/**
+	 * Unloads the manager and internal module.
+	 */
+	void unloadManager();
+
+	/**
 	 * Returns a list of the errors in the model; each error will be of type
 	 * {@link IDiagnostic}.
 	 * <p>

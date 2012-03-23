@@ -711,7 +711,8 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 		state.remove();
 	}
 
-	protected synchronized void unloadManager() {
+	@Override
+	public synchronized void unloadManager() {
 		state().module = null;
 		if (state().manager != null) {
 			state().manager.close();

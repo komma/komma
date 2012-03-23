@@ -52,7 +52,8 @@
          <attribute name="uri" type="string" use="required">
             <annotation>
                <documentation>
-                  Namespace URI as String
+                  Namespace URI as String, DON&apos;T end this with the &apos;#&apos; character.
+Full string comparison is used to match these.
                </documentation>
             </annotation>
          </attribute>
