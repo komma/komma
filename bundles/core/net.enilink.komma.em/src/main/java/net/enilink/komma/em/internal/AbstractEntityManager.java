@@ -103,6 +103,10 @@ import net.enilink.komma.util.RESULTS;
  */
 public abstract class AbstractEntityManager implements IEntityManager,
 		IEntityManagerInternal {
+
+	protected static Logger log = LoggerFactory
+			.getLogger(AbstractEntityManager.class);
+
 	private static final URI RESULT_NODE = RESULTS.TYPE_RESULT;
 
 	private ClassResolver<URI> classResolver;
@@ -322,9 +326,11 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	@SuppressWarnings("unchecked")
 	public IEntity createBean(IReference resource, Collection<URI> entityTypes,
 			Collection<Class<?>> concepts, boolean restrictTypes, IGraph graph) {
-		if (entityTypes == null) {
-			entityTypes = new ArrayList<URI>();
+		if (resource == null) {
+			throw new IllegalArgumentException(
+					"Resource argument must not be null.");
 		}
+		entityTypes = entityTypes != null ? new HashSet<URI>(entityTypes) : new HashSet<URI>();
 		if (!restrictTypes) {
 			if (graph != null) {
 				// this ensures that only types with an IRI are added to
@@ -446,7 +452,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	public IQuery<?> createQuery(String query, String baseURI,
 			boolean includeInferred) {
-		System.out.println("query: " + query);
+		log.trace("Query: {}", query);
 
 		boolean dmIncludeInferred = dm.getIncludeInferred();
 		if (dmIncludeInferred != includeInferred) {

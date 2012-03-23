@@ -33,6 +33,7 @@ import net.enilink.komma.core.URI;
 
 public class CachingEntityManager extends DecoratingEntityManager implements
 		IDataChangeListener {
+
 	@Inject
 	Fqn baseFqn;
 
@@ -105,8 +106,8 @@ public class CachingEntityManager extends DecoratingEntityManager implements
 
 	@Override
 	protected void initializeCache(IEntity entity, Object property, Object value) {
-		System.out.println("init cache for " + entity + "/" + property + ": "
-				+ value);
+		log.trace("init cache for {}/{}: {}", new Object[] { entity, property,
+				value });
 		propertyCache.put(entity, property, new Object[0], value);
 	}
 
