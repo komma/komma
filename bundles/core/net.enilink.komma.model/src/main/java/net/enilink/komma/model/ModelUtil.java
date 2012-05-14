@@ -261,10 +261,18 @@ public class ModelUtil {
 	public static <V extends IDataVisitor<?>> void readData(InputStream in,
 			String baseURI, IContentDescription contentDescription,
 			final V dataVisitor) {
+		// generate unique BNode IDs by default
+		readData(in, baseURI, contentDescription, false, dataVisitor);
+	}
+
+	public static <V extends IDataVisitor<?>> void readData(InputStream in,
+			String baseURI, IContentDescription contentDescription,
+			boolean preserveBNodeIDs, final V dataVisitor) {
 		final SesameValueConverter valueConverter = new SesameValueConverter(
 				new ValueFactoryImpl());
 		final boolean handleNamespaces = dataVisitor instanceof IDataAndNamespacesVisitor<?>;
 		RDFParser parser = createParser(contentDescription);
+		parser.setPreserveBNodeIDs(preserveBNodeIDs);
 		parser.setRDFHandler(new RDFHandler() {
 			@Override
 			public void startRDF() throws RDFHandlerException {
