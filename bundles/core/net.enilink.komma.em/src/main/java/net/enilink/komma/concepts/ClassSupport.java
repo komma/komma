@@ -36,12 +36,13 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 				+ "FILTER NOT EXISTS {"
 				+ "?subClass rdfs:subClassOf ?otherSuperClass . "
 				+ "?otherSuperClass rdfs:subClassOf ?superClass ."
-				+ "FILTER (?subClass != ?otherSuperClass && ?superClass != ?otherSuperClass"
-				+ (named ? " && isIRI(?otherSuperClass)" : "")
-				+ ")}"
-				+ " FILTER (?subClass != ?superClass && ?subClass != owl:Nothing"
-				+ (named ? " && isIRI(?subClass)" : "")
-				+ ")}" + "ORDER BY ?subClass";
+				+ "FILTER ("
+				+ (named ? "isIRI(?otherSuperClass) &&" : "")
+				+ "!sameTerm(?subClass, ?otherSuperClass) && !sameTerm(?superClass, ?otherSuperClass))"
+				+ "}" //
+				+ " FILTER (" + (named ? "isIRI(?subClass) &&" : "")
+				+ "?subClass != ?superClass && ?subClass != owl:Nothing)" + "}"
+				+ "ORDER BY ?subClass";
 	};
 
 	private static final String SELECT_SUBCLASSES(boolean named) {
@@ -93,12 +94,10 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 			+ "?instance a ?class ." + "}";
 
 	private static final String HAS_SUBCLASSES(boolean named) {
-		return PREFIX
-				+ "ASK { "
-				+ "?subClass rdfs:subClassOf ?superClass ."
-				+ "?subClass a rdfs:Class . "
-				+ "FILTER (?subClass != ?superClass && ?subClass != owl:Nothing"
-				+ (named ? " && isIRI(?subClass)" : "") + ")}";
+		return PREFIX + "ASK { " + "?subClass rdfs:subClassOf ?superClass ."
+				+ "?subClass a rdfs:Class . " + "FILTER ("
+				+ (named ? "isIRI(?subClass) && " : "")
+				+ "?subClass != ?superClass && ?subClass != owl:Nothing)}";
 	}
 
 	private static final String SELECT_DECLARED_PROPERTIES = PREFIX
