@@ -2,6 +2,8 @@ package net.enilink.komma.model;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -11,10 +13,15 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.openrdf.model.Statement;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.RDFWriterFactory;
+import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.rio.Rio;
 
 import net.enilink.vocab.rdf.Property;
@@ -22,9 +29,18 @@ import net.enilink.vocab.rdfs.Class;
 import net.enilink.vocab.rdfs.Resource;
 import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
+import net.enilink.komma.model.sesame.RDFXMLPrettyWriter;
 import net.enilink.komma.core.ILiteral;
+import net.enilink.komma.core.INamespace;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.Namespace;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
+import net.enilink.komma.core.visitor.IDataVisitor;
+import net.enilink.komma.sesame.SesameValueConverter;
 
 public class ModelUtil {
 	public static String getLabel(Object element) {
@@ -174,9 +190,7 @@ public class ModelUtil {
 		return null;
 	}
 
-	public static String findOntology(InputStream in, String baseURI,
-			IContentDescription contentDescription) throws Exception {
-		final org.openrdf.model.URI[] ontology = { null };
+	private static RDFParser createParser(IContentDescription contentDescription) {
 		RDFFormat format = RDFFormat.RDFXML;
 		if (contentDescription != null) {
 			String mimeType = (String) contentDescription
@@ -184,8 +198,13 @@ public class ModelUtil {
 							"mimeType"));
 			format = RDFFormat.forMIMEType(mimeType, format);
 		}
+		return Rio.createParser(format);
+	}
 
-		RDFParser parser = Rio.createParser(format);
+	public static String findOntology(InputStream in, String baseURI,
+			IContentDescription contentDescription) throws Exception {
+		final org.openrdf.model.URI[] ontology = { null };
+		RDFParser parser = createParser(contentDescription);
 		parser.setRDFHandler(new RDFHandler() {
 			@Override
 			public void startRDF() throws RDFHandlerException {
@@ -238,4 +257,148 @@ public class ModelUtil {
 		}
 		return null;
 	}
+
+	public static <V extends IDataVisitor<?>> void readData(InputStream in,
+			String baseURI, IContentDescription contentDescription,
+			final V dataVisitor) {
+		final SesameValueConverter valueConverter = new SesameValueConverter(
+				new ValueFactoryImpl());
+		final boolean handleNamespaces = dataVisitor instanceof IDataAndNamespacesVisitor<?>;
+		RDFParser parser = createParser(contentDescription);
+		parser.setRDFHandler(new RDFHandler() {
+			@Override
+			public void startRDF() throws RDFHandlerException {
+				dataVisitor.visitBegin();
+			}
+
+			@Override
+			public void handleStatement(Statement stmt)
+					throws RDFHandlerException {
+				dataVisitor
+						.visitStatement(new net.enilink.komma.core.Statement(
+								(IReference) valueConverter.fromSesame(stmt
+										.getSubject()),
+								(IReference) valueConverter.fromSesame(stmt
+										.getPredicate()), valueConverter
+										.fromSesame(stmt.getObject())));
+			}
+
+			@Override
+			public void handleNamespace(String prefix, String uri)
+					throws RDFHandlerException {
+				if (handleNamespaces) {
+					((IDataAndNamespacesVisitor<?>) dataVisitor)
+							.visitNamespace(new Namespace(prefix, URIImpl
+									.createURI(uri)));
+				}
+			}
+
+			@Override
+			public void handleComment(String text) throws RDFHandlerException {
+			}
+
+			@Override
+			public void endRDF() throws RDFHandlerException {
+				dataVisitor.visitEnd();
+			}
+		});
+
+		try {
+			parser.parse(in, baseURI);
+		} catch (RDFParseException e) {
+			throw new KommaException("Invalid RDF data", e);
+		} catch (RDFHandlerException e) {
+			throw new KommaException("Loading RDF failed", e);
+		} catch (IOException e) {
+			throw new KommaException("Cannot access RDF data", e);
+		} finally {
+			try {
+				in.close();
+			} catch (IOException e) {
+				throw new KommaException("Unable to close input stream", e);
+			}
+		}
+	}
+
+	private static RDFWriter createWriter(OutputStream os, String baseURI,
+			IContentDescription contentDescription) throws IOException {
+		RDFFormat format = RDFFormat.RDFXML;
+		if (contentDescription != null) {
+			String mimeType = (String) contentDescription
+					.getProperty(new QualifiedName(ModelCore.PLUGIN_ID,
+							"mimeType"));
+			format = RDFFormat.forMIMEType(mimeType, format);
+		}
+		if (RDFFormat.RDFXML.equals(format)) {
+			// use a special pretty writer in case of RDF/XML
+			RDFXMLPrettyWriter rdfXmlWriter = new RDFXMLPrettyWriter(
+					new OutputStreamWriter(os, "UTF-8"));
+			rdfXmlWriter.setBaseURI(baseURI);
+			return rdfXmlWriter;
+		} else {
+			RDFWriterFactory factory = RDFWriterRegistry.getInstance().get(
+					format);
+			return factory.getWriter(os);
+		}
+	}
+
+	public static IDataAndNamespacesVisitor<Void> writeData(OutputStream os,
+			String baseURI, IContentDescription contentDescription) {
+		try {
+			final RDFWriter writer = createWriter(os, baseURI,
+					contentDescription);
+			return new IDataAndNamespacesVisitor<Void>() {
+				final SesameValueConverter valueConverter = new SesameValueConverter(
+						new ValueFactoryImpl());
+
+				void throwException(Exception e) {
+					throw new KommaException("Saving RDF failed", e);
+				}
+
+				@Override
+				public Void visitBegin() {
+					try {
+						writer.startRDF();
+					} catch (RDFHandlerException e) {
+						throwException(e);
+					}
+					return null;
+				}
+
+				@Override
+				public Void visitEnd() {
+					try {
+						writer.endRDF();
+					} catch (RDFHandlerException e) {
+						throwException(e);
+					}
+					return null;
+				}
+
+				@Override
+				public Void visitStatement(IStatement stmt) {
+					try {
+						writer.handleStatement(valueConverter.toSesame(stmt));
+					} catch (RDFHandlerException e) {
+						throwException(e);
+					}
+					return null;
+				}
+
+				@Override
+				public Void visitNamespace(INamespace namespace) {
+					try {
+						writer.handleNamespace(namespace.getPrefix(), namespace
+								.getURI().toString());
+					} catch (RDFHandlerException e) {
+						throwException(e);
+					}
+					return null;
+				}
+			};
+		} catch (IOException e) {
+			throw new KommaException("Creating RDF writer failed", e);
+		}
+	}
+
 }

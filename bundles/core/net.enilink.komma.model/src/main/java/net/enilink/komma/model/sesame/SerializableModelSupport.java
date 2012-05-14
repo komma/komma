@@ -3,7 +3,6 @@ package net.enilink.komma.model.sesame;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -18,17 +17,6 @@ import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.traits.Behaviour;
-import org.openrdf.model.Statement;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.RDFWriter;
-import org.openrdf.rio.RDFWriterFactory;
-import org.openrdf.rio.RDFWriterRegistry;
-import org.openrdf.rio.Rio;
-import org.openrdf.rio.helpers.RDFHandlerBase;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.dm.IDataManager;
@@ -38,14 +26,13 @@ import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.core.INamespace;
-import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.sesame.SesameValueConverter;
+import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
 
 @Iri(MODELS.NAMESPACE + "SerializableModel")
 public abstract class SerializableModelSupport implements IModel, Model,
@@ -101,56 +88,53 @@ public abstract class SerializableModelSupport implements IModel, Model,
 		}
 	}
 
-	private RDFFormat determineFormat(Map<?, ?> options) throws IOException {
-		RDFFormat format = (RDFFormat) options.get(RDFFormat.class);
-		if (format == null) {
-			// format was not directly specified in options
-			IURIConverter uriConverter = getModelSet().getURIConverter();
-			IContentDescription contentDescription = (IContentDescription) options
-					.get(IContentDescription.class);
-			if (contentDescription == null) {
-				IContentType contentType = (IContentType) options
-						.get(IContentType.class);
-				if (contentType == null) {
-					String contentTypeId = (String) uriConverter
-							.contentDescription(getURI(), options).get(
-									IContentHandler.CONTENT_TYPE_PROPERTY);
-					if (contentTypeId != null) {
-						contentType = Platform.getContentTypeManager()
-								.getContentType(contentTypeId);
-						if (contentType != null) {
-							contentDescription = contentType
-									.getDefaultDescription();
-						}
+	private IContentDescription determineContentDescription(Map<?, ?> options)
+			throws IOException {
+		IURIConverter uriConverter = getModelSet().getURIConverter();
+		IContentDescription contentDescription = (IContentDescription) options
+				.get(IContentDescription.class);
+		if (contentDescription == null) {
+			IContentType contentType = (IContentType) options
+					.get(IContentType.class);
+			if (contentType == null) {
+				String contentTypeId = (String) uriConverter
+						.contentDescription(getURI(), options).get(
+								IContentHandler.CONTENT_TYPE_PROPERTY);
+				if (contentTypeId != null) {
+					contentType = Platform.getContentTypeManager()
+							.getContentType(contentTypeId);
+					if (contentType != null) {
+						contentDescription = contentType
+								.getDefaultDescription();
 					}
 				}
 			}
-			if (contentDescription != null) {
-				// try to use the content description for determining the RDF
-				// format
-				String mimeType = (String) contentDescription
-						.getProperty(new QualifiedName(ModelCore.PLUGIN_ID,
-								"mimeType"));
-				format = RDFFormat.forMIMEType(mimeType);
-			}
-			if (format == null) {
-				// use file name with extension as fall back
-				URI normalizedUri = uriConverter.normalize(getURI());
-				// simply use the filename to detect the correct RDF format
-				String lastSegment = normalizedUri.lastSegment();
-				if (lastSegment != null) {
-					format = RDFFormat.forFileName(lastSegment);
+		}
+		if (contentDescription == null) {
+			// use file name with extension as fall back
+			URI normalizedUri = uriConverter.normalize(getURI());
+			// simply use the filename to detect the correct RDF format
+			String lastSegment = normalizedUri.fileExtension();
+			if (lastSegment != null) {
+				IContentType[] matchingTypes = Platform.getContentTypeManager()
+						.findContentTypesFor(lastSegment);
+				QualifiedName mimeType = new QualifiedName(ModelCore.PLUGIN_ID,
+						"mimeType");
+				for (IContentType contentType : matchingTypes) {
+					IContentDescription desc = contentType
+							.getDefaultDescription();
+					if (desc.getProperty(mimeType) != null) {
+						contentDescription = desc;
+					}
 				}
 			}
 		}
-		return format != null ? format : RDFFormat.RDFXML;
+		return null;
 	}
 
 	@Override
 	public void load(final InputStream in, final Map<?, ?> options)
 			throws IOException {
-		final SesameValueConverter valueConverter = new SesameValueConverter(
-				new ValueFactoryImpl());
 		final IDataManager dm = ((IModelSet.Internal) getModelSet())
 				.getDataManagerFactory().get();
 		getModelSet().getDataChangeSupport().setEnabled(dm, false);
@@ -165,50 +149,44 @@ public abstract class SerializableModelSupport implements IModel, Model,
 				// new Job("Load model") {
 				// @Override
 				// public IStatus run(IProgressMonitor monitor) {
-				final RDFFormat[] format = { determineFormat(options) };
+				final IContentDescription[] contentDescription = { determineContentDescription(options) };
 				Executors.newSingleThreadExecutor().execute(new Runnable() {
 					@Override
 					public void run() {
-						RDFParser parser = Rio.createParser(format[0]);
-						parser.setRDFHandler(new RDFHandlerBase() {
-							@Override
-							public void handleStatement(Statement stmt)
-									throws RDFHandlerException {
-								synchronized (queue) {
-									queue.add(new net.enilink.komma.core.Statement(
-											(IReference) valueConverter
-													.fromSesame(stmt
-															.getSubject()),
-											(IReference) valueConverter
-													.fromSesame(stmt
-															.getPredicate()),
-											valueConverter.fromSesame(stmt
-													.getObject())));
-									queue.notify();
-								}
-							}
-
-							@Override
-							public void handleNamespace(String prefix,
-									String uri) throws RDFHandlerException {
-								dm.setNamespace(prefix, URIImpl.createURI(uri));
-							}
-
-							@Override
-							public void endRDF() throws RDFHandlerException {
-							}
-						});
 						try {
 							try {
-								parser.parse(in, getURI().toString());
-							} catch (RDFParseException e) {
-								throw new KommaException("Invalid RDF data", e);
-							} catch (RDFHandlerException e) {
-								throw new KommaException("Loading RDF failed",
-										e);
-							} catch (IOException e) {
-								throw new KommaException(
-										"Cannot access RDF data", e);
+								ModelUtil.readData(in, getURI().toString(),
+										contentDescription[0],
+										new IDataAndNamespacesVisitor<Void>() {
+											@Override
+											public Void visitBegin() {
+												return null;
+											}
+
+											@Override
+											public Void visitEnd() {
+												return null;
+											}
+
+											@Override
+											public Void visitStatement(
+													IStatement stmt) {
+												synchronized (queue) {
+													queue.add(stmt);
+													queue.notify();
+												}
+												return null;
+											}
+
+											@Override
+											public Void visitNamespace(
+													INamespace namespace) {
+												dm.setNamespace(
+														namespace.getPrefix(),
+														namespace.getURI());
+												return null;
+											}
+										});
 							} finally {
 								finished.set(true);
 								synchronized (queue) {
@@ -250,45 +228,27 @@ public abstract class SerializableModelSupport implements IModel, Model,
 
 	@Override
 	public void save(OutputStream os, Map<?, ?> options) throws IOException {
-		RDFFormat format = (RDFFormat) determineFormat(options);
-		RDFWriter writer;
-		if (RDFFormat.RDFXML.equals(format)) {
-			// use a special pretty writer in case of RDF/XML
-			RDFXMLPrettyWriter rdfXmlWriter = new RDFXMLPrettyWriter(
-					new OutputStreamWriter(os, "UTF-8"));
-			rdfXmlWriter.setBaseURI(getURI().toString());
-			writer = rdfXmlWriter;
-		} else {
-			RDFWriterFactory factory = RDFWriterRegistry.getInstance().get(
-					format);
-			writer = factory.getWriter(os);
-		}
+		final IContentDescription contentDescription = determineContentDescription(options);
+		IDataAndNamespacesVisitor<?> dataVisitor = ModelUtil.writeData(os,
+				getURI().toString(), contentDescription);
+		dataVisitor.visitBegin();
+
+		final IDataManager dm = ((IModelSet.Internal) getModelSet())
+				.getDataManagerFactory().get();
+		dm.setReadContexts(Collections.singleton(getURI()));
 		try {
-			final SesameValueConverter valueConverter = new SesameValueConverter(
-					new ValueFactoryImpl());
-			final IDataManager dm = ((IModelSet.Internal) getModelSet())
-					.getDataManagerFactory().get();
-			dm.setReadContexts(Collections.singleton(getURI()));
-
-			writer.startRDF();
-
-			try {
-				for (INamespace namespace : dm.getNamespaces()) {
-					writer.handleNamespace(namespace.getPrefix(), namespace
-							.getURI().toString());
-				}
-
-				IExtendedIterator<IStatement> stmts = dm.matchAsserted(null,
-						null, null);
-				while (stmts.hasNext()) {
-					writer.handleStatement(valueConverter.toSesame(stmts.next()));
-				}
-			} finally {
-				dm.close();
+			for (INamespace namespace : dm.getNamespaces()) {
+				dataVisitor.visitNamespace(namespace);
 			}
-			writer.endRDF();
-		} catch (RDFHandlerException e) {
-			throw new KommaException("Saving RDF failed", e);
+
+			IExtendedIterator<IStatement> stmts = dm.matchAsserted(null, null,
+					null);
+			while (stmts.hasNext()) {
+				dataVisitor.visitStatement(stmts.next());
+			}
+		} finally {
+			dm.close();
 		}
+		dataVisitor.visitEnd();
 	}
 }
