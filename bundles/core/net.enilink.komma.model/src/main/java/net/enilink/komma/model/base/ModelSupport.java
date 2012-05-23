@@ -44,6 +44,7 @@ import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.concepts.IOntology;
 import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.em.ThreadLocalEntityManager;
 import net.enilink.komma.internal.model.IModelAware;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
@@ -64,6 +65,7 @@ import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.util.UnitOfWork;
 
 public abstract class ModelSupport implements IModel, IModel.Internal,
 		INotificationBroadcaster<INotification>, Model,
@@ -96,7 +98,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	 */
 	static class State {
 		private KommaModule module;
-		protected IEntityManager manager;
+		protected ThreadLocalEntityManager manager;
 	}
 
 	protected EntityVar<State> state;
@@ -108,7 +110,32 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 		synchronized (state) {
 			State s = state.get();
 			if (s == null) {
-				state.set(s = new State());
+				s = new State();
+				final State theState = s;
+				s.manager = new ThreadLocalEntityManager() {
+					@Inject
+					UnitOfWork uow;
+
+					@Override
+					protected IEntityManager initialValue() {
+						if (!uow.isActive()) {
+							throw new KommaException(
+									"No active unit of work found.");
+						}
+						IEntityManager delegate = getModelSet()
+								.getEntityManagerFactory()
+								// allow interception of call to
+								// getModule()
+								.createChildFactory(theState.manager, null,
+										getBehaviourDelegate().getModule())
+								.create();
+						uow.addManager(delegate);
+						return delegate;
+					}
+				};
+				injector.injectMembers(s.manager);
+				s.manager.addDecorator(new ModelInjector());
+				state.set(s);
 			}
 			return s;
 		}
@@ -208,17 +235,8 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	 * documentation inherited
 	 */
 	@Override
-	public synchronized IEntityManager getManager() {
-		IEntityManager manager = state().manager;
-		if (manager == null) {
-			manager = getModelSet().getEntityManagerFactory()
-					// allow interception of call to getModule()
-					.createChildFactory(getBehaviourDelegate().getModule())
-					.get();
-			manager.addDecorator(new ModelInjector());
-			state().manager = manager;
-		}
-		return manager;
+	public IEntityManager getManager() {
+		return state().manager;
 	}
 
 	/*
@@ -321,7 +339,6 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			}
 
 			module.addWritableGraph(getURI());
-
 			state().module = module;
 		}
 		return module;
@@ -446,7 +463,6 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 
 				if (!isActive) {
 					manager.getTransaction().commit();
-
 					unloadManager();
 				}
 			} catch (Exception e) {
@@ -716,7 +732,6 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 		state().module = null;
 		if (state().manager != null) {
 			state().manager.close();
-			state().manager = null;
 		}
 	}
 }

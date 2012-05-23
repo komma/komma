@@ -63,8 +63,7 @@ public class ModelSetModule extends AbstractModule {
 		// module.addJarFileUrl(libraryUrl);
 		// }
 
-		module.addConcept(ModelSupport.class,
-				MODELS.TYPE_MODEL.toString());
+		module.addConcept(ModelSupport.class, MODELS.TYPE_MODEL.toString());
 		module.addConcept(ModelSetSupport.class,
 				MODELS.TYPE_MODELSET.toString());
 
