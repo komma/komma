@@ -29,7 +29,6 @@
 package net.enilink.komma.em;
 
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import com.google.inject.AbstractModule;
@@ -80,6 +79,8 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 	@Inject
 	IUnitOfWork unitOfWork;
+
+	private IEntityManager sharedManager;
 
 	public EntityManagerFactory(KommaModule module, Locale locale,
 			Module managerModule) {
@@ -138,6 +139,29 @@ class EntityManagerFactory implements IEntityManagerFactory {
 	}
 
 	@Override
+	public IEntityManagerFactory createChildFactory(
+			final IEntityManager sharedManager, Locale locale,
+			KommaModule... modules) {
+		KommaModule childModule = new KommaModule(module.getClassLoader());
+		childModule.includeModule(module);
+		for (KommaModule include : modules) {
+			childModule.includeModule(include);
+			for (URI writable : include.getWritableGraphs()) {
+				childModule.addWritableGraph(writable);
+			}
+		}
+
+		EntityManagerFactory childFactory = new EntityManagerFactory(
+				childModule, locale, managerModule);
+		childFactory.isRootFactory = false;
+		childFactory.sharedManager = sharedManager != null ? sharedManager
+				: this.sharedManager;
+		injector.injectMembers(childFactory);
+
+		return childFactory;
+	}
+
+	@Override
 	public IEntityManager get() {
 		if (emProvider != null) {
 			return emProvider.get();
@@ -152,6 +176,11 @@ class EntityManagerFactory implements IEntityManagerFactory {
 					new AbstractModule() {
 						@Override
 						protected void configure() {
+							if (sharedManager != null) {
+								bind(IEntityManager.class).annotatedWith(
+										Names.named("shared")).toInstance(
+										sharedManager);
+							}
 							bind(new TypeLiteral<Set<URI>>() {
 							}).annotatedWith(Names.named("readContexts"))
 									.toInstance(module.getReadableGraphs());
@@ -163,20 +192,10 @@ class EntityManagerFactory implements IEntityManagerFactory {
 		}
 		return managerInjector;
 	}
-	
+
 	@Override
 	public KommaModule getModule() {
 		return module;
-	}
-	
-	@Override
-	public Map<String, Object> getProperties() {
-		return null;
-	}
-
-	@Override
-	public Set<String> getSupportedProperties() {
-		return null;
 	}
 
 	@Override

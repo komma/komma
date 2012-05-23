@@ -11,8 +11,9 @@
 package net.enilink.komma.em;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Binding;
 import com.google.inject.Injector;
-import com.google.inject.Provider;
+import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
@@ -35,20 +36,24 @@ public class DecoratingEntityManagerModule extends AbstractModule {
 	@Singleton
 	protected IEntityManager provideEntityManager(final Injector injector,
 			final UnitOfWork uow) {
-		ThreadLocalEntityManager manager = new ThreadLocalEntityManager();
-		manager.setEntityManagerProvider(new Provider<IEntityManager>() {
-			@Override
-			public IEntityManager get() {
-				if (!uow.isActive()) {
-					throw new KommaException("No active unit of work found.");
+		Binding<IEntityManager> binding = injector.getExistingBinding(Key.get(
+				IEntityManager.class, Names.named("shared")));
+		if (binding != null) {
+			return binding.getProvider().get();
+		} else {
+			return new ThreadLocalEntityManager() {
+				protected IEntityManager initialValue() {
+					if (!uow.isActive()) {
+						throw new KommaException(
+								"No active unit of work found.");
+					}
+					IEntityManager manager = injector
+							.getInstance(getManagerClass());
+					uow.addManager(manager);
+					return manager;
 				}
-				IEntityManager manager = injector
-						.getInstance(getManagerClass());
-				uow.addManager(manager);
-				return manager;
-			}
-		});
-		return manager;
+			};
+		}
 	}
 
 	protected Class<? extends IEntityManager> getManagerClass() {

@@ -17,8 +17,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.google.inject.Provider;
-
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.em.internal.behaviours.IEntityManagerAware;
 import net.enilink.komma.core.FlushModeType;
@@ -37,7 +35,7 @@ import net.enilink.komma.core.InferencingCapability;
 import net.enilink.komma.core.LockModeType;
 import net.enilink.komma.core.URI;
 
-public class ThreadLocalEntityManager implements IEntityManager {
+public abstract class ThreadLocalEntityManager implements IEntityManager {
 	private ThreadLocal<IEntityManager> delegate = new ThreadLocal<IEntityManager>();
 	private IEntityDecorator managerInjector = new IEntityDecorator() {
 		@Override
@@ -47,7 +45,6 @@ public class ThreadLocalEntityManager implements IEntityManager {
 		}
 	};
 
-	private Provider<IEntityManager> managerProvider;
 	private List<IEntityDecorator> decorators = new CopyOnWriteArrayList<IEntityDecorator>();
 
 	@Override
@@ -177,16 +174,17 @@ public class ThreadLocalEntityManager implements IEntityManager {
 	public void flush() {
 		getDelegate().flush();
 	}
+	
+	abstract protected IEntityManager initialValue();
 
 	public IEntityManager getDelegate() {
 		IEntityManager manager = delegate.get();
 		if (manager == null || !manager.isOpen()) {
-			manager = managerProvider.get();
+			manager = initialValue();
 			for (IEntityDecorator decorator : decorators) {
 				manager.addDecorator(decorator);
 			}
 			manager.addDecorator(managerInjector);
-
 			delegate.set(manager);
 		}
 		return manager;
@@ -366,11 +364,6 @@ public class ThreadLocalEntityManager implements IEntityManager {
 	@Override
 	public <T> T rename(T bean, net.enilink.komma.core.URI uri) {
 		return getDelegate().rename(bean, uri);
-	}
-
-	public void setEntityManagerProvider(
-			Provider<IEntityManager> managerProvider) {
-		this.managerProvider = managerProvider;
 	}
 
 	@Override
