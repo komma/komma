@@ -29,11 +29,9 @@
 package net.enilink.komma.core;
 
 import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 
 /**
- * Factory interface to create {@link IEntityManager}.
+ * Factory interface to create {@link IEntityManager}s.
  * 
  */
 public interface IEntityManagerFactory {
@@ -52,13 +50,6 @@ public interface IEntityManagerFactory {
 	 * 
 	 */
 	void close();
-
-	/**
-	 * Returns an {@link IEntityManager} managed by a unit of work.
-	 * 
-	 * @return A managed {@link IEntityManager}.
-	 */
-	IEntityManager get();
 
 	/**
 	 * Creates a new {@link IEntityManager}. Its the user's responsibility to
@@ -90,33 +81,41 @@ public interface IEntityManagerFactory {
 			KommaModule... modules);
 
 	/**
+	 * Creates a new {@link IEntityManagerFactory} that uses the supplied
+	 * {@link IEntityManager} if a managed entity manager is requested. The given
+	 * locale is used for entity managers which are obtained via
+	 * {@link IEntityManagerFactory#create()}.
+	 * 
+	 * @param sharedManager
+	 *            Entity manager that is returned when a managed instance is
+	 *            requested via {@link IEntityManagerFactory#get()}.
+	 * 
+	 * @param locale
+	 *            The locale to use for new manager instances.
+	 * 
+	 * @param modules
+	 *            Set of modules to configure the {@link IEntityManagerFactory}.
+	 * 
+	 * @return A new {@link IEntityManagerFactory}.
+	 */
+	IEntityManagerFactory createChildFactory(IEntityManager sharedManager,
+			Locale locale, KommaModule... modules);
+
+	/**
+	 * Returns an {@link IEntityManager} instance that is open within the
+	 * currently active unit of work.
+	 * 
+	 * @return An {@link IEntityManager}.
+	 */
+	IEntityManager get();
+
+	/**
 	 * Returns the {@link KommaModule} that is used by {@link IEntityManager}s
 	 * created by this factory.
 	 * 
 	 * @return {@link KommaModule} used by this factory.
 	 */
 	KommaModule getModule();
-
-	/**
-	 * Get the properties and associated values that are in effect for the
-	 * entity manager factory. Changing the contents of the map does not change
-	 * the configuration in effect.
-	 * 
-	 * @return properties
-	 */
-	Map<String, Object> getProperties();
-
-	/**
-	 * Get the names of the properties that are supported for use with the
-	 * entity manager factory. These correspond to properties that may be passed
-	 * to the methods of the EntityManagerFactory interface that take a
-	 * properties argument. These include all standard properties as well as
-	 * vendor-specific properties supported by the provider. These properties
-	 * may or may not currently be in effect.
-	 * 
-	 * @return properties and hints
-	 */
-	Set<String> getSupportedProperties();
 
 	/**
 	 * Get the unit of work that is used to manage thread-local entity managers.
