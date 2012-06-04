@@ -90,6 +90,9 @@ public abstract class SerializableModelSupport implements IModel, Model,
 
 	private IContentDescription determineContentDescription(Map<?, ?> options)
 			throws IOException {
+		if (options == null) {
+			options = Collections.emptyMap();
+		}
 		IURIConverter uriConverter = getModelSet().getURIConverter();
 		IContentDescription contentDescription = (IContentDescription) options
 				.get(IContentDescription.class);
