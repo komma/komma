@@ -13,7 +13,6 @@ package net.enilink.komma.model.base;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,7 +39,6 @@ import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationSupport;
-import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.dm.change.IDataChangeListener;
@@ -237,21 +235,6 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		if (modelFactory != null) {
 			IModel result = modelFactory.createModel(getBehaviourDelegate(),
 					uri);
-
-			if (isPersistent()) {
-				IDataManager ds = getDataManagerFactory().get();
-				try {
-					ds.setReadContexts(Collections.singleton(uri));
-					ds.setIncludeInferred(false);
-
-					// check if model is already loaded
-					if (ds.hasMatch(null, null, null)) {
-						((Model) result).setModelLoaded(true);
-					}
-				} finally {
-					ds.close();
-				}
-			}
 
 			((Model) result)
 					.setModelModelSet((ModelSet) getBehaviourDelegate());
@@ -466,7 +449,9 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 						+ "'; a registered model factory is needed");
 			}
 
-			demandLoadHelper(model);
+			if (!model.isLoaded()) {
+				demandLoadHelper(model);
+			}
 			return model;
 		}
 

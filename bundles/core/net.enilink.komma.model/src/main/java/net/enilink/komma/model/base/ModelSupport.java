@@ -368,7 +368,24 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 
 	@Override
 	public boolean isLoaded() {
-		return isModelLoaded();
+		if (!isModelLoaded()) {
+			IDataManager ds = getModelSet().getDataManagerFactory().get();
+			try {
+				ds.setReadContexts(Collections.singleton(getURI()));
+				ds.setIncludeInferred(false);
+
+				// check if model is already loaded
+				if (ds.hasMatch(null, null, null)) {
+					((Model) getBehaviourDelegate()).setModelLoaded(true);
+					return true;
+				}
+				return false;
+			} finally {
+				ds.close();
+			}
+		} else {
+			return true;
+		}
 	}
 
 	@Override
