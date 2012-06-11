@@ -518,7 +518,9 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 			}
 
 			PropertyNode node = new PropertyNode(subject, null, false, true);
-			treeViewer.insert(path, node, 0);
+			treeViewer.insert(
+					path.getSegmentCount() > 0 ? path : treeViewer.getInput(),
+					node, 0);
 			treeViewer.setSelection(new StructuredSelection(node), true);
 			treeViewer.editElement(node, 0);
 		}
