@@ -1,7 +1,12 @@
 package net.enilink.komma.edit.ui.properties.support;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -10,6 +15,7 @@ import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
+import org.parboiled.common.StringUtils;
 import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.support.IndexRange;
 import org.parboiled.support.ParsingResult;
@@ -95,6 +101,12 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 							.length(), resource));
 				}
 			}
+			Collections.sort(proposals, new Comparator<IContentProposal>() {
+				@Override
+				public int compare(IContentProposal c1, IContentProposal c2) {
+					return c1.getLabel().compareTo(c2.getLabel());
+				}
+			});
 			return proposals.toArray(new IContentProposal[proposals.size()]);
 		}
 	}
@@ -124,28 +136,56 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		return value.toString();
 	}
 
-	protected IExtendedIterator<IResource> getResourceProposals(
-			IEntity subject, IReference predicate, String template, int limit) {
+	protected Iterable<IResource> getResourceProposals(IEntity subject,
+			IReference predicate, String template, int limit) {
+		Set<IResource> resources = new HashSet<IResource>(20);
 		template = template.trim();
 
-		String uriPattern = template;
-		if (!template.matches("[#/]")) {
-			uriPattern = "#" + template;
+		if (subject instanceof IObject && predicate != null && template != null
+				&& !template.contains(":")) {
+			// find properties within the default namespace first
+			URI uri = ((IObject) subject).getModel().getURI();
+			String uriPattern = uri.appendLocalPart(template).toString();
+			String uriNamespace = uri.appendLocalPart("").toString();
 
-			int colonIndex = template.lastIndexOf(':');
-			if (colonIndex == 0) {
-				uriPattern = "#" + template.substring(1);
-			} else if (colonIndex > 0) {
-				String prefix = template.substring(0, colonIndex);
-				URI namespaceUri = subject.getEntityManager().getNamespace(
-						prefix);
-				if (namespaceUri != null) {
-					uriPattern = namespaceUri.appendFragment(
-							template.substring(colonIndex + 1)).toString();
+			resources.addAll(retrieve(subject, predicate, template, uriPattern,
+					uriNamespace, limit));
+		}
+
+		if (resources.size() < limit) {
+			// additionally, if limit not exceeded, find properties from other namespaces
+			String uriPattern = template;
+			if (!template.matches("[#/]")) {
+				uriPattern = "#" + template;
+
+				int colonIndex = template.lastIndexOf(':');
+				if (colonIndex == 0) {
+					uriPattern = "#" + template.substring(1);
+				} else if (colonIndex > 0) {
+					String prefix = template.substring(0, colonIndex);
+					URI namespaceUri = subject.getEntityManager().getNamespace(
+							prefix);
+					if (namespaceUri != null) {
+						uriPattern = namespaceUri.appendFragment(
+								template.substring(colonIndex + 1)).toString();
+					}
 				}
+			}
+
+			List<IResource> fallbackResources = retrieve(subject, predicate,
+					template, uriPattern, null, limit);
+			int count = 0;
+			while (resources.size() < limit && count < fallbackResources.size()) {
+				resources.add(fallbackResources.get(count));
+				count++;
 			}
 		}
 
+		return resources;
+	}
+
+	protected List<IResource> retrieve(IEntity subject, IReference predicate,
+			String template, String uriPattern, String uriNamespace, int limit) {
 		StringBuilder sparql = new StringBuilder(ISparqlConstants.PREFIX
 				+ "SELECT DISTINCT ?s WHERE {");
 
@@ -162,20 +202,29 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 
 		sparql.append("{?s ?p ?o . FILTER regex(str(?s), ?uriPattern)}");
 		sparql.append(" UNION ");
-		sparql.append("{?s rdfs:label ?l . FILTER regex(str(?l), ?template)}");
+		sparql.append("{");
+		sparql.append("?s rdfs:label ?l . FILTER regex(str(?l), ?template)");
+		if (uriNamespace != null) {
+			sparql.append(". FILTER regex(str(?s), ?uriNamespace)");
+		}
+		sparql.append("}");
 		sparql.append("} LIMIT " + limit);
 
 		// TODO incorporate correct ranges
 		IQuery<?> query = subject.getEntityManager()
-				.createQuery(sparql.toString()) //
-				.setParameter("uriPattern", uriPattern) //
+				.createQuery(sparql.toString())
+				.setParameter("uriPattern", uriPattern)
 				.setParameter("template", "^" + template);
+		if (uriNamespace != null) {
+			query.setParameter("uriNamespace", uriNamespace);
+		}
+
 		if (!editPredicate) {
 			query.setParameter("subject", subject);
 			query.setParameter("property", predicate);
 		}
 
-		return query.evaluate(IResource.class);
+		return query.evaluate(IResource.class).toList();
 	}
 
 	protected ConstructorParser createConstructorParser() {
@@ -286,8 +335,9 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				}
 			}
 		}
-		IExtendedIterator<IResource> resources = getResourceProposals(subject,
-				createNew ? null : property, (String) editorValue + "$", 1);
+		Iterator<IResource> resources = getResourceProposals(subject,
+				createNew ? null : property, (String) editorValue + "$", 1)
+				.iterator();
 		if (resources.hasNext()) {
 			final IEntity resource = resources.next();
 			if (createNew
