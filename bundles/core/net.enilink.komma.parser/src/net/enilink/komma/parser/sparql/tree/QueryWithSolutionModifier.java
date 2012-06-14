@@ -10,14 +10,19 @@
  *******************************************************************************/
 package net.enilink.komma.parser.sparql.tree;
 
+import java.util.Arrays;
+
 public abstract class QueryWithSolutionModifier extends Query {
 	protected LimitModifier limitModifier;
 	protected OffsetModifier offsetModifier;
 	protected OrderModifier orderModifier;
 
+	protected SolutionModifier[] modifiers;
+
 	public QueryWithSolutionModifier(Dataset dataset, Graph graph,
 			SolutionModifier... modifiers) {
 		super(dataset, graph);
+		this.modifiers = modifiers;
 
 		for (SolutionModifier modifier : modifiers) {
 			if (modifier instanceof LimitModifier) {
@@ -43,6 +48,10 @@ public abstract class QueryWithSolutionModifier extends Query {
 
 	public OrderModifier getOrderModifier() {
 		return orderModifier;
+	}
+
+	public java.util.Collection<? extends SolutionModifier> getModifiers() {
+		return Arrays.asList(modifiers);
 	}
 
 	protected <T> void assertNull(Class<T> type, T value) {
