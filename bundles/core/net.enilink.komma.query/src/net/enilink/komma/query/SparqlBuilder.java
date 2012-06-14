@@ -40,10 +40,13 @@ import net.enilink.komma.parser.sparql.tree.GraphNode;
 import net.enilink.komma.parser.sparql.tree.GraphPattern;
 import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.OptionalGraph;
+import net.enilink.komma.parser.sparql.tree.OrderCondition;
+import net.enilink.komma.parser.sparql.tree.OrderModifier;
 import net.enilink.komma.parser.sparql.tree.PrefixDecl;
 import net.enilink.komma.parser.sparql.tree.PropertyList;
 import net.enilink.komma.parser.sparql.tree.PropertyPattern;
 import net.enilink.komma.parser.sparql.tree.Query;
+import net.enilink.komma.parser.sparql.tree.QueryWithSolutionModifier;
 import net.enilink.komma.parser.sparql.tree.SelectQuery;
 import net.enilink.komma.parser.sparql.tree.SolutionModifier;
 import net.enilink.komma.parser.sparql.tree.Variable;
@@ -118,7 +121,8 @@ public class SparqlBuilder {
 	}
 
 	protected Object parse(Rule rule, String sparql) {
-		ParsingResult<Object> result = ReportingParseRunner.run(rule, sparql);
+		ParsingResult<Object> result = new ReportingParseRunner<Object>(rule)
+				.run(sparql);
 
 		if (result.hasErrors()) {
 			throw new IllegalArgumentException(StringUtils.join(
@@ -151,9 +155,17 @@ public class SparqlBuilder {
 		}
 		prepareTemplate(template);
 
-		ConstructQuery constructQuery = new ConstructQuery(template, query
-				.getDataset(), query.getGraph(), Collections
-				.<SolutionModifier> emptyList());
+		Collection<? extends SolutionModifier> modifiers = Collections
+				.emptyList();
+		// preserve order by modifier of original query
+		if (query instanceof QueryWithSolutionModifier
+				&& ((QueryWithSolutionModifier) query).getOrderModifier() != null) {
+			modifiers = Collections
+					.singleton(((QueryWithSolutionModifier) query)
+							.getOrderModifier());
+		}
+		ConstructQuery constructQuery = new ConstructQuery(template,
+				query.getDataset(), query.getGraph(), modifiers);
 		constructQuery.setPrologue(query.getPrologue());
 		query = constructQuery;
 	}
@@ -239,8 +251,8 @@ public class SparqlBuilder {
 
 		if (property != null) {
 			if (variable != null) {
-				addPropertyToTemplate(property, new Variable(otherVarRenamer
-						.mapVarName(variable)));
+				addPropertyToTemplate(property,
+						new Variable(otherVarRenamer.mapVarName(variable)));
 
 				if (other instanceof ConstructQuery) {
 					for (GraphNode node : ((ConstructQuery) other)
@@ -279,20 +291,43 @@ public class SparqlBuilder {
 					((ConstructQuery) other).getTemplate());
 		}
 
-		query.getPrologue().getPrefixDecls().addAll(
-				other.getPrologue().getPrefixDecls());
+		query.getPrologue().getPrefixDecls()
+				.addAll(other.getPrologue().getPrefixDecls());
 		removeDuplicates(query.getPrologue().getPrefixDecls());
 
 		query.getDataset().add(other.getDataset());
 		// query.setGraph(new UnionGraph(Arrays.asList(query.getGraph(), other
 		// .getGraph())));
 
+		// merge order by clauses of both queries
+		OrderModifier orderModifier = ((ConstructQuery) query)
+				.getOrderModifier();
+		if (other instanceof QueryWithSolutionModifier
+				&& ((QueryWithSolutionModifier) other).getOrderModifier() != null) {
+			if (orderModifier == null) {
+				orderModifier = ((QueryWithSolutionModifier) other)
+						.getOrderModifier();
+			} else {
+				List<OrderCondition> conditions = new ArrayList<OrderCondition>(
+						orderModifier.getOrderConditions());
+				conditions.addAll(((QueryWithSolutionModifier) other)
+						.getOrderModifier().getOrderConditions());
+				orderModifier = new OrderModifier(conditions);
+			}
+		}
+
 		OptionalGraph optionalGraph = other.getGraph() instanceof OptionalGraph ? (OptionalGraph) other
-				.getGraph()
-				: new OptionalGraph(other.getGraph());
-		query.setGraph(new GraphPattern(new ArrayList<Graph>(Arrays.asList(
-				query.getGraph(), optionalGraph)), Collections
-				.<Expression> emptyList()));
+				.getGraph() : new OptionalGraph(other.getGraph());
+		ConstructQuery combinedQuery = new ConstructQuery(
+				((ConstructQuery) query).getTemplate(), query.getDataset(),
+				new GraphPattern(new ArrayList<Graph>(Arrays.asList(
+						query.getGraph(), optionalGraph)), Collections
+						.<Expression> emptyList()),
+				orderModifier == null ? Collections
+						.<SolutionModifier> emptyList() : Collections
+						.singleton(orderModifier));
+		combinedQuery.setPrologue(query.getPrologue());
+		query = combinedQuery;
 
 		return this;
 	}
