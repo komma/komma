@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
@@ -43,6 +45,21 @@ import net.enilink.komma.core.visitor.IDataVisitor;
 import net.enilink.komma.sesame.SesameValueConverter;
 
 public class ModelUtil {
+	/**
+	 * Collator which can be used to compares resource labels.
+	 */
+	public static final Collator LABEL_COLLATOR;
+	static {
+		// add support for umlauts
+		// in a multi-user environment (webapp) the locale
+		// may need to be determined dynamically
+		LABEL_COLLATOR = Collator.getInstance(Locale.GERMAN);
+		LABEL_COLLATOR.setStrength(Collator.SECONDARY);
+	}
+
+	/**
+	 * Compute a label for the given element.
+	 */
 	public static String getLabel(Object element) {
 		StringBuilder text = new StringBuilder();
 		if (element instanceof IStatement) {
