@@ -10,9 +10,12 @@
  *******************************************************************************/
 package net.enilink.komma.rdfs.edit;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.commands.ExecutionException;
@@ -42,6 +45,7 @@ import net.enilink.komma.edit.provider.IViewerNotification;
 import net.enilink.komma.edit.provider.ReflectiveItemProvider;
 import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
 import net.enilink.komma.edit.provider.ViewerNotification;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
@@ -253,7 +257,16 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 			if (OWL.TYPE_THING.equals(object)) {
 				subClasses.remove(RDFS.TYPE_RESOURCE);
 			}
-			return subClasses;
+			// sort results
+			List<IClass> sortedClasses = new ArrayList<IClass>(subClasses);
+			Collections.sort(sortedClasses, new Comparator<IClass>() {
+				@Override
+				public int compare(IClass c1, IClass c2) {
+					return ModelUtil.LABEL_COLLATOR.compare(getText(c1),
+							getText(c2));
+				}
+			});
+			return sortedClasses;
 		}
 		return super.getChildren(object);
 	}

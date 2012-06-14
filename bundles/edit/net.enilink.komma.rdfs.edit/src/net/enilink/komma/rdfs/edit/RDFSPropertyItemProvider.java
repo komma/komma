@@ -10,9 +10,12 @@
  *******************************************************************************/
 package net.enilink.komma.rdfs.edit;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -42,6 +45,7 @@ import net.enilink.komma.edit.provider.ReflectiveItemProvider;
 import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
 import net.enilink.komma.edit.provider.ViewerNotification;
 import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
@@ -217,7 +221,17 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 	@Override
 	public Collection<?> getChildren(Object object) {
 		if (object instanceof IProperty) {
-			return ((IProperty) object).getDirectSubProperties().toSet();
+			List<IProperty> sortedProperties = new ArrayList<IProperty>(
+					((IProperty) object).getDirectSubProperties().toSet());
+			// sort results
+			Collections.sort(sortedProperties, new Comparator<IProperty>() {
+				@Override
+				public int compare(IProperty p1, IProperty p2) {
+					return ModelUtil.LABEL_COLLATOR.compare(getText(p1),
+							getText(p2));
+				}
+			});
+			return sortedProperties;
 		}
 		return super.getChildren(object);
 	}
