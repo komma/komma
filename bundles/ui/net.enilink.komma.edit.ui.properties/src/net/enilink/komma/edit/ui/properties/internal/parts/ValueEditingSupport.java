@@ -7,6 +7,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
+import org.eclipse.jface.fieldassist.IContentProposal;
+import org.eclipse.jface.fieldassist.IContentProposalListener;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
@@ -25,6 +27,7 @@ import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.ICompositeCommand;
+import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.common.ui.assist.ContentProposals;
 import net.enilink.komma.common.ui.celleditor.TextCellEditorWithContentProposal;
 import net.enilink.komma.concepts.IProperty;
@@ -35,6 +38,7 @@ import net.enilink.komma.edit.provider.IItemLabelProvider;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.edit.ui.properties.internal.wizards.PropertyUtil;
 import net.enilink.komma.edit.ui.properties.support.IPropertyEditingSupport;
+import net.enilink.komma.edit.ui.properties.support.IResourceProposal;
 import net.enilink.komma.edit.ui.properties.support.LiteralEditingSupport;
 import net.enilink.komma.edit.ui.properties.support.ManchesterEditingSupport;
 import net.enilink.komma.edit.ui.properties.support.ResourceEditingSupport;
@@ -60,6 +64,8 @@ class ValueEditingSupport extends EditingSupport {
 	private IPropertyEditingSupport propertyEditingSupport;
 
 	private boolean editPredicate;
+
+	private IContentProposal acceptedProposal;
 
 	private ICellEditorListener cellEditorListener = new ICellEditorListener() {
 		@Override
@@ -121,6 +127,13 @@ class ValueEditingSupport extends EditingSupport {
 				ContentProposalAdapter.PROPOSAL_IGNORE);
 		textCellEditor.getContentProposalAdapter().setAutoActivationDelay(
 				PROPOSAL_DELAY);
+		textCellEditor.getContentProposalAdapter().addContentProposalListener(
+				new IContentProposalListener() {
+					@Override
+					public void proposalAccepted(IContentProposal proposal) {
+						acceptedProposal = proposal;
+					}
+				});
 		textCellEditor.addListener(cellEditorListener);
 	}
 
@@ -191,6 +204,7 @@ class ValueEditingSupport extends EditingSupport {
 
 	@Override
 	protected CellEditor getCellEditor(Object element) {
+		acceptedProposal = null;
 		currentElement = unwrap(element);
 
 		if (createNew) {
@@ -280,10 +294,7 @@ class ValueEditingSupport extends EditingSupport {
 
 	@Override
 	protected void setValue(final Object element, final Object value) {
-		if (value == null) {
-			return;
-		}
-		if (value.equals(getValue(element))) {
+		if (value == null || value.equals(getValue(element))) {
 			return;
 		}
 
@@ -292,10 +303,19 @@ class ValueEditingSupport extends EditingSupport {
 
 		ICommand newObjectCommand = null;
 		if (currentEditor == textCellEditor) {
-			// create value with external property editing support
-			newObjectCommand = propertyEditingSupport.convertValueFromEditor(
-					value, (IEntity) stmt.getSubject(), stmt.getPredicate(),
-					stmt.getObject());
+			// if value is unchanged since & completely defined by last
+			// accepted proposal
+			if (acceptedProposal instanceof IResourceProposal
+					&& value.equals(acceptedProposal.getContent())) {
+				newObjectCommand = new IdentityCommand(
+						((IResourceProposal) acceptedProposal).getResource());
+			} else {
+				// create value with external property editing support
+				newObjectCommand = propertyEditingSupport
+						.convertValueFromEditor(value,
+								(IEntity) stmt.getSubject(),
+								stmt.getPredicate(), stmt.getObject());
+			}
 			if (editPredicate && newObjectCommand != null) {
 				try {
 					newObjectCommand.execute(new NullProgressMonitor(), null);

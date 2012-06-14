@@ -53,7 +53,8 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		}
 	}
 
-	protected class ResourceProposal extends ContentProposalExt {
+	protected class ResourceProposal extends ContentProposalExt implements
+			IResourceProposal {
 		IEntity resource;
 
 		public ResourceProposal(String content, int cursorPosition,
@@ -64,6 +65,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			this.resource = resource;
 		}
 
+		@Override
 		public IEntity getResource() {
 			return resource;
 		}
