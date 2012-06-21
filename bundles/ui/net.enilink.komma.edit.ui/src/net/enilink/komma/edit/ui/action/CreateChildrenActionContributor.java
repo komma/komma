@@ -183,7 +183,10 @@ public class CreateChildrenActionContributor {
 					});
 				}
 			};
-			newChildCollector.addMenuManager(createChildMenuManager);
+			if (createChildMenuManager != null) {
+				newChildCollector.addMenuManager(createChildMenuManager);
+				newChildCollector.schedule();
+			}
 
 			newSiblingCollector = new MenuActionCollector<Object>(
 					"Prepare create silbing actions", selection) {
@@ -225,7 +228,10 @@ public class CreateChildrenActionContributor {
 					});
 				}
 			};
-			newSiblingCollector.addMenuManager(createSiblingMenuManager);
+			if (createSiblingMenuManager != null) {
+				newSiblingCollector.addMenuManager(createSiblingMenuManager);
+				newSiblingCollector.schedule();
+			}
 		}
 	}
 }

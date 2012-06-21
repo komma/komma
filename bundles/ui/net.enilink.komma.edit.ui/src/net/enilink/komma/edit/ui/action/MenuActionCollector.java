@@ -2,9 +2,8 @@ package net.enilink.komma.edit.ui.action;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -34,6 +33,8 @@ import net.enilink.komma.edit.util.CollectorJob;
  * managers with actions.
  */
 abstract public class MenuActionCollector<T> extends CollectorJob<T> {
+	protected boolean shouldSchedule = true;
+
 	private static final IContributionItem loadingIndicatorItem = new ActionContributionItem(
 			new Action("loading ...") {
 			});
@@ -41,7 +42,7 @@ abstract public class MenuActionCollector<T> extends CollectorJob<T> {
 	private static final int MAX_MENU_ENTRIES = 20;
 	protected Collection<IAction> menuActions;
 	protected Collection<IAction> allActions;
-	protected Set<IMenuManager> menuManagers = new HashSet<IMenuManager>();
+	protected WeakHashMap<IMenuManager, Boolean> menuManagers = new WeakHashMap<IMenuManager, Boolean>();
 	protected volatile ISelection selection;
 	protected Display display = Display.getCurrent();
 	protected List<Job> handlers = new ArrayList<Job>();
@@ -86,7 +87,7 @@ abstract public class MenuActionCollector<T> extends CollectorJob<T> {
 	}
 
 	public void addMenuManager(IMenuManager menuManager) {
-		if (menuManager != null && menuManagers.add(menuManager)) {
+		if (menuManager != null && menuManagers.put(menuManager, true) != null) {
 			populateManager(menuManager, menuActions,
 					loadingIndicatorItem.getId());
 		}
@@ -131,7 +132,7 @@ abstract public class MenuActionCollector<T> extends CollectorJob<T> {
 
 	public void dispose() {
 		cancel();
-		for (IMenuManager menuManager : menuManagers) {
+		for (IMenuManager menuManager : menuManagers.keySet()) {
 			depopulateManager(menuManager, menuActions);
 		}
 		selection = null;
@@ -149,6 +150,16 @@ abstract public class MenuActionCollector<T> extends CollectorJob<T> {
 				}
 			}
 		}
+	}
+
+	@Override
+	public boolean shouldSchedule() {
+		// force job to be only scheduled once
+		if (shouldSchedule) {
+			shouldSchedule = false;
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -184,7 +195,7 @@ abstract public class MenuActionCollector<T> extends CollectorJob<T> {
 							menuActions = new ArrayList<IAction>();
 						}
 						menuActions.addAll(newActions);
-						for (IMenuManager menuManager : menuManagers) {
+						for (IMenuManager menuManager : menuManagers.keySet()) {
 							populateManager(menuManager, newActions,
 									loadingIndicatorItem.getId());
 							menuManager.update(true);
