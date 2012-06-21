@@ -299,8 +299,8 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				IDataManager dm = getModelSet().getDataManagerFactory().get();
 				dm.setReadContexts(Collections.singleton(getURI()));
 				try {
-					IExtendedIterator<IStatement> imports = dm.match(null,
-							OWL.PROPERTY_IMPORTS, null);
+					IExtendedIterator<IStatement> imports = dm.matchAsserted(
+							null, OWL.PROPERTY_IMPORTS, null);
 
 					while (imports.hasNext()) {
 						Object object = imports.next().getObject();
