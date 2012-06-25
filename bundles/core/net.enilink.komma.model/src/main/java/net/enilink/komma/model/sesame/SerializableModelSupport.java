@@ -106,11 +106,10 @@ public abstract class SerializableModelSupport implements IModel, Model,
 				if (contentTypeId != null) {
 					contentType = Platform.getContentTypeManager()
 							.getContentType(contentTypeId);
-					if (contentType != null) {
-						contentDescription = contentType
-								.getDefaultDescription();
-					}
 				}
+			}
+			if (contentType != null) {
+				contentDescription = contentType.getDefaultDescription();
 			}
 		}
 		if (contentDescription == null) {
@@ -132,7 +131,7 @@ public abstract class SerializableModelSupport implements IModel, Model,
 				}
 			}
 		}
-		return null;
+		return contentDescription;
 	}
 
 	@Override
