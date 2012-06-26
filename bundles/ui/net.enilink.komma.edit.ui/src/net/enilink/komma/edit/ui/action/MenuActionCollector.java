@@ -87,7 +87,7 @@ abstract public class MenuActionCollector<T> extends CollectorJob<T> {
 	}
 
 	public void addMenuManager(IMenuManager menuManager) {
-		if (menuManager != null && menuManagers.put(menuManager, true) != null) {
+		if (menuManager != null && menuManagers.put(menuManager, true) == null) {
 			populateManager(menuManager, menuActions,
 					loadingIndicatorItem.getId());
 		}
