@@ -101,8 +101,10 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 				// insert proposal text
 				text.replace(insertPos, index, label);
 				// create proposal
-				proposals.add(new ResourceProposal(text.toString(), insertPos
-						+ label.length(), resource));
+				proposals
+						.add(new ResourceProposal(text.toString(), insertPos
+								+ label.length(), resource).setUseAsValue(text
+								.length() == label.length()));
 				// restore original text
 				text.replace(insertPos, insertPos + label.length(), origText);
 			}

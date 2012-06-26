@@ -15,12 +15,10 @@ import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
-import org.parboiled.common.StringUtils;
 import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.support.IndexRange;
 import org.parboiled.support.ParsingResult;
 
-import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
@@ -56,6 +54,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 	protected class ResourceProposal extends ContentProposalExt implements
 			IResourceProposal {
 		IEntity resource;
+		boolean useAsValue;
 
 		public ResourceProposal(String content, int cursorPosition,
 				IEntity resource) {
@@ -68,6 +67,15 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		@Override
 		public IEntity getResource() {
 			return resource;
+		}
+
+		public ResourceProposal setUseAsValue(boolean useAsValue) {
+			this.useAsValue = useAsValue;
+			return this;
+		}
+
+		public boolean getUseAsValue() {
+			return useAsValue;
 		}
 	}
 
@@ -100,7 +108,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				if (content.length() > 0) {
 					content = prefix + content;
 					proposals.add(new ResourceProposal(content, content
-							.length(), resource));
+							.length(), resource).setUseAsValue(true));
 				}
 			}
 			Collections.sort(proposals, new Comparator<IContentProposal>() {
@@ -155,7 +163,8 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		}
 
 		if (resources.size() < limit) {
-			// additionally, if limit not exceeded, find properties from other namespaces
+			// additionally, if limit not exceeded, find properties from other
+			// namespaces
 			String uriPattern = template;
 			if (!template.matches("[#/]")) {
 				uriPattern = "#" + template;

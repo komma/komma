@@ -65,12 +65,14 @@ class ValueEditingSupport extends EditingSupport {
 
 	private boolean editPredicate;
 
-	private IContentProposal acceptedProposal;
+	private IResourceProposal acceptedValueProposal;
 
 	private ICellEditorListener cellEditorListener = new ICellEditorListener() {
 		@Override
 		public void editorValueChanged(boolean oldValidState,
 				boolean newValidState) {
+			// user modifications reset the last value proposal
+			acceptedValueProposal = null;
 		}
 
 		@Override
@@ -131,7 +133,11 @@ class ValueEditingSupport extends EditingSupport {
 				new IContentProposalListener() {
 					@Override
 					public void proposalAccepted(IContentProposal proposal) {
-						acceptedProposal = proposal;
+						if (proposal instanceof IResourceProposal
+								&& ((IResourceProposal) proposal)
+										.getUseAsValue()) {
+							acceptedValueProposal = (IResourceProposal) proposal;
+						}
 					}
 				});
 		textCellEditor.addListener(cellEditorListener);
@@ -204,7 +210,7 @@ class ValueEditingSupport extends EditingSupport {
 
 	@Override
 	protected CellEditor getCellEditor(Object element) {
-		acceptedProposal = null;
+		acceptedValueProposal = null;
 		currentElement = unwrap(element);
 
 		if (createNew) {
@@ -279,16 +285,16 @@ class ValueEditingSupport extends EditingSupport {
 		if (editorValue != null) {
 			return editorValue;
 		}
+		return getValueFromStatement(getStatement(element));
+	}
 
-		IStatement stmt = getStatement(element);
-
+	protected Object getValueFromStatement(IStatement stmt) {
 		IPropertyEditingSupport propertyEditingSupport = getPropertyEditingSupport(stmt);
 		if (propertyEditingSupport != null) {
 			return propertyEditingSupport.getValueForEditor(
 					(IEntity) stmt.getSubject(), stmt.getPredicate(),
 					stmt.getObject());
 		}
-
 		return null;
 	}
 
@@ -303,12 +309,11 @@ class ValueEditingSupport extends EditingSupport {
 
 		ICommand newObjectCommand = null;
 		if (currentEditor == textCellEditor) {
-			// if value is unchanged since & completely defined by last
-			// accepted proposal
-			if (acceptedProposal instanceof IResourceProposal
-					&& value.equals(acceptedProposal.getContent())) {
+			// if value is completely defined by last accepted proposal
+			if (acceptedValueProposal != null) {
 				newObjectCommand = new IdentityCommand(
-						((IResourceProposal) acceptedProposal).getResource());
+						((IResourceProposal) acceptedValueProposal)
+								.getResource());
 			} else {
 				// create value with external property editing support
 				newObjectCommand = propertyEditingSupport
