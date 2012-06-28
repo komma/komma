@@ -4,7 +4,11 @@ import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposalListener2;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.viewers.TextCellEditor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 
 import net.enilink.komma.common.ui.assist.ContentProposals;
 
@@ -13,13 +17,17 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 	private boolean popupOpen = false; // true, iff popup is currently open
 
 	public TextCellEditorWithContentProposal(Composite parent) {
-		this(parent, ContentProposals.NULL_PROPOSAL_PROVIDER, null);
+		this(parent, SWT.SINGLE, null, null);
 	}
 
-	public TextCellEditorWithContentProposal(Composite parent,
+	public TextCellEditorWithContentProposal(Composite parent, int style,
 			IContentProposalProvider contentProposalProvider,
 			char[] autoActivationCharacters) {
-		super(parent);
+		super(parent, style);
+
+		if (contentProposalProvider == null) {
+			contentProposalProvider = ContentProposals.NULL_PROPOSAL_PROVIDER;
+		}
 
 		contentProposalAdapter = ContentProposals.enableContentProposal(text,
 				contentProposalProvider, autoActivationCharacters);
@@ -38,6 +46,23 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 						popupOpen = true;
 					}
 				});
+	}
+
+	@Override
+	protected Control createControl(Composite parent) {
+		Control text = super.createControl(parent);
+		if ((getStyle() & SWT.MULTI) != 0) {
+			text.addKeyListener(new KeyAdapter() {
+				public void keyPressed(KeyEvent e) {
+					if (e.character == '\r' && e.stateMask == 0) {
+						e.doit = false;
+						fireApplyEditorValue();
+						deactivate();
+					}
+				}
+			});
+		}
+		return text;
 	}
 
 	/**
