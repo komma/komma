@@ -15,6 +15,7 @@ import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ICellEditorListener;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Item;
 
@@ -111,22 +112,30 @@ class ValueEditingSupport extends EditingSupport {
 		this(viewer, false);
 	}
 
-	public ValueEditingSupport(TreeViewer viewer, boolean editPredicate) {
+	public ValueEditingSupport(final TreeViewer viewer, boolean editPredicate) {
 		super(viewer);
 		this.editPredicate = editPredicate;
 
-		textCellEditor = new TextCellEditorWithContentProposal(viewer.getTree()) {
-			protected void focusLost() {
-			}
-
+		textCellEditor = new TextCellEditorWithContentProposal(
+				viewer.getTree(), SWT.MULTI | SWT.WRAP | SWT.V_SCROLL
+						| SWT.BORDER, null, null) {
 			@Override
 			public void deactivate() {
 				fireApplyEditorValue();
 				super.deactivate();
 			}
+
+			protected void focusLost() {
+			}
+
+			@Override
+			public LayoutData getLayoutData() {
+				LayoutData layoutData = super.getLayoutData();
+				layoutData.verticalAlignment = SWT.TOP;
+				layoutData.minimumHeight = viewer.getTree().getItemHeight() * 6;
+				return layoutData;
+			}
 		};
-		textCellEditor.getContentProposalAdapter().setProposalAcceptanceStyle(
-				ContentProposalAdapter.PROPOSAL_IGNORE);
 		textCellEditor.getContentProposalAdapter().setAutoActivationDelay(
 				PROPOSAL_DELAY);
 		textCellEditor.getContentProposalAdapter().addContentProposalListener(
