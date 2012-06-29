@@ -17,6 +17,15 @@ public class ContentProposalExt extends ContentProposal implements
 		this.type = type;
 	}
 
+	@Override
+	public String getContent() {
+		return getType() == Type.INSERT ? super.getContent() : "";
+	}
+
+	public String getReplacement() {
+		return getType() == Type.REPLACE ? super.getContent() : null;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 

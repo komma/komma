@@ -54,7 +54,7 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 		if ((getStyle() & SWT.MULTI) != 0) {
 			text.addKeyListener(new KeyAdapter() {
 				public void keyPressed(KeyEvent e) {
-					if (e.character == '\r' && e.stateMask == 0) {
+					if (e.character == '\r' && e.stateMask == 0 && !popupOpen) {
 						e.doit = false;
 						fireApplyEditorValue();
 						deactivate();
