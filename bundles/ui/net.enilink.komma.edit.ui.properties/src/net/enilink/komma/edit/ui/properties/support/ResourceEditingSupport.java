@@ -108,7 +108,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				if (content.length() > 0) {
 					content = prefix + content;
 					proposals.add(new ResourceProposal(content, content
-							.length(), resource).setUseAsValue(true));
+							.length(), resource).setUseAsValue(!ctor.matched));
 				}
 			}
 			Collections.sort(proposals, new Comparator<IContentProposal>() {
