@@ -56,6 +56,8 @@ public class TupleBindingsIterator extends
 
 		Iterator<String> keys = sol.getKeys().iterator();
 		ResultInfo resultInfo;
+		ResultInfo resultInfoForAll = resultInfos != null ? resultInfos
+				.get(null) : null;
 		for (IValue value : sol) {
 			String varName = keys.next();
 
@@ -63,12 +65,12 @@ public class TupleBindingsIterator extends
 			if (value == null) {
 				converted = null;
 			} else if (resultInfos != null
-					&& (resultInfo = resultInfos.get(varName)) != null) {
+					&& (((resultInfo = resultInfos.get(varName))) != null || (resultInfo = resultInfoForAll) != null)) {
 				if (value instanceof IReference) {
-					List<Class<?>> types = resultInfos.get(varName).types;
+					List<Class<?>> types = resultInfo.types;
 					if (!types.isEmpty() && types.get(0) == URI.class) {
 						converted = ((IReference) value).getURI();
-					} else if (resultInfos.get(varName).typeRestricted) {
+					} else if (resultInfo.typeRestricted) {
 						converted = manager.findRestricted((IReference) value,
 								resultInfo.types);
 					} else {

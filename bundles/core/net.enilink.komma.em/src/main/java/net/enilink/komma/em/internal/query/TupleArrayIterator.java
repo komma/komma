@@ -53,6 +53,8 @@ public class TupleArrayIterator extends
 		Object[] result = new Object[getBindingNames().size()];
 
 		ResultInfo resultInfo;
+		ResultInfo resultInfoForAll = resultInfos != null ? resultInfos
+				.get(null) : null;
 		int i = 0;
 		for (String bindingName : getBindingNames()) {
 			IValue value = sol.get(bindingName);
@@ -61,12 +63,12 @@ public class TupleArrayIterator extends
 			if (value == null) {
 				converted = null;
 			} else if (resultInfos != null
-					&& (resultInfo = resultInfos.get(bindingName)) != null) {
+					&& (((resultInfo = resultInfos.get(bindingName))) != null || (resultInfo = resultInfoForAll) != null)) {
 				if (value instanceof IReference) {
-					List<Class<?>> types = resultInfos.get(bindingName).types;
+					List<Class<?>> types = resultInfo.types;
 					if (!types.isEmpty() && types.get(0) == URI.class) {
 						converted = ((IReference) value).getURI();
-					} else if (resultInfos.get(bindingName).typeRestricted) {
+					} else if (resultInfo.typeRestricted) {
 						converted = manager.findRestricted((IReference) value,
 								resultInfo.types);
 					} else {
