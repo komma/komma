@@ -153,12 +153,13 @@ public class SesameRepositoryDataManager implements IDataManager {
 	public <R> IDataManagerQuery<R> createQuery(String query, String baseURI) {
 		try {
 			Query sesameQuery = prepareSesameQuery(query, baseURI);
-
 			if (readCtx.length > 0) {
 				DatasetImpl ds = new DatasetImpl();
 				for (URI graph : readCtx) {
 					ds.addDefaultGraph(graph);
-					ds.addNamedGraph(graph);
+					if (graph != null) {
+						ds.addNamedGraph(graph);
+					}
 				}
 				sesameQuery.setDataset(ds);
 			}
@@ -424,7 +425,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 
 		int i = 0;
 		for (net.enilink.komma.core.URI uri : uris) {
-			converted[i++] = valueConverter.toSesame(uri);
+			converted[i++] = uri != null ? valueConverter.toSesame(uri) : null;
 		}
 		return converted;
 	}
