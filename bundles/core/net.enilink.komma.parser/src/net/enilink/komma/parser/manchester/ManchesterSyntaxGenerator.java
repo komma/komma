@@ -1,12 +1,17 @@
 package net.enilink.komma.parser.manchester;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.enilink.vocab.owl.DataRange;
 import net.enilink.vocab.owl.Restriction;
 import net.enilink.vocab.rdfs.Class;
+import net.enilink.vocab.rdfs.Datatype;
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
+import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IReference;
@@ -16,9 +21,38 @@ import net.enilink.komma.core.URI;
  * Generator for the <a
  * href="http://www.w3.org/2007/OWL/wiki/ManchesterSyntax">Manchester OWL
  * Syntax</a>.
- * 
  */
 public class ManchesterSyntaxGenerator {
+	static final String FACET_QUERY = createFacetQuery();
+
+	private static String createFacetQuery() {
+		StringBuilder sb = new StringBuilder("PREFIX xsd: <"
+				+ XMLSCHEMA.NAMESPACE + ">\n");
+		sb.append("select ?facet ?value where {\n");
+		Iterator<String> facets = Arrays.asList("length", "minLength",
+				"maxLength", "pattern", "langPattern", "minInclusive",
+				"minExclusive", "maxInclusive", "maxExclusive").iterator();
+		while (facets.hasNext()) {
+			String facet = "xsd:" + facets.next();
+			sb.append("\t{ ?s ").append(facet).append(" ?value\n");
+			sb.append("\tbind ( ").append(facet).append(" as ?facet ) }\n");
+			if (facets.hasNext()) {
+				sb.append("\tunion\n");
+			}
+		}
+		sb.append("} limit 1");
+		return sb.toString();
+	}
+
+	// maps XSD facets to shorthand notations
+	static final Map<String, String> FACET_SHORTHANDS = new HashMap<String, String>();
+	static {
+		FACET_SHORTHANDS.put("minInclusive", "<=");
+		FACET_SHORTHANDS.put("minExclusive", "<");
+		FACET_SHORTHANDS.put("maxInclusive", ">=");
+		FACET_SHORTHANDS.put("maxExclusive", ">");
+	}
+
 	public String generateText(Object object) {
 		if (object instanceof Class) {
 			return clazz((Class) object).toString();
@@ -32,6 +66,10 @@ public class ManchesterSyntaxGenerator {
 		if (clazz.getURI() == null) {
 			if (clazz instanceof Restriction) {
 				return restriction((Restriction) clazz);
+			} else if (clazz instanceof Datatype) {
+				sb.append(toString(((Datatype) clazz).getOwlOnDatatype()));
+				return datatypeRestrictions(((Datatype) clazz)
+						.getOwlWithRestrictions());
 			} else if (clazz instanceof net.enilink.vocab.owl.Class) {
 				net.enilink.vocab.owl.Class owlClass = (net.enilink.vocab.owl.Class) clazz;
 				if (owlClass.getOwlUnionOf() != null) {
@@ -50,6 +88,43 @@ public class ManchesterSyntaxGenerator {
 		return value(clazz);
 	}
 
+	/**
+	 * Converts a list of datatype restrictions to a Manchester expression in
+	 * the form [facet1 value1, facet2 value2, ...]
+	 * 
+	 * Example: xsd:int[>=18]
+	 * 
+	 * @param list
+	 *            The list of datatype restrictions which are expressed using
+	 *            XML Schmema facets.
+	 * 
+	 * @return The generator instance.
+	 */
+	private ManchesterSyntaxGenerator datatypeRestrictions(List<?> list) {
+		sb.append("[");
+		Iterator<? extends Object> it = list.iterator();
+		while (it.hasNext()) {
+			IEntity dtRestriction = (IEntity) it.next();
+			for (IBindings<?> bindings : dtRestriction.getEntityManager()
+					.createQuery(FACET_QUERY).setParameter("s", dtRestriction)
+					.evaluate(IBindings.class)) {
+				IReference facet = (IReference) bindings.get("facet");
+				String facetShortHand = FACET_SHORTHANDS.get(facet.getURI()
+						.localPart());
+				if (facetShortHand == null) {
+					facetShortHand = facet.getURI().localPart();
+				}
+				sb.append(facetShortHand).append(
+						toString(bindings.get("value")));
+				if (it.hasNext()) {
+					sb.append(", ");
+				}
+			}
+		}
+		sb.append("]");
+		return this;
+	}
+
 	private ManchesterSyntaxGenerator dataRange(DataRange dataRange) {
 		return clazz(dataRange);
 	}
@@ -62,8 +137,8 @@ public class ManchesterSyntaxGenerator {
 			if (it.hasNext()) {
 				sb.append(" ").append(", ").append(" ");
 			}
-			sb.append("}");
 		}
+		sb.append("}");
 		return this;
 	}
 
@@ -73,7 +148,6 @@ public class ManchesterSyntaxGenerator {
 		} else if (restriction.getOwlOnDataRange() != null) {
 			return dataRange(restriction.getOwlOnDataRange());
 		}
-
 		return this;
 	}
 

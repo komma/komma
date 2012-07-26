@@ -26,4 +26,5 @@ Export-Package: net.enilink.komma.parser,
 DynamicImport-Package: org.parboiled.*
 Require-Bundle: net.enilink.vocab.rdfs,
  net.enilink.vocab.owl,
+ net.enilink.commons.iterator,
  net.enilink.komma.core
