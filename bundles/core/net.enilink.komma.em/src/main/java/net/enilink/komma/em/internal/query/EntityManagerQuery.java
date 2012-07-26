@@ -69,14 +69,24 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 
 	public <T> IExtendedIterator<T> evaluate(Class<T> resultType,
 			Class<?>... resultTypes) {
+		// special case where a binding set should be returned as IBindings or
+		// as Object[]
+		if (IBindings.class.isAssignableFrom(resultType)
+				|| resultType.isArray()) {
+			return evaluateQuery(resultType, resultInfos);
+		}
+
 		ResultInfo resultInfo = new ResultInfo(false, new ArrayList<Class<?>>());
 		resultInfo.types.add(resultType);
 		for (Class<?> type : resultTypes) {
 			resultInfo.types.add(type);
 		}
-
-		return evaluateQuery(resultType,
-				Collections.singletonMap((String) null, resultInfo));
+		if (resultInfos == null) {
+			resultInfos = Collections.singletonMap((String) null, resultInfo);
+		} else {
+			resultInfos.put(null, resultInfo);
+		}
+		return evaluateQuery(resultType, resultInfos);
 	}
 
 	@SuppressWarnings("unchecked")
