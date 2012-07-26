@@ -730,17 +730,6 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		state().uriConverter = uriConverter;
 	}
 
-	/**
-	 * Returns a standard label with the list of models.
-	 * 
-	 * @return the string form.
-	 */
-	@Override
-	public String toString() {
-		return getClass().getName() + '@' + Integer.toHexString(hashCode())
-				+ " models=" + getModels().toString();
-	}
-
 	/** Transforms changes tracked in the repository into {@link INotification}s */
 	protected List<INotification> transformChanges(List<IDataChange> changes) {
 		List<INotification> notifications = new ArrayList<INotification>(

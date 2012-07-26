@@ -725,6 +725,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	public void setURI(URI uri) {
 		if (uri != null && !uri.equals(getURI())) {
 			getEntityManager().rename(this, uri);
+			unloadManager();
 		}
 	}
 

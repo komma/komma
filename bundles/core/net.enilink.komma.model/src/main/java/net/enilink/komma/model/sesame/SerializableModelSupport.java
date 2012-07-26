@@ -19,6 +19,7 @@ import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.traits.Behaviour;
 
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.commons.iterator.IMap;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.model.IContentHandler;
 import net.enilink.komma.model.IModel;
@@ -28,9 +29,12 @@ import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.concepts.Model;
+import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.INamespace;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
 
@@ -237,14 +241,28 @@ public abstract class SerializableModelSupport implements IModel, Model,
 
 		final IDataManager dm = ((IModelSet.Internal) getModelSet())
 				.getDataManagerFactory().get();
+		dm.setIncludeInferred(false);
 		dm.setReadContexts(Collections.singleton(getURI()));
 		try {
 			for (INamespace namespace : dm.getNamespaces()) {
 				dataVisitor.visitNamespace(namespace);
 			}
 
-			IExtendedIterator<IStatement> stmts = dm.matchAsserted(null, null,
-					null);
+			// use sorting to improve readability of serialized output
+			IExtendedIterator<IStatement> stmts = dm
+					.createQuery(
+							"select ?s ?p ?o where { ?s ?p ?o } order by ?s ?p ?o",
+							getURI().appendLocalPart("").toString()).evaluate()
+					.mapWith(new IMap<Object, IStatement>() {
+						@Override
+						public IStatement map(Object value) {
+							IBindings<?> bindings = (IBindings<?>) value;
+							return new Statement(
+									(IReference) bindings.get("s"),
+									(IReference) bindings.get("p"), bindings
+											.get("o"));
+						}
+					});
 			while (stmts.hasNext()) {
 				dataVisitor.visitStatement(stmts.next());
 			}
