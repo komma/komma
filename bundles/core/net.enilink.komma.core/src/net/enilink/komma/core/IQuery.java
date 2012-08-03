@@ -123,7 +123,14 @@ public interface IQuery<R> extends IQueryBase<IQuery<R>> {
 	 * 
 	 * @return The first result from the query.
 	 */
-	Object getSingleResult();
+	R getSingleResult();
+	
+	/**
+	 * Evaluates the query and returns the first result.
+	 * 
+	 * @return The first result from the query.
+	 */
+	<T> T getSingleResult(Class<T> resultType);
 
 	/**
 	 * Get the names of the hints that are supported for query objects. These
