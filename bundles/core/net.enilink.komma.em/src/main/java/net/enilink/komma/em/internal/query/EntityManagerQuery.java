@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -81,9 +82,11 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 		for (Class<?> type : resultTypes) {
 			resultInfo.types.add(type);
 		}
-		if (resultInfos == null) {
+		Map<String, ResultInfo> resultInfos;
+		if (this.resultInfos == null) {
 			resultInfos = Collections.singletonMap((String) null, resultInfo);
 		} else {
+			resultInfos = new HashMap<String, ResultInfo>(this.resultInfos);
 			resultInfos.put(null, resultInfo);
 		}
 		return evaluateQuery(resultType, resultInfos);
@@ -160,7 +163,6 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 	@Override
 	public boolean getBooleanResult() {
 		Object result = getSingleResult();
-
 		return Boolean.TRUE.equals(result);
 	}
 
@@ -183,12 +185,18 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 		return evaluate().toList();
 	}
 
-	public Object getSingleResult() {
-		IExtendedIterator<?> iter = evaluate();
+	public R getSingleResult() {
+		return getSingleResult(null);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getSingleResult(Class<T> resultType) {
+		IExtendedIterator<?> iter = resultType != null ? evaluate(resultType)
+				: evaluateQuery(null, resultInfos);
 		try {
 			if (!iter.hasNext())
 				throw new NoResultException("No results");
-			Object result = iter.next();
+			T result = (T) iter.next();
 			if (iter.hasNext())
 				throw new NonUniqueResultException("More than one result");
 			return result;
