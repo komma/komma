@@ -1,0 +1,13 @@
+net.enilink.vocab.foaf.Agent
+net.enilink.vocab.foaf.Document
+net.enilink.vocab.foaf.Group
+net.enilink.vocab.foaf.Image
+net.enilink.vocab.foaf.LabelProperty
+net.enilink.vocab.foaf.OnlineAccount
+net.enilink.vocab.foaf.OnlineChatAccount
+net.enilink.vocab.foaf.OnlineEcommerceAccount
+net.enilink.vocab.foaf.OnlineGamingAccount
+net.enilink.vocab.foaf.Organization
+net.enilink.vocab.foaf.Person
+net.enilink.vocab.foaf.PersonalProfileDocument
+net.enilink.vocab.foaf.Project
