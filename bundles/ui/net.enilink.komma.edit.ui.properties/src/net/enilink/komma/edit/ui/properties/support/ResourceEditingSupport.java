@@ -198,28 +198,30 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 	protected List<IResource> retrieve(IEntity subject, IReference predicate,
 			String template, String uriPattern, String uriNamespace, int limit) {
 		StringBuilder sparql = new StringBuilder(ISparqlConstants.PREFIX
-				+ "SELECT DISTINCT ?s WHERE {");
+				+ "SELECT DISTINCT ?s WHERE { ");
 
 		if (editPredicate) {
 			sparql.append("?s a rdf:Property . ");
 		} else {
-			// TODO compute correct intersection of ranges
 			if (predicate != null) {
-				sparql.append("{?property rdfs:range ?sType FILTER (?sType != owl:Thing)}");
-				sparql.append(" UNION {?subject a [rdfs:subClassOf ?r] . ?r owl:onProperty ?property {?r owl:allValuesFrom ?sType} UNION {?r owl:someValuesFrom ?sType}}");
-				sparql.append(" ?s a ?sType . ");
+				sparql.append("{ ?property rdfs:range ?sType FILTER (?sType != owl:Thing) }");
+				sparql.append(" UNION ");
+				sparql.append("{ ?subject a [rdfs:subClassOf ?r] . ?r owl:onProperty ?property { ?r owl:allValuesFrom ?sType }}");
+				sparql.append(" UNION ");
+				sparql.append("{ ?r owl:someValuesFrom ?sType }");
+				sparql.append(" ?s a ?sType ");
 			}
 		}
 
-		sparql.append("{?s ?p ?o . FILTER regex(str(?s), ?uriPattern)}");
+		sparql.append("{ ?s ?p ?o . FILTER regex(str(?s), ?uriPattern) }");
 		sparql.append(" UNION ");
-		sparql.append("{");
+		sparql.append("{ ");
 		sparql.append("?s rdfs:label ?l . FILTER regex(str(?l), ?template)");
 		if (uriNamespace != null) {
 			sparql.append(". FILTER regex(str(?s), ?uriNamespace)");
 		}
-		sparql.append("}");
-		sparql.append("} LIMIT " + limit);
+		sparql.append(" }");
+		sparql.append(" } LIMIT " + limit);
 
 		// TODO incorporate correct ranges
 		IQuery<?> query = subject.getEntityManager()
@@ -235,7 +237,13 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			query.setParameter("property", predicate);
 		}
 
-		return query.evaluate(IResource.class).toList();
+		List<IResource> list = query.evaluate(IResource.class).toList();
+		if (list.isEmpty() && predicate != null) {
+			return this.retrieve(subject, null, template, uriPattern,
+					uriNamespace, limit);
+		} else {
+			return list;
+		}
 	}
 
 	protected ConstructorParser createConstructorParser() {
