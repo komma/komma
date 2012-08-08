@@ -1750,7 +1750,7 @@ public final class URIImpl implements URI {
 			if (colonIndex >= 0) {
 				cachedNamespace = new URIImpl(false, scheme,
 						opaquePart.substring(0, colonIndex), null,
-						absolutePath, null, null, null);
+						absolutePath, NO_SEGMENTS, null, null);
 			} else {
 				cachedNamespace = this;
 			}
