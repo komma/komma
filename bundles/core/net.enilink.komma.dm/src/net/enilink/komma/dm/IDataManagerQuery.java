@@ -48,5 +48,4 @@ public interface IDataManagerQuery<R> {
 	 *         <code>false</code>
 	 */
 	boolean supportsLimit();
-
 }

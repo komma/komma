@@ -32,6 +32,7 @@ public class DataChangeTracker implements IDataChangeSupport,
 	protected WeakHashMap<IDataManager, Object> disabledDataManagers = new WeakHashMap<IDataManager, Object>();
 
 	private CopyOnWriteArraySet<IDataChangeListener> listeners = new CopyOnWriteArraySet<IDataChangeListener>();
+	private CopyOnWriteArraySet<IDataChangeListener> internalListeners = new CopyOnWriteArraySet<IDataChangeListener>();
 
 	@Override
 	public void add(IDataManager dm, IReference subj, IReference pred,
@@ -53,6 +54,10 @@ public class DataChangeTracker implements IDataChangeSupport,
 	@Override
 	public void addChangeListener(IDataChangeListener changeListener) {
 		listeners.add(changeListener);
+	}
+
+	public void addInternalChangeListener(IDataChangeListener changeListener) {
+		internalListeners.add(changeListener);
 	}
 
 	@Override
@@ -103,6 +108,9 @@ public class DataChangeTracker implements IDataChangeSupport,
 	}
 
 	protected void notifyListeners(List<IDataChange> changes) {
+		for (IDataChangeListener internalChangeListener : internalListeners) {
+			internalChangeListener.dataChanged(changes);
+		}
 		for (IDataChangeListener changeListener : listeners) {
 			changeListener.dataChanged(changes);
 		}
@@ -122,6 +130,10 @@ public class DataChangeTracker implements IDataChangeSupport,
 	@Override
 	public void removeChangeListener(IDataChangeListener changeListener) {
 		listeners.remove(changeListener);
+	}
+
+	public void removeInternalChangeListener(IDataChangeListener changeListener) {
+		internalListeners.remove(changeListener);
 	}
 
 	@Override

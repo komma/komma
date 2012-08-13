@@ -5,8 +5,6 @@
  */
 package net.enilink.komma.dm.internal.change;
 
-import java.util.Collections;
-
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.dm.change.IStatementChange;
@@ -26,9 +24,14 @@ public class AddChange extends Statement implements IDataChange,
 		super(subj, pred, obj, ctx);
 	}
 
+	protected IReference[] getModifyContexts() {
+		IReference context = getContext();
+		return context == null ? new IReference[0]
+				: new IReference[] { context };
+	}
+
 	public void redo(IDataManager dm) {
-		dm.setModifyContexts(Collections.singleton(getContext().getURI()));
-		dm.add(this);
+		dm.add(this, getModifyContexts());
 	}
 
 	@Override
@@ -38,8 +41,7 @@ public class AddChange extends Statement implements IDataChange,
 	}
 
 	public void undo(IDataManager dm) {
-		dm.setModifyContexts(Collections.singleton(getContext().getURI()));
-		dm.remove(this);
+		dm.remove(this, getModifyContexts());
 	}
 
 	@Override

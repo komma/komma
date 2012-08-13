@@ -1,13 +1,11 @@
 package net.enilink.komma.dm;
 
-import java.util.Set;
-
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.InferencingCapability;
 import net.enilink.komma.core.KommaException;
@@ -22,11 +20,30 @@ public interface IDataManager {
 	 * Add statements to this data manager
 	 * 
 	 * @param statements
-	 *            the statements to add
+	 *            The statements to add.
+	 * @param readContexts
+	 *            The context(s) where to check if data is already existing
+	 *            before adding.
+	 * @param contexts
+	 *            The context(s) where to add the data.
 	 * @throws KommaException
 	 *             thrown if there is an error while adding the statements
 	 */
-	IDataManager add(Iterable<? extends IStatement> statements);
+	IDataManager add(Iterable<? extends IStatement> statements,
+			IReference[] readContexts, IReference... addContexts);
+
+	/**
+	 * Add statements to this data manager
+	 * 
+	 * @param statements
+	 *            The statements to add.
+	 * @param contexts
+	 *            The context(s) where to add the data.
+	 * @throws KommaException
+	 *             thrown if there is an error while adding the statements
+	 */
+	IDataManager add(Iterable<? extends IStatement> statements,
+			IReference... contexts);
 
 	/**
 	 * Removes all namespace declarations from this manager.
@@ -48,26 +65,15 @@ public interface IDataManager {
 	 * @param baseURI
 	 *            base URI for relative URIs or <code>null</code> if the query
 	 *            does not contain relative URIs
+	 * @param includeInferred
+	 *            Controls if inferred statements should be included to compute
+	 *            the results or not.
+	 * @param contexts
+	 *            The context(s) where to get or modify the data.
 	 * @return {@link IQuery}.
 	 */
-	<R> IDataManagerQuery<R> createQuery(String query, String baseURI);
-
-	/**
-	 * Returns all asserted statements with the given subject, predicate, and
-	 * object. Null parameters represent wildcards.
-	 * 
-	 * @param subject
-	 *            the subject to match, or null for a wildcard
-	 * @param predicate
-	 *            the predicate to match, or null for a wildcard
-	 * @param object
-	 *            the object to match, or null for a wildcard
-	 * @return an {@link IExtendedIterator} of matching statements.
-	 * @throws KommaException
-	 *             thrown if there is an error while getting the statements
-	 */
-	IExtendedIterator<IStatement> matchAsserted(IReference subject,
-			IReference predicate, IValue object);
+	<R> IDataManagerQuery<R> createQuery(String query, String baseURI,
+			boolean includeInferred, IReference... contexts);
 
 	/**
 	 * Return the inferencing capability of the underlying store.
@@ -112,12 +118,18 @@ public interface IDataManager {
 	 *            the predicate to match, or null for a wildcard
 	 * @param object
 	 *            the object to match, or null for a wildcard
+	 * @param includeInferred
+	 *            Controls if inferred statements should be included to compute
+	 *            the results or not.
+	 * @param contexts
+	 *            The context(s) where to get the data.
 	 * @return <code>true</code> if at least one matching statement exists, else
 	 *         <code>false</code>.
 	 * @throws KommaException
 	 *             thrown if there is an error while getting the statements
 	 */
-	boolean hasMatch(IReference subject, IReference predicate, IValue object);
+	boolean hasMatch(IReference subject, IReference predicate, IValue object,
+			boolean includeInferred, IReference... contexts);
 
 	/**
 	 * Returns whether or not there is an open connection to this data source
@@ -136,12 +148,18 @@ public interface IDataManager {
 	 *            the predicate to match, or null for a wildcard
 	 * @param object
 	 *            the object to match, or null for a wildcard
+	 * @param includeInferred
+	 *            Controls if inferred statements should be included to compute
+	 *            the results or not.
+	 * @param contexts
+	 *            The context(s) where to get the data.
 	 * @return an {@link IExtendedIterator} of matching statements.
 	 * @throws KommaException
 	 *             thrown if there is an error while getting the statements
 	 */
 	IExtendedIterator<IStatement> match(IReference subject,
-			IReference predicate, IValue object);
+			IReference predicate, IValue object, boolean includeInferred,
+			IReference... contexts);
 
 	/**
 	 * Returns a new data manager specific blank node reference.
@@ -151,12 +169,15 @@ public interface IDataManager {
 	/**
 	 * Remove statements from this data manager
 	 * 
-	 * @param statement
-	 *            the statement to remove
+	 * @param statements
+	 *            The statements to remove.
+	 * @param contexts
+	 *            The context(s) where to remove the data.
 	 * @throws KommaException
 	 *             thrown if there is an error while removing the statements
 	 */
-	IDataManager remove(Iterable<? extends IStatement> statements);
+	IDataManager remove(Iterable<? extends IStatement> statements,
+			IReference... contexts);
 
 	/**
 	 * Removes a namespace declaration by removing the association between a
@@ -169,13 +190,6 @@ public interface IDataManager {
 	IDataManager removeNamespace(String prefix);
 
 	/**
-	 * Specifies a set of contexts which are used for adding and removing statements.
-	 * 
-	 * @param modifyContexts
-	 */
-	IDataManager setModifyContexts(Set<URI> modifyContexts);
-
-	/**
 	 * Sets the prefix for a namespace.
 	 * 
 	 * @param prefix
@@ -184,15 +198,4 @@ public interface IDataManager {
 	 *            The namespace name that the prefix maps to.
 	 */
 	IDataManager setNamespace(String prefix, URI uri);
-
-	/**
-	 * Specifies a set of contexts which are used for reading statements.
-	 * 
-	 * @param readContexts
-	 */
-	IDataManager setReadContexts(Set<URI> readContexts);
-
-	IDataManager setIncludeInferred(boolean includeInferred);
-
-	boolean getIncludeInferred();
 }
