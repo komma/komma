@@ -23,4 +23,5 @@ Eclipse-LazyStart: true
 Bundle-ActivationPolicy: lazy
 Import-Package: com.google.inject;version="2.0.0",
  com.google.inject.binder;version="2.0.0",
- com.google.inject.multibindings;version="2.0.0"
+ com.google.inject.multibindings;version="2.0.0",
+ com.google.inject.util;version="2.0.0"

@@ -27,7 +27,9 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.util.Modules;
 
 import net.enilink.vocab.rdfs.Resource;
 import net.enilink.komma.common.adapter.IAdapter;
@@ -61,7 +63,9 @@ import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.model.change.ChangeRecorder;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.util.UnitOfWork;
 
 /**
  * This class implements an editing domain by delegating to adapters that
@@ -473,15 +477,24 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 	public synchronized IModel getClipboardModel() {
 		// TODO use a shared clipboard model set for the whole application
 		if (clipboardModelSet == null) {
-			IModelSetFactory factory = Guice
-					.createInjector(
+			IModelSetFactory factory = Guice.createInjector(
+					Modules.override(
 							new ModelSetModule(ModelCore
 									.createModelSetModule(getClass()
-											.getClassLoader()))).getInstance(
-							IModelSetFactory.class);
+											.getClassLoader()))).with(
+							new AbstractModule() {
+								@Override
+								protected void configure() {
+									bind(UnitOfWork.class).toInstance(
+											(UnitOfWork) getModelSet()
+													.getUnitOfWork());
+									bind(IUnitOfWork.class).toInstance(
+											getModelSet().getUnitOfWork());
+								}
+							})).getInstance(IModelSetFactory.class);
 
 			clipboardModelSet = factory.createModelSet(URIImpl
-					.createURI(MODELS.NAMESPACE + "OwlimModelSet" //
+					.createURI(MODELS.NAMESPACE + "MemoryModelSet" //
 					));
 		}
 
@@ -567,34 +580,6 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 		return result;
 	}
 
-	// /**
-	// * Each {@link #isStale(Object)} in the list is unwrapped,
-	// * {@link EcoreUtil#resolve(EObject, ResourceSet) resolved}, and rewrapped
-	// * before it's added to the result; Other objects are passed through
-	// * unchecked.
-	// *
-	// */
-	// public List<?> resolve(Collection<?> objects) {
-	// List<Object> result = new UniqueEList<Object>();
-	// for (Object object : objects) {
-	// if (isStale(object)) {
-	// Object unwrappedObject = unwrap(object);
-	// if (unwrappedObject instanceof EObject) {
-	// EObject resolvedEObject = EcoreUtil.resolve(
-	// (EObject) unwrappedObject, resourceSet);
-	// if (resolvedEObject != unwrappedObject) {
-	// result
-	// .add(object instanceof IWrapperItemProvider ? getWrapper(resolvedEObject)
-	// : resolvedEObject);
-	// }
-	// }
-	// } else {
-	// result.add(object);
-	// }
-	// }
-	// return result;
-	// }
-	//
 	public Object getWrapper(Object object) {
 		if (object != null) {
 			for (Iterator<?> i = treeIterator(getRoot(object)); i.hasNext();) {
@@ -652,22 +637,6 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 		this.adapterFactory = adapterFactory;
 	}
 
-	//
-	// /**
-	// * This returns a path list from the root object to the given object in
-	// the
-	// * tree.
-	// */
-	// public List<?> getTreePath(Object object) {
-	// LinkedList<Object> result = new LinkedList<Object>();
-	// result.addFirst(object);
-	// while ((object = getParent(object)) != null) {
-	// result.addFirst(object);
-	// }
-	//
-	// return result;
-	// }
-
 	/**
 	 * This sets the clipboard of the editing domain.
 	 */
@@ -690,39 +659,4 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 	public ITreeIterator<?> treeIterator(Object object) {
 		return new DomainTreeIterator<Object>(this, object);
 	}
-
-	// /**
-	// * This returns whether or not the domain allows the given object to be
-	// * moved to a different resource from its container. In this
-	// implementation,
-	// * an EObject is controllable if it has a container, it is contained via a
-	// * feature that allows proxy resolution, and neither it nor its container
-	// is
-	// * in a read-only resource.
-	// */
-	// public boolean isControllable(Object object) {
-	// if (!(object instanceof EObject))
-	// return false;
-	// EObject eObject = (EObject) object;
-	// EObject container = eObject.eContainer();
-	// return container != null
-	// && eObject.eContainmentFeature().isResolveProxies()
-	// && !isReadOnly(eObject.eResource())
-	// && !isReadOnly(container.eResource());
-	// }
-	//
-	// /**
-	// * This returns whether or not an object has been moved to a different
-	// * resource from its container. It is a simple convenience method that
-	// * compares the two resource of the two objects.
-	// */
-	// public static boolean isControlled(Object object) {
-	// if (!(object instanceof EObject))
-	// return false;
-	// EObject eObject = (EObject) object;
-	// EObject container = eObject.eContainer();
-	// Resource resource = eObject.eResource();
-	// return resource != null && container != null
-	// && resource != container.eResource();
-	// }
 }
