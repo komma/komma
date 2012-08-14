@@ -48,20 +48,26 @@ import net.enilink.komma.core.URI;
  */
 public class TypeManager {
 	IDataManager dm;
+	IReference[] readContexts;
+	IReference[] modifyContexts;
 
-	public TypeManager(IDataManager dm) {
+	public TypeManager(IDataManager dm, IReference[] readContexts,
+			IReference[] modifyContexts) {
 		this.dm = dm;
+		this.readContexts = readContexts;
+		this.modifyContexts = modifyContexts;
 	}
 
 	public void addType(IReference resource, URI type) {
 		if (!RDFS.TYPE_RESOURCE.equals(type)) {
-			dm.add(new Statement(resource, RDF.PROPERTY_TYPE, type));
+			dm.add(new Statement(resource, RDF.PROPERTY_TYPE, type),
+					modifyContexts);
 		}
 	}
 
 	public Collection<URI> getTypes(IReference res) {
 		IExtendedIterator<IStatement> match = dm.match(res, RDF.PROPERTY_TYPE,
-				null);
+				null, true, readContexts);
 		try {
 			if (!match.hasNext())
 				return Collections.emptySet();
@@ -88,6 +94,6 @@ public class TypeManager {
 	}
 
 	public void removeType(IReference resource, URI type) {
-		dm.remove(new Statement(resource, RDF.PROPERTY_TYPE, type));
+		dm.remove(new Statement(resource, RDF.PROPERTY_TYPE, type), modifyContexts);
 	}
 }

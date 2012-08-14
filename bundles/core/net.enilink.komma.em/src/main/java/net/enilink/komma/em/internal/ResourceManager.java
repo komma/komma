@@ -26,9 +26,11 @@ import net.enilink.komma.core.URI;
  */
 public class ResourceManager {
 	IDataManager dm;
+	IReference[] contexts;
 
-	public ResourceManager(IDataManager dm) {
+	public ResourceManager(IDataManager dm, IReference[] contexts) {
 		this.dm = dm;
+		this.contexts = contexts;
 	}
 
 	public IReference createResource(URI uri) {
@@ -45,7 +47,7 @@ public class ResourceManager {
 		}
 		dm.remove(Arrays.asList( //
 				new Statement(resource, null, null), //
-				new Statement(null, null, resource)));
+				new Statement(null, null, resource)), contexts);
 		if (!active) {
 			dm.getTransaction().commit();
 		}
@@ -57,39 +59,39 @@ public class ResourceManager {
 			if (!active) {
 				dm.getTransaction().begin();
 			}
-			IExtendedIterator<IStatement> stmts = dm.matchAsserted(
-					before, null, null);
+			IExtendedIterator<IStatement> stmts = dm.match(before, null, null,
+					false, contexts);
 			try {
 				while (stmts.hasNext()) {
 					IStatement stmt = stmts.next();
 					IReference pred = stmt.getPredicate();
 					Object obj = stmt.getObject();
-					dm.remove(new Statement(before, pred, obj));
-					dm.add(new Statement(after, pred, obj));
+					dm.remove(new Statement(before, pred, obj), contexts);
+					dm.add(new Statement(after, pred, obj), contexts);
 				}
 			} finally {
 				stmts.close();
 			}
-			stmts = dm.matchAsserted(null, before, null);
+			stmts = dm.match(null, before, null, false);
 			try {
 				while (stmts.hasNext()) {
 					IStatement stmt = stmts.next();
 					IReference subj = stmt.getSubject();
 					Object obj = stmt.getObject();
-					dm.remove(new Statement(subj, before, obj));
-					dm.add(new Statement(subj, after, obj));
+					dm.remove(new Statement(subj, before, obj), contexts);
+					dm.add(new Statement(subj, after, obj), contexts);
 				}
 			} finally {
 				stmts.close();
 			}
-			stmts = dm.matchAsserted(null, null, before);
+			stmts = dm.match(null, null, before, false);
 			try {
 				while (stmts.hasNext()) {
 					IStatement stmt = stmts.next();
 					IReference subj = stmt.getSubject();
 					IReference pred = stmt.getPredicate();
-					dm.remove(new Statement(subj, pred, before));
-					dm.add(new Statement(subj, pred, after));
+					dm.remove(new Statement(subj, pred, before), contexts);
+					dm.add(new Statement(subj, pred, after), contexts);
 				}
 			} finally {
 				stmts.close();

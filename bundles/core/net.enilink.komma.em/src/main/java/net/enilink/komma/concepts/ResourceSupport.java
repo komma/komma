@@ -531,4 +531,10 @@ public abstract class ResourceSupport extends BehaviorBase implements
 			propertyInfo.getPropertySet().setSingle(value);
 		}
 	}
+
+	@Override
+	public void refresh() {
+		// reset all cached properties
+		properties = null;
+	}
 }

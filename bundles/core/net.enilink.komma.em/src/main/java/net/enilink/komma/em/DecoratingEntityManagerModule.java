@@ -20,7 +20,6 @@ import com.google.inject.name.Names;
 
 import net.enilink.komma.em.internal.DecoratingEntityManager;
 import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.KommaException;
 import net.enilink.komma.util.UnitOfWork;
 
 public class DecoratingEntityManagerModule extends AbstractModule {
@@ -41,18 +40,7 @@ public class DecoratingEntityManagerModule extends AbstractModule {
 		if (binding != null) {
 			return binding.getProvider().get();
 		} else {
-			return new ThreadLocalEntityManager() {
-				protected IEntityManager initialValue() {
-					if (!uow.isActive()) {
-						throw new KommaException(
-								"No active unit of work found.");
-					}
-					IEntityManager manager = injector
-							.getInstance(getManagerClass());
-					uow.addManager(manager);
-					return manager;
-				}
-			};
+			return injector.getInstance(getManagerClass());
 		}
 	}
 

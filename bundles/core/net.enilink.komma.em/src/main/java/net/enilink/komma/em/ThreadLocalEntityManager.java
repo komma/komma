@@ -174,7 +174,7 @@ public abstract class ThreadLocalEntityManager implements IEntityManager {
 	public void flush() {
 		getDelegate().flush();
 	}
-	
+
 	abstract protected IEntityManager initialValue();
 
 	public IEntityManager getDelegate() {
@@ -269,7 +269,8 @@ public abstract class ThreadLocalEntityManager implements IEntityManager {
 
 	@Override
 	public boolean isOpen() {
-		return getDelegate().isOpen();
+		IEntityManager manager = delegate.get();
+		return (manager != null) ? manager.isOpen() : false;
 	}
 
 	@Override

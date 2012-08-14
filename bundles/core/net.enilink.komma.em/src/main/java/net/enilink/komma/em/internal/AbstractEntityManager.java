@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -47,6 +46,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections.map.ReferenceIdentityMap;
 import net.enilink.composition.ClassResolver;
@@ -99,7 +99,6 @@ import net.enilink.komma.util.RESULTS;
 
 /**
  * Handles operations of {@link IEntityManager}.
- * 
  */
 public abstract class AbstractEntityManager implements IEntityManager,
 		IEntityManagerInternal {
@@ -111,7 +110,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	private ClassResolver<URI> classResolver;
 
-	IDataManager dm;
+	protected IDataManager dm;
 
 	private IEntityManagerFactory factory;
 
@@ -124,27 +123,22 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	@Inject
 	private Locale locale;
 
-	final Logger logger = LoggerFactory.getLogger(AbstractEntityManager.class);
-
 	private RoleMapper<URI> mapper;
 
 	@SuppressWarnings("unchecked")
 	private Map<Object, IReference> merged = new ReferenceIdentityMap(
 			ReferenceIdentityMap.WEAK, ReferenceIdentityMap.HARD, true);
 
-	ResourceManager resourceManager;
+	private volatile ResourceManager resourceManager;
 
-	TypeManager typeManager;
+	private volatile TypeManager typeManager;
 
 	private Map<net.enilink.komma.core.URI, String> uriToPrefix = null;
 
-	@Inject(optional = true)
-	@Named("readContexts")
-	private Set<URI> readContexts;
+	private static final URI[] NO_CONTEXTS = new URI[0];
 
-	@Inject(optional = true)
-	@Named("modifyContexts")
-	private Set<URI> modifyContexts;
+	private URI[] readContexts = NO_CONTEXTS;
+	private URI[] modifyContexts = NO_CONTEXTS;
 
 	@Override
 	public void add(Iterable<? extends IStatement> statements) {
@@ -161,7 +155,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 						getReference(stmt.getPredicate()), toValue(stmt
 								.getObject()), stmt.getContext());
 			}
-		});
+		}, readContexts, modifyContexts);
 	}
 
 	private <C extends Collection<URI>> C addConcept(IReference resource,
@@ -172,7 +166,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 					"Concept is anonymous or is not registered: "
 							+ role.getSimpleName());
 		}
-		typeManager.addType(resource, type);
+		getTypeManager().addType(resource, type);
 		set.add(type);
 		return set;
 	}
@@ -211,7 +205,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			}
 			IReference reference = getReference(bean);
 			if (reference == null) {
-				reference = resourceManager.createResource(null);
+				reference = getResourceManager().createResource(null);
 			}
 			merged.put(bean, reference);
 			return reference;
@@ -220,7 +214,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	public void clear() {
-		dm.remove(new Statement(null, null, null));
+		dm.remove(new Statement(null, null, null), modifyContexts);
 	}
 
 	@Override
@@ -330,7 +324,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			throw new IllegalArgumentException(
 					"Resource argument must not be null.");
 		}
-		entityTypes = entityTypes != null ? new HashSet<URI>(entityTypes) : new HashSet<URI>();
+		entityTypes = entityTypes != null ? new HashSet<URI>(entityTypes)
+				: new HashSet<URI>();
 		if (!restrictTypes) {
 			if (graph != null) {
 				// this ensures that only types with an IRI are added to
@@ -345,7 +340,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			}
 
 			if (entityTypes.isEmpty()) {
-				entityTypes.addAll(typeManager.getTypes(resource));
+				entityTypes.addAll(getTypeManager().getTypes(resource));
 			}
 		}
 		if (concepts != null && !concepts.isEmpty()) {
@@ -359,8 +354,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				if (type != null) {
 					entityTypes.add(type);
 				} else {
-					logger.warn("Unknown rdf type for concept class: "
-							+ concept);
+					log.warn("Unknown rdf type for concept class: " + concept);
 				}
 			}
 		}
@@ -399,21 +393,22 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	public <T> T createNamed(net.enilink.komma.core.URI uri,
 			Class<T> concept, Class<?>... concepts) {
-		IReference resource = resourceManager.createResource(uri);
+		IReference resource = getResourceManager().createResource(uri);
 		return create(resource, concept, concepts);
 	}
 
 	@Override
 	public IEntity createNamed(net.enilink.komma.core.URI uri,
 			IReference... concepts) {
-		IReference resource = resourceManager.createResource(uri);
+		IReference resource = getResourceManager().createResource(uri);
 		try {
 			boolean active = dm.getTransaction().isActive();
 			if (!active) {
 				dm.getTransaction().begin();
 			}
 			for (IReference concept : concepts) {
-				dm.add(new Statement(resource, RDF.PROPERTY_TYPE, concept));
+				dm.add(new Statement(resource, RDF.PROPERTY_TYPE, concept),
+						modifyContexts);
 			}
 			if (!active) {
 				dm.getTransaction().commit();
@@ -454,20 +449,10 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			boolean includeInferred) {
 		log.trace("Query: {}", query);
 
-		boolean dmIncludeInferred = dm.getIncludeInferred();
-		if (dmIncludeInferred != includeInferred) {
-			dm.setIncludeInferred(includeInferred);
-		}
-		try {
-			IQuery<?> result = new EntityManagerQuery<Object>(this,
-					dm.createQuery(query, baseURI));
-			injector.injectMembers(result);
-			return result;
-		} finally {
-			if (dmIncludeInferred != includeInferred) {
-				dm.setIncludeInferred(dmIncludeInferred);
-			}
-		}
+		IQuery<?> result = new EntityManagerQuery<Object>(this, dm.createQuery(
+				query, baseURI, includeInferred, readContexts));
+		injector.injectMembers(result);
+		return result;
 	}
 
 	@Override
@@ -619,7 +604,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	@Override
 	public String getPrefix(net.enilink.komma.core.URI namespaceUri) {
 		if (uriToPrefix == null) {
-			uriToPrefix = new HashMap<net.enilink.komma.core.URI, String>();
+			uriToPrefix = new ConcurrentHashMap<net.enilink.komma.core.URI, String>();
 			for (INamespace namespace : getNamespaces()) {
 				uriToPrefix.put(namespace.getURI(), namespace.getPrefix());
 			}
@@ -680,7 +665,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	@Override
 	public boolean hasMatch(IReference subject, IReference predicate,
 			Object object) {
-		return dm.hasMatch(subject, predicate, toValue(object));
+		return dm.hasMatch(subject, predicate, toValue(object), true,
+				readContexts);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -824,25 +810,22 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	@Override
 	public IExtendedIterator<IStatement> match(IReference subject,
 			IReference predicate, Object object) {
-		return dm.match(subject, predicate, toValue(object));
+		return dm
+				.match(subject, predicate, toValue(object), true, readContexts);
 	}
 
 	@Override
 	public IExtendedIterator<IStatement> matchAsserted(IReference subject,
 			IReference predicate, IValue object) {
-		return dm.matchAsserted(subject, predicate, toValue(object));
+		return dm.match(subject, predicate, toValue(object), false,
+				readContexts);
 	}
 
 	@Override
 	public boolean hasMatchAsserted(IReference subject, IReference predicate,
 			Object object) {
-		boolean includeInferred = dm.getIncludeInferred();
-		dm.setIncludeInferred(false);
-		try {
-			return dm.hasMatch(subject, predicate, toValue(object));
-		} finally {
-			dm.setIncludeInferred(includeInferred);
-		}
+		return dm.hasMatch(subject, predicate, toValue(object), false,
+				readContexts);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -868,7 +851,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				Class<?> proxy = bean.getClass();
 				List<URI> types = getTypes(proxy, new ArrayList<URI>());
 				for (URI type : types) {
-					typeManager.addType(resource, type);
+					getTypeManager().addType(resource, type);
 				}
 				Object result = createBean(resource, types, null, false, null);
 				if (result instanceof Mergeable) {
@@ -913,20 +896,21 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	public void remove(Iterable<? extends IStatement> statements) {
-		dm.remove(new ConvertingIterator<IStatement, IStatement>(statements
-				.iterator()) {
-			@Override
-			protected IStatement convert(IStatement stmt) {
-				if (!(stmt.getSubject() instanceof Behaviour || stmt
-						.getPredicate() instanceof Behaviour)
-						&& stmt.getObject() instanceof IValue) {
-					return stmt;
-				}
-				return new Statement(getReference(stmt.getSubject()),
-						getReference(stmt.getPredicate()), toValue(stmt
-								.getObject()), stmt.getContext());
-			}
-		});
+		dm.remove(
+				new ConvertingIterator<IStatement, IStatement>(statements
+						.iterator()) {
+					@Override
+					protected IStatement convert(IStatement stmt) {
+						if (!(stmt.getSubject() instanceof Behaviour || stmt
+								.getPredicate() instanceof Behaviour)
+								&& stmt.getObject() instanceof IValue) {
+							return stmt;
+						}
+						return new Statement(getReference(stmt.getSubject()),
+								getReference(stmt.getPredicate()), toValue(stmt
+										.getObject()), stmt.getContext());
+					}
+				}, modifyContexts);
 	}
 
 	public void remove(Object entity) {
@@ -934,7 +918,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			remove(Collections.singleton((IStatement) entity));
 		} else {
 			IReference resource = getReferenceOrFail(entity);
-			resourceManager.removeResource(resource);
+			getResourceManager().removeResource(resource);
 		}
 	}
 
@@ -1004,7 +988,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 					continue;
 				}
 
-				typeManager.removeType(resource, type);
+				getTypeManager().removeType(resource, type);
 			}
 
 			if (!isActive) {
@@ -1027,8 +1011,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	@Override
 	public <T> T rename(T bean, net.enilink.komma.core.URI uri) {
 		IReference before = getReferenceOrFail(bean);
-		IReference after = resourceManager.createResource(uri);
-		resourceManager.renameResource(before, after);
+		IReference after = getResourceManager().createResource(uri);
+		getResourceManager().renameResource(before, after);
 
 		T newBean = (T) createBean(after, null, null, false, null);
 		((IEntityManagerAware) bean).initReference(((IReferenceable) newBean)
@@ -1045,13 +1029,35 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	@Inject
 	protected void setDataManager(IDataManager dm) {
 		this.dm = dm;
-		this.dm.setModifyContexts(modifyContexts != null ? modifyContexts
-				: Collections.<URI> emptySet());
-		this.dm.setReadContexts(readContexts != null ? readContexts
-				: Collections.<URI> emptySet());
+	}
 
-		resourceManager = new ResourceManager(dm);
-		typeManager = new TypeManager(dm);
+	protected ResourceManager getResourceManager() {
+		if (resourceManager == null) {
+			resourceManager = new ResourceManager(dm, modifyContexts);
+		}
+		return resourceManager;
+	}
+
+	protected TypeManager getTypeManager() {
+		if (typeManager == null) {
+			typeManager = new TypeManager(dm, readContexts, modifyContexts);
+		}
+		return typeManager;
+	}
+
+	@Inject(optional = true)
+	protected void setContexts(
+			@Named("modifyContexts") Set<URI> modifyContexts,
+			@Named("readContexts") Set<URI> readContexts) {
+		this.modifyContexts = modifyContexts.toArray(new URI[modifyContexts
+				.size()]);
+
+		LinkedHashSet<URI> readAndModifyContexts = new LinkedHashSet<URI>(
+				readContexts);
+		readAndModifyContexts.retainAll(modifyContexts);
+		readAndModifyContexts.addAll(readContexts);
+		this.readContexts = readAndModifyContexts
+				.toArray(new URI[readAndModifyContexts.size()]);
 	}
 
 	@Override
@@ -1104,10 +1110,10 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 			IEntity bean = createBean((IReference) value, types, null, false,
 					graph);
-			if (logger.isDebugEnabled()) {
+			if (log.isDebugEnabled()) {
 				if (!createQuery("ASK {?s ?p ?o}").setParameter("s",
 						(IReference) value).getBooleanResult()) {
-					logger.debug("Warning: Unknown entity: " + value);
+					log.debug("Warning: Unknown entity: " + value);
 				}
 			}
 			return bean;

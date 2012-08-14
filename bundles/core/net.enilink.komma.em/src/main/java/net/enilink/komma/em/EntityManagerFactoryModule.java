@@ -32,7 +32,7 @@ public class EntityManagerFactoryModule extends AbstractModule {
 	Module managerModule;
 
 	KommaModule module;
-	
+
 	public EntityManagerFactoryModule(KommaModule module, Locale locale) {
 		this(module, locale, null);
 	}
@@ -50,15 +50,15 @@ public class EntityManagerFactoryModule extends AbstractModule {
 		bind(DataChangeTracker.class).in(Singleton.class);
 		bind(IDataChangeSupport.class).to(DataChangeTracker.class);
 		bind(IDataChangeTracker.class).to(DataChangeTracker.class);
-		
+
 		install(new EntityVarModule());
 	}
 
 	@Singleton
 	@Provides
 	IEntityManagerFactory provideFactory(Injector injector) {
-		IEntityManagerFactory factory = new EntityManagerFactory(module, locale,
-				managerModule);
+		IEntityManagerFactory factory = new EntityManagerFactory(module,
+				locale, managerModule);
 		injector.injectMembers(factory);
 		return factory;
 	}

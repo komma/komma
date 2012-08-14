@@ -16,7 +16,10 @@ import org.junit.Before;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Module;
+import com.google.inject.Provides;
 
+import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.em.DecoratingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
 import net.enilink.komma.core.IEntityManager;
@@ -57,6 +60,13 @@ public abstract class EntityManagerTest {
 
 						bind(UnitOfWork.class).toInstance(uow);
 						bind(IUnitOfWork.class).toInstance(uow);
+					}
+
+					@SuppressWarnings("unused")
+					@Provides
+					protected IDataManager provideDataManager(
+							IDataManagerFactory dmFactory) {
+						return dmFactory.get();
 					}
 				}).getInstance(IEntityManagerFactory.class);
 

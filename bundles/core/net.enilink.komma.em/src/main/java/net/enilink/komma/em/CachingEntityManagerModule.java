@@ -71,7 +71,8 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 			public Object put(Object entity, Object property,
 					Object[] parameters, Object value) {
 				Fqn fqn = Fqn.fromRelativeElements(baseFqn,
-						((IReferenceable) entity).getReference(), property);
+						((IReferenceable) entity).getReference(), "properties",
+						property);
 				boolean isIterator = value instanceof Iterator<?>;
 				if (isIterator) {
 					// usually an iterator cannot be cached
@@ -97,7 +98,8 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 			public Object get(Object entity, Object property,
 					Object[] parameters) {
 				Fqn fqn = Fqn.fromRelativeElements(baseFqn,
-						((IReferenceable) entity).getReference(), property);
+						((IReferenceable) entity).getReference(), "properties",
+						property);
 				Object value = treeCache.get(fqn, Arrays.asList(parameters));
 
 				boolean isIterator = value instanceof IteratorList;

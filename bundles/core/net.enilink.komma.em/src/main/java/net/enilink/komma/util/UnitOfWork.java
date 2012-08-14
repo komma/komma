@@ -3,17 +3,17 @@ package net.enilink.komma.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.core.IUnitOfWork;
 
 public class UnitOfWork implements IUnitOfWork {
 	private ThreadLocal<Integer> countLocal = new ThreadLocal<Integer>();
-	private ThreadLocal<List<IEntityManager>> trackedManagersLocal = new ThreadLocal<List<IEntityManager>>();
+	private ThreadLocal<List<IDataManager>> trackedManagersLocal = new ThreadLocal<List<IDataManager>>();
 
-	public void addManager(IEntityManager manager) {
-		List<IEntityManager> trackedManagers = trackedManagersLocal.get();
+	public void addManager(IDataManager manager) {
+		List<IDataManager> trackedManagers = trackedManagersLocal.get();
 		if (trackedManagers == null) {
-			trackedManagers = new ArrayList<IEntityManager>();
+			trackedManagers = new ArrayList<IDataManager>();
 			trackedManagersLocal.set(trackedManagers);
 		}
 		trackedManagers.add(manager);
@@ -34,9 +34,9 @@ public class UnitOfWork implements IUnitOfWork {
 		int newCount = count - 1;
 		countLocal.set(newCount);
 		if (newCount <= 0) {
-			List<IEntityManager> trackedManagers = trackedManagersLocal.get();
+			List<IDataManager> trackedManagers = trackedManagersLocal.get();
 			if (trackedManagers != null) {
-				for (IEntityManager manager : trackedManagers) {
+				for (IDataManager manager : trackedManagers) {
 					if (manager.isOpen()) {
 						manager.close();
 					}
