@@ -24,6 +24,8 @@ Bundle-ActivationPolicy: lazy
 Import-Package: com.google.inject;version="2.0.0",
  com.google.inject.binder;version="2.0.0",
  com.google.inject.name;version="2.0.0",
+ com.google.inject.util;version="2.0.0",
+ net.enilink.komma.internal.sesame,
  net.enilink.komma.sesame,
  info.aduna.lang;version="2.4.2",
  info.aduna.lang.service;version="2.4.2",

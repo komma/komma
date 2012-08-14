@@ -147,7 +147,6 @@ public abstract class SerializableModelSupport implements IModel, Model,
 		try {
 			setModelLoading(true);
 			if (in != null && in.available() > 0) {
-				dm.setModifyContexts(Collections.singleton(getURI()));
 				dm.getTransaction().begin();
 
 				final AtomicBoolean finished = new AtomicBoolean(false);
@@ -211,7 +210,8 @@ public abstract class SerializableModelSupport implements IModel, Model,
 
 				// BlockingIterator ensures that add method does not return
 				// until endRDF of the above handler is called
-				dm.add(new BlockingIterator<IStatement>(queue, finished));
+				dm.add(new BlockingIterator<IStatement>(queue, finished),
+						getURI());
 				dm.getTransaction().commit();
 			}
 		} catch (Throwable e) {
@@ -241,8 +241,6 @@ public abstract class SerializableModelSupport implements IModel, Model,
 
 		final IDataManager dm = ((IModelSet.Internal) getModelSet())
 				.getDataManagerFactory().get();
-		dm.setIncludeInferred(false);
-		dm.setReadContexts(Collections.singleton(getURI()));
 		try {
 			for (INamespace namespace : dm.getNamespaces()) {
 				dataVisitor.visitNamespace(namespace);
@@ -252,7 +250,8 @@ public abstract class SerializableModelSupport implements IModel, Model,
 			IExtendedIterator<IStatement> stmts = dm
 					.createQuery(
 							"select ?s ?p ?o where { ?s ?p ?o } order by ?s ?p ?o",
-							getURI().appendLocalPart("").toString()).evaluate()
+							getURI().appendLocalPart("").toString(), false,
+							getURI()).evaluate()
 					.mapWith(new IMap<Object, IStatement>() {
 						@Override
 						public IStatement map(Object value) {

@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -65,7 +64,6 @@ import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.util.UnitOfWork;
 
 public abstract class ModelSupport implements IModel, IModel.Internal,
 		INotificationBroadcaster<INotification>, Model,
@@ -98,7 +96,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	 */
 	static class State {
 		private KommaModule module;
-		protected ThreadLocalEntityManager manager;
+		protected IEntityManager manager;
 	}
 
 	protected EntityVar<State> state;
@@ -113,24 +111,15 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				s = new State();
 				final State theState = s;
 				s.manager = new ThreadLocalEntityManager() {
-					@Inject
-					UnitOfWork uow;
-
 					@Override
 					protected IEntityManager initialValue() {
-						if (!uow.isActive()) {
-							throw new KommaException(
-									"No active unit of work found.");
-						}
-						IEntityManager delegate = getModelSet()
+						return getModelSet()
 								.getEntityManagerFactory()
 								// allow interception of call to
 								// getModule()
 								.createChildFactory(theState.manager, null,
 										getBehaviourDelegate().getModule())
 								.create();
-						uow.addManager(delegate);
-						return delegate;
 					}
 				};
 				injector.injectMembers(s.manager);
@@ -297,10 +286,9 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 
 			try {
 				IDataManager dm = getModelSet().getDataManagerFactory().get();
-				dm.setReadContexts(Collections.singleton(getURI()));
 				try {
-					IExtendedIterator<IStatement> imports = dm.matchAsserted(
-							null, OWL.PROPERTY_IMPORTS, null);
+					IExtendedIterator<IStatement> imports = dm.match(null,
+							OWL.PROPERTY_IMPORTS, null, false, getURI());
 
 					while (imports.hasNext()) {
 						Object object = imports.next().getObject();
@@ -371,11 +359,8 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 		if (!isModelLoaded()) {
 			IDataManager ds = getModelSet().getDataManagerFactory().get();
 			try {
-				ds.setReadContexts(Collections.singleton(getURI()));
-				ds.setIncludeInferred(false);
-
 				// check if model is already loaded
-				if (ds.hasMatch(null, null, null)) {
+				if (ds.hasMatch(null, null, null, false, getURI())) {
 					((Model) getBehaviourDelegate()).setModelLoaded(true);
 					return true;
 				}

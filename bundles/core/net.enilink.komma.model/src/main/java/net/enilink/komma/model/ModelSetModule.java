@@ -25,8 +25,10 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 
 import net.enilink.komma.KommaCore;
+import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.em.EagerCachingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
+import net.enilink.komma.em.ThreadLocalDataManager;
 import net.enilink.komma.model.base.ModelSetSupport;
 import net.enilink.komma.model.base.ModelSupport;
 import net.enilink.komma.core.IUnitOfWork;
@@ -81,6 +83,9 @@ public class ModelSetModule extends AbstractModule {
 				new AbstractModule() {
 					@Override
 					protected void configure() {
+						bind(IDataManager.class).to(
+								ThreadLocalDataManager.class).in(
+								Singleton.class);
 					}
 
 					@Singleton

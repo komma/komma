@@ -26,9 +26,11 @@ import net.enilink.composition.traits.Behaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.google.inject.Singleton;
 
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.adapter.AdapterSet;
@@ -39,6 +41,7 @@ import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationSupport;
+import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.dm.change.IDataChangeListener;
@@ -49,6 +52,7 @@ import net.enilink.komma.dm.change.IStatementChange;
 import net.enilink.komma.em.CacheModule;
 import net.enilink.komma.em.CachingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
+import net.enilink.komma.em.ThreadLocalDataManager;
 import net.enilink.komma.internal.model.event.NamespaceNotification;
 import net.enilink.komma.internal.model.event.StatementNotification;
 import net.enilink.komma.model.IContentHandler;
@@ -205,6 +209,13 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	@Override
 	public void collectInjectionModules(Collection<Module> modules) {
 		modules.add(new CacheModule());
+		// ensure that one shared data manager is used throughout the model set
+		modules.add(new AbstractModule() {
+			protected void configure() {
+				bind(IDataManager.class).to(ThreadLocalDataManager.class).in(
+						Singleton.class);
+			}
+		});
 		modules.add(new EntityManagerFactoryModule(getModule(), null,
 				new CachingEntityManagerModule() {
 					@Override
