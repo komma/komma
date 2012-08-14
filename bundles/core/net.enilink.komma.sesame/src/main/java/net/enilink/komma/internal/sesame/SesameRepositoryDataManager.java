@@ -1,8 +1,8 @@
 package net.enilink.komma.internal.sesame;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -37,20 +37,12 @@ import net.enilink.komma.core.KommaException;
 import net.enilink.komma.sesame.SesameValueConverter;
 
 public class SesameRepositoryDataManager implements IDataManager {
-	private static final URI[] ALL_CONTEXTS = new URI[0];
-
-	protected URI[] addCtx = ALL_CONTEXTS;
-
-	protected URI[] readCtx = ALL_CONTEXTS;
-
-	protected net.enilink.komma.core.URI[] changeCtx;
+	private static final URI[] EMPTY_URIS = new URI[0];
 
 	@Inject
 	protected IDataChangeSupport changeSupport;
 
 	protected RepositoryConnection connection;
-
-	private boolean includeInferred = true;
 
 	@Inject(optional = true)
 	protected InferencingCapability inferencing;
@@ -79,7 +71,10 @@ public class SesameRepositoryDataManager implements IDataManager {
 	}
 
 	@Override
-	public IDataManager add(Iterable<? extends IStatement> statements) {
+	public IDataManager add(Iterable<? extends IStatement> statements,
+			IReference[] readContexts, IReference... addContexts) {
+		URI[] readCtx = toURI(readContexts);
+		URI[] addCtx = toURI(addContexts);
 		try {
 			Iterator<? extends IStatement> it = statements.iterator();
 
@@ -97,7 +92,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 							readCtx)) {
 						changeSupport.add(this, stmt.getSubject(),
 								stmt.getPredicate(), (IValue) stmt.getObject(),
-								changeCtx);
+								addContexts);
 					}
 				}
 				conn.add(subject, predicate, object, addCtx);
@@ -109,6 +104,12 @@ public class SesameRepositoryDataManager implements IDataManager {
 			throw new KommaException(e);
 		}
 		return this;
+	}
+
+	@Override
+	public IDataManager add(Iterable<? extends IStatement> statements,
+			IReference... addContexts) {
+		return add(statements, addContexts, addContexts);
 	}
 
 	@Override
@@ -143,19 +144,22 @@ public class SesameRepositoryDataManager implements IDataManager {
 		}
 	}
 
-	protected Query prepareSesameQuery(String query, String baseURI)
-			throws MalformedQueryException, RepositoryException {
+	protected Query prepareSesameQuery(String query, String baseURI,
+			boolean includeInferred) throws MalformedQueryException,
+			RepositoryException {
 		return getConnection().prepareQuery(QueryLanguage.SPARQL, query,
 				baseURI);
 	}
 
 	@Override
-	public <R> IDataManagerQuery<R> createQuery(String query, String baseURI) {
+	public <R> IDataManagerQuery<R> createQuery(String query, String baseURI,
+			boolean includeInferred, IReference... contexts) {
 		try {
-			Query sesameQuery = prepareSesameQuery(query, baseURI);
-			if (readCtx.length > 0) {
+			Query sesameQuery = prepareSesameQuery(query, baseURI,
+					includeInferred);
+			if (contexts.length > 0) {
 				DatasetImpl ds = new DatasetImpl();
-				for (URI graph : readCtx) {
+				for (URI graph : toURI(contexts)) {
 					ds.addDefaultGraph(graph);
 					if (graph != null) {
 						ds.addNamedGraph(graph);
@@ -177,11 +181,6 @@ public class SesameRepositoryDataManager implements IDataManager {
 
 	protected RepositoryConnection getConnection() {
 		return connection;
-	}
-
-	@Override
-	public boolean getIncludeInferred() {
-		return includeInferred;
 	}
 
 	@Override
@@ -260,6 +259,24 @@ public class SesameRepositoryDataManager implements IDataManager {
 		return null;
 	}
 
+	protected URI[] toURI(IReference... references) {
+		if (references.length == 0) {
+			return EMPTY_URIS;
+		}
+		List<URI> uris = new ArrayList<URI>(references.length);
+		for (IReference ref : references) {
+			if (ref == null) {
+				uris.add(null);
+			} else {
+				Resource resource = getResource(ref);
+				if (resource instanceof URI) {
+					uris.add((URI) resource);
+				}
+			}
+		}
+		return uris.toArray(new URI[uris.size()]);
+	}
+
 	@Override
 	public ITransaction getTransaction() {
 		return transaction;
@@ -267,12 +284,13 @@ public class SesameRepositoryDataManager implements IDataManager {
 
 	@Override
 	public boolean hasMatch(IReference subject, IReference predicate,
-			IValue object) {
+			IValue object, boolean includeInferred, IReference... contexts) {
 		try {
 			return getConnection().hasStatement(
 					(Resource) valueConverter.toSesame(subject),
 					(URI) valueConverter.toSesame(predicate),
-					valueConverter.toSesame(object), includeInferred, readCtx);
+					valueConverter.toSesame(object), includeInferred,
+					toURI(contexts));
 		} catch (Exception e) {
 			throw new KommaException(e);
 		}
@@ -285,28 +303,14 @@ public class SesameRepositoryDataManager implements IDataManager {
 
 	@Override
 	public IExtendedIterator<IStatement> match(IReference subject,
-			IReference predicate, IValue object) {
+			IReference predicate, IValue object, boolean includeInferred,
+			IReference... contexts) {
 		try {
 			SesameGraphResult result = new SesameGraphResult(getConnection()
 					.getStatements((Resource) valueConverter.toSesame(subject),
 							(URI) valueConverter.toSesame(predicate),
 							valueConverter.toSesame(object), includeInferred,
-							readCtx));
-			injector.injectMembers(result);
-			return result;
-		} catch (Exception e) {
-			throw new KommaException(e);
-		}
-	}
-
-	@Override
-	public IExtendedIterator<IStatement> matchAsserted(IReference subject,
-			IReference predicate, IValue object) {
-		try {
-			SesameGraphResult result = new SesameGraphResult(getConnection()
-					.getStatements((Resource) valueConverter.toSesame(subject),
-							(URI) valueConverter.toSesame(predicate),
-							valueConverter.toSesame(object), false, readCtx));
+							toURI(contexts)));
 			injector.injectMembers(result);
 			return result;
 		} catch (Exception e) {
@@ -321,7 +325,9 @@ public class SesameRepositoryDataManager implements IDataManager {
 	}
 
 	@Override
-	public IDataManager remove(Iterable<? extends IStatement> statements) {
+	public IDataManager remove(Iterable<? extends IStatement> statements,
+			IReference... contexts) {
+		URI[] removeContexts = toURI(contexts);
 		try {
 			Iterator<? extends IStatement> it = statements.iterator();
 
@@ -335,15 +341,19 @@ public class SesameRepositoryDataManager implements IDataManager {
 						.getObject());
 
 				if (changeSupport.isEnabled(this)) {
-					for (IStatement existing : matchAsserted(stmt.getSubject(),
-							stmt.getPredicate(), (IValue) stmt.getObject())) {
+					for (IStatement existing : match(stmt.getSubject(),
+							stmt.getPredicate(), (IValue) stmt.getObject(),
+							false, contexts)) {
+						// pretend that statement was in changeCtx if no context
+						// is set
+						IReference[] changeContexts = existing.getContext() != null ? new IReference[] { existing
+								.getContext() } : contexts;
 						changeSupport.remove(this, existing.getSubject(),
 								existing.getPredicate(),
-								(IValue) existing.getObject(),
-								existing.getContext());
+								(IValue) existing.getObject(), changeContexts);
 					}
 				}
-				conn.remove(subject, predicate, object, addCtx);
+				conn.remove(subject, predicate, object, removeContexts);
 			}
 			if (changeSupport.isEnabled(this) && !getTransaction().isActive()) {
 				changeSupport.commit(this);
@@ -378,22 +388,6 @@ public class SesameRepositoryDataManager implements IDataManager {
 	}
 
 	@Override
-	public IDataManager setModifyContexts(
-			Set<net.enilink.komma.core.URI> addContexts) {
-		this.changeCtx = addContexts
-				.toArray(new net.enilink.komma.core.URI[addContexts
-						.size()]);
-		this.addCtx = toURI(addContexts);
-		return this;
-	}
-
-	@Override
-	public IDataManager setIncludeInferred(boolean includeInferred) {
-		this.includeInferred = includeInferred;
-		return this;
-	}
-
-	@Override
 	public IDataManager setNamespace(String prefix,
 			net.enilink.komma.core.URI uri) {
 		try {
@@ -411,22 +405,5 @@ public class SesameRepositoryDataManager implements IDataManager {
 			throw new KommaException(e);
 		}
 		return this;
-	}
-
-	@Override
-	public IDataManager setReadContexts(
-			Set<net.enilink.komma.core.URI> readContexts) {
-		this.readCtx = toURI(readContexts);
-		return this;
-	}
-
-	protected URI[] toURI(Collection<net.enilink.komma.core.URI> uris) {
-		URI[] converted = new URI[uris.size()];
-
-		int i = 0;
-		for (net.enilink.komma.core.URI uri : uris) {
-			converted[i++] = uri != null ? valueConverter.toSesame(uri) : null;
-		}
-		return converted;
 	}
 }

@@ -7,7 +7,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 
-import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
 
 public class SesameModule extends AbstractModule {
@@ -15,7 +14,6 @@ public class SesameModule extends AbstractModule {
 	protected void configure() {
 		bind(SesameDataManagerFactory.class).in(Singleton.class);
 		bind(IDataManagerFactory.class).to(SesameDataManagerFactory.class);
-		bind(IDataManager.class).toProvider(SesameDataManagerFactory.class);
 	}
 
 	@Provides
