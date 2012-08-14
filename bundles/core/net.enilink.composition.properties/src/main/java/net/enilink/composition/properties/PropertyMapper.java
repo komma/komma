@@ -67,7 +67,8 @@ public class PropertyMapper {
 	private static final String SET_PREFIX = "set";
 	private static final String IS_PREFIX = "is";
 
-	private static Logger logger = LoggerFactory.getLogger(PropertyMapper.class);
+	private static Logger logger = LoggerFactory
+			.getLogger(PropertyMapper.class);
 	private boolean readTypes;
 	private Properties properties = new Properties();
 
@@ -78,20 +79,26 @@ public class PropertyMapper {
 
 	public Collection<Field> findFields(Class<?> concept) {
 		List<Field> fields = new ArrayList<Field>();
-		for (Field field : concept.getDeclaredFields()) {
-			if (isMappedField(field)) {
-				fields.add(field);
+		while (concept != null) {
+			for (Field field : concept.getDeclaredFields()) {
+				if (isMappedField(field)) {
+					fields.add(field);
+				}
 			}
+			concept = concept.getSuperclass();
 		}
 		return fields;
 	}
 
 	public Collection<PropertyDescriptor> findProperties(Class<?> concept) {
 		List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
-		for (Method method : concept.getDeclaredMethods()) {
-			if (isMappedGetter(method)) {
-				properties.add(createPropertyDescriptor(method));
+		while (concept != null) {
+			for (Method method : concept.getDeclaredMethods()) {
+				if (isMappedGetter(method)) {
+					properties.add(createPropertyDescriptor(method));
+				}
 			}
+			concept = concept.getSuperclass();
 		}
 		return properties;
 	}
