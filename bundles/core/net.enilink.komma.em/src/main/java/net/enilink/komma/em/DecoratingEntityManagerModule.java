@@ -25,8 +25,6 @@ import net.enilink.komma.util.UnitOfWork;
 public class DecoratingEntityManagerModule extends AbstractModule {
 	@Override
 	protected void configure() {
-		bind(boolean.class).annotatedWith(Names.named("injectManager"))
-				.toInstance(isInjectManager());
 		bind(IEntityManager.class).annotatedWith(Names.named("unmanaged")).to(
 				getManagerClass());
 	}
@@ -46,9 +44,5 @@ public class DecoratingEntityManagerModule extends AbstractModule {
 
 	protected Class<? extends IEntityManager> getManagerClass() {
 		return DecoratingEntityManager.class;
-	}
-
-	protected boolean isInjectManager() {
-		return true;
 	}
 }

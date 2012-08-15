@@ -18,7 +18,6 @@ import org.infinispan.tree.TreeCache;
 import net.enilink.composition.cache.IPropertyCache;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
@@ -38,9 +37,8 @@ public class CachingEntityManager extends DecoratingEntityManager {
 	IPropertyCache propertyCache;
 
 	@Inject
-	public CachingEntityManager(@Named("injectManager") boolean injectManager,
-			Set<IEntityDecorator> decorators) {
-		super(injectManager, decorators);
+	public CachingEntityManager(Set<IEntityDecorator> decorators) {
+		super(decorators);
 	}
 
 	public IEntity createBean(IReference resource, Collection<URI> types,

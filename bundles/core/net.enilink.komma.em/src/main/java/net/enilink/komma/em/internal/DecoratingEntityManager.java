@@ -24,21 +24,13 @@ import net.enilink.komma.core.IReference;
 public class DecoratingEntityManager extends AbstractEntityManager {
 	private CopyOnWriteArraySet<IEntityDecorator> decorators;
 
-	@Inject
-	public DecoratingEntityManager(
-			@Named("injectManager") boolean injectManager,
-			Set<IEntityDecorator> decorators) {
-		this.decorators = new CopyOnWriteArraySet<IEntityDecorator>(decorators);
+	@Inject(optional = true)
+	@Named("injectManager")
+	private boolean injectManager = true;
 
-		if (injectManager) {
-			this.decorators.add(new IEntityDecorator() {
-				@Override
-				public void decorate(IEntity entity) {
-					((IEntityManagerAware) entity)
-							.initEntityManager(DecoratingEntityManager.this);
-				}
-			});
-		}
+	@Inject
+	public DecoratingEntityManager(Set<IEntityDecorator> decorators) {
+		this.decorators = new CopyOnWriteArraySet<IEntityDecorator>(decorators);
 	}
 
 	@Override
@@ -54,6 +46,10 @@ public class DecoratingEntityManager extends AbstractEntityManager {
 
 	public <T> T decorate(T entity) {
 		if (entity instanceof IEntity) {
+			if (injectManager) {
+				((IEntityManagerAware) entity)
+						.initEntityManager(DecoratingEntityManager.this);
+			}
 			for (IEntityDecorator decorator : decorators) {
 				decorator.decorate((IEntity) entity);
 			}

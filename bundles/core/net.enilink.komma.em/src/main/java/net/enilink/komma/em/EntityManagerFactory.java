@@ -180,6 +180,9 @@ class EntityManagerFactory implements IEntityManagerFactory {
 								bind(IEntityManager.class).annotatedWith(
 										Names.named("shared")).toInstance(
 										sharedManager);
+								bind(boolean.class).annotatedWith(
+										Names.named("injectManager"))
+										.toInstance(false);
 							}
 							bind(new TypeLiteral<Set<URI>>() {
 							}).annotatedWith(Names.named("readContexts"))

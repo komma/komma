@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
@@ -27,10 +26,8 @@ public class EagerCachingEntityManager extends DecoratingEntityManager {
 	private Map<IReference, Object> entityCache;
 
 	@Inject
-	public EagerCachingEntityManager(
-			@Named("injectManager") boolean injectManager,
-			Set<IEntityDecorator> decorators) {
-		super(injectManager, decorators);
+	public EagerCachingEntityManager(Set<IEntityDecorator> decorators) {
+		super(decorators);
 	}
 
 	@Override
