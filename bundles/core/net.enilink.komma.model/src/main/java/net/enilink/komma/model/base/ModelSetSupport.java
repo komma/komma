@@ -217,12 +217,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 			}
 		});
 		modules.add(new EntityManagerFactoryModule(getModule(), null,
-				new CachingEntityManagerModule() {
-					@Override
-					protected boolean isInjectManager() {
-						return false;
-					}
-				}));
+				new CachingEntityManagerModule()));
 	}
 
 	@Override
