@@ -106,23 +106,26 @@ public class CreateChildrenActionContributor {
 	 * This populates the pop-up menu before it appears.
 	 */
 	public void menuAboutToShow(IMenuManager menuManager, String contributionId) {
-		MenuManager submenuManager = new MenuManager(
-				KommaEditUIPlugin.INSTANCE
-						.getString("_UI_CreateChild_menu_item"));
-		newChildCollector.addMenuManager(submenuManager);
-		menuManager.insertBefore(contributionId, submenuManager);
+		if (newChildCollector != null) {
+			MenuManager submenuManager = new MenuManager(
+					KommaEditUIPlugin.INSTANCE
+							.getString("_UI_CreateChild_menu_item"));
+			newChildCollector.addMenuManager(submenuManager);
+			menuManager.insertBefore(contributionId, submenuManager);
 
-		submenuManager = new MenuManager(
-				KommaEditUIPlugin.INSTANCE
-						.getString("_UI_CreateSibling_menu_item"));
-		newSiblingCollector.addMenuManager(submenuManager);
-		menuManager.insertBefore(contributionId, submenuManager);
+			CommonsUi.activateCallback("newChildCollector");
+			newChildCollector.schedule();
+		}
+		if (newSiblingCollector != null) {
+			MenuManager submenuManager = new MenuManager(
+					KommaEditUIPlugin.INSTANCE
+							.getString("_UI_CreateSibling_menu_item"));
+			newSiblingCollector.addMenuManager(submenuManager);
+			menuManager.insertBefore(contributionId, submenuManager);
 
-		// run action collectors
-		CommonsUi.activateCallback("newChildCollector");
-		CommonsUi.activateCallback("newSiblingCollector");
-		newChildCollector.schedule();
-		newSiblingCollector.schedule();
+			CommonsUi.activateCallback("newSiblingCollector");
+			newSiblingCollector.schedule();
+		}
 	}
 
 	/**
