@@ -92,8 +92,8 @@ public class OrganizedRDFWriter implements IDataAndNamespacesVisitor<Void> {
 	}
 
 	public void print(IReference subj) {
-		IExtendedIterator<IStatement> stIter = dm.matchAsserted(subj,
-				RDF.PROPERTY_TYPE, null);
+		IExtendedIterator<IStatement> stIter = dm.match(subj,
+				RDF.PROPERTY_TYPE, null, false);
 		try {
 			while (stIter.hasNext()) {
 				print(stIter.next());
@@ -103,7 +103,7 @@ public class OrganizedRDFWriter implements IDataAndNamespacesVisitor<Void> {
 		}
 		covered.add(subj);
 		Set<URI> container = null;
-		stIter = dm.matchAsserted(subj, null, null);
+		stIter = dm.match(subj, null, null, false);
 		try {
 			while (stIter.hasNext()) {
 				IStatement next = stIter.next();
@@ -151,7 +151,7 @@ public class OrganizedRDFWriter implements IDataAndNamespacesVisitor<Void> {
 	}
 
 	public void print(String queryString, String binding) {
-		IDataManagerQuery<?> query = dm.createQuery(queryString, null);
+		IDataManagerQuery<?> query = dm.createQuery(queryString, null, false);
 		ITupleResult<?> result = (ITupleResult<?>) query.evaluate();
 		try {
 			while (result.hasNext()) {
@@ -167,7 +167,8 @@ public class OrganizedRDFWriter implements IDataAndNamespacesVisitor<Void> {
 	}
 
 	public void print(URI pred, IValue obj) {
-		IDataManagerQuery<?> query = dm.createQuery(SELECT_FILTERED, null)
+		IDataManagerQuery<?> query = dm
+				.createQuery(SELECT_FILTERED, null, false)
 				.setParameter(PRED, pred).setParameter(OBJ, obj);
 		ITupleResult<?> result = (ITupleResult<?>) query.evaluate();
 		try {
@@ -187,8 +188,8 @@ public class OrganizedRDFWriter implements IDataAndNamespacesVisitor<Void> {
 		int idx = 1;
 		URI pred = RDF.NAMESPACE_URI.appendFragment("_" + idx++);
 		while (true) {
-			IExtendedIterator<IStatement> stIter = dm.matchAsserted(subj, pred,
-					null);
+			IExtendedIterator<IStatement> stIter = dm.match(subj, pred, null,
+					false);
 			try {
 				if (stIter.hasNext()) {
 					IStatement st = stIter.next();
