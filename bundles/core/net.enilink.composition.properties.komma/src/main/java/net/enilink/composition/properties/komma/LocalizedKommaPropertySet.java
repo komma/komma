@@ -33,8 +33,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.enilink.composition.properties.exceptions.PropertyException;
 
@@ -56,6 +59,8 @@ import net.enilink.komma.core.KommaException;
 public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 	@Inject
 	ILiteralFactory lf;
+
+	Map<String, List<ILiteral>> cache;
 
 	public LocalizedKommaPropertySet(IReference bean, IReference property) {
 		super(bean, property, String.class, null);
@@ -97,10 +102,16 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 		return score;
 	}
 
-	Collection<ILiteral> bestValues() {
-		int score = -1;
-		Collection<ILiteral> values = new ArrayList<ILiteral>();
+	protected Collection<ILiteral> bestValues() {
 		String language = manager.getLocale().getLanguage();
+
+		List<ILiteral> values = cache != null ? cache.get(language) : null;
+		if (values != null) {
+			return values;
+		}
+
+		int score = -1;
+		values = new ArrayList<ILiteral>();
 		try {
 			IExtendedIterator<ILiteral> literals = manager.createQuery(QUERY)
 					.setParameter("s", bean).setParameter("p", property)
@@ -115,6 +126,10 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 		} catch (KommaException e) {
 			throw new PropertyException(e);
 		}
+		if (cache == null) {
+			cache = new ConcurrentHashMap<String, List<ILiteral>>();
+		}
+		cache.put(language, values);
 		return values;
 	}
 
@@ -178,6 +193,11 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 				LocalizedKommaPropertySet.this.remove(current);
 			}
 		};
+	}
+
+	@Override
+	public void refresh() {
+		cache = null;
 	}
 
 	@Override
