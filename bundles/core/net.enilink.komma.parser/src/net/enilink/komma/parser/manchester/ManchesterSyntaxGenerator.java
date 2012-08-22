@@ -60,6 +60,11 @@ public class ManchesterSyntaxGenerator {
 		return value(object).toString();
 	}
 
+	protected ManchesterSyntaxGenerator append(Object token) {
+		sb.append(token);
+		return this;
+	}
+
 	private StringBuilder sb = new StringBuilder();
 
 	private ManchesterSyntaxGenerator clazz(Class clazz) {
@@ -67,7 +72,7 @@ public class ManchesterSyntaxGenerator {
 			if (clazz instanceof Restriction) {
 				return restriction((Restriction) clazz);
 			} else if (clazz instanceof Datatype) {
-				sb.append(toString(((Datatype) clazz).getOwlOnDatatype()));
+				append(toString(((Datatype) clazz).getOwlOnDatatype()));
 				return datatypeRestrictions(((Datatype) clazz)
 						.getOwlWithRestrictions());
 			} else if (clazz instanceof net.enilink.vocab.owl.Class) {
@@ -77,7 +82,7 @@ public class ManchesterSyntaxGenerator {
 				} else if (owlClass.getOwlIntersectionOf() != null) {
 					return setOfClasses(owlClass.getOwlIntersectionOf(), "and");
 				} else if (owlClass.getOwlComplementOf() != null) {
-					sb.append("not ");
+					append("not ");
 					return clazz(owlClass.getOwlComplementOf());
 				} else if (owlClass.getOwlOneOf() != null) {
 					return list(owlClass.getOwlOneOf());
@@ -101,7 +106,7 @@ public class ManchesterSyntaxGenerator {
 	 * @return The generator instance.
 	 */
 	private ManchesterSyntaxGenerator datatypeRestrictions(List<?> list) {
-		sb.append("[");
+		append("[");
 		Iterator<? extends Object> it = list.iterator();
 		while (it.hasNext()) {
 			IEntity dtRestriction = (IEntity) it.next();
@@ -114,14 +119,13 @@ public class ManchesterSyntaxGenerator {
 				if (facetShortHand == null) {
 					facetShortHand = facet.getURI().localPart();
 				}
-				sb.append(facetShortHand).append(
-						toString(bindings.get("value")));
+				append(facetShortHand).append(toString(bindings.get("value")));
 				if (it.hasNext()) {
-					sb.append(", ");
+					append(", ");
 				}
 			}
 		}
-		sb.append("]");
+		append("]");
 		return this;
 	}
 
@@ -130,15 +134,15 @@ public class ManchesterSyntaxGenerator {
 	}
 
 	private ManchesterSyntaxGenerator list(List<? extends Object> list) {
-		sb.append("{");
+		append("{");
 		Iterator<? extends Object> it = list.iterator();
 		while (it.hasNext()) {
 			value(it.next());
 			if (it.hasNext()) {
-				sb.append(" ").append(", ").append(" ");
+				append(" ").append(", ").append(" ");
 			}
 		}
-		sb.append("}");
+		append("}");
 		return this;
 	}
 
@@ -164,39 +168,37 @@ public class ManchesterSyntaxGenerator {
 				return value(restriction);
 			}
 
-			sb.append(" ");
+			append(" ");
 
 			if (restriction.getOwlAllValuesFrom() != null) {
-				sb.append("only").append(" ");
+				append("only").append(" ");
 				clazz(restriction.getOwlAllValuesFrom());
 			} else if (restriction.getOwlSomeValuesFrom() != null) {
-				sb.append("some").append(" ");
+				append("some").append(" ");
 				clazz(restriction.getOwlSomeValuesFrom());
 			} else if (restriction.getOwlMaxCardinality() != null) {
-				sb.append("max").append(" ");
-				sb.append(restriction.getOwlMaxCardinality());
+				append("max").append(" ");
+				append(restriction.getOwlMaxCardinality());
 			} else if (restriction.getOwlMinCardinality() != null) {
-				sb.append("min").append(" ");
-				sb.append(restriction.getOwlMinCardinality());
+				append("min").append(" ");
+				append(restriction.getOwlMinCardinality());
 			} else if (restriction.getOwlCardinality() != null) {
-				sb.append("exactly").append(" ");
-				sb.append(restriction.getOwlCardinality());
+				append("exactly").append(" ");
+				append(restriction.getOwlCardinality());
 			} else if (restriction.getOwlMaxQualifiedCardinality() != null) {
-				sb.append("max").append(" ");
-				sb.append(restriction.getOwlMaxQualifiedCardinality()).append(
-						" ");
+				append("max").append(" ");
+				append(restriction.getOwlMaxQualifiedCardinality()).append(" ");
 				onClassOrDataRange(restriction);
 			} else if (restriction.getOwlMinQualifiedCardinality() != null) {
-				sb.append("min").append(" ");
-				sb.append(restriction.getOwlMinQualifiedCardinality()).append(
-						" ");
+				append("min").append(" ");
+				append(restriction.getOwlMinQualifiedCardinality()).append(" ");
 				onClassOrDataRange(restriction);
 			} else if (restriction.getOwlQualifiedCardinality() != null) {
-				sb.append("exactly").append(" ");
-				sb.append(restriction.getOwlQualifiedCardinality()).append(" ");
+				append("exactly").append(" ");
+				append(restriction.getOwlQualifiedCardinality()).append(" ");
 				onClassOrDataRange(restriction);
 			} else if (restriction.getOwlHasValue() != null) {
-				sb.append("value").append(" ");
+				append("value").append(" ");
 				value(restriction.getOwlHasValue());
 			}
 
@@ -209,16 +211,16 @@ public class ManchesterSyntaxGenerator {
 			String operator) {
 		Iterator<? extends Class> it = set.iterator();
 		if (set.size() > 1) {
-			sb.append("(");
+			append("(");
 		}
 		while (it.hasNext()) {
 			clazz(it.next());
 			if (it.hasNext()) {
-				sb.append(" ").append(operator).append(" ");
+				append(" ").append(operator).append(" ");
 			}
 		}
 		if (set.size() > 1) {
-			sb.append(")");
+			append(")");
 		}
 		return this;
 	}
@@ -228,25 +230,25 @@ public class ManchesterSyntaxGenerator {
 		return sb.toString();
 	}
 
-	private ManchesterSyntaxGenerator value(Object value) {
+	protected ManchesterSyntaxGenerator value(Object value) {
 		if (value instanceof ILiteral) {
 			ILiteral literal = (ILiteral) value;
 			boolean quoted = XMLSCHEMA.TYPE_STRING
 					.equals(literal.getDatatype())
 					|| literal.getDatatype() == null;
 			if (quoted) {
-				sb.append("\"");
+				append("\"");
 			}
-			sb.append(literal.getLabel());
+			append(literal.getLabel());
 			if (quoted) {
-				sb.append("\"");
+				append("\"");
 			}
 			if (literal.getDatatype() != null) {
-				sb.append("^^").append(toString(literal.getDatatype()));
+				append("^^").append(toString(literal.getDatatype()));
 			}
-			return this;
+		} else {
+			append(toString(value));
 		}
-		sb.append(toString(value));
 		return this;
 	}
 
