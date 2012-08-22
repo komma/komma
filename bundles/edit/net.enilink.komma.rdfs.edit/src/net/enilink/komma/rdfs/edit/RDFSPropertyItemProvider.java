@@ -67,8 +67,8 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 			Object element = notification.getObject();
 
 			IEntity object;
-			if (element instanceof IObject) {
-				object = (IObject) element;
+			if (element instanceof IEntity) {
+				object = (IEntity) element;
 			} else if (element instanceof IReference) {
 				object = resolveReference((IReference) element);
 			} else {
