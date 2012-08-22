@@ -798,7 +798,6 @@ public class ItemProviderAdapter extends
 							if (label2 == null) {
 								return -1;
 							}
-
 							return label1.compareTo(label2);
 						}
 					});
@@ -1705,7 +1704,7 @@ public class ItemProviderAdapter extends
 		Object selectionObject = selection == null || selection.isEmpty() ? null
 				: selection.iterator().next();
 
-		if (selectionObject == owner) {
+		if (owner.equals(selectionObject)) {
 			return getResourceLocator().getString(
 					"_UI_CreateChild_description",
 					new Object[] { childType,
@@ -2251,13 +2250,14 @@ public class ItemProviderAdapter extends
 			return typesSb.toString();
 		} else if (object instanceof IResource) {
 			StringBuilder typesSb = new StringBuilder();
-			for (net.enilink.vocab.rdfs.Class rangeClass : ((IResource) object)
-					.getClasses(true)) {
+			for (IClass typeClass : ((IResource) object)
+					.getDirectNamedClasses()) {
 				if (typesSb.length() > 0) {
 					typesSb.append(", ");
 				}
-				typesSb.append(ModelUtil.getLabel(rangeClass));
+				typesSb.append(ModelUtil.getLabel(typeClass));
 			}
+			return typesSb.toString();
 		}
 		return ModelUtil.getLabel(object);
 	}
