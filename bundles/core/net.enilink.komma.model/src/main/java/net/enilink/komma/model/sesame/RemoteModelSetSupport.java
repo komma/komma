@@ -3,6 +3,7 @@ package net.enilink.komma.model.sesame;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import net.enilink.composition.annotations.Iri;
+import org.openrdf.model.Resource;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -99,11 +101,33 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 			}
 		}
 
+		protected IReference[] addNull(boolean includeInferred,
+				IReference[] contexts) {
+			if (includeInferred) {
+				contexts = Arrays.copyOf(contexts, contexts.length + 1);
+				contexts[contexts.length - 1] = null;
+			}
+			return contexts;
+		}
+
+		@Override
+		public <R> IDataManagerQuery<R> createQuery(String query,
+				String baseURI, boolean includeInferred, IReference... contexts) {
+			return super.createQuery(query, baseURI, includeInferred,
+					addNull(includeInferred, contexts));
+		}
+
 		@Override
 		public boolean hasMatch(IReference subject, IReference predicate,
 				IValue object, boolean includeInferred, IReference... contexts) {
-			IDataManagerQuery<?> dmQuery = createQuery("ASK { ?s ?p ?o }",
-					null, includeInferred, contexts);
+			String query;
+			if (contexts.length > 0 && !includeInferred) {
+				query = "ASK { GRAPH ?g { ?s ?p ?o } }";
+			} else {
+				query = "ASK { ?s ?p ?o }";
+			}
+			IDataManagerQuery<?> dmQuery = createQuery(query, null,
+					includeInferred, contexts);
 			setParameters(dmQuery, subject, predicate, object);
 			Object result = dmQuery.evaluate().next();
 			return Boolean.TRUE.equals(result);
@@ -230,7 +254,14 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 							if (resolvedUrl != null) {
 								in = resolvedUrl.openStream();
 								if (in != null && in.available() > 0) {
-									conn.add(in, "", RDFFormat.RDFXML);
+									URI defaultGraph = getDefaultGraph();
+									Resource[] contexts = defaultGraph == null ? new Resource[0]
+											: new Resource[] { repository
+													.getValueFactory()
+													.createURI(
+															defaultGraph
+																	.toString()) };
+									conn.add(in, "", RDFFormat.RDFXML, contexts);
 								}
 								if (in != null) {
 									in.close();
@@ -257,8 +288,13 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 		}
 	}
 
+	@Override
+	public URI getDefaultGraph() {
+		return URIImpl.createURI("urn:komma:default");
+	}
+
 	protected boolean skipRdfsOnImport() {
-		return true;
+		return false;
 	}
 
 	@Override

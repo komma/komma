@@ -36,6 +36,8 @@ import net.enilink.komma.internal.model.extensions.URIMappingRegistryReader;
 import net.enilink.komma.model.base.ContentHandlerRegistry;
 import net.enilink.komma.model.base.IURIMapRuleSet;
 import net.enilink.komma.model.base.ModelFactoryRegistry;
+import net.enilink.komma.model.base.ModelSetSupport;
+import net.enilink.komma.model.base.ModelSupport;
 import net.enilink.komma.model.base.URIMapRuleSet;
 import net.enilink.komma.model.validation.Diagnostician;
 import net.enilink.komma.model.validation.IValidator;
@@ -298,6 +300,13 @@ public class ModelCore extends AbstractKommaPlugin {
 
 	public static KommaModule createModelSetModule(ClassLoader classLoader) {
 		KommaModule module = new KommaModule(classLoader);
+
+		module.addConcept(ModelSupport.class, MODELS.TYPE_MODEL.toString());
+		module.addConcept(ModelSetSupport.class,
+				MODELS.TYPE_MODELSET.toString());
+		module.addConcept(IModel.IDiagnostic.class,
+				MODELS.CLASS_DIAGNOSTIC.toString());
+
 		for (KommaModule modelModule : ModelCore.getModelModules()) {
 			module.includeModule(modelModule);
 		}
@@ -305,7 +314,8 @@ public class ModelCore extends AbstractKommaPlugin {
 	}
 
 	/**
-	 * Returns KommaModules with concepts and behaviours for ModelSets and Models
+	 * Returns KommaModules with concepts and behaviours for ModelSets and
+	 * Models
 	 * 
 	 * @return model modules
 	 */

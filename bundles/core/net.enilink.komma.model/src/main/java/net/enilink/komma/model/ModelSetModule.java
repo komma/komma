@@ -29,8 +29,6 @@ import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.em.EagerCachingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
 import net.enilink.komma.em.ThreadLocalDataManager;
-import net.enilink.komma.model.base.ModelSetSupport;
-import net.enilink.komma.model.base.ModelSupport;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
@@ -64,13 +62,6 @@ public class ModelSetModule extends AbstractModule {
 		// KommaUtil.getBundleMetaInfLocations(KommaConcepts.PLUGIN_ID))) {
 		// module.addJarFileUrl(libraryUrl);
 		// }
-
-		module.addConcept(ModelSupport.class, MODELS.TYPE_MODEL.toString());
-		module.addConcept(ModelSetSupport.class,
-				MODELS.TYPE_MODELSET.toString());
-
-		module.addConcept(IModel.IDiagnostic.class,
-				MODELS.CLASS_DIAGNOSTIC.toString());
 
 		// module.addDataset(
 		// getResource(ModelCore.PLUGIN_ID,
@@ -166,7 +157,7 @@ public class ModelSetModule extends AbstractModule {
 	private Collection<String> loadOntologyList(ClassLoader cl)
 			throws IOException {
 		Properties ontologies = new Properties();
-		String name = "META-INF/org.openrdf.elmo.ontologies";
+		String name = "META-INF/org.openrdf.ontologies";
 		Enumeration<URL> resources = cl.getResources(name);
 		while (resources.hasMoreElements()) {
 			URL url = resources.nextElement();
