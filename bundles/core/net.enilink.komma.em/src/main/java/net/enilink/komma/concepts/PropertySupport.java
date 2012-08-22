@@ -80,9 +80,8 @@ public abstract class PropertySupport extends BehaviorBase implements
 			+ " }";
 
 	private static final String IS_RANGE_INSTANCE = PREFIX
-			+ "ASK { " //
-			+ "?object a ?class ." //
-			+ "{?property rdfs:range ?class} UNION {?class rdfs:subClassOf ?superClass . ?property rdfs:range ?superClass}" //
+			+ "ASK { ?object a ?class . " //
+			+ " { ?property rdfs:range ?class } UNION { ?class rdfs:subClassOf ?superClass . ?property rdfs:range ?superClass }" //
 			+ " }";
 	private static final String IS_DOMAIN_INSTANCE = PREFIX + "ASK { " //
 			+ "?object a ?domain ." //
@@ -128,7 +127,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 		IQuery<?> query = getEntityManager().createQuery(
 				direct ? SELECT_DIRECT_SUBPROPERTIES(true)
 						: SELECT_SUBPROPERTIES(true), includeInferred);
-		query.setParameter("superProperty", getBehaviourDelegate());
+		query.setParameter("superProperty", this);
 
 		return (IExtendedIterator<IProperty>) query.evaluate();
 	}
@@ -159,7 +158,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 		IQuery<?> query = getEntityManager().createQuery(
 				direct ? SELECT_DIRECT_SUPERPROPERTIES(true)
 						: SELECT_SUPERPROPERTIES(true), includeInferred);
-		query.setParameter("subProperty", getBehaviourDelegate());
+		query.setParameter("subProperty", this);
 
 		return (IExtendedIterator<IProperty>) query.evaluate();
 	}
@@ -186,7 +185,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 		if (object instanceof IReference) {
 			IQuery<?> query = getEntityManager()
 					.createQuery(IS_DOMAIN_INSTANCE);
-			query.setParameter("property", getBehaviourDelegate());
+			query.setParameter("property", this);
 			query.setParameter("object", object);
 
 			return query.getBooleanResult();
@@ -200,16 +199,14 @@ public abstract class PropertySupport extends BehaviorBase implements
 			// query can be optimized if OWL-inferencing is supported
 			if (getEntityManager().getInferencing().doesOWL()) {
 				String query = PREFIX
-						+ "ASK {"
-						+ "?o a ?c . " //
-						+ "{ ?p rdfs:range ?c }" //
-						+ " UNION { ?c rdfs:subClassOf ?restriction . ?restriction owl:onProperty ?p . " //
-						+ "{ ?restriction owl:allValuesFrom ?c } UNION { ?restriction owl:someValuesFrom ?c }}" //
+						+ "ASK { ?o a ?c { ?p rdfs:range ?c }" //
+						+ " UNION { ?c owl:onProperty ?p { ?restriction owl:allValuesFrom ?c } UNION { ?restriction owl:someValuesFrom ?c }}" //
 						+ "}";
 
 				return subject.getEntityManager().createQuery(query)
 						.setParameter("o", object).setParameter("p", this)
-						.getBooleanResult();
+						.getBooleanResult()
+						|| getRdfsRanges().isEmpty();
 			}
 
 			String query = PREFIX
@@ -222,7 +219,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 			IExtendedIterator<? extends IClass> it = (IExtendedIterator<IClass>) subject
 					.getEntityManager().createQuery(query)
 					.setParameter("o", object)
-					.setParameter("p", getBehaviourDelegate()).evaluate();
+					.setParameter("p", this).evaluate();
 
 			if (it.hasNext()) {
 				Set<IClass> rangeClasses = new HashSet<IClass>();
@@ -273,10 +270,9 @@ public abstract class PropertySupport extends BehaviorBase implements
 		}
 		if (object instanceof IReference) {
 			IQuery<?> query = getEntityManager().createQuery(IS_RANGE_INSTANCE);
-			query.setParameter("property", getBehaviourDelegate());
+			query.setParameter("property", this);
 			query.setParameter("object", object);
-
-			return query.getBooleanResult();
+			return query.getBooleanResult() || getRdfsRanges().isEmpty();
 		}
 
 		return false;
@@ -287,32 +283,28 @@ public abstract class PropertySupport extends BehaviorBase implements
 			IResource subject, boolean direct) {
 		// query can be optimized if OWL-inferencing is supported
 		if (getEntityManager().getInferencing().doesOWL()) {
+			String var = direct ? "r" : "resultR";
 			String query = PREFIX
-					+ "SELECT DISTINCT ?resultR WHERE {"
-					+ "	?o a ?c ."
-					+ "	?c rdfs:subClassOf ?restriction ."
-					+ "	?restriction owl:onProperty ?p ."
-					+ "	{?restriction owl:allValuesFrom ?r} UNION {?restriction owl:someValuesFrom ?r} ."
-					+ "	OPTIONAL {"
-					+ "		?c rdfs:subClassOf [ owl:onProperty ?subP; owl:allValuesFrom ?otherR ] . " //
+					+ "SELECT DISTINCT ?"
+					+ var
+					+ " WHERE {"
+					+ "	?o a ?restriction . ?restriction owl:onProperty ?p ."
+					+ "	{ ?restriction owl:allValuesFrom ?r } UNION { ?restriction owl:someValuesFrom ?r } ."
+					+ "	FILTER NOT EXISTS {"
 					+ "		?subP rdfs:subPropertyOf ?p ."
-					+ "		?otherR rdfs:subClassOf ?r" //
+					+ "		?otherRestriction owl:onProperty ?subP ."
+					+ "		?o a ?otherRestriction ."
+					+ "		{ ?otherRestriction owl:allValuesFrom ?otherR } UNION { ?otherRestriction owl:someValuesFrom ?otherR } ."
+					+ "		?otherR rdfs:subClassOf ?r . " //
 					+ "		FILTER (isIRI(?otherR) && (?subP != ?p || ?otherR != ?r))" //
 					+ "	}" //
-					+ "	OPTIONAL {"
-					+ "		?c rdfs:subClassOf [ owl:onProperty ?subP; owl:someValueFrom ?otherR ] . " //
-					+ "		?subP rdfs:subPropertyOf ?p ."
-					+ "		?otherR rdfs:subClassOf ?r" //
-					+ "		FILTER (isIRI(?otherR) && (?subP != ?p || ?otherR != ?r))" //
+					+ (direct ? "" : " ?resultR rdfs:subClassOf ?r . ")
+					+ "	FILTER (isIRI(?" + var + ") && ?" + var
+					+ " != owl:Nothing)" //
+					+ "	FILTER NOT EXISTS {" //
+					+ "		?" + var + " komma:isAbstract ?abstract" //
 					+ "	}" //
-					+ (!direct ? "	?resultR rdfs:subClassOf ?r ." : "")
-					+ "	FILTER (! bound(?otherR) && isIRI(?resultR) && ?resultR != owl:Nothing)" //
-					+ "	OPTIONAL {" //
-					+ "		?resultR komma:isAbstract ?abstract" //
-					+ "	} ." //
-					+ "	FILTER(!bound(?abstract)) " //
 					+ "}";
-
 			return subject.getEntityManager().createQuery(query)
 					.setParameter("o", subject).setParameter("p", this)
 					.evaluate(IClass.class);
@@ -326,7 +318,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 
 		IExtendedIterator<? extends IClass> it = subject.getEntityManager()
 				.createQuery(query).setParameter("o", subject)
-				.setParameter("p", getBehaviourDelegate())
+				.setParameter("p", this)
 				.evaluate(IClass.class);
 
 		if (it.hasNext()) {
@@ -387,7 +379,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 	public IExtendedIterator<? extends IClass> getRanges(boolean direct) {
 		return getEntityManager()
 				.createQuery(direct ? DIRECT_RANGE_QUERY : RANGE_QUERY)
-				.setParameter("property", getBehaviourDelegate())
+				.setParameter("property", this)
 				.evaluate(IClass.class);
 	}
 

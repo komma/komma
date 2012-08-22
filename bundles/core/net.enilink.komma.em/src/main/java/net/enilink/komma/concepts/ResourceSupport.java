@@ -45,26 +45,16 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	class PropertyInfo {
 		private IReference property;
 		private KommaPropertySet<Object> propertySet;
-		private boolean single;
+		private Boolean single;
 
 		PropertyInfo(IReference property) {
 			this.property = getEntityManager().find(property);
-
-			// the following code checks if property is functional
-			// the property is functional if it is an FunctionalProperty or
-			// its maximum cardinality is 1
-			single = this.property instanceof FunctionalProperty;
-			if (!single) {
-				Pair<Integer, Integer> cardinality = getApplicableCardinality(property);
-				single = cardinality.getSecond() <= 1;
-			}
 		}
 
 		KommaPropertySet<Object> getPropertySet() {
 			if (propertySet != null) {
 				return propertySet;
 			}
-
 			if (property instanceof IProperty
 					&& ((IProperty) property).isOrderedContainment()) {
 				propertySet = new OrderedPropertySet<Object>(
@@ -73,13 +63,21 @@ public abstract class ResourceSupport extends BehaviorBase implements
 				propertySet = new KommaPropertySet<Object>(
 						getBehaviourDelegate(), property);
 			}
-
 			injector.injectMembers(propertySet);
-
 			return propertySet;
 		}
 
 		boolean isSingle() {
+			if (single == null) {
+				// the following code checks if property is functional
+				// the property is functional if it is an FunctionalProperty or
+				// its maximum cardinality is 1
+				single = this.property instanceof FunctionalProperty;
+				if (!single) {
+					Pair<Integer, Integer> cardinality = getApplicableCardinality(property);
+					single = cardinality.getSecond() <= 1;
+				}
+			}
 			return single;
 		}
 	}
@@ -230,11 +228,17 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		return propertyInfo;
 	}
 
+	@Override
 	public Object get(IReference property) {
 		PropertyInfo propertyInfo = ensurePropertyInfo(property);
 		if (propertyInfo.isSingle()) {
-			return ensurePropertyInfo(property).getPropertySet().getSingle();
+			return propertyInfo.getPropertySet().getSingle();
 		}
+		return propertyInfo.getPropertySet();
+	}
+
+	@Override
+	public Set<Object> getAsSet(IReference property) {
 		return ensurePropertyInfo(property).getPropertySet();
 	}
 
