@@ -2,7 +2,9 @@ package net.enilink.komma.internal.sesame;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -151,10 +153,75 @@ public class SesameRepositoryDataManager implements IDataManager {
 				baseURI);
 	}
 
+	protected String ensureBindingsInGraph(String query, IReference[] contexts) {
+		if (contexts.length == 0) {
+			return query;
+		}
+		boolean allNull = true;
+		for (int i = 0; allNull && i < contexts.length; i++) {
+			allNull &= contexts[i] == null;
+		}
+		if (allNull) {
+			return query;
+		}
+		Set<String> variables = new LinkedHashSet<String>();
+		String delim = " ,)(;.{}";
+		int i = 0;
+		int qlen = query.length();
+		int open = 0, closed = 0;
+		while (i < qlen) {
+			int ch = query.charAt(i++);
+			if (ch == '{') {
+				if (variables.size() > 0) {
+					// only projection part of select queries is investigated
+					break;
+				}
+				open++;
+			} else if (ch == '}') {
+				closed++;
+			} else if (ch == '?' || ch == '$') { // variable
+				int j = i;
+				while (j < qlen && delim.indexOf(query.charAt(j)) < 0) {
+					j++;
+				}
+				if (j != i) {
+					String varName = query.substring(i - 1, j).trim();
+					variables.add(varName);
+				}
+			}
+			if (open > 0 && open == closed) {
+				// only first group pattern is investigated
+				// ASK { this one }, CONSTRUCT { this one } WHERE { ... }
+				break;
+			}
+		}
+		// ensure that at least one statement from the data set mentions a
+		// selected variable
+		int lastBrace = query.lastIndexOf('}');
+		StringBuilder sb = new StringBuilder(query.substring(0, lastBrace));
+		int n = 0, g = 0;
+		for (String var : variables) {
+			sb.append("\nfilter (!bound(").append(var)
+					.append(") || isLiteral(").append(var)
+					.append(") || exists { graph ?__g").append(g++)
+					.append(" {\n");
+			sb.append("\t{ ").append(var).append(" ?__p").append(n++)
+					.append(" ?__o").append(n++).append(" } UNION ");
+			sb.append("{ ?__s").append(n++).append(" ?__p").append(n++)
+					.append(" ").append(var).append(" } UNION ");
+			sb.append("{ ?__s").append(n++).append(" ").append(var)
+					.append(" ?__o").append(n++).append(" }\n");
+			sb.append("} })\n");
+		}
+		sb.append(query.substring(lastBrace));
+		return sb.toString();
+	}
+
 	@Override
 	public <R> IDataManagerQuery<R> createQuery(String query, String baseURI,
 			boolean includeInferred, IReference... contexts) {
 		try {
+			// query = ensureBindingsInGraph(query, contexts);
 			Query sesameQuery = prepareSesameQuery(query, baseURI,
 					includeInferred);
 			if (contexts.length > 0) {
