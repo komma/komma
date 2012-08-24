@@ -32,6 +32,7 @@ import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IReferenceable;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IStatementPattern;
 import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.InferencingCapability;
@@ -200,18 +201,27 @@ public class SesameRepositoryDataManager implements IDataManager {
 		int lastBrace = query.lastIndexOf('}');
 		StringBuilder sb = new StringBuilder(query.substring(0, lastBrace));
 		int n = 0, g = 0;
-		for (String var : variables) {
-			sb.append("\nfilter (!bound(").append(var)
-					.append(") || isLiteral(").append(var)
-					.append(") || exists { graph ?__g").append(g++)
-					.append(" {\n");
-			sb.append("\t{ ").append(var).append(" ?__p").append(n++)
-					.append(" ?__o").append(n++).append(" } UNION ");
-			sb.append("{ ?__s").append(n++).append(" ?__p").append(n++)
-					.append(" ").append(var).append(" } UNION ");
-			sb.append("{ ?__s").append(n++).append(" ").append(var)
-					.append(" ?__o").append(n++).append(" }\n");
-			sb.append("} })\n");
+		if (!variables.isEmpty()) {
+			sb.append("\nfilter (");
+			for (Iterator<String> varIt = variables.iterator(); varIt.hasNext();) {
+				String var = varIt.next();
+
+				sb.append("\n(!bound(").append(var).append(") || isLiteral(")
+						.append(var).append(") || exists { graph ?__g")
+						.append(g++).append(" {\n");
+				sb.append("\t{ ").append(var).append(" ?__p").append(n++)
+						.append(" ?__o").append(n++).append(" } UNION ");
+				sb.append("{ ?__s").append(n++).append(" ?__p").append(n++)
+						.append(" ").append(var).append(" } UNION ");
+				sb.append("{ ?__s").append(n++).append(" ").append(var)
+						.append(" ?__o").append(n++).append(" }\n");
+				sb.append("} })\n");
+
+				if (varIt.hasNext()) {
+					sb.append(" && ");
+				}
+			}
+			sb.append(")");
 		}
 		sb.append(query.substring(lastBrace));
 		return sb.toString();
@@ -392,16 +402,13 @@ public class SesameRepositoryDataManager implements IDataManager {
 	}
 
 	@Override
-	public IDataManager remove(Iterable<? extends IStatement> statements,
+	public IDataManager remove(
+			Iterable<? extends IStatementPattern> statements,
 			IReference... contexts) {
 		URI[] removeContexts = toURI(contexts);
 		try {
-			Iterator<? extends IStatement> it = statements.iterator();
-
 			RepositoryConnection conn = getConnection();
-			while (it.hasNext()) {
-				IStatement stmt = it.next();
-
+			for (IStatementPattern stmt : statements) {
 				Resource subject = getResource(stmt.getSubject());
 				URI predicate = (URI) getResource(stmt.getPredicate());
 				Value object = valueConverter.toSesame((IValue) stmt
