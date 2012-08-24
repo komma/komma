@@ -86,12 +86,14 @@ import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IReferenceable;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IStatementPattern;
 import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.InferencingCapability;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.LockModeType;
 import net.enilink.komma.core.Statement;
+import net.enilink.komma.core.StatementPattern;
 import net.enilink.komma.core.TransactionRequiredException;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
@@ -895,27 +897,26 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@Override
-	public void remove(Iterable<? extends IStatement> statements) {
-		dm.remove(
-				new ConvertingIterator<IStatement, IStatement>(statements
-						.iterator()) {
-					@Override
-					protected IStatement convert(IStatement stmt) {
-						if (!(stmt.getSubject() instanceof Behaviour || stmt
-								.getPredicate() instanceof Behaviour)
-								&& stmt.getObject() instanceof IValue) {
-							return stmt;
-						}
-						return new Statement(getReference(stmt.getSubject()),
-								getReference(stmt.getPredicate()), toValue(stmt
-										.getObject()), stmt.getContext());
-					}
-				}, modifyContexts);
+	public void remove(Iterable<? extends IStatementPattern> statements) {
+		dm.remove(new ConvertingIterator<IStatementPattern, IStatementPattern>(
+				statements.iterator()) {
+			@Override
+			protected IStatementPattern convert(IStatementPattern stmt) {
+				if (!(stmt.getSubject() instanceof Behaviour || stmt
+						.getPredicate() instanceof Behaviour)
+						&& stmt.getObject() instanceof IValue) {
+					return stmt;
+				}
+				return new StatementPattern(getReference(stmt.getSubject()),
+						getReference(stmt.getPredicate()), toValue(stmt
+								.getObject()), stmt.getContext());
+			}
+		}, modifyContexts);
 	}
 
 	public void remove(Object entity) {
-		if (entity instanceof IStatement) {
-			remove(Collections.singleton((IStatement) entity));
+		if (entity instanceof IStatementPattern) {
+			remove(Collections.singleton((IStatementPattern) entity));
 		} else {
 			IReference resource = getReferenceOrFail(entity);
 			getResourceManager().removeResource(resource);

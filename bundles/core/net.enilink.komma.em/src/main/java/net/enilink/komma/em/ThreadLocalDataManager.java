@@ -19,6 +19,7 @@ import net.enilink.komma.dm.IDataManagerQuery;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IStatementPattern;
 import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.InferencingCapability;
@@ -131,7 +132,8 @@ public class ThreadLocalDataManager implements IDataManager {
 	}
 
 	@Override
-	public IDataManager remove(Iterable<? extends IStatement> statements,
+	public IDataManager remove(
+			Iterable<? extends IStatementPattern> statements,
 			IReference... contexts) {
 		getDelegate().remove(statements, contexts);
 		return this;

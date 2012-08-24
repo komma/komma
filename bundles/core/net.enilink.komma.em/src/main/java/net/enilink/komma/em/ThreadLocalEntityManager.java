@@ -29,6 +29,7 @@ import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IStatementPattern;
 import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.InferencingCapability;
@@ -330,7 +331,7 @@ public abstract class ThreadLocalEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public void remove(Iterable<? extends IStatement> statements) {
+	public void remove(Iterable<? extends IStatementPattern> statements) {
 		getDelegate().remove(statements);
 	}
 

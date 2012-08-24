@@ -32,10 +32,14 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	private final String SELECT_DIRECT_SUBCLASSES(boolean named) {
 		return PREFIX
 				+ "SELECT ?subClass WHERE { "
-				// support stores that don't draw the inference (s
-				// rdfs:subClassOf owl:Thing)
-				// + ((OWL.TYPE_THING.equals(this)) ? "?subClass a owl:Class . "
-				// //
+				// support stores that don't draw the inference
+				// (someClass rdfs:subClassOf owl:Thing)
+				// + ((OWL.TYPE_THING.equals(this)) ?
+				// "{ ?subClass a owl:Class . "
+				// +
+				// "FILTER NOT EXISTS { ?subClass rdfs:subClassOf ?someSuperClass "
+				// +
+				// "FILTER (isIRI(?someSuperClass) && ?someSuperClass != ?subClass && ?someSuperClass != owl:Thing && ?someSuperClass != rdfs:Resource) } }"
 				// : "?subClass rdfs:subClassOf ?superClass . " //
 				// )
 				+ "?subClass rdfs:subClassOf ?superClass . "
