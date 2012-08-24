@@ -30,8 +30,13 @@ package net.enilink.komma.em.internal.behaviours;
 
 import java.util.AbstractSequentialList;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import net.enilink.composition.annotations.Iri;
@@ -45,27 +50,41 @@ import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.concepts.ResourceSupport;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.util.IPartialOrderProvider;
+import net.enilink.komma.util.ISparqlConstants;
+import net.enilink.komma.util.LinearExtension;
 
 /**
  * Java instance for rdf:List as a familiar interface to manipulate this List.
  * This implementation can only be modified when in autoCommit (autoFlush), or
  * when read uncommitted is supported.
- * 
- * @author James Leigh
  */
 @Iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#List")
 @precedes(ResourceSupport.class)
 public abstract class RDFList extends AbstractSequentialList<Object> implements
 		java.util.List<Object>, Refreshable, Mergeable, IEntity,
 		Behaviour<IEntity> {
-	private int _size = -1;
+	private static final boolean INIT_CACHE_WITH_PROPERTY_PATH = true;
+	private static final Item NIL_ITEM = new Item(RDF.NIL, null, null);
 
-	private RDFList parent;
+	private static class Item {
+		final IReference self;
+		final IValue first;
+		final IReference rest;
+
+		Item(IReference self, IValue first, IReference rest) {
+			this.self = self;
+			this.first = first;
+			this.rest = rest;
+		}
+	}
+
+	private volatile int size = -1;
+	private volatile List<Item> cache;
 
 	void addStatement(IReference subj, URI pred, Object obj) {
 		if (obj == null) {
@@ -74,46 +93,89 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 		getEntityManager().add(new Statement(subj, pred, obj));
 	}
 
-	IValue getFirst(IReference list) {
-		if (list == null) {
-			return null;
-		}
-		IExtendedIterator<IStatement> stmts = getEntityManager().match(list,
-				RDF.PROPERTY_FIRST, null);
-		try {
-			if (stmts.hasNext()) {
-				return (IValue) stmts.next().getObject();
+	private List<Item> getCache() {
+		List<Item> localCache = cache;
+		if (localCache == null && INIT_CACHE_WITH_PROPERTY_PATH) {
+			final Map<IReference, Item> items = new LinkedHashMap<IReference, Item>();
+			IExtendedIterator<Object[]> results = getEntityManager()
+					.createQuery(
+							ISparqlConstants.PREFIX
+									+ "SELECT ?item ?first ?rest WHERE { ?self rdf:rest* ?item . ?item rdf:first ?first . OPTIONAL { ?item rdf:rest ?rest } }")
+					.restrictResultType("first", IValue.class)
+					.restrictResultType("item", IReference.class)
+					.restrictResultType("rest", IReference.class)
+					.setParameter("self", getBehaviourDelegate())
+					.evaluate(Object[].class);
+			for (Object[] result : results) {
+				IReference self = (IReference) result[0];
+				items.put(self, new Item(self, (IValue) result[1],
+						(IReference) result[2]));
 			}
-			return null;
-		} finally {
-			stmts.close();
+			if (!items.containsKey(RDF.NIL)) {
+				items.put(RDF.NIL, NIL_ITEM);
+			}
+			if (items.size() <= 2) {
+				localCache = new ArrayList<Item>(items.values());
+			} else {
+				localCache = new LinearExtension<Item>(
+						new IPartialOrderProvider<Item>() {
+							@Override
+							public Collection<Item> getElements() {
+								return items.values();
+							}
+
+							@Override
+							public Collection<Item> getSuccessors(Item element) {
+								if (element.self.equals(RDF.NIL)) {
+									return Collections.emptyList();
+								}
+								if (element.rest != null) {
+									return Collections.singleton(items
+											.get(element.rest));
+								}
+								return Collections.singleton(NIL_ITEM);
+							}
+						}).createLinearExtension();
+			}
 		}
+		return cache = localCache;
 	}
 
-	IReference getRest(IReference list) {
-		if (list == null) {
-			return null;
+	private Item getItem(IReference self) {
+		if (self == null || RDF.NIL.equals(self)) {
+			return NIL_ITEM;
 		}
-		IExtendedIterator<IStatement> stmts = getEntityManager().match(list,
-				RDF.PROPERTY_REST, null);
+		IExtendedIterator<Object[]> results = getEntityManager()
+				.createQuery(
+						ISparqlConstants.PREFIX
+								+ "SELECT ?first ?rest WHERE { { ?item rdf:first ?first } OPTIONAL { ?item rdf:rest ?rest } }")
+				.restrictResultType("first", IValue.class)
+				.restrictResultType("rest", IReference.class)
+				.setParameter("item", self).evaluate(Object[].class);
 		try {
-			if (stmts.hasNext()) {
-				return (IReference) stmts.next().getObject();
+			if (results.hasNext()) {
+				Object[] item = results.next();
+				return new Item(self, (IValue) item[0], (IReference) item[1]);
 			}
-			return null;
+			return new Item(self, null, null);
 		} finally {
-			stmts.close();
+			results.close();
 		}
 	}
 
 	@Override
 	public ListIterator<Object> listIterator(final int index) {
+		final List<Item> cacheLocal = getCache(); // for thread-safety
 		return new ListIterator<Object>() {
-			IReference list;
+			Item next;
+			Item item;
 
-			private ArrayList<IReference> prevLists = new ArrayList<IReference>();
+			private boolean cached = cacheLocal != null;
+			private int nextIndex = index;
 
-			private boolean removed;
+			private ArrayList<Item> items = cached ? new ArrayList<Item>(
+					cacheLocal) : new ArrayList<Item>();
+
 			{
 				for (int i = 0; i < index; i++) {
 					next();
@@ -137,33 +199,36 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 						 * addStatement(list, RDF.REST, RDF.NIL);
 						 */
 					}
-					if (getFirst(getBehaviourDelegate()) == null) {
+					Item thisItem = getItem(getBehaviourDelegate());
+					if (thisItem.first == null) {
 						// size == 0
-						list = getBehaviourDelegate();
-						addStatement(list, RDF.PROPERTY_FIRST, o);
-						addStatement(list, RDF.PROPERTY_REST, RDF.NIL);
-					} else if (list == null) {
+						IValue oValue = getEntityManager().toValue(o);
+						item = new Item(getBehaviourDelegate(), oValue, RDF.NIL);
+						addStatement(item.self, RDF.PROPERTY_FIRST, oValue);
+						addStatement(item.self, RDF.PROPERTY_REST, RDF.NIL);
+					} else if (item == null) {
 						// index = 0
-						IValue first = getFirst(getBehaviourDelegate());
-						IReference rest = getRest(getBehaviourDelegate());
 						IReference newList = getEntityManager().create();
-						addStatement(newList, RDF.PROPERTY_FIRST, first);
-						addStatement(newList, RDF.PROPERTY_REST, rest);
+						addStatement(newList, RDF.PROPERTY_FIRST,
+								thisItem.first);
+						addStatement(newList, RDF.PROPERTY_REST, thisItem.rest);
 						removeStatements(getBehaviourDelegate(),
-								RDF.PROPERTY_FIRST, first);
+								RDF.PROPERTY_FIRST, thisItem.first);
 						removeStatements(getBehaviourDelegate(),
-								RDF.PROPERTY_REST, rest);
+								RDF.PROPERTY_REST, thisItem.rest);
 						addStatement(getBehaviourDelegate(),
 								RDF.PROPERTY_FIRST, o);
 						addStatement(getBehaviourDelegate(), RDF.PROPERTY_REST,
 								newList);
-					} else if (!list.equals(RDF.NIL)) {
-						IReference rest = getRest(list);
+					} else if (!item.self.equals(RDF.NIL)) {
 						IReference newList = getEntityManager().create();
-						removeStatements(list, RDF.PROPERTY_REST, rest);
-						addStatement(list, RDF.PROPERTY_REST, newList);
+						removeStatements(item.self, RDF.PROPERTY_REST,
+								item.rest);
+						addStatement(item.self, RDF.PROPERTY_REST, newList);
 						addStatement(newList, RDF.PROPERTY_FIRST, o);
-						addStatement(newList, RDF.PROPERTY_REST, rest);
+						addStatement(newList, RDF.PROPERTY_REST, item.rest);
+						item = new Item(item.self, getEntityManager()
+								.toValue(o), newList);
 					} else {
 						// index == size
 						throw new NoSuchElementException();
@@ -181,90 +246,122 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 			}
 
 			public boolean hasNext() {
-				IReference next;
-				if (list == null) {
-					next = getBehaviourDelegate();
-				} else {
-					next = getRest(list);
+				if (next != null) {
+					// next != RDF.NIL
+					return next.first != null;
+				} else if (nextIndex < items.size()) {
+					next = items.get(nextIndex);
+				} else if (!cached) {
+					if (item == null) {
+						next = getItem(getBehaviourDelegate());
+					} else {
+						next = getItem(item.rest);
+					}
+					items.add(next);
+					if (next.first == null) {
+						// TODO maybe only if (!cached)
+						cache = new ArrayList<Item>(items);
+					}
 				}
-				return getFirst(next) != null;
+				return next != null && next.first != null;
 			}
 
 			public boolean hasPrevious() {
-				return prevLists.size() > 0;
+				return nextIndex > 0;
 			}
 
 			public Object next() {
-				if (list == null) {
-					list = getBehaviourDelegate();
-				} else if (!removed) {
-					prevLists.add(list);
-					list = getRest(list);
-				} else {
-					removed = false;
+				if (hasNext()) {
+					nextIndex++;
+					item = next;
+					next = null;
+					return getEntityManager().toInstance(item.first);
 				}
-				IValue first = getFirst(list);
-				if (first == null)
-					throw new NoSuchElementException();
-				return getEntityManager().toInstance(first);
+				throw new NoSuchElementException();
 			}
 
 			public int nextIndex() {
-				if (list == null)
-					return 0;
-				return prevLists.size() + 1;
+				return nextIndex;
 			}
 
 			public Object previous() {
-				list = prevLists.remove(prevLists.size() - 1);
-				removed = false;
-				IValue first = getFirst(list);
+				if (!hasPrevious()) {
+					throw new NoSuchElementException();
+				}
+				nextIndex--;
+				item = items.get(nextIndex - 1);
+				IValue first = item.first;
 				if (first == null)
 					throw new NoSuchElementException();
 				return getEntityManager().toInstance(first);
 			}
 
 			public int previousIndex() {
-				return prevLists.size() - 1;
+				return nextIndex - 2;
 			}
 
 			public void remove() {
+				if (item == null) {
+					throw new IllegalStateException(
+							"next() has not yet been called");
+				}
+
 				boolean active = getEntityManager().getTransaction().isActive();
 				try {
 					if (!active) {
 						getEntityManager().getTransaction().begin();
 					}
-					if (prevLists.size() < 1) {
+					if (nextIndex == 1) {
 						// remove index == 0
-						IValue first = getFirst(list);
-						removeStatements(list, RDF.PROPERTY_FIRST, first);
-						IReference next = getRest(list);
-						first = getFirst(next);
-						IReference rest = getRest(next);
-						removeStatements(list, RDF.PROPERTY_REST, next);
-						if (first != null) {
-							removeStatements(next, RDF.PROPERTY_FIRST, first);
-							addStatement(list, RDF.PROPERTY_FIRST, first);
+						removeStatements(item.self, RDF.PROPERTY_FIRST,
+								item.first);
+						Item next = getItem(item.rest);
+						if (next != null) {
+							removeStatements(item.self, RDF.PROPERTY_REST,
+									next.self);
+							if (next.first != null) {
+								removeStatements(next.self, RDF.PROPERTY_FIRST,
+										next.first);
+								addStatement(item.self, RDF.PROPERTY_FIRST,
+										next.first);
+							}
+							if (next.rest != null) {
+								removeStatements(next.self, RDF.PROPERTY_REST,
+										next.rest);
+								addStatement(item.self, RDF.PROPERTY_REST,
+										next.rest);
+							}
 						}
-						if (rest != null) {
-							removeStatements(next, RDF.PROPERTY_REST, rest);
-							addStatement(list, RDF.PROPERTY_REST, rest);
-						}
+						item = new Item(item.self, next != null ? next.first
+								: null, next != null ? next.rest : null);
 					} else {
 						// remove index > 0
-						IReference removedList = list;
-						list = prevLists.remove(prevLists.size() - 1);
-						IValue first = getFirst(removedList);
-						IReference rest = getRest(removedList);
-						removeStatements(removedList, RDF.PROPERTY_FIRST, first);
-						removeStatements(removedList, RDF.PROPERTY_REST, rest);
-						removeStatements(list, RDF.PROPERTY_REST, removedList);
-						addStatement(list, RDF.PROPERTY_REST, rest);
+						Item removedList = item;
+						// replace previous item in list
+						Item prev = items.get(nextIndex - 2);
+						items.set(nextIndex - 2, new Item(prev.self,
+								prev.first, prev.rest));
+						// remove current item from list
+						items.remove(nextIndex - 1);
+						removeStatements(removedList.self, RDF.PROPERTY_FIRST,
+								removedList.first);
+						removeStatements(removedList.self, RDF.PROPERTY_REST,
+								removedList.rest);
+						removeStatements(prev.self, RDF.PROPERTY_REST,
+								removedList.self);
+						addStatement(prev.self, RDF.PROPERTY_REST,
+								removedList.rest);
+						item = prev;
 					}
+
+					next = null;
+					hasNext();
+					// invalidate iterator until call to next()
+					item = null;
+
 					if (!active) {
 						getEntityManager().getTransaction().commit();
 					}
-					removed = true;
 					refresh();
 				} catch (KommaException e) {
 					if (!active) {
@@ -283,14 +380,14 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 					if (getBehaviourDelegate().equals(RDF.NIL)) {
 						// size == 0
 						throw new NoSuchElementException();
-					} else if (list.equals(RDF.NIL)) {
+					} else if (item.self.equals(RDF.NIL)) {
 						// index = size
 						throw new NoSuchElementException();
 					} else {
-						IValue first = getFirst(list);
-						removeStatements(list, RDF.PROPERTY_FIRST, first);
+						removeStatements(item.self, RDF.PROPERTY_FIRST,
+								item.first);
 						if (o != null) {
-							addStatement(list, RDF.PROPERTY_FIRST, o);
+							addStatement(item.self, RDF.PROPERTY_FIRST, o);
 						}
 					}
 					if (!active) {
@@ -327,11 +424,10 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 		}
 	}
 
+	@Override
 	public void refresh() {
-		_size = -1;
-		if (parent != null) {
-			parent.refresh();
-		}
+		size = -1;
+		cache = null;
 	}
 
 	void removeStatements(IReference subj, URI pred, Object obj) {
@@ -340,22 +436,29 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 
 	@Override
 	public int size() {
-		if (_size < 0) {
+		if (this.size < 0) {
 			synchronized (this) {
-				if (_size < 0) {
-					IReference list = getBehaviourDelegate();
-					int size;
-					for (size = 0; list != null && !list.equals(RDF.NIL); size++) {
-						IReference nlist = getRest(list);
-						if (nlist == null && getFirst(list) == null)
-							break;
-						list = nlist;
+				if (this.size < 0) {
+					List<Item> items = getCache();
+					if (items != null) {
+						this.size = Math.max(0, items.size() - 1);
+					} else {
+						items = new ArrayList<Item>();
+						Item item = getItem(getBehaviourDelegate());
+						items.add(item);
+						int size;
+						for (size = 0; item != null && item.first != null
+								&& !item.self.equals(RDF.NIL); size++) {
+							item = getItem(item.rest);
+							items.add(item);
+						}
+						this.cache = items;
+						this.size = size;
 					}
-					_size = size;
 				}
 			}
 		}
-		return _size;
+		return size;
 	}
 
 	@Override
