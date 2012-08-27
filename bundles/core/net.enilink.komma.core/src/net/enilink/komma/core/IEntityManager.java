@@ -632,11 +632,11 @@ public interface IEntityManager {
 	 * Remove statements from this manager
 	 * 
 	 * @param statement
-	 *            the statement to remove
+	 *            the statements to remove
 	 * @throws KommaException
 	 *             thrown if there is an error while removing the statements
 	 */
-	void remove(Iterable<? extends IStatement> statements);
+	void remove(Iterable<? extends IStatementPattern> statements);
 
 	/**
 	 * Removes the given entity or subject and all implementing roles. It is the
