@@ -34,6 +34,8 @@ public class DataChangeTracker implements IDataChangeSupport,
 	private CopyOnWriteArraySet<IDataChangeListener> listeners = new CopyOnWriteArraySet<IDataChangeListener>();
 	private CopyOnWriteArraySet<IDataChangeListener> internalListeners = new CopyOnWriteArraySet<IDataChangeListener>();
 
+	private ThreadLocal<Boolean> disabled = new ThreadLocal<Boolean>();
+
 	@Override
 	public void add(IDataManager dm, IReference subj, IReference pred,
 			IValue obj, IReference... contexts) {
@@ -102,8 +104,12 @@ public class DataChangeTracker implements IDataChangeSupport,
 
 	@Override
 	public boolean isEnabled(IDataManager dm) {
-		synchronized (disabledDataManagers) {
-			return disabledDataManagers.get(dm) == null;
+		if (disabled.get() != null) {
+			return false;
+		} else {
+			synchronized (disabledDataManagers) {
+				return disabledDataManagers.get(dm) == null;
+			}
 		}
 	}
 
@@ -154,11 +160,19 @@ public class DataChangeTracker implements IDataChangeSupport,
 	}
 
 	public void setEnabled(IDataManager dm, boolean enabled) {
-		synchronized (disabledDataManagers) {
+		if (dm == null) {
 			if (enabled) {
-				disabledDataManagers.remove(dm);
+				disabled.remove();
 			} else {
-				disabledDataManagers.put(dm, true);
+				disabled.set(true);
+			}
+		} else {
+			synchronized (disabledDataManagers) {
+				if (enabled) {
+					disabledDataManagers.remove(dm);
+				} else {
+					disabledDataManagers.put(dm, true);
+				}
 			}
 		}
 	}
