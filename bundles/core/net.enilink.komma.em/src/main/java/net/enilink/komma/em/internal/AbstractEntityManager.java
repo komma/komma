@@ -282,44 +282,6 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T create(IReference resource, Class<T> concept,
-			Class<?>... concepts) {
-		Set<URI> types = new HashSet<URI>();
-
-		boolean isActive = false;
-		try {
-			isActive = getTransaction().isActive();
-
-			if (!isActive) {
-				getTransaction().begin();
-			}
-
-			addConcept(resource, concept, types);
-			for (Class<?> c : concepts) {
-				addConcept(resource, c, types);
-			}
-
-			if (!isActive) {
-				getTransaction().commit();
-			}
-		} catch (Exception e) {
-			if (!isActive && getTransaction().isActive()) {
-				getTransaction().rollback();
-			}
-			if (e instanceof KommaException) {
-				throw (KommaException) e;
-			}
-			throw new KommaException(e);
-		}
-
-		Class<?>[] allConcepts = combine(concept, concepts);
-		IEntity bean = createBean(resource, types, Arrays.asList(allConcepts),
-				false, null);
-		assert assertConceptsRecorded(bean, allConcepts);
-		return (T) bean;
-	}
-
-	@SuppressWarnings("unchecked")
 	public IEntity createBean(IReference resource, Collection<URI> entityTypes,
 			Collection<Class<?>> concepts, boolean restrictTypes, IGraph graph) {
 		if (resource == null) {
@@ -393,10 +355,38 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		return literalConverter.createLiteral(value, datatype);
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T> T createNamed(net.enilink.komma.core.URI uri,
 			Class<T> concept, Class<?>... concepts) {
 		IReference resource = getResourceManager().createResource(uri);
-		return create(resource, concept, concepts);
+		Set<URI> types = new HashSet<URI>();
+		boolean isActive = false;
+		try {
+			isActive = getTransaction().isActive();
+			if (!isActive) {
+				getTransaction().begin();
+			}
+			addConcept(resource, concept, types);
+			for (Class<?> c : concepts) {
+				addConcept(resource, c, types);
+			}
+			if (!isActive) {
+				getTransaction().commit();
+			}
+		} catch (Exception e) {
+			if (!isActive && getTransaction().isActive()) {
+				getTransaction().rollback();
+			}
+			if (e instanceof KommaException) {
+				throw (KommaException) e;
+			}
+			throw new KommaException(e);
+		}
+		Class<?>[] allConcepts = combine(concept, concepts);
+		IEntity bean = createBean(resource, types, Arrays.asList(allConcepts),
+				true, null);
+		assert assertConceptsRecorded(bean, allConcepts);
+		return (T) bean;
 	}
 
 	@Override
@@ -432,7 +422,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				}
 			}
 		}
-		return createBean(resource, types, null, false, null);
+		return createBean(resource, types, null, true, null);
 	}
 
 	public IQuery<?> createQuery(String query) {

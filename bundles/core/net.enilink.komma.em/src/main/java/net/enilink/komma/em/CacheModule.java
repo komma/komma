@@ -28,6 +28,7 @@ import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 
+import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.dm.change.DataChangeTracker;
 import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.dm.change.IDataChangeListener;
@@ -135,6 +136,16 @@ public class CacheModule extends AbstractModule {
 										stmtChange.getSubject(), "properties"));
 						entityCache.removeNode(Fqn.fromRelativeElements(
 								baseFqn, stmtChange.getObject(), "properties"));
+
+						// remove entity completely from cache if its type has
+						// been changed
+						if (subject != null
+								&& RDF.PROPERTY_TYPE
+										.equals(((IStatementChange) change)
+												.getPredicate())) {
+							entityCache.removeNode(Fqn.fromRelativeElements(
+									baseFqn, stmtChange.getSubject()));
+						}
 					}
 				}
 			}
