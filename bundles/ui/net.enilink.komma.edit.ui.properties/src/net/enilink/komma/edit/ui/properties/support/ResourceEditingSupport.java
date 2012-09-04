@@ -336,11 +336,11 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 	@Override
 	public ICommand convertValueFromEditor(Object editorValue,
 			final IEntity subject, IReference property, Object oldValue) {
-		final URI[] newName = { null };
+		final URI[] name = { null };
 		boolean createNew = false;
+		ConstructorParser parser = createConstructorParser();
 		ParsingResult<Object> ctor = new BasicParseRunner<Object>(
-				createConstructorParser().Constructor())
-				.run((String) editorValue);
+				parser.Constructor()).run((String) editorValue);
 		if (ctor.matched) {
 			createNew = true;
 			IndexRange range = (IndexRange) ctor.resultValue;
@@ -349,9 +349,26 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			// check if a name for the new resource is given
 			if (ctor.valueStack.size() > 1) {
 				if (subject instanceof IObject) {
-					newName[0] = toURI(((IObject) subject).getModel(),
+					name[0] = toURI(((IObject) subject).getModel(),
 							ctor.valueStack.peek(1));
 				}
+			}
+		} else {
+			// allow to specify resources as full IRIs in the form
+			// <http://example.org#resource>
+			ParsingResult<Object> Iri = new BasicParseRunner<Object>(
+					parser.IRI_REF()).run((String) editorValue);
+			if (Iri.matched) {
+				name[0] = toURI(((IObject) subject).getModel(), Iri.resultValue);
+				return new SimpleCommand() {
+					@Override
+					protected CommandResult doExecuteWithResult(
+							IProgressMonitor progressMonitor, IAdaptable info)
+							throws ExecutionException {
+						return CommandResult.newOKCommandResult(subject
+								.getEntityManager().find(name[0]));
+					}
+				};
 			}
 		}
 		Iterator<IResource> resources = getResourceProposals(subject,
@@ -368,7 +385,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 							IProgressMonitor progressMonitor, IAdaptable info)
 							throws ExecutionException {
 						return CommandResult.newOKCommandResult(subject
-								.getEntityManager().createNamed(newName[0],
+								.getEntityManager().createNamed(name[0],
 										resource));
 					}
 				};

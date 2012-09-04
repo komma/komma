@@ -208,7 +208,8 @@ class ValueEditingSupport extends EditingSupport {
 						|| property instanceof ObjectProperty
 						|| property.getRdfsRanges()
 								.contains(RDFS.TYPE_RESOURCE) //
-				|| property.getRdfsRanges().contains(OWL.TYPE_THING))) {
+						|| property.getRdfsRanges().contains(OWL.TYPE_THING) || property
+						.getRdfsRanges().contains(OWL.TYPE_ONTOLOGY))) {
 			// TODO implement correct selection strategy for resource editor in
 			// all possible cases
 			return new ResourceEditingSupport(delegatingAdapterFactory);

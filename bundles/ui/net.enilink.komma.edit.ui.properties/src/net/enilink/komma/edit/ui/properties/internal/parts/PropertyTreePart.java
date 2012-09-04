@@ -794,10 +794,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	}
 
 	public void setInput(Object input) {
-		if (input == null || input instanceof IObject) {
-			resource = (IObject) input;
-			setStale(true);
-		}
+		setEditorInput(input);
 	}
 
 	void setUriText() {
