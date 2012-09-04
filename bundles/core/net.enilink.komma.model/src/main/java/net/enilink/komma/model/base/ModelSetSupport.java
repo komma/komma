@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.apache.commons.collections.map.ReferenceMap;
 import net.enilink.composition.traits.Behaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,9 +134,6 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		protected KommaModule module;
 
 		protected NotificationSupport<INotification> notificationSupport = new NotificationSupport<INotification>();
-
-		private ReferenceMap sharedReferences = new ReferenceMap(
-				ReferenceMap.WEAK, ReferenceMap.WEAK);
 
 		protected Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = new WeakHashMap<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>>();
 
@@ -530,23 +526,6 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		}
 	}
 
-	public IReference getSharedReference(IReference reference) {
-		if (reference == null) {
-			return null;
-		}
-		ReferenceMap sharedReferences = state().sharedReferences;
-		synchronized (sharedReferences) {
-			IReference sharedReference = (IReference) sharedReferences
-					.get(reference);
-			if (sharedReference == null) {
-				sharedReference = reference;
-				sharedReferences.put(sharedReference, sharedReference);
-			}
-
-			return sharedReference;
-		}
-	}
-
 	public IUnitOfWork getUnitOfWork() {
 		return unitOfWork;
 	}
@@ -751,15 +730,11 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 			} else {
 				IStatementChange stmtChange = (IStatementChange) change;
 				Object object = stmtChange.getObject();
-				notifications
-						.add(new StatementNotification(
-								getBehaviourDelegate(),
-								stmtChange.isAdd(),
-								getSharedReference(stmtChange.getSubject()),
-								getSharedReference(stmtChange.getPredicate()),
-								object instanceof IReference ? getSharedReference((IReference) object)
-										: object, getSharedReference(stmtChange
-										.getContext())));
+				notifications.add(new StatementNotification(
+						getBehaviourDelegate(), stmtChange.isAdd(), stmtChange
+								.getSubject(), stmtChange.getPredicate(),
+						object instanceof IReference ? (IReference) object
+								: object, stmtChange.getContext()));
 			}
 		}
 		return notifications;
