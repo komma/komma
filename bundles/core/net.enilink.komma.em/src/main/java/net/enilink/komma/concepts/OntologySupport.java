@@ -44,22 +44,25 @@ public abstract class OntologySupport extends BehaviorBase implements IOntology 
 
 	@Override
 	public IExtendedIterator<IProperty> getRootProperties() {
-		IQuery<?> query = getEntityManager().createQuery(SELECT_PROPERTIES())
-				.setParameter("propertyType", RDF.TYPE_PROPERTY);
+		// [PERFORMANCE] root properties are retrieved without inference
+		IQuery<?> query = getEntityManager().createQuery(SELECT_PROPERTIES(),
+				false).setParameter("propertyType", RDF.TYPE_PROPERTY);
 		return query.evaluate(IProperty.class);
 	}
 
 	@Override
 	public IExtendedIterator<IProperty> getRootObjectProperties() {
-		IQuery<?> query = getEntityManager().createQuery(SELECT_PROPERTIES())
-				.setParameter("propertyType", OWL.TYPE_OBJECTPROPERTY);
+		// [PERFORMANCE] root properties are retrieved without inference
+		IQuery<?> query = getEntityManager().createQuery(SELECT_PROPERTIES(),
+				false).setParameter("propertyType", OWL.TYPE_OBJECTPROPERTY);
 		return query.evaluate(IProperty.class, ObjectProperty.class);
 	}
 
 	@Override
 	public IExtendedIterator<IProperty> getRootDatatypeProperties() {
-		IQuery<?> query = getEntityManager().createQuery(SELECT_PROPERTIES())
-				.setParameter("propertyType", OWL.TYPE_DATATYPEPROPERTY);
+		// [PERFORMANCE] root properties are retrieved without inference
+		IQuery<?> query = getEntityManager().createQuery(SELECT_PROPERTIES(),
+				false).setParameter("propertyType", OWL.TYPE_DATATYPEPROPERTY);
 		return query.evaluate(IProperty.class, DatatypeProperty.class);
 	}
 }

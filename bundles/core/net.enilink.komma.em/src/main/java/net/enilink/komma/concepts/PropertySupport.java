@@ -139,7 +139,8 @@ public abstract class PropertySupport extends BehaviorBase implements
 
 	@Override
 	public IExtendedIterator<IProperty> getDirectSubProperties() {
-		return getSubProperties(true, true);
+		// [PERFORMANCE] direct sub-properties are retrieved without inference
+		return getSubProperties(true, false);
 	}
 
 	@Override
@@ -218,8 +219,8 @@ public abstract class PropertySupport extends BehaviorBase implements
 			@SuppressWarnings("unchecked")
 			IExtendedIterator<? extends IClass> it = (IExtendedIterator<IClass>) subject
 					.getEntityManager().createQuery(query)
-					.setParameter("o", object)
-					.setParameter("p", this).evaluate();
+					.setParameter("o", object).setParameter("p", this)
+					.evaluate();
 
 			if (it.hasNext()) {
 				Set<IClass> rangeClasses = new HashSet<IClass>();
@@ -318,8 +319,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 
 		IExtendedIterator<? extends IClass> it = subject.getEntityManager()
 				.createQuery(query).setParameter("o", subject)
-				.setParameter("p", this)
-				.evaluate(IClass.class);
+				.setParameter("p", this).evaluate(IClass.class);
 
 		if (it.hasNext()) {
 			Set<IClass> namedRangeClasses = new HashSet<IClass>();
@@ -379,8 +379,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 	public IExtendedIterator<? extends IClass> getRanges(boolean direct) {
 		return getEntityManager()
 				.createQuery(direct ? DIRECT_RANGE_QUERY : RANGE_QUERY)
-				.setParameter("property", this)
-				.evaluate(IClass.class);
+				.setParameter("property", this).evaluate(IClass.class);
 	}
 
 	public boolean isMany(IReference subject) {

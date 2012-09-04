@@ -19,7 +19,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.em.internal.behaviours.IEntityManagerAware;
-import net.enilink.komma.core.FlushModeType;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
 import net.enilink.komma.core.IEntityManager;
@@ -171,11 +170,6 @@ public abstract class ThreadLocalEntityManager implements IEntityManager {
 		return getDelegate().findRestricted(reference, concept, concepts);
 	}
 
-	@Override
-	public void flush() {
-		getDelegate().flush();
-	}
-
 	abstract protected IEntityManager initialValue();
 
 	public IEntityManager getDelegate() {
@@ -194,11 +188,6 @@ public abstract class ThreadLocalEntityManager implements IEntityManager {
 	@Override
 	public IEntityManagerFactory getFactory() {
 		return getDelegate().getFactory();
-	}
-
-	@Override
-	public FlushModeType getFlushMode() {
-		return getDelegate().getFlushMode();
 	}
 
 	@Override
@@ -366,11 +355,6 @@ public abstract class ThreadLocalEntityManager implements IEntityManager {
 	@Override
 	public <T> T rename(T bean, net.enilink.komma.core.URI uri) {
 		return getDelegate().rename(bean, uri);
-	}
-
-	@Override
-	public void setFlushMode(FlushModeType flushMode) {
-		getDelegate().setFlushMode(flushMode);
 	}
 
 	@Override

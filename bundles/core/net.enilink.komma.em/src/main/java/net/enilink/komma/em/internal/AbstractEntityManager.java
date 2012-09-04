@@ -75,7 +75,6 @@ import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.em.internal.behaviours.IEntityManagerAware;
 import net.enilink.komma.em.internal.query.EntityManagerQuery;
 import net.enilink.komma.literals.LiteralConverter;
-import net.enilink.komma.core.FlushModeType;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
@@ -546,17 +545,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@Override
-	public void flush() {
-	}
-
-	@Override
 	public IEntityManagerFactory getFactory() {
 		return factory;
-	}
-
-	@Override
-	public FlushModeType getFlushMode() {
-		return FlushModeType.AUTO;
 	}
 
 	@Override
@@ -1049,10 +1039,6 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		readAndModifyContexts.addAll(readContexts);
 		this.readContexts = readAndModifyContexts
 				.toArray(new URI[readAndModifyContexts.size()]);
-	}
-
-	@Override
-	public void setFlushMode(FlushModeType mode) {
 	}
 
 	@Inject

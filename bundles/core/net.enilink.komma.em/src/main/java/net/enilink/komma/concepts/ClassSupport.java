@@ -34,15 +34,12 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 				+ "SELECT ?subClass WHERE { "
 				// support stores that don't draw the inference
 				// (someClass rdfs:subClassOf owl:Thing)
-				// + ((OWL.TYPE_THING.equals(this)) ?
-				// "{ ?subClass a owl:Class . "
-				// +
-				// "FILTER NOT EXISTS { ?subClass rdfs:subClassOf ?someSuperClass "
-				// +
-				// "FILTER (isIRI(?someSuperClass) && ?someSuperClass != ?subClass && ?someSuperClass != owl:Thing && ?someSuperClass != rdfs:Resource) } }"
-				// : "?subClass rdfs:subClassOf ?superClass . " //
-				// )
-				+ "?subClass rdfs:subClassOf ?superClass . "
+				+ ((OWL.TYPE_THING.equals(this)) ? "{ ?subClass a owl:Class . "
+						+ "MINUS { ?subClass rdfs:subClassOf ?someSuperClass "
+						+ "FILTER (isIRI(?someSuperClass) && ?someSuperClass != ?subClass && ?someSuperClass != owl:Thing && ?someSuperClass != rdfs:Resource) } }"
+						: "?subClass rdfs:subClassOf ?superClass . " //
+				)
+				// + "?subClass rdfs:subClassOf ?superClass . "
 				+ "FILTER NOT EXISTS {"
 				+ "?subClass rdfs:subClassOf ?otherSuperClass . "
 				+ "?otherSuperClass rdfs:subClassOf ?superClass  . " //
@@ -139,7 +136,8 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 
 	@Override
 	public IExtendedIterator<IClass> getDirectNamedSubClasses() {
-		return getSubClasses(true, true, true);
+		// [PERFORMANCE] direct named subclasses are retrieved without inference
+		return getSubClasses(true, false, true);
 	}
 
 	@Override
@@ -208,10 +206,11 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	@Override
 	public IExtendedIterator<IClass> getDirectNamedSuperClasses() {
 		log.info("Get super classes for {}", getBehaviourDelegate());
-
+		// [PERFORMANCE] direct named super-classes are retrieved without
+		// inference
 		return getEntityManager()
-				.createQuery(DIRECT_NAMED_SUPERCLASSES_DESC().toQueryString())
-				.setParameter("subClass", getBehaviourDelegate())
+				.createQuery(DIRECT_NAMED_SUPERCLASSES_DESC().toQueryString(),
+						false).setParameter("subClass", getBehaviourDelegate())
 				.evaluate(IClass.class);
 	}
 

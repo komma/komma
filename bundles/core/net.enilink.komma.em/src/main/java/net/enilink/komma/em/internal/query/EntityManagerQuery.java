@@ -24,7 +24,6 @@ import com.google.inject.Inject;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.dm.IDataManagerQuery;
 import net.enilink.komma.em.internal.IEntityManagerInternal;
-import net.enilink.komma.core.FlushModeType;
 import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IBooleanResult;
 import net.enilink.komma.core.IGraphResult;
@@ -167,11 +166,6 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 	}
 
 	@Override
-	public FlushModeType getFlushMode() {
-		return null;
-	}
-
-	@Override
 	public Map<String, Object> getHints() {
 		return null;
 	}
@@ -216,20 +210,13 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 		query.setParameter(name, value);
 	}
 
-	public IQuery<R> setFlushMode(FlushModeType flushMode) {
-		if (FlushModeType.AUTO.equals(flushMode)) {
-			manager.flush();
-		}
-		return this;
-	}
-
 	public IQuery<R> setHint(String hintName, Object value) {
 		return this;
 	}
 
 	@Override
 	public IQuery<R> setLockMode(LockModeType lockMode) {
-		return null;
+		return this;
 	}
 
 	public IQuery<R> setParameter(String name, Calendar value,
