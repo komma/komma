@@ -330,7 +330,8 @@ public class ImportsPart extends AbstractEditingDomainPart {
 		return additionalDescriptions;
 	}
 
-	public void setInput(Object input) {
+	public boolean setEditorInput(Object input) {
+		Ontology currentOntology = ontology;
 		if (input instanceof IModel) {
 			ontology = ((IModel) input).getOntology();
 		} else if (input instanceof IObject) {
@@ -338,7 +339,15 @@ public class ImportsPart extends AbstractEditingDomainPart {
 		} else {
 			ontology = null;
 		}
-		setStale(true);
+		if (currentOntology != ontology) {
+			setStale(true);
+			return true;
+		}
+		return false;
+	}
+
+	public void setInput(Object input) {
+		setEditorInput(input);
 	}
 
 	@Override
