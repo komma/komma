@@ -304,6 +304,8 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 				if (it.hasNext()) {
 					return it.next();
 				}
+				return ((IEntity) object).getEntityManager().find(
+						OWL.TYPE_THING);
 			} finally {
 				it.close();
 			}
