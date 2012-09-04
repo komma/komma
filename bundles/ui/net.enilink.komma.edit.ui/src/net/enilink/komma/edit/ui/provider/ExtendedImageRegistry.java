@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -39,7 +40,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
-import net.enilink.commons.ui.CommonsUi;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.provider.ComposedImage;
 import net.enilink.komma.core.URI;
@@ -54,17 +54,8 @@ public class ExtendedImageRegistry {
 		return INSTANCE;
 	}
 
-	protected Map<Object, Image> table = Collections.synchronizedMap(new HashMap<Object, Image>(10));
-
-	public ExtendedImageRegistry() {
-		this(Display.getCurrent());
-	}
-
-	public ExtendedImageRegistry(Display display) {
-		if (!CommonsUi.IS_RAP_RUNNING) {
-			hookDisplayDispose(display);
-		}
-	}
+	protected Map<Display, Map<Object, Image>> images = Collections
+			.synchronizedMap(new WeakHashMap<Display, Map<Object, Image>>());
 
 	protected static String modelURLPrefix = KommaEditPlugin.INSTANCE.getImage(
 			"full/obj16/Model").toString()
@@ -75,14 +66,26 @@ public class ExtendedImageRegistry {
 			+ "#";
 
 	protected static String createChildURLPrefix = KommaEditPlugin.INSTANCE
-			.getImage("full/ctool16/CreateChild").toString()
-			+ "#";
+			.getImage("full/ctool16/CreateChild").toString() + "#";
 
 	public Image getImage(Object object) {
 		if (object instanceof Image) {
 			return (Image) object;
 		} else {
-			Image result = table.get(object);
+			Display display = Display.getCurrent();
+			Image result = null;
+			Map<Object, Image> cache = null;
+			if (display != null) {
+				synchronized (display) {
+					cache = images.get(display);
+					if (cache == null) {
+						hookDisplayDispose(display);
+						cache = new HashMap<Object, Image>();
+						images.put(display, cache);
+					}
+					result = cache.get(object);
+				}
+			}
 			if (result == null) {
 				if (object instanceof ImageDescriptor) {
 					ImageDescriptor imageDescriptor = (ImageDescriptor) object;
@@ -144,10 +147,11 @@ public class ExtendedImageRegistry {
 					result = composedImageDescriptor.createImage();
 				}
 
-				if (result != null) {
-					table.put(object, result);
+				if (result != null && display != null) {
+					synchronized (display) {
+						cache.put(object, result);
+					}
 				}
-
 			}
 			return result;
 		}
@@ -166,17 +170,15 @@ public class ExtendedImageRegistry {
 		}
 	}
 
-	protected void handleDisplayDispose() {
-		for (Image image : table.values()) {
-			image.dispose();
-		}
-		table = null;
-	}
-
-	protected void hookDisplayDispose(Display display) {
+	protected void hookDisplayDispose(final Display display) {
 		display.disposeExec(new Runnable() {
 			public void run() {
-				handleDisplayDispose();
+				Map<Object, Image> cache = images.remove(display);
+				if (cache != null) {
+					for (Image image : cache.values()) {
+						image.dispose();
+					}
+				}
 			}
 		});
 	}

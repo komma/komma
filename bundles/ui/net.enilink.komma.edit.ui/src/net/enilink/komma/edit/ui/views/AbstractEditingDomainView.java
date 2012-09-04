@@ -1,7 +1,5 @@
 package net.enilink.komma.edit.ui.views;
 
-import java.util.Set;
-
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
@@ -12,6 +10,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.IContributedContentsView;
 import org.eclipse.ui.part.ViewPart;
 
@@ -62,7 +61,8 @@ public class AbstractEditingDomainView extends ViewPart implements
 
 		@Override
 		public void partClosed(IWorkbenchPartReference partRef) {
-			if (part != null && part.equals(partRef.getPart(false))) {
+			if (part != null && part.equals(partRef.getPart(false))
+					&& !PlatformUI.getWorkbench().isClosing()) {
 				setWorkbenchPart(null);
 			}
 		}
@@ -243,7 +243,6 @@ public class AbstractEditingDomainView extends ViewPart implements
 	protected boolean setEditingDomainProvider(
 			IEditingDomainProvider editingDomainProvider, IWorkbenchPart part) {
 		IEditingDomainProvider lastProvider = this.editingDomainProvider;
-
 		if (editingDomainProvider == null) {
 			this.part = null;
 			this.editingDomainProvider = null;
@@ -287,18 +286,8 @@ public class AbstractEditingDomainView extends ViewPart implements
 			}
 		}
 
-		IModel model = null;
-		if (part != null) {
-			model = (IModel) part.getAdapter(IModel.class);
-			if (domainChanged && model == null && editingDomainProvider != null) {
-				Set<IModel> models = editingDomainProvider.getEditingDomain()
-						.getModelSet().getModels();
-				if (!models.isEmpty()) {
-					model = models.iterator().next();
-				}
-			}
-		}
-
+		IModel model = part != null ? (IModel) part.getAdapter(IModel.class)
+				: null;
 		boolean changed = domainChanged;
 		if (domainChanged || model != null) {
 			changed |= this.model != model || this.model != null
