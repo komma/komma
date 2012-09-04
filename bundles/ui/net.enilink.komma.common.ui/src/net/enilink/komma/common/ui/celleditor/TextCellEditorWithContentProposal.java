@@ -5,10 +5,11 @@ import org.eclipse.jface.fieldassist.IContentProposalListener2;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 
 import net.enilink.komma.common.ui.assist.ContentProposals;
 
@@ -31,7 +32,6 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 
 		contentProposalAdapter = ContentProposals.enableContentProposal(text,
 				contentProposalProvider, autoActivationCharacters);
-
 		// Listen for popup open/close events to be able to handle focus events
 		// correctly
 		contentProposalAdapter
@@ -52,17 +52,36 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 	protected Control createControl(Composite parent) {
 		Control text = super.createControl(parent);
 		if ((getStyle() & SWT.MULTI) != 0) {
-			text.addKeyListener(new KeyAdapter() {
-				public void keyPressed(KeyEvent e) {
-					if (e.character == '\r' && e.stateMask == 0 && !popupOpen) {
-						e.doit = false;
-						fireApplyEditorValue();
-						deactivate();
+			text.addListener(SWT.Traverse, new Listener() {
+				public void handleEvent(Event e) {
+					switch (e.character) {
+					case SWT.LF:
+					case SWT.CR:
+						if (e.stateMask == 0 && !popupOpen) {
+							// apply editor value if enter is pressed
+							e.doit = false;
+							fireApplyEditorValue();
+							deactivate();
+						}
 					}
 				}
 			});
 		}
 		return text;
+	}
+
+	@Override
+	protected void keyReleaseOccured(KeyEvent keyEvent) {
+		if (keyEvent.character == '\r') {
+			// correctly handle CTRL+Enter in RAP
+			if (text != null && !text.isDisposed()
+					&& (getStyle() & SWT.MULTI) != 0
+					&& (keyEvent.stateMask & SWT.CTRL) != 0) {
+				super.keyReleaseOccured(keyEvent);
+			}
+			return;
+		}
+		super.keyReleaseOccured(keyEvent);
 	}
 
 	/**
