@@ -643,7 +643,16 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 	}
 
 	public Rule Primary() {
-		return Sequence(Optional("not"), FirstOf(Restriction(), Atomic()));
+		boolean isComplement;
+		return Sequence(
+				DO(isComplement = false),
+				Optional("not", isComplement = true),
+				FirstOf(Restriction(), Atomic()),
+				// create complement class
+				FirstOf(isComplement
+						&& push(new BNode())
+						&& actions.createStmt(peek(),
+								OWL.PROPERTY_COMPLEMENTOF, pop(1)), true));
 	}
 
 	public Rule Restriction() {

@@ -55,7 +55,7 @@ public class ManchesterSyntaxGenerator {
 
 	public String generateText(Object object) {
 		if (object instanceof Class) {
-			return clazz((Class) object).toString();
+			return clazz((Class) object, 0).toString();
 		}
 		return value(object).toString();
 	}
@@ -67,7 +67,7 @@ public class ManchesterSyntaxGenerator {
 
 	private StringBuilder sb = new StringBuilder();
 
-	private ManchesterSyntaxGenerator clazz(Class clazz) {
+	private ManchesterSyntaxGenerator clazz(Class clazz, int prio) {
 		if (clazz.getURI() == null) {
 			if (clazz instanceof Restriction) {
 				return restriction((Restriction) clazz);
@@ -78,12 +78,12 @@ public class ManchesterSyntaxGenerator {
 			} else if (clazz instanceof net.enilink.vocab.owl.Class) {
 				net.enilink.vocab.owl.Class owlClass = (net.enilink.vocab.owl.Class) clazz;
 				if (owlClass.getOwlUnionOf() != null) {
-					return setOfClasses(owlClass.getOwlUnionOf(), "or");
+					return setOfClasses(owlClass.getOwlUnionOf(), "or", 1, prio);
 				} else if (owlClass.getOwlIntersectionOf() != null) {
-					return setOfClasses(owlClass.getOwlIntersectionOf(), "and");
+					return setOfClasses(owlClass.getOwlIntersectionOf(), "and", 2, prio);
 				} else if (owlClass.getOwlComplementOf() != null) {
 					append("not ");
-					return clazz(owlClass.getOwlComplementOf());
+					return clazz(owlClass.getOwlComplementOf(), 3);
 				} else if (owlClass.getOwlOneOf() != null) {
 					return list(owlClass.getOwlOneOf());
 				}
@@ -130,7 +130,7 @@ public class ManchesterSyntaxGenerator {
 	}
 
 	private ManchesterSyntaxGenerator dataRange(DataRange dataRange) {
-		return clazz(dataRange);
+		return clazz(dataRange, 0);
 	}
 
 	private ManchesterSyntaxGenerator list(List<? extends Object> list) {
@@ -148,7 +148,7 @@ public class ManchesterSyntaxGenerator {
 
 	private ManchesterSyntaxGenerator onClassOrDataRange(Restriction restriction) {
 		if (restriction.getOwlOnClass() != null) {
-			return clazz(restriction.getOwlOnClass());
+			return clazz(restriction.getOwlOnClass(), 0);
 		} else if (restriction.getOwlOnDataRange() != null) {
 			return dataRange(restriction.getOwlOnDataRange());
 		}
@@ -172,10 +172,10 @@ public class ManchesterSyntaxGenerator {
 
 			if (restriction.getOwlAllValuesFrom() != null) {
 				append("only").append(" ");
-				clazz(restriction.getOwlAllValuesFrom());
+				clazz(restriction.getOwlAllValuesFrom(), 0);
 			} else if (restriction.getOwlSomeValuesFrom() != null) {
 				append("some").append(" ");
-				clazz(restriction.getOwlSomeValuesFrom());
+				clazz(restriction.getOwlSomeValuesFrom(), 0);
 			} else if (restriction.getOwlMaxCardinality() != null) {
 				append("max").append(" ");
 				append(restriction.getOwlMaxCardinality());
@@ -206,20 +206,20 @@ public class ManchesterSyntaxGenerator {
 		}
 		return value(restriction);
 	}
-
+	
 	private ManchesterSyntaxGenerator setOfClasses(List<? extends Class> set,
-			String operator) {
+			String operator, int operatorPrio, int prio) {
 		Iterator<? extends Class> it = set.iterator();
-		if (set.size() > 1) {
+		if (operatorPrio < prio && set.size() > 1) {
 			append("(");
 		}
 		while (it.hasNext()) {
-			clazz(it.next());
+			clazz(it.next(), operatorPrio);
 			if (it.hasNext()) {
 				append(" ").append(operator).append(" ");
 			}
 		}
-		if (set.size() > 1) {
+		if (operatorPrio < prio && set.size() > 1) {
 			append(")");
 		}
 		return this;
