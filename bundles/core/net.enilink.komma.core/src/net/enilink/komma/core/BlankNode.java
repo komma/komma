@@ -22,7 +22,7 @@ public class BlankNode implements IReference {
 	private String id;
 
 	public BlankNode() {
-		id = "_:komma-" + UUID.randomUUID().toString();
+		this("_:komma-" + UUID.randomUUID().toString());
 	}
 
 	public BlankNode(String id) {

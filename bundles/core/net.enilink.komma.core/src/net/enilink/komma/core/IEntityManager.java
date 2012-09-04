@@ -240,16 +240,6 @@ public interface IEntityManager {
 			Class<?>... concepts);
 
 	/**
-	 * Synchronize the persistence context to the underlying database.
-	 * 
-	 * @throws TransactionRequiredException
-	 *             if there is no transaction
-	 * @throws PersistenceException
-	 *             if the flush fails
-	 */
-	void flush();
-
-	/**
 	 * Return the factory for the entity manager.
 	 * 
 	 * @return IEntityManagerFactory instance
@@ -257,14 +247,6 @@ public interface IEntityManager {
 	 *             if the entity manager has been closed.
 	 */
 	IEntityManagerFactory getFactory();
-
-	/**
-	 * Get the flush mode that applies to all objects contained in the
-	 * persistence context.
-	 * 
-	 * @return flushMode
-	 */
-	FlushModeType getFlushMode();
 
 	/**
 	 * Return the inferencing capability of the underlying store.
@@ -705,14 +687,6 @@ public interface IEntityManager {
 	 * @return <code>entity</code> with the given <code>qname</code>.
 	 */
 	<T> T rename(T entity, URI uri);
-
-	/**
-	 * Set the flush mode that applies to all objects contained in the
-	 * persistence context.
-	 * 
-	 * @param flushMode
-	 */
-	void setFlushMode(FlushModeType flushMode);
 
 	/**
 	 * Sets the prefix for a namespace.

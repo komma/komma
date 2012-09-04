@@ -85,15 +85,6 @@ public interface IQuery<R> extends IQueryBase<IQuery<R>> {
 	boolean getBooleanResult();
 
 	/**
-	 * The flush mode in effect for the query execution. If a flush mode has not
-	 * been set for the query object, returns the flush mode in effect for the
-	 * entity manager.
-	 * 
-	 * @return flush mode
-	 */
-	FlushModeType getFlushMode();
-
-	/**
 	 * Get the hints and associated values that are in effect for the query
 	 * instance.
 	 * 
@@ -143,15 +134,6 @@ public interface IQuery<R> extends IQueryBase<IQuery<R>> {
 	 * @return hints
 	 */
 	Set<String> getSupportedHints();
-
-	/**
-	 * Set the flush mode type to be used for the query execution. The flush
-	 * mode type applies to the query regardless of the flush mode type in use
-	 * for the entity manager.
-	 * 
-	 * @param flushMode
-	 */
-	IQuery<R> setFlushMode(FlushModeType flushMode);
 
 	/**
 	 * Set a query hint. If a vendor-specific hint is not recognized, it is
