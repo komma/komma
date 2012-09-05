@@ -49,12 +49,10 @@ public class OWLResourceItemProvider extends ReflectiveItemProvider {
 		newChildDescriptors.done();
 	}
 
-	protected Collection<IViewerNotification> addViewerNotifications(
+	protected void addViewerNotifications(
 			Collection<IViewerNotification> viewerNotifications,
-			IStatementNotification notification, boolean contentRefresh,
-			boolean labelUpdate) {
-		return super.addViewerNotifications(viewerNotifications, notification,
-				contentRefresh, labelUpdate);
+			IStatementNotification notification) {
+		super.addViewerNotifications(viewerNotifications, notification);
 	}
 
 	@Override
