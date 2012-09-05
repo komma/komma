@@ -56,33 +56,24 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 		super(adapterFactory, resourceLocator, supportedTypes);
 	}
 
-	protected Collection<IViewerNotification> addViewerNotifications(
+	protected void addViewerNotifications(
 			Collection<IViewerNotification> viewerNotifications,
-			IStatementNotification notification, boolean contentRefresh,
-			boolean labelUpdate) {
+			IStatementNotification notification) {
 		if (RDFS.PROPERTY_SUBCLASSOF.equals(notification.getPredicate())) {
-			Object element = notification.getObject();
-
-			IEntity object;
-			if (element instanceof IEntity) {
-				object = (IEntity) element;
-			} else if (element instanceof IReference) {
-				object = resolveReference((IReference) element);
-			} else {
-				return null;
+			IEntity superClass = resolveReference(notification.getObject());
+			if (superClass != null) {
+				viewerNotifications.add(new ViewerNotification(superClass));
 			}
 
-			if (object != null) {
-				if (viewerNotifications == null) {
-					viewerNotifications = createViewerNotificationList();
-				}
-				viewerNotifications.add(new ViewerNotification(object,
-						contentRefresh, labelUpdate));
+			IEntity thing = resolveReference(OWL.TYPE_THING);
+			if (thing != null) {
+				// manually refresh cached values for owl:Thing
+				thing.getEntityManager().refresh(thing);
+				viewerNotifications.add(new ViewerNotification(thing));
 			}
-			return viewerNotifications;
+			return;
 		}
-		return super.addViewerNotifications(viewerNotifications, notification,
-				contentRefresh, labelUpdate);
+		super.addViewerNotifications(viewerNotifications, notification);
 	}
 
 	@Override
@@ -118,16 +109,12 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 						throws ExecutionException {
 					child = helper.createChild(owner, property,
 							childDescription);
-
 					if (child != null) {
 						addAndExecute(AddCommand.create(domain, child,
 								property, owner, index), progressMonitor, info);
 					}
-
 					affectedObjects = helper.getCreateChildResult(child);
-
 					Collection<?> result = helper.getCreateChildResult(child);
-
 					return CommandResult
 							.newOKCommandResult(result == null ? Collections.EMPTY_LIST
 									: result);

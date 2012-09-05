@@ -59,33 +59,17 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 		super(adapterFactory, resourceLocator, supportedTypes);
 	}
 
-	protected Collection<IViewerNotification> addViewerNotifications(
+	protected void addViewerNotifications(
 			Collection<IViewerNotification> viewerNotifications,
-			IStatementNotification notification, boolean contentRefresh,
-			boolean labelUpdate) {
+			IStatementNotification notification) {
 		if (subPropertyOf.equals(notification.getPredicate())) {
-			Object element = notification.getObject();
-
-			IEntity object;
-			if (element instanceof IEntity) {
-				object = (IEntity) element;
-			} else if (element instanceof IReference) {
-				object = resolveReference((IReference) element);
-			} else {
-				return null;
-			}
-
+			IEntity object = resolveReference(notification.getObject());
 			if (object != null) {
-				if (viewerNotifications == null) {
-					viewerNotifications = createViewerNotificationList();
-				}
-				viewerNotifications.add(new ViewerNotification(object,
-						contentRefresh, labelUpdate));
+				viewerNotifications.add(new ViewerNotification(object));
 			}
-			return viewerNotifications;
+			return;
 		}
-		return super.addViewerNotifications(viewerNotifications, notification,
-				contentRefresh, labelUpdate);
+		super.addViewerNotifications(viewerNotifications, notification);
 	}
 
 	@Override
