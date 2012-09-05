@@ -143,18 +143,14 @@ public class ModelSetItemProvider extends ReflectiveItemProvider {
 		return KommaEditPlugin.INSTANCE;
 	}
 
-	protected Collection<IViewerNotification> addViewerNotifications(
+	protected void addViewerNotifications(
 			Collection<IViewerNotification> viewerNotifications,
 			IStatementNotification notification, boolean contentRefresh,
 			boolean labelUpdate) {
 		IEntity subject = resolveReference(notification.getSubject());
 		if (subject instanceof IModelSet) {
-			if (viewerNotifications == null) {
-				viewerNotifications = createViewerNotificationList();
-			}
 			viewerNotifications.add(new ViewerNotification(subject,
 					contentRefresh, labelUpdate));
 		}
-		return viewerNotifications;
 	}
 }

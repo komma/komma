@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.util.IResourceLocator;
@@ -64,63 +65,32 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 	public void notifyChanged(Collection<? extends INotification> notifications) {
 		super.notifyChanged(notifications);
 
-		Collection<IViewerNotification> viewerNotifications = null;
+		Collection<IViewerNotification> viewerNotifications = new ArrayList<IViewerNotification>(
+				0);
 		for (INotification notification : notifications) {
 			if (notification instanceof IStatementNotification) {
-				Collection<IViewerNotification> newViewerNotifications;
-				if ("label".equals(((IStatementNotification) notification)
-						.getPredicate().getURI().localPart())) {
-					newViewerNotifications = addViewerNotifications(
-							viewerNotifications,
-							(IStatementNotification) notification, false, true);
-
-				} else {
-					newViewerNotifications = addViewerNotifications(
-							viewerNotifications,
-							(IStatementNotification) notification, true, true);
-				}
-				if (newViewerNotifications != null) {
-					viewerNotifications = newViewerNotifications;
-				}
+				addViewerNotifications(viewerNotifications,
+						(IStatementNotification) notification);
 			}
 		}
 
-		if (viewerNotifications != null) {
+		if (!viewerNotifications.isEmpty()) {
 			fireNotifications(viewerNotifications);
 			return;
 		}
 	}
 
-	protected Collection<IViewerNotification> createViewerNotificationList() {
-		return new ArrayList<IViewerNotification>();
-	}
-
-	protected Collection<IViewerNotification> addViewerNotifications(
+	protected void addViewerNotifications(
 			Collection<IViewerNotification> viewerNotifications,
-			IStatementNotification notification, boolean contentRefresh,
-			boolean labelUpdate) {
-		Object element = notification.getSubject();
-
-		IEntity object;
-		if (element instanceof IEntity) {
-			object = (IEntity) element;
-		} else if (element instanceof IReference) {
-			object = resolveReference((IReference) element);
-		} else {
-			return null;
-		}
-
+			IStatementNotification notification) {
+		IEntity object = resolveReference(notification.getSubject());
 		if (object instanceof IResource) {
 			((IResource) object).refresh(notification.getPredicate());
-
-			if (viewerNotifications == null) {
-				viewerNotifications = createViewerNotificationList();
-			}
-
+			boolean labelUpdate = RDFS.PROPERTY_LABEL.equals(notification
+					.getPredicate());
 			viewerNotifications.add(new ViewerNotification(object,
-					contentRefresh, labelUpdate));
+					!labelUpdate, labelUpdate));
 		}
-		return viewerNotifications;
 	}
 
 	/**

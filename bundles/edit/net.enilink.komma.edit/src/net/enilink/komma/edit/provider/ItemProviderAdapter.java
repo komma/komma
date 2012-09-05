@@ -697,7 +697,8 @@ public class ItemProviderAdapter extends
 		}
 
 		if (targets == null) {
-			targets = new WeakHashMap<IReference, IEntity>();
+			targets = Collections
+					.synchronizedMap(new WeakHashMap<IReference, IEntity>());
 		}
 		targets.put(((IEntity) target).getReference(), (IEntity) target);
 
@@ -2465,11 +2466,14 @@ public class ItemProviderAdapter extends
 		getPropertyDescriptor(object, property).resetPropertyValue(object);
 	}
 
-	protected IEntity resolveReference(IReference reference) {
+	protected IEntity resolveReference(Object reference) {
 		if (targets != null) {
-			return targets.get(reference);
+			IEntity result = targets.get(reference);
+			if (result != null) {
+				return result;
+			}
 		}
-		return null;
+		return (IEntity) ((reference instanceof IEntity) ? reference : null);
 	}
 
 	/**
