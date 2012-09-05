@@ -442,9 +442,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		sb.append(targetVar);
 		sb.append(" WHERE { ?subj ?pred ?obj . ");
 		if (filterSymmetric) {
-			String selfVar = inverse ? "?obj" : "?subj";
-			sb.append("FILTER NOT EXISTS { ").append(selfVar).append(" ?pred ")
-					.append(selfVar).append(" }");
+			sb.append("FILTER (?subj != ?obj)");
 		}
 		sb.append(" }");
 
