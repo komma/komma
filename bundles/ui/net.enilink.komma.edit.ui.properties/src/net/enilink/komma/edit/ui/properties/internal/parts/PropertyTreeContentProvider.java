@@ -163,7 +163,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 					+ "SELECT DISTINCT ?property ?invProperty " //
 					+ "WHERE { " //
 					+ "{ ?resource ?property ?object }" //
-					+ " UNION { ?subject ?invProperty ?resource MINUS { ?resource ?invProperty ?resource } }" //
+					+ " UNION { ?subject ?invProperty ?resource FILTER (?subject != ?resource) }" //
 					+ "} ORDER BY ?property ?invProperty";
 
 			IQuery<?> query = ((IEntity) inputElement).getEntityManager()
