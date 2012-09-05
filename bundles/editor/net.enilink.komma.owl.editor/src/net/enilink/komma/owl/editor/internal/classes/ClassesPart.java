@@ -39,7 +39,6 @@ import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 import net.enilink.komma.edit.ui.provider.LazyAdapterFactoryContentProvider;
-import net.enilink.komma.edit.ui.provider.reflective.ObjectComparator;
 import net.enilink.komma.edit.ui.util.FilterWidget;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
@@ -67,7 +66,6 @@ public class ClassesPart extends AbstractEditingDomainPart {
 
 		treeViewer = new TreeViewer(tree);
 		treeViewer.setUseHashlookup(true);
-		treeViewer.setComparator(new ObjectComparator());
 
 		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
@@ -236,6 +234,9 @@ public class ClassesPart extends AbstractEditingDomainPart {
 				treeViewer
 						.setContentProvider(new LazyAdapterFactoryContentProvider(
 								getAdapterFactory()));
+				// treeViewer
+				// .setContentProvider(new AdapterFactoryContentProvider(
+				// getAdapterFactory()));
 				treeViewer.setLabelProvider(new AdapterFactoryLabelProvider(
 						getAdapterFactory()));
 			}
