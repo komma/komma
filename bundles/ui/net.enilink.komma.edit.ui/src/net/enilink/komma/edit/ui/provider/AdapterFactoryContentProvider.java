@@ -138,6 +138,9 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 	 * IStructuredItemContentProvider.getElements}.
 	 */
 	public Object[] getElements(Object object) {
+		if (object instanceof Object[]) {
+			return (Object[]) object;
+		}
 		// Get the adapter from the factory.
 		IStructuredItemContentProvider structuredItemContentProvider = (IStructuredItemContentProvider) adapterFactory
 				.adapt(object, IStructuredItemContentProviderClass);
