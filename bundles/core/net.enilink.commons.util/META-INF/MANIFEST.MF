@@ -7,7 +7,6 @@ Require-Bundle: org.eclipse.core.runtime
 Bundle-ActivationPolicy: lazy
 Export-Package: net.enilink.commons,
  net.enilink.commons.extensions,
- net.enilink.commons.models,
  net.enilink.commons.util,
  org.apache.commons.codec,
  org.apache.commons.codec.binary,
