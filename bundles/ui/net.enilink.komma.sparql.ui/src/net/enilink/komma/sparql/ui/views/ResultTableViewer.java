@@ -36,9 +36,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
-import net.enilink.commons.models.DefaultTableModel;
 import net.enilink.commons.ui.editor.EditorWidgetFactory;
-import net.enilink.commons.ui.jface.viewers.TableContentProvider;
 
 public class ResultTableViewer implements IResultViewer {
 	private final class TableViewerComparator extends ViewerComparator {
@@ -107,8 +105,7 @@ public class ResultTableViewer implements IResultViewer {
 
 		public String getColumnText(Object element, int columnIndex) {
 			if (element instanceof DataRow) {
-				Object value = tableModel.getValue((DataRow) element,
-						columnIndex);
+				Object value = ((DataRow) element).data[columnIndex];
 				return String.valueOf(value);
 			}
 			return null;
@@ -144,12 +141,6 @@ public class ResultTableViewer implements IResultViewer {
 		int rowNr;
 	}
 
-	DefaultTableModel<DataRow> tableModel = new DefaultTableModel<DataRow>() {
-		@Override
-		public Object getValue(DataRow element, int columnIndex) {
-			return element.data[columnIndex];
-		}
-	};
 	TableViewer tableViewer;
 
 	@Override
@@ -163,9 +154,7 @@ public class ResultTableViewer implements IResultViewer {
 		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		tableViewer = new TableViewer(table);
-		tableViewer.setContentProvider(new TableContentProvider());
 		tableViewer.setLabelProvider(new TableLabelProvider());
-		tableViewer.setInput(tableModel);
 	}
 
 	@Override
@@ -181,22 +170,19 @@ public class ResultTableViewer implements IResultViewer {
 			DataRow row = new DataRow();
 			row.data = result;
 			row.rowNr = rowNr++;
-
 			dataRows.add(row);
 		}
 
-		if (tableViewer != null) {
-			// prevents firing of events
-			tableViewer.setInput(null);
+		tableViewer.getTable().removeAll();
+		for (TableColumn column : tableViewer.getTable().getColumns()) {
+			column.dispose();
 		}
-		tableModel.clear();
-		tableModel.setColumnNames(columnNames);
-
-		tableModel.addAll(dataRows);
-		if (tableViewer != null) {
-			tableViewer.setInput(tableModel);
+		for (String columnName : columnNames) {
+			TableColumn column = new TableColumn(tableViewer.getTable(),
+					SWT.LEFT);
+			column.setText(columnName);
 		}
-
+		tableViewer.add(dataRows.toArray(new Object[dataRows.size()]));
 		packColumns();
 
 		if (tableViewer != null) {
@@ -212,12 +198,9 @@ public class ResultTableViewer implements IResultViewer {
 									: (tableViewer.getTable()
 											.getSortDirection() == SWT.UP ? SWT.DOWN
 											: SWT.UP);
-
 							tableViewer.getTable().setSortDirection(
 									sortDirection);
-
 							tableViewer.getTable().setSortColumn(newColumn);
-
 							int index = 0;
 							for (TableColumn column : tableViewer.getTable()
 									.getColumns()) {
@@ -225,7 +208,6 @@ public class ResultTableViewer implements IResultViewer {
 									break;
 								index++;
 							}
-
 							tableViewer
 									.setComparator(new TableViewerComparator(
 											Collator.getInstance(),

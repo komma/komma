@@ -130,7 +130,11 @@ class SparqlPart extends AbstractEditorPart {
 
 			Set<IModel> models = new HashSet<IModel>();
 			for (IObject selected : selectedObjects) {
-				models.add(selected.getModel());
+				if (selected instanceof IModel) {
+					models.add((IModel) selected);
+				} else {
+					models.add(selected.getModel());
+				}
 			}
 			IUnitOfWork uow;
 			IEntityManager managerForQuery;
@@ -331,14 +335,12 @@ class SparqlPart extends AbstractEditorPart {
 					String className = element.getAttribute("class");
 					if (className == null || className.trim().isEmpty()) {
 						logMissingAttribute(element, "class");
-
 						return true;
 					}
 
 					try {
 						Object viewerObj = element
 								.createExecutableExtension("class");
-
 						if (!(viewerObj instanceof IResultViewer)) {
 							logError(element,
 									"Result viewer does not implement expected interface "
@@ -366,7 +368,6 @@ class SparqlPart extends AbstractEditorPart {
 					&& resultViewers.length > 0) {
 				resultViewers[0].show();
 			}
-
 			pageBook.showPage("data");
 		}
 
@@ -389,7 +390,6 @@ class SparqlPart extends AbstractEditorPart {
 			void show() {
 				if (!resultViewerContent.hasPage(viewer)) {
 					composite = resultViewerContent.createPage(viewer);
-
 					viewer.createContents(getWidgetFactory(), composite);
 				}
 				resultViewerContent.showPage(viewer);
@@ -398,18 +398,15 @@ class SparqlPart extends AbstractEditorPart {
 
 			void setData(String[] columnNames, Collection<Object[]> data) {
 				dataChanged = true;
-
 				this.columnNames = columnNames;
 				this.data = data;
-
 				applyData();
 			}
 
 			private void applyData() {
-				if (viewer != null
+				if (composite != null
 						&& resultViewerContent.getCurrentPage() == composite) {
 					viewer.setData(columnNames, data);
-
 					dataChanged = false;
 				}
 			}
