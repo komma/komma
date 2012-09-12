@@ -8,39 +8,32 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescription;
-import org.eclipse.core.runtime.content.IContentType;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.traits.Behaviour;
 
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.commons.iterator.IMap;
 import net.enilink.komma.dm.IDataManager;
-import net.enilink.komma.model.IContentHandler;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.MODELS;
-import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.concepts.Model;
-import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.INamespace;
-import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.KommaException;
-import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
+import net.enilink.komma.util.ISparqlConstants;
+import net.enilink.komma.util.KommaUtil;
 
 @Iri(MODELS.NAMESPACE + "SerializableModel")
-public abstract class SerializableModelSupport implements IModel, Model,
-		Behaviour<IModel> {
+public abstract class SerializableModelSupport implements IModel.Internal,
+		Model, Behaviour<IModel> {
 	/**
 	 * Iterator where <code>hasNext()</code> blocks until element gets available
 	 * in <code>queue</code>.
@@ -97,43 +90,11 @@ public abstract class SerializableModelSupport implements IModel, Model,
 		if (options == null) {
 			options = Collections.emptyMap();
 		}
-		IURIConverter uriConverter = getModelSet().getURIConverter();
 		IContentDescription contentDescription = (IContentDescription) options
 				.get(IContentDescription.class);
 		if (contentDescription == null) {
-			IContentType contentType = (IContentType) options
-					.get(IContentType.class);
-			if (contentType == null) {
-				String contentTypeId = (String) uriConverter
-						.contentDescription(getURI(), options).get(
-								IContentHandler.CONTENT_TYPE_PROPERTY);
-				if (contentTypeId != null) {
-					contentType = Platform.getContentTypeManager()
-							.getContentType(contentTypeId);
-				}
-			}
-			if (contentType != null) {
-				contentDescription = contentType.getDefaultDescription();
-			}
-		}
-		if (contentDescription == null) {
-			// use file name with extension as fall back
-			URI normalizedUri = uriConverter.normalize(getURI());
-			// simply use the filename to detect the correct RDF format
-			String lastSegment = normalizedUri.fileExtension();
-			if (lastSegment != null) {
-				IContentType[] matchingTypes = Platform.getContentTypeManager()
-						.findContentTypesFor(lastSegment);
-				QualifiedName mimeType = new QualifiedName(ModelCore.PLUGIN_ID,
-						"mimeType");
-				for (IContentType contentType : matchingTypes) {
-					IContentDescription desc = contentType
-							.getDefaultDescription();
-					if (desc.getProperty(mimeType) != null) {
-						contentDescription = desc;
-					}
-				}
-			}
+			contentDescription = ModelUtil.determineContentDescription(
+					getURI(), getModelSet().getURIConverter(), options);
 		}
 		return contentDescription;
 	}
@@ -241,27 +202,89 @@ public abstract class SerializableModelSupport implements IModel, Model,
 
 		final IDataManager dm = ((IModelSet.Internal) getModelSet())
 				.getDataManagerFactory().get();
+
 		try {
+			// only include possibly used namespaces
+			Set<URI> readableGraphs = getModule().getReadableGraphs();
 			for (INamespace namespace : dm.getNamespaces()) {
-				dataVisitor.visitNamespace(namespace);
+				if (KommaUtil.isW3cNamespace(namespace.getURI())
+						|| readableGraphs.contains(namespace.getURI()
+								.trimFragment())) {
+					dataVisitor.visitNamespace(namespace);
+				}
+			}
+
+			// expand blank nodes below IRIs up to expandDepth
+			// TODO also expand blank nodes below other blank nodes
+			int expandDepth = 10;
+			StringBuilder template = new StringBuilder();
+			StringBuilder projection = new StringBuilder();
+			StringBuilder patterns = new StringBuilder();
+			StringBuilder filterExpanded = new StringBuilder();
+			if (expandDepth > 0) {
+				filterExpanded.append("&& not exists {");
+				int filterDepth = expandDepth;
+				for (int i = 0; i < filterDepth; i++) {
+					String prevS = "?someS" + (i - 1);
+					if (i > 0) {
+						filterExpanded.append("optional {");
+					}
+					filterExpanded.append("?someS" + i).append(" ?someP" + i);
+					filterExpanded.append(" ").append(i == 0 ? "?s" : prevS)
+							.append(" . ");
+					if (i > 0) {
+						filterExpanded.append("filter isBlank(").append(prevS)
+								.append(") ");
+					}
+				}
+				for (int i = 1; i < filterDepth; i++) {
+					filterExpanded.append("}");
+				}
+				filterExpanded.append(" filter(");
+				for (int i = 0; i < filterDepth; i++) {
+					filterExpanded.append("isIRI(?someS" + i + ")");
+					if (i < filterDepth - 1) {
+						filterExpanded.append(" || ");
+					}
+				}
+				filterExpanded.append(")");
+				filterExpanded.append("}");
+
+				for (int i = 0; i < expandDepth; i++) {
+					String s = "?o" + i, p = "?p" + (i + 1), o = "?o" + (i + 1);
+					template.append(s).append(" " + p + " ").append(o)
+							.append(" . ");
+					projection.append(p).append(" ").append(o).append(" ");
+					patterns.append("optional {").append(s)
+							.append(" " + p + " ").append(o);
+					patterns.append(" filter isBlank(").append(s).append(") ");
+				}
+				for (int i = 0; i < expandDepth; i++) {
+					patterns.append("}");
+				}
 			}
 
 			// use sorting to improve readability of serialized output
 			IExtendedIterator<IStatement> stmts = dm
-					.createQuery(
-							"select ?s ?p ?o where { ?s ?p ?o } order by ?s ?p ?o",
+					.<IStatement> createQuery(
+							ISparqlConstants.PREFIX
+									+ "construct { ?s ?p ?o0 . "
+									+ template
+									+ "} where { "
+									+ "{ select distinct ?s ?p ?o0 "
+									+ projection
+									+ " where { graph ?g {?s ?p ?o0 filter isIRI(?s) "
+									+ patterns
+									+ "} } order by ?s ?p ?o0 "
+									+ projection
+									+ "} union " //
+									+ "{ select distinct ?s ?p ?o0 "
+									+ " where { graph ?g {?s ?p ?o0 filter (isBlank(?s) "
+									+ filterExpanded
+									+ ")} } order by ?s ?p ?o0 }" //
+									+ " }",
 							getURI().appendLocalPart("").toString(), false,
-							getURI()).evaluate()
-					.mapWith(new IMap<Object, IStatement>() {
-						@Override
-						public IStatement map(Object value) {
-							IBindings<?> bindings = (IBindings<?>) value;
-							return new Statement(
-									(IReference) bindings.get("s"),
-									(IReference) bindings.get("p"), bindings
-											.get("o"));
-						}
-					});
+							getURI()).setParameter("g", getURI()).evaluate();
 			while (stmts.hasNext()) {
 				dataVisitor.visitStatement(stmts.next());
 			}

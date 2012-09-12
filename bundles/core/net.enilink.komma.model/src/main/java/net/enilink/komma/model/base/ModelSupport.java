@@ -403,11 +403,6 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				response = new HashMap<Object, Object>();
 			}
 
-			// If an input stream can't be created, ensure that the resource is
-			// still considered loaded after the failure,
-			// and do all the same processing we'd do if we actually were able
-			// to create a valid input stream.
-			//
 			InputStream inputStream = null;
 			try {
 				inputStream = uriConverter.createInputStream(getURI(),
@@ -416,14 +411,11 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 								options));
 			} catch (IOException exception) {
 				setModelLoaded(true);
-
 				setModelLoading(true);
 				getErrors().clear();
 				getWarnings().clear();
 				setModelLoading(false);
-
 				setModified(false);
-
 				throw exception;
 			}
 

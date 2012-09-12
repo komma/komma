@@ -7,8 +7,10 @@ import java.io.OutputStreamWriter;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
@@ -273,6 +275,46 @@ public class ModelUtil {
 			return ontology[0].stringValue();
 		}
 		return null;
+	}
+
+	public static IContentDescription determineContentDescription(
+			URI resourceUri, IURIConverter uriConverter, Map<?, ?> options)
+			throws IOException {
+		if (options == null) {
+			options = Collections.emptyMap();
+		}
+		IContentDescription contentDescription = null;
+		String contentTypeId = (String) uriConverter.contentDescription(
+				resourceUri, options)
+				.get(IContentHandler.CONTENT_TYPE_PROPERTY);
+		IContentType contentType = null;
+		if (contentTypeId != null) {
+			contentType = Platform.getContentTypeManager().getContentType(
+					contentTypeId);
+		}
+		if (contentType != null) {
+			contentDescription = contentType.getDefaultDescription();
+		}
+		if (contentDescription == null) {
+			// use file name with extension as fall back
+			URI normalizedUri = uriConverter.normalize(resourceUri);
+			// simply use the filename to detect the correct RDF format
+			String lastSegment = normalizedUri.fileExtension();
+			if (lastSegment != null) {
+				IContentType[] matchingTypes = Platform.getContentTypeManager()
+						.findContentTypesFor(lastSegment);
+				QualifiedName mimeType = new QualifiedName(ModelCore.PLUGIN_ID,
+						"mimeType");
+				for (IContentType matchingType : matchingTypes) {
+					IContentDescription desc = matchingType
+							.getDefaultDescription();
+					if (desc.getProperty(mimeType) != null) {
+						contentDescription = desc;
+					}
+				}
+			}
+		}
+		return contentDescription;
 	}
 
 	public static <V extends IDataVisitor<?>> void readData(InputStream in,
