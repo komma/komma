@@ -489,8 +489,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	@Override
 	public boolean isOntLanguageTerm() {
 		net.enilink.komma.core.URI uri = getURI();
-		return uri != null
-				&& KommaUtil.isW3CLanguageTerm(uri.namespace().toString());
+		return uri != null && KommaUtil.isW3cNamespace(uri.namespace());
 	}
 
 	@Override

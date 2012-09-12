@@ -147,15 +147,14 @@ public class KommaUtil implements ISparqlConstants {
 		return getBundleMetaInfLocations(Platform.getBundle(symbolicName));
 	}
 
-	public static boolean isW3CLanguageTerm(String namespace) {
+	public static boolean isW3cNamespace(URI namespace) {
 		if (namespace == null) {
 			return false;
 		}
-
-		return namespace.equals(OWL.NAMESPACE)
-				|| namespace.equals(RDFS.NAMESPACE)
-				|| namespace.equals(RDF.NAMESPACE)
-				|| namespace.equals(XMLSCHEMA.NAMESPACE);
+		return namespace.equals(OWL.NAMESPACE_URI)
+				|| namespace.equals(RDFS.NAMESPACE_URI)
+				|| namespace.equals(RDF.NAMESPACE_URI)
+				|| namespace.equals(XMLSCHEMA.NAMESPACE_URI);
 	}
 
 	/**

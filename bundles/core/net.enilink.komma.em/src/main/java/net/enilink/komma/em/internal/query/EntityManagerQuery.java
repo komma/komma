@@ -99,10 +99,10 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 		int max = maxResults <= 0 ? 0 : maxResults + firstResult;
 
 		if (result instanceof ITupleResult) {
+			List<String> names = ((ITupleResult<?>) result).getBindingNames();
 			if (resultType != null
 					&& IBindings.class.isAssignableFrom(resultType)
-					|| (resultType == null && ((ITupleResult<?>) result)
-							.getBindingNames().size() > 1)) {
+					|| (resultType == null && names.size() > 1)) {
 				// returns an iterator of IBindings objects
 				// this is the default behavior in case of multiple bindings
 				iter = new TupleBindingsIterator(manager,
@@ -114,9 +114,20 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 						(ITupleResult<IBindings<IValue>>) result, max,
 						resultInfos);
 			} else {
+				ResultInfo info = null;
+				if (resultInfos != null) {
+					// only one binding is selected in the projection clause,
+					// try to use the information about this binding
+					if (names.size() == 1) {
+						info = resultInfos.get(names.get(0));
+					}
+					// use info for all bindings as fallback
+					if (info == null) {
+						info = resultInfos.get(null);
+					}
+				}
 				iter = new ProjectedTupleIterator(manager,
-						(ITupleResult<IBindings<IValue>>) result, max,
-						resultInfos != null ? resultInfos.get(null) : null);
+						(ITupleResult<IBindings<IValue>>) result, max, info);
 			}
 		} else if (result instanceof IGraphResult) {
 			if (resultType == null || IStatement.class.equals(resultType)) {
