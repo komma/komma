@@ -425,7 +425,11 @@ class ValueEditingSupport extends EditingSupport {
 
 			node.setStatus(status);
 			node.setEditorValue(status.isOK() ? null : value);
-			getViewer().update(node, null);
+			// a new value was directly added to the property node
+			if (status.isOK() && node instanceof PropertyNode) {
+				((PropertyNode) node).refreshChildren();
+			}
+			getViewer().refresh(node);
 		}
 	}
 
