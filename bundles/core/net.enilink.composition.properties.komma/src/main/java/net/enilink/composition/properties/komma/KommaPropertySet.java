@@ -68,7 +68,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 
 	protected static final String QUERY = "SELECT DISTINCT ?o WHERE { ?s ?p ?o }";
 	protected final IReference bean;
-	private List<E> cache;
+	private volatile List<E> cache;
 
 	@Inject
 	protected IEntityManager manager;
@@ -151,10 +151,11 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	}
 
 	public boolean contains(Object o) {
-		if (isCacheComplete()) {
-			return getCache().contains(o);
+		List<E> cache = getCache();
+		if (isCacheComplete(cache)) {
+			return cache.contains(o);
 		}
-		if (cache != null && getCache().contains(o)) {
+		if (cache != null && cache.contains(o)) {
 			return true;
 		}
 		try {
@@ -167,10 +168,11 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	}
 
 	public boolean containsAll(Collection<?> c) {
-		if (isCacheComplete()) {
-			return getCache().containsAll(c);
+		List<E> cache = getCache();
+		if (isCacheComplete(cache)) {
+			return cache.containsAll(c);
 		}
-		if (cache != null && getCache().containsAll(c)) {
+		if (cache != null && cache.containsAll(c)) {
 			return true;
 		}
 		for (Object element : c) {
@@ -344,14 +346,15 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 
 	@SuppressWarnings("unchecked")
 	public E getSingle() {
+		List<E> cache = getCache();
 		if (cache != null) {
-			if (getCache().isEmpty()) {
+			if (cache.isEmpty()) {
 				if (valueType != null && valueType.isPrimitive()) {
 					return (E) ConversionUtil.convertValue(valueType, 0, null);
 				}
 				return null;
 			} else {
-				return getCache().get(0);
+				return cache.get(0);
 			}
 		}
 		try {
@@ -385,13 +388,14 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 		setCache(new ArrayList<E>(values));
 	}
 
-	private boolean isCacheComplete() {
-		return cache != null && getCache().size() < getCacheLimit();
+	private boolean isCacheComplete(List<E> cache) {
+		return cache != null && cache.size() < getCacheLimit();
 	}
 
 	public boolean isEmpty() {
+		List<E> cache = getCache();
 		if (cache != null) {
-			return getCache().isEmpty();
+			return cache.isEmpty();
 		}
 		IExtendedIterator<E> iter = createElementsIterator();
 		try {
@@ -402,8 +406,9 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	}
 
 	public Iterator<E> iterator() {
-		if (isCacheComplete()) {
-			final Iterator<E> iter = getCache().iterator();
+		List<E> cache = getCache();
+		if (isCacheComplete(cache)) {
+			final Iterator<E> iter = cache.iterator();
 			return new Iterator<E>() {
 				private E e;
 
@@ -436,8 +441,9 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	}
 
 	protected void refreshCache() {
+		List<E> cache = getCache();
 		if (cache != null) {
-			for (E e : getCache()) {
+			for (E e : cache) {
 				refresh(e);
 			}
 		}
@@ -547,7 +553,8 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 				transaction.begin();
 			}
 			try {
-				if (cache == null || !getCache().isEmpty()) {
+				List<E> cache = getCache();
+				if (cache == null || !cache.isEmpty()) {
 					clear();
 				}
 				addAll(c);
@@ -581,7 +588,8 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 					transaction.begin();
 				}
 				try {
-					if (cache == null || !getCache().isEmpty()) {
+					List<E> cache = getCache();
+					if (cache == null || !cache.isEmpty()) {
 						clear();
 					}
 					add(o);
@@ -600,8 +608,9 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	}
 
 	public int size() {
-		if (isCacheComplete()) {
-			return getCache().size();
+		List<E> cache = getCache();
+		if (isCacheComplete(cache)) {
+			return cache.size();
 		}
 		IExtendedIterator<IReference> values = manager.createQuery(QUERY)
 				.setParameter("s", bean).setParameter("p", property)
@@ -618,8 +627,9 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	}
 
 	public Object[] toArray() {
-		if (isCacheComplete()) {
-			return getCache().toArray();
+		List<E> cache = getCache();
+		if (isCacheComplete(cache)) {
+			return cache.toArray();
 		}
 		IExtendedIterator<E> iter = createElementsIterator();
 		try {
@@ -630,8 +640,9 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 	}
 
 	public <T> T[] toArray(T[] a) {
-		if (isCacheComplete()) {
-			return getCache().toArray(a);
+		List<E> cache = getCache();
+		if (isCacheComplete(cache)) {
+			return cache.toArray(a);
 		}
 		IExtendedIterator<E> iter = createElementsIterator();
 		try {
@@ -643,8 +654,9 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 
 	@Override
 	public String toString() {
+		List<E> cache = getCache();
 		StringBuilder sb = new StringBuilder();
-		Iterator<E> iter = isCacheComplete() ? getCache().iterator()
+		Iterator<E> iter = isCacheComplete(cache) ? cache.iterator()
 				: createElementsIterator();
 		try {
 			if (iter.hasNext()) {
