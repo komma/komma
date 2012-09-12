@@ -38,10 +38,6 @@ public class OWLItemProviderAdapterFactory extends
 	@Override
 	protected Collection<IClass> getTypes(Object object) {
 		// classes
-		if (object instanceof IClass) {
-			return Arrays.asList(((IResource) object).getEntityManager().find(
-					OWL.TYPE_CLASS, IClass.class));
-		}
 		if (object instanceof AnnotationProperty) {
 			return Arrays.asList(((IResource) object).getEntityManager().find(
 					OWL.TYPE_ANNOTATIONPROPERTY, IClass.class));
@@ -54,6 +50,10 @@ public class OWLItemProviderAdapterFactory extends
 			return Arrays.asList(((IResource) object).getEntityManager().find(
 					OWL.TYPE_OBJECTPROPERTY, IClass.class));
 		}
+		if (object instanceof IClass) {
+			return Arrays.asList(((IResource) object).getEntityManager().find(
+					OWL.TYPE_CLASS, IClass.class));
+		}
 		// others
 		Set<IClass> classes = ((IResource) object).getDirectNamedClasses()
 				.toSet();
@@ -63,11 +63,11 @@ public class OWLItemProviderAdapterFactory extends
 	@Override
 	protected Object createItemProvider(Object object,
 			Collection<IClass> types, Object providerType) {
-		if (object instanceof IClass) {
-			return new OWLClassItemProvider(this, resourceLocator, types);
-		}
 		if (object instanceof IProperty) {
 			return new OWLPropertyItemProvider(this, resourceLocator, types);
+		}
+		if (object instanceof IClass) {
+			return new OWLClassItemProvider(this, resourceLocator, types);
 		}
 		if (object instanceof Ontology) {
 			return new OWLResourceItemProvider(this, resourceLocator, types);
