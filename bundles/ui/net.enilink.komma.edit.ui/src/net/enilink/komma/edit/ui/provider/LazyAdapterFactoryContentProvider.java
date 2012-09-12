@@ -28,6 +28,8 @@ public class LazyAdapterFactoryContentProvider extends
 	@Override
 	public void notifyChanged(
 			Collection<? extends IViewerNotification> notifications) {
+		// TODO recursively refresh affected elements instead of clearing the
+		// whole table
 		parentToChildren.clear();
 		super.notifyChanged(notifications);
 	}
@@ -45,6 +47,9 @@ public class LazyAdapterFactoryContentProvider extends
 					parentToChildren.put(child, new Object[0]);
 				}
 				((TreeViewer) viewer).setHasChildren(child, hasChildren);
+			} else {
+				((TreeViewer) viewer).setChildCount(child,
+						childrenOfChild.length);
 			}
 		}
 	}

@@ -102,6 +102,7 @@ public abstract class ModelContentProvider implements IContentProvider {
 	}
 
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+		unregisterListener();
 		this.viewer = viewer;
 
 		if (newInput instanceof IModel) {
@@ -112,17 +113,8 @@ public abstract class ModelContentProvider implements IContentProvider {
 			model = null;
 		}
 
-		if (oldInput instanceof IModel) {
-			((IModel) oldInput).getModelSet().removeListener(listener);
-		} else if (oldInput instanceof IObject) {
-			((IObject) oldInput).getModel().getModelSet()
-					.removeListener(listener);
-		}
-
 		internalInputChanged(viewer, oldInput, newInput);
-
 		registerListener = shouldRegisterListener(viewer);
-
 		registerListener();
 	}
 
@@ -147,7 +139,7 @@ public abstract class ModelContentProvider implements IContentProvider {
 	}
 
 	public void unregisterListener() {
-		if (listenerRegistered && registerListener && model != null) {
+		if (listenerRegistered && model != null) {
 			model.getModelSet().removeListener(listener);
 			listenerRegistered = false;
 		}

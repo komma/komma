@@ -192,7 +192,7 @@ public class StatementPatternContentProvider extends ModelContentProvider
 			querySb.append(" }");
 		}
 
-		querySb.append(" }");
+		querySb.append(" } ORDER BY ?s");
 		IQuery<?> query = em.createQuery(querySb.toString());
 		setParameters(query);
 		return query;
