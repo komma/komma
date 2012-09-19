@@ -27,8 +27,11 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySourceProvider;
 
@@ -409,6 +412,19 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 
 				if (element != null) {
 					if (notification.isContentRefresh()) {
+						// <FIX> for
+						// https://bugs.eclipse.org/bugs/show_bug.cgi?id=389482
+						if (viewer instanceof TreeViewer
+								&& (viewer.getControl().getStyle() & SWT.VIRTUAL) != 0) {
+							TreeItem widget = (TreeItem) structuredViewer
+									.testFindItem(element);
+							if (widget != null && !widget.isDisposed()) {
+								// force widget to be refreshed
+								widget.getChecked();
+							}
+						}
+						// </FIX>
+
 						structuredViewer.refresh(element,
 								notification.isLabelUpdate());
 					} else if (notification.isLabelUpdate()) {
