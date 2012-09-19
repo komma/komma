@@ -50,6 +50,7 @@ import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IReferenceable;
@@ -150,14 +151,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 		refreshEntity();
 	}
 
-	public boolean contains(Object o) {
-		List<E> cache = getCache();
-		if (isCacheComplete(cache)) {
-			return cache.contains(o);
-		}
-		if (cache != null && cache.contains(o)) {
-			return true;
-		}
+	protected boolean containsWithoutCache(Object o) {
 		try {
 			return manager.createQuery("ASK { ?s ?p ?o }")
 					.setParameter("s", bean).setParameter("p", property)
@@ -167,16 +161,41 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 		}
 	}
 
+	public boolean contains(Object o) {
+		if (!(o instanceof ILiteral)) {
+			// raw literals are handled different
+			List<E> cache = getCache();
+			if (isCacheComplete(cache)) {
+				return cache.contains(o);
+			}
+			if (cache != null && cache.contains(o)) {
+				return true;
+			}
+		}
+		return containsWithoutCache(o);
+	}
+
 	public boolean containsAll(Collection<?> c) {
 		List<E> cache = getCache();
-		if (isCacheComplete(cache)) {
-			return cache.containsAll(c);
-		}
-		if (cache != null && cache.containsAll(c)) {
-			return true;
+		if (cache != null) {
+			boolean allInCache = true;
+			for (Object e : c) {
+				if (e instanceof ILiteral) {
+					// raw literals are handled different
+					if (!containsWithoutCache(e)) {
+						return false;
+					}
+				} else if (!cache.contains(e)) {
+					allInCache = false;
+					break;
+				}
+			}
+			if (allInCache || isCacheComplete(cache)) {
+				return allInCache;
+			}
 		}
 		for (Object element : c) {
-			if (!contains(element)) {
+			if (!containsWithoutCache(element)) {
 				return false;
 			}
 		}
