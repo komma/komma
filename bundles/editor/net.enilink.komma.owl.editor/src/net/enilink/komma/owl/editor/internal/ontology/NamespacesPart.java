@@ -12,10 +12,7 @@
 package net.enilink.komma.owl.editor.internal.ontology;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -23,13 +20,19 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
@@ -37,9 +40,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
-import net.enilink.commons.models.AbstractTableModel;
-import net.enilink.commons.ui.jface.viewers.TableCellModifier;
-import net.enilink.commons.ui.jface.viewers.TableContentProvider;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.common.notify.INotification;
@@ -58,74 +58,71 @@ import net.enilink.komma.core.Namespace;
 import net.enilink.komma.core.URIImpl;
 
 public class NamespacesPart extends AbstractEditingDomainPart {
-	static final String[] TABLE_HEAD = { "Prefix", "Namespace" };
 	private IModel model;
 	private TableViewer namespaceViewer;
-	private NamespaceList namespaceList;
-	Action deleteItemAction, addItemAction;
+	private Action deleteItemAction, addItemAction;
+	private NamespaceListener listener = new NamespaceListener();
 
-	private class NamespaceList extends AbstractTableModel<INamespace>
-			implements INotificationListener<INotification> {
-		abstract class NamespaceCommand extends SimpleCommand {
-			@Override
-			protected CommandResult doExecuteWithResult(
-					IProgressMonitor progressMonitor, IAdaptable info)
-					throws ExecutionException {
-				try {
-					modifyNamespace();
-					// force model to be modified
-					model.setModified(true);
-				} catch (KommaException e) {
-					return CommandResult.newErrorCommandResult(e);
-				}
-				return CommandResult.newOKCommandResult();
+	enum ColumnType {
+		Prefix, Namespace
+	}
+
+	abstract class NamespaceCommand extends SimpleCommand {
+		@Override
+		protected CommandResult doExecuteWithResult(
+				IProgressMonitor progressMonitor, IAdaptable info)
+				throws ExecutionException {
+			try {
+				modifyNamespace();
+				// force model to be modified
+				model.setModified(true);
+			} catch (KommaException e) {
+				return CommandResult.newErrorCommandResult(e);
 			}
-
-			protected abstract void modifyNamespace();
+			return CommandResult.newOKCommandResult();
 		}
 
-		IModel model;
-		Set<INamespace> namespaces = Collections.emptySet();
+		protected abstract void modifyNamespace();
+	}
 
-		public void add(final INamespace namespace) {
-			for (INamespace existing : namespaces) {
-				if (namespace.getPrefix().equals(existing.getPrefix())) {
-					return;
-				}
-			}
-			execute(new NamespaceCommand() {
-				@Override
-				protected void modifyNamespace() {
-					model.getManager().setNamespace(namespace.getPrefix(),
-							namespace.getURI());
-				}
-			});
-		}
+	private class NamespaceEditingSupport extends EditingSupport {
+		ColumnType columnType;
+		TextCellEditor cellEditor;
 
-		public boolean remove(final INamespace element) {
-			return execute(new NamespaceCommand() {
-				@Override
-				protected void modifyNamespace() {
-					model.getManager().removeNamespace(element.getPrefix());
-				}
-			});
+		public NamespaceEditingSupport(TableViewer viewer, ColumnType columnType) {
+			super(viewer);
+			this.columnType = columnType;
+			this.cellEditor = new TextCellEditor(viewer.getTable(), SWT.NONE);
 		}
 
 		@Override
-		public boolean isValueEditable(INamespace element, int columnIndex) {
+		protected CellEditor getCellEditor(Object element) {
+			return cellEditor;
+		}
+
+		@Override
+		protected boolean canEdit(Object element) {
 			return true;
 		}
 
 		@Override
-		public void setValue(final INamespace element, final Object value,
-				int columnIndex) {
-			if (value == null) {
-				return;
+		protected Object getValue(Object element) {
+			final INamespace namespace = (INamespace) element;
+			switch (columnType) {
+			case Prefix:
+				return namespace.getPrefix();
+			case Namespace:
+				return namespace.getURI().toString();
 			}
+			return "";
+		}
 
-			switch (columnIndex) {
-			case 0:
-				for (INamespace existing : namespaces) {
+		@Override
+		protected void setValue(Object element, final Object value) {
+			final INamespace namespace = (INamespace) element;
+			switch (columnType) {
+			case Prefix:
+				for (INamespace existing : model.getManager().getNamespaces()) {
 					if (value.equals(existing.getPrefix())) {
 						return;
 					}
@@ -133,74 +130,50 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 				execute(new NamespaceCommand() {
 					@Override
 					protected void modifyNamespace() {
-						model.getManager().removeNamespace(element.getPrefix());
+						model.getManager().removeNamespace(
+								namespace.getPrefix());
 						model.getManager().setNamespace((String) value,
-								element.getURI());
+								namespace.getURI());
 					}
 				});
 				break;
-			case 1:
+			case Namespace:
 				execute(new NamespaceCommand() {
 					@Override
 					protected void modifyNamespace() {
-						model.getManager().removeNamespace(element.getPrefix());
-						model.getManager().setNamespace(element.getPrefix(),
+						model.getManager().removeNamespace(
+								namespace.getPrefix());
+						model.getManager().setNamespace(namespace.getPrefix(),
 								URIImpl.createURI((String) value));
 					}
 				});
 			}
+
 		}
 
-		void setModel(IModel model) {
-			unregisterListener();
-			this.model = model;
-			namespaces.clear();
-			if (this.model != null) {
-				this.model.getModelSet().addListener(this);
+	}
+
+	private boolean execute(NamespaceCommand command) {
+		try {
+			getEditingDomain().getCommandStack().execute(command, null, null);
+			return true;
+		} catch (ExecutionException e) {
+			OWLEditorPlugin.INSTANCE.log(e);
+		}
+		return false;
+	}
+
+	public void removeNamespace(final INamespace element) {
+		execute(new NamespaceCommand() {
+			@Override
+			protected void modifyNamespace() {
+				model.getManager().removeNamespace(element.getPrefix());
 			}
-			fireContentsChanged();
-		}
+		});
+	}
 
-		void unregisterListener() {
-			if (this.model != null) {
-				this.model.getModelSet().removeListener(this);
-			}
-		}
-
-		@Override
-		public Collection<? extends INamespace> getElements() {
-			if (model != null) {
-				namespaces = new LinkedHashSet<INamespace>(model.getManager()
-						.getNamespaces().toList());
-			}
-			return namespaces;
-		}
-
-		@Override
-		public int getColumnCount() {
-			return TABLE_HEAD.length;
-		}
-
-		@Override
-		public String getColumnName(int column) {
-			return TABLE_HEAD[column];
-		}
-
-		@Override
-		public Object getValue(INamespace element, int columnIndex) {
-			switch (columnIndex) {
-			case 0:
-				return element.getPrefix();
-			case 1:
-				return element.getURI().toString();
-			}
-			return "";
-		}
-
-		void dispose() {
-			unregisterListener();
-		}
-
+	private class NamespaceListener implements
+			INotificationListener<INotification> {
 		@Override
 		public NotificationFilter<INotification> getFilter() {
 			return NotificationFilter.instanceOf(INamespaceNotification.class);
@@ -209,18 +182,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		@Override
 		public void notifyChanged(
 				Collection<? extends INotification> notifications) {
-			fireContentsChanged();
-		}
-
-		boolean execute(NamespaceCommand command) {
-			try {
-				getEditingDomain().getCommandStack().execute(command, null,
-						null);
-				return true;
-			} catch (ExecutionException e) {
-				OWLEditorPlugin.INSTANCE.log(e);
-			}
-			return false;
+			namespaceViewer.refresh();
 		}
 	};
 
@@ -257,19 +219,39 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		table.setHeaderVisible(true);
 
 		namespaceViewer = new TableViewer(table);
-		CellEditor[] editors = new CellEditor[TABLE_HEAD.length];
-		editors[0] = new TextCellEditor(namespaceViewer.getTable());
-		editors[1] = new TextCellEditor(namespaceViewer.getTable());
-		namespaceViewer.setCellEditors(editors);
-		namespaceViewer.setCellModifier(new TableCellModifier<INamespace>(
-				namespaceViewer));
-		namespaceViewer.setColumnProperties(TABLE_HEAD);
-		namespaceViewer.setContentProvider(new TableContentProvider());
+		// setup table columns [prefix, namespace]
+		TableViewerColumn column = new TableViewerColumn(namespaceViewer,
+				SWT.LEFT);
+		column.getColumn().setText("Prefix");
+		column.setEditingSupport(new NamespaceEditingSupport(namespaceViewer,
+				ColumnType.Prefix));
+
+		column = new TableViewerColumn(namespaceViewer, SWT.LEFT);
+		column.getColumn().setAlignment(SWT.LEFT);
+		column.getColumn().setText("Namespace");
+		column.setEditingSupport(new NamespaceEditingSupport(namespaceViewer,
+				ColumnType.Namespace));
+
+		namespaceViewer.setContentProvider(new IStructuredContentProvider() {
+			@Override
+			public void inputChanged(Viewer viewer, Object oldInput,
+					Object newInput) {
+			}
+
+			@Override
+			public void dispose() {
+			}
+
+			@Override
+			public Object[] getElements(Object inputElement) {
+				if (inputElement instanceof IModel) {
+					return ((IModel) inputElement).getManager().getNamespaces()
+							.toList().toArray();
+				}
+				return new Object[0];
+			}
+		});
 		namespaceViewer.setLabelProvider(new NamespaceLabelProvider());
-
-		namespaceList = new NamespaceList();
-		namespaceViewer.setInput(namespaceList);
-
 		namespaceViewer
 				.addSelectionChangedListener(new ISelectionChangedListener() {
 					public void selectionChanged(SelectionChangedEvent event) {
@@ -278,6 +260,14 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 									.isEmpty());
 					}
 				});
+		namespaceViewer.setComparator(new ViewerComparator() {
+			@Override
+			public int compare(Viewer viewer, Object e1, Object e2) {
+				INamespace ns1 = (INamespace) e1;
+				INamespace ns2 = (INamespace) e2;
+				return ns1.getPrefix().compareToIgnoreCase(ns2.getPrefix());
+			}
+		});
 	}
 
 	public void createActions() {
@@ -312,7 +302,9 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 	}
 
 	void addItem() {
-		namespaceList.add(new Namespace("", "http://"));
+		INamespace newNs = new Namespace("", "http://");
+		namespaceViewer.add(newNs);
+		namespaceViewer.setSelection(new StructuredSelection(newNs), true);
 	}
 
 	void deleteItem() {
@@ -320,7 +312,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 				.getSelection();
 		for (Iterator<?> it = selection.iterator(); it.hasNext();) {
 			INamespace namespace = (INamespace) it.next();
-			namespaceList.remove(namespace);
+			removeNamespace(namespace);
 		}
 	}
 
@@ -332,24 +324,32 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		return super.setFocus();
 	}
 
-	@Override
-	public void dispose() {
-		namespaceList.dispose();
-		super.dispose();
-	}
-
 	public void setInput(Object input) {
+		if (this.model != null) {
+			this.model.getModelSet().removeListener(listener);
+		}
 		this.model = (IModel) input;
+		if (this.model != null) {
+			this.model.getModelSet().addListener(listener);
+		}
 		setStale(true);
 	}
 
 	@Override
 	public void refresh() {
-		namespaceList.setModel(model);
+		namespaceViewer.setInput(model);
 		for (TableColumn column : namespaceViewer.getTable().getColumns()) {
 			column.pack();
 		}
-
 		super.refresh();
+	}
+
+	@Override
+	public void dispose() {
+		if (this.model != null) {
+			this.model.getModelSet().removeListener(listener);
+			this.model = null;
+		}
+		super.dispose();
 	}
 }

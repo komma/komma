@@ -144,8 +144,6 @@ public class ClassesPart extends AbstractEditingDomainPart {
 																.toString(),
 														(Object) treeViewer
 																.getSelection());
-									// TODO: Typauswahl
-
 									getShell().getDisplay().asyncExec(
 											new Runnable() {
 												@Override

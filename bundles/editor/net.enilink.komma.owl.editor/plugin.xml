@@ -28,9 +28,9 @@
    </view>
    <view
          category="net.enilink.komma.owl.editor"
-         class="net.enilink.komma.owl.editor.internal.individuals.IndividualsView"
-         id="net.enilink.komma.owl.editor.views.IndividualsView"
-         name="Individuals">
+         class="net.enilink.komma.owl.editor.internal.instances.InstancesView"
+         id="net.enilink.komma.owl.editor.views.InstancesView"
+         name="Instances">
    </view>
    <view
          category="net.enilink.komma.owl.editor"
@@ -67,9 +67,15 @@
          name="Datatype Properties">
    </view>
    <view
-         class="net.enilink.komma.owl.editor.internal.individuals.InstanceTreeView"
+         class="net.enilink.komma.owl.editor.internal.instances.InstanceTreeView"
          id="net.enilink.komma.owl.editor.views.InstanceTreeView"
          name="Instance Tree"
+         restorable="true">
+   </view>
+   <view
+         class="net.enilink.komma.owl.editor.internal.instances.InstanceTableView"
+         id="net.enilink.komma.owl.editor.views.InstanceTableView"
+         name="Instance Table"
          restorable="true">
    </view>
 </extension>

@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.owl.editor.internal.individuals;
+package net.enilink.komma.owl.editor.internal.instances;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +52,7 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.StatementPattern;
 import net.enilink.komma.core.URI;
 
-public class IndividualsPart extends AbstractEditingDomainPart {
+public class InstancesPart extends AbstractEditingDomainPart {
 	private StructuredViewer viewer;
 	private IAdapterFactory adapterFactory;
 	private IClass input;
@@ -77,7 +77,7 @@ public class IndividualsPart extends AbstractEditingDomainPart {
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
-				getForm().fireSelectionChanged(IndividualsPart.this,
+				getForm().fireSelectionChanged(InstancesPart.this,
 						event.getSelection());
 			}
 		});

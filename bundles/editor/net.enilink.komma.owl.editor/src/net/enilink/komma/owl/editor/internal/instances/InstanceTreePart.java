@@ -1,4 +1,4 @@
-package net.enilink.komma.owl.editor.internal.individuals;
+package net.enilink.komma.owl.editor.internal.instances;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ import net.enilink.komma.edit.ui.provider.LazyAdapterFactoryContentProvider;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.util.ISparqlConstants;
 
-public class InstanceTreePart extends IndividualsPart {
+public class InstanceTreePart extends InstancesPart {
 	static String QUERY_INSTANCES = ISparqlConstants.PREFIX
 	// +
 	// "CONSTRUCT {?r a <urn:komma:Result> . ?r a ?t} WHERE {?r a ?c FILTER NOT EXISTS {[a ?c; komma:contains ?r]} OPTIONAL {?r a ?t FILTER isIRI(?t)}}";
@@ -47,17 +47,14 @@ public class InstanceTreePart extends IndividualsPart {
 	protected StructuredViewer createViewer(Composite parent) {
 		Tree tree = getWidgetFactory().createTree(parent,
 				SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL);
-
 		TreeViewer viewer = new TreeViewer(tree);
 		viewer.setUseHashlookup(true);
-
 		return viewer;
 	}
 
 	@Override
 	protected void adapterFactoryChanged() {
 		super.adapterFactoryChanged();
-
 		getViewer()
 				.setContentProvider(new ContentProvider(getAdapterFactory()));
 	}

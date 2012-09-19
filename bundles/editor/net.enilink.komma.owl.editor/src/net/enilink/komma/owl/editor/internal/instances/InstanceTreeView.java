@@ -1,4 +1,4 @@
-package net.enilink.komma.owl.editor.internal.individuals;
+package net.enilink.komma.owl.editor.internal.instances;
 
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainView;
 

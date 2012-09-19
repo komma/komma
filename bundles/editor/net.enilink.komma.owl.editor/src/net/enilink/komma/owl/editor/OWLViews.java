@@ -14,6 +14,7 @@ public abstract class OWLViews {
 			+ "DatatypePropertiesView";
 	public static String ID_OBJECTPROPERTIES = PREFIX + "ObjectPropertiesView";
 	public static String ID_IMPORTS = PREFIX + "ImportsView";
-	public static String ID_INDIVIDUALS = PREFIX + "IndividualsView";
+	public static String ID_INSTANCES = PREFIX + "InstancesView";
 	public static String ID_INSTANCETREE = PREFIX + "InstanceTreeView";
+	public static String ID_INSTANCETABLE = PREFIX + "InstanceTableView";
 }

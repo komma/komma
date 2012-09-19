@@ -39,8 +39,9 @@ public class OWLPerspective implements IPerspectiveFactory {
 
 		IFolderLayout bottomLeft = layout.createFolder("bottomLeft",
 				IPageLayout.BOTTOM, 0.50f, "left");
-		bottomLeft.addView(OWLViews.ID_INDIVIDUALS);
+		bottomLeft.addView(OWLViews.ID_INSTANCES);
 		bottomLeft.addView(OWLViews.ID_INSTANCETREE);
+		bottomLeft.addView(OWLViews.ID_INSTANCETABLE);
 
 		IFolderLayout bottom = layout.createFolder("bottom",
 				IPageLayout.BOTTOM, 0.50f, editorArea);
@@ -50,7 +51,7 @@ public class OWLPerspective implements IPerspectiveFactory {
 		bottom.addView(EditUIViews.ID_DETAILS);
 		bottom.addView(OWLViews.ID_IMPORTS);
 		bottom.addView(OWLViews.ID_NAMESPACES);
-		
+
 		if (CommonsUi.IS_RAP_RUNNING) {
 			layout.addFastView("net.enilink.rap.workbench.modelsView");
 		}
