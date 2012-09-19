@@ -10,17 +10,19 @@
  *******************************************************************************/
 package net.enilink.komma.edit.provider;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import net.enilink.komma.common.adapter.IAdapter;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.core.IReferenceable;
 
 public abstract class AdapterFactory implements IAdapterFactory, IDisposable {
-	private Map<Object, List<Object>> object2adapters = new WeakHashMap<Object, List<Object>>();
+	private Map<Object, List<Object>> object2adapters = Collections
+			.synchronizedMap(new WeakHashMap<Object, List<Object>>());
 
 	@Override
 	public Object adapt(Object object, Object type) {
@@ -30,8 +32,7 @@ public abstract class AdapterFactory implements IAdapterFactory, IDisposable {
 		}
 
 		Object objectReference = object instanceof IReferenceable ? ((IReferenceable) object)
-				.getReference()
-				: object;
+				.getReference() : object;
 		List<Object> adapters = object2adapters.get(objectReference);
 
 		Object adapter = null;
@@ -58,7 +59,7 @@ public abstract class AdapterFactory implements IAdapterFactory, IDisposable {
 			}
 
 			if (adapters == null) {
-				adapters = new ArrayList<Object>(1);
+				adapters = new CopyOnWriteArrayList<Object>();
 				object2adapters.put(objectReference, adapters);
 			}
 			adapters.add(adapter);
