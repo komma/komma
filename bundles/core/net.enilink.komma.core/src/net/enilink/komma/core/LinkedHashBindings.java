@@ -63,4 +63,9 @@ public class LinkedHashBindings<T> implements IBindings<T> {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + ": " + values.toString();
+	}
 }
