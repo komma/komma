@@ -166,7 +166,6 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 					.prefetch(HAS_NAMED_SUBCLASSES_DESC()).//
 					prefetch(ResourceSupport.DIRECT_NAMED_CLASSES_DESC()).//
 					toQueryString();
-			System.out.println(queryString);
 		}
 
 		IQuery<?> query = getEntityManager().createQuery(queryString,
