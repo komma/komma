@@ -23,7 +23,6 @@ Import-Package: com.google.inject,
  net.enilink.komma.owl.editor,
  net.enilink.komma.owl.editor.internal,
  net.enilink.komma.owl.editor.internal.classes,
- net.enilink.komma.owl.editor.internal.individuals,
  net.enilink.komma.owl.editor.internal.ontology,
  net.enilink.komma.owl.editor.internal.properties
 Export-Package: net.enilink.komma.owl.editor.rcp

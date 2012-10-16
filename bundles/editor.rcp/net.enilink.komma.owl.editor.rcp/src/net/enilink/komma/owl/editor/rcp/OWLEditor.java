@@ -17,7 +17,6 @@ import net.enilink.komma.model.IModelSetFactory;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelSetModule;
-import net.enilink.komma.owl.editor.IModelProvider;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
 import net.enilink.komma.owl.editor.internal.classes.ClassesPage;
 import net.enilink.komma.owl.editor.internal.ontology.OntologyPage;
@@ -34,8 +33,7 @@ import net.enilink.komma.workbench.ProjectModelSetSupport;
  * 
  * @author Ken Wenzel
  */
-public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport,
-		IModelProvider {
+public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 	protected OntologyPage ontologyPage;
 	protected ClassesPage classesPage;
 	protected ObjectPropertiesPage objectPropertiesPage;
@@ -115,8 +113,12 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport,
 		};
 	}
 
-	public IModel getModel() {
-		return getEditorSupport().getModel();
+	@Override
+	public Object getAdapter(Class key) {
+		if (key == IModel.class) {
+			return getEditorSupport().getModel();
+		}
+		return super.getAdapter(key);
 	}
 
 	@Override
