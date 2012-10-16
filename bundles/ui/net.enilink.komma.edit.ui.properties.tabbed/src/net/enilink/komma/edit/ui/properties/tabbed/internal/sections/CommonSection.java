@@ -29,14 +29,12 @@ import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 
 import net.enilink.commons.ui.editor.EditorForm;
-import net.enilink.komma.edit.ui.properties.internal.parts.ObjectTypesPart;
 import net.enilink.komma.core.IEntity;
 
 public class CommonSection extends AbstractPropertySection {
 	IEntity resource;
 	boolean dirty = false;
 	Text nameText;
-	ObjectTypesPart typesPart;
 
 	@Override
 	public void createControls(Composite parent,
@@ -85,9 +83,6 @@ public class CommonSection extends AbstractPropertySection {
 		Composite composite = getWidgetFactory().createComposite(parent);
 		composite.setLayoutData(gridData);
 		EditorForm editorForm = new EditorForm(parent, getWidgetFactory());
-		typesPart = new ObjectTypesPart();
-		typesPart.initialize(editorForm);
-		typesPart.createContents(composite);
 	}
 
 	@Override
@@ -95,13 +90,11 @@ public class CommonSection extends AbstractPropertySection {
 		super.setInput(part, selection);
 		resource = (IEntity) ((IStructuredSelection) getSelection())
 				.getFirstElement();
-		typesPart.setInput(resource);
 	}
 
 	@Override
 	public void refresh() {
 		refreshName(resource);
-		typesPart.refresh();
 		super.refresh();
 	}
 

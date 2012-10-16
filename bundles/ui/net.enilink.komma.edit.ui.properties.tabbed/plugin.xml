@@ -32,12 +32,6 @@
                label="Form">
          </propertyTab>
          <propertyTab
-               afterTab=""
-               category="properties"
-               id="propertiesTab"
-               label="Properties">
-         </propertyTab>
-         <propertyTab
                category="properties"
                id="detailsTab"
                label="Details">
@@ -54,14 +48,6 @@
                tab="propertiesTab">
              <input
                   type="java.lang.Object">
-            </input>
-         </propertySection>
-          <propertySection
-               class="net.enilink.komma.edit.ui.properties.tabbed.internal.sections.PropertiesSection"
-               id="formSection"
-               tab="formTab">
-             <input
-                  type="net.enilink.komma.model.IObject">
             </input>
          </propertySection>
           <propertySection

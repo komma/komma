@@ -12,7 +12,6 @@ package net.enilink.komma.edit.ui.properties.tabbed.internal.sections;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -25,17 +24,15 @@ import net.enilink.commons.ui.editor.EditorForm;
 import net.enilink.commons.ui.editor.EditorPartBook;
 import net.enilink.commons.ui.editor.IEditorPart;
 import net.enilink.commons.ui.editor.IEditorPartProvider;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
 import net.enilink.komma.edit.ui.properties.internal.context.IPropertiesContext;
 import net.enilink.komma.edit.ui.properties.internal.context.PropertiesContext;
-import net.enilink.komma.edit.ui.properties.internal.parts.DetailPropertiesPart;
+import net.enilink.komma.edit.ui.properties.internal.parts.PropertyTreePart;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 
 public class DetailPropertiesSection extends AbstractPropertySection {
-	private IResource resource;
 	private EditorPartBook detailsPartBook;
 	private IPageSite pageSite;
 
@@ -78,7 +75,7 @@ public class DetailPropertiesSection extends AbstractPropertySection {
 
 			@Override
 			public IEditorPart getPart(Object key) {
-				return new DetailPropertiesPart();
+				return new PropertyTreePart();
 			}
 		});
 
@@ -87,8 +84,6 @@ public class DetailPropertiesSection extends AbstractPropertySection {
 	@Override
 	public void setInput(IWorkbenchPart part, ISelection selection) {
 		super.setInput(part, selection);
-		resource = (IResource) ((IStructuredSelection) getSelection())
-				.getFirstElement();
 		detailsPartBook.selectionChanged(selection);
 	}
 
@@ -103,8 +98,10 @@ public class DetailPropertiesSection extends AbstractPropertySection {
 
 	@Override
 	public void aboutToBeShown() {
-		if (pageSite.getActionBars().getToolBarManager().find(
-				this.getClass().getPackage().getName()
+		if (pageSite
+				.getActionBars()
+				.getToolBarManager()
+				.find(this.getClass().getPackage().getName()
 						+ ".hideAnonymousProperties") == null) {
 
 			Action hideAnonymousAction = new Action("", Action.AS_CHECK_BOX) {
@@ -121,14 +118,16 @@ public class DetailPropertiesSection extends AbstractPropertySection {
 			hideAnonymousAction.setId(this.getClass().getPackage().getName()
 					+ ".hideAnonymousProperties");
 
-			pageSite.getActionBars().getToolBarManager().add(
-					hideAnonymousAction);
+			pageSite.getActionBars().getToolBarManager()
+					.add(hideAnonymousAction);
 
 			pageSite.getActionBars().updateActionBars();
 		}
 
-		if (pageSite.getActionBars().getToolBarManager().find(
-				this.getClass().getPackage().getName()
+		if (pageSite
+				.getActionBars()
+				.getToolBarManager()
+				.find(this.getClass().getPackage().getName()
 						+ ".hideInferedProperties") == null) {
 
 			Action excludeInferenceAction = new Action("", Action.AS_CHECK_BOX) {
@@ -147,8 +146,8 @@ public class DetailPropertiesSection extends AbstractPropertySection {
 			excludeInferenceAction.setId(this.getClass().getPackage().getName()
 					+ ".hideInferedProperties");
 
-			pageSite.getActionBars().getToolBarManager().add(
-					excludeInferenceAction);
+			pageSite.getActionBars().getToolBarManager()
+					.add(excludeInferenceAction);
 
 			pageSite.getActionBars().updateActionBars();
 		}
@@ -157,12 +156,14 @@ public class DetailPropertiesSection extends AbstractPropertySection {
 
 	@Override
 	public void aboutToBeHidden() {
-		pageSite.getActionBars().getToolBarManager().remove(
-				this.getClass().getPackage().getName()
+		pageSite.getActionBars()
+				.getToolBarManager()
+				.remove(this.getClass().getPackage().getName()
 						+ ".hideAnonymousProperties");
 
-		pageSite.getActionBars().getToolBarManager().remove(
-				this.getClass().getPackage().getName()
+		pageSite.getActionBars()
+				.getToolBarManager()
+				.remove(this.getClass().getPackage().getName()
 						+ ".hideInferedProperties");
 
 		pageSite.getActionBars().updateActionBars();
