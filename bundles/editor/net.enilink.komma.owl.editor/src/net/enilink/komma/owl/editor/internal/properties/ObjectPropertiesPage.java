@@ -10,7 +10,7 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 
 import net.enilink.commons.ui.editor.EditorForm;
 import net.enilink.commons.ui.editor.FormPart;
-import net.enilink.komma.owl.editor.IModelProvider;
+import net.enilink.komma.model.IModel;
 import net.enilink.komma.owl.editor.internal.KommaFormPage;
 
 /**
@@ -43,7 +43,7 @@ public class ObjectPropertiesPage extends KommaFormPage {
 		part = new ObjectPropertiesPart();
 		part.initialize(editorForm);
 		part.createContents(composite);
-		part.setInput(((IModelProvider) getEditor()).getModel());
+		part.setInput(getEditor().getAdapter(IModel.class));
 		part.refresh();
 	}
 }

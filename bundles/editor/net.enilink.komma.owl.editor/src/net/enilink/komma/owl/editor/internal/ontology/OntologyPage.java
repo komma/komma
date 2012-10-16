@@ -9,7 +9,7 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 
 import net.enilink.commons.ui.editor.EditorForm;
 import net.enilink.commons.ui.editor.FormPart;
-import net.enilink.komma.owl.editor.IModelProvider;
+import net.enilink.komma.model.IModel;
 import net.enilink.komma.owl.editor.internal.KommaFormPage;
 
 /**
@@ -43,7 +43,7 @@ public class OntologyPage extends KommaFormPage {
 		ontologyPart = new OntologyPart();
 		ontologyPart.initialize(editorForm);
 		ontologyPart.createContents(composite);
-		ontologyPart.setInput(((IModelProvider) getEditor()).getModel());
+		ontologyPart.setInput(getEditor().getAdapter(IModel.class));
 		ontologyPart.refresh();
 	}
 }
