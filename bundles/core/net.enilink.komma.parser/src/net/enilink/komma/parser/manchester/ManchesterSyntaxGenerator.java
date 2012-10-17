@@ -71,7 +71,8 @@ public class ManchesterSyntaxGenerator {
 		if (clazz.getURI() == null) {
 			if (clazz instanceof Restriction) {
 				return restriction((Restriction) clazz);
-			} else if (clazz instanceof Datatype) {
+			} else if (clazz instanceof Datatype
+					&& ((Datatype) clazz).getOwlOnDatatype() != null) {
 				append(toString(((Datatype) clazz).getOwlOnDatatype()));
 				return datatypeRestrictions(((Datatype) clazz)
 						.getOwlWithRestrictions());
@@ -80,7 +81,8 @@ public class ManchesterSyntaxGenerator {
 				if (owlClass.getOwlUnionOf() != null) {
 					return setOfClasses(owlClass.getOwlUnionOf(), "or", 1, prio);
 				} else if (owlClass.getOwlIntersectionOf() != null) {
-					return setOfClasses(owlClass.getOwlIntersectionOf(), "and", 2, prio);
+					return setOfClasses(owlClass.getOwlIntersectionOf(), "and",
+							2, prio);
 				} else if (owlClass.getOwlComplementOf() != null) {
 					append("not ");
 					return clazz(owlClass.getOwlComplementOf(), 3);
@@ -106,26 +108,30 @@ public class ManchesterSyntaxGenerator {
 	 * @return The generator instance.
 	 */
 	private ManchesterSyntaxGenerator datatypeRestrictions(List<?> list) {
-		append("[");
-		Iterator<? extends Object> it = list.iterator();
-		while (it.hasNext()) {
-			IEntity dtRestriction = (IEntity) it.next();
-			for (IBindings<?> bindings : dtRestriction.getEntityManager()
-					.createQuery(FACET_QUERY).setParameter("s", dtRestriction)
-					.evaluate(IBindings.class)) {
-				IReference facet = (IReference) bindings.get("facet");
-				String facetShortHand = FACET_SHORTHANDS.get(facet.getURI()
-						.localPart());
-				if (facetShortHand == null) {
-					facetShortHand = facet.getURI().localPart();
-				}
-				append(facetShortHand).append(toString(bindings.get("value")));
-				if (it.hasNext()) {
-					append(", ");
+		if (list != null) {
+			append("[");
+			Iterator<? extends Object> it = list.iterator();
+			while (it.hasNext()) {
+				IEntity dtRestriction = (IEntity) it.next();
+				for (IBindings<?> bindings : dtRestriction.getEntityManager()
+						.createQuery(FACET_QUERY)
+						.setParameter("s", dtRestriction)
+						.evaluate(IBindings.class)) {
+					IReference facet = (IReference) bindings.get("facet");
+					String facetShortHand = FACET_SHORTHANDS.get(facet.getURI()
+							.localPart());
+					if (facetShortHand == null) {
+						facetShortHand = facet.getURI().localPart();
+					}
+					append(facetShortHand).append(
+							toString(bindings.get("value")));
+					if (it.hasNext()) {
+						append(", ");
+					}
 				}
 			}
+			append("]");
 		}
-		append("]");
 		return this;
 	}
 
@@ -172,10 +178,10 @@ public class ManchesterSyntaxGenerator {
 
 			if (restriction.getOwlAllValuesFrom() != null) {
 				append("only").append(" ");
-				clazz(restriction.getOwlAllValuesFrom(), 0);
+				clazz(restriction.getOwlAllValuesFrom(), 4);
 			} else if (restriction.getOwlSomeValuesFrom() != null) {
 				append("some").append(" ");
-				clazz(restriction.getOwlSomeValuesFrom(), 0);
+				clazz(restriction.getOwlSomeValuesFrom(), 4);
 			} else if (restriction.getOwlMaxCardinality() != null) {
 				append("max").append(" ");
 				append(restriction.getOwlMaxCardinality());
@@ -206,7 +212,7 @@ public class ManchesterSyntaxGenerator {
 		}
 		return value(restriction);
 	}
-	
+
 	private ManchesterSyntaxGenerator setOfClasses(List<? extends Class> set,
 			String operator, int operatorPrio, int prio) {
 		Iterator<? extends Class> it = set.iterator();
