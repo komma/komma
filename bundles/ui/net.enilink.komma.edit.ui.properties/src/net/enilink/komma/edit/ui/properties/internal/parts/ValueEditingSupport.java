@@ -35,14 +35,16 @@ import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.properties.IPropertyEditingSupport;
+import net.enilink.komma.edit.properties.IResourceProposal;
+import net.enilink.komma.edit.properties.LiteralEditingSupport;
+import net.enilink.komma.edit.properties.ManchesterEditingSupport;
+import net.enilink.komma.edit.properties.ResourceEditingSupport;
 import net.enilink.komma.edit.provider.IItemLabelProvider;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
+import net.enilink.komma.edit.ui.assist.JFaceContentProposal;
+import net.enilink.komma.edit.ui.assist.JFaceProposalProvider;
 import net.enilink.komma.edit.ui.properties.internal.wizards.PropertyUtil;
-import net.enilink.komma.edit.ui.properties.support.IPropertyEditingSupport;
-import net.enilink.komma.edit.ui.properties.support.IResourceProposal;
-import net.enilink.komma.edit.ui.properties.support.LiteralEditingSupport;
-import net.enilink.komma.edit.ui.properties.support.ManchesterEditingSupport;
-import net.enilink.komma.edit.ui.properties.support.ResourceEditingSupport;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 import net.enilink.komma.edit.ui.util.EditUIUtil;
 import net.enilink.komma.core.IEntity;
@@ -66,14 +68,14 @@ class ValueEditingSupport extends EditingSupport {
 
 	private boolean editPredicate;
 
-	private IResourceProposal acceptedValueProposal;
+	private IResourceProposal acceptedResourceProposal;
 
 	private ICellEditorListener cellEditorListener = new ICellEditorListener() {
 		@Override
 		public void editorValueChanged(boolean oldValidState,
 				boolean newValidState) {
 			// user modifications reset the last value proposal
-			acceptedValueProposal = null;
+			acceptedResourceProposal = null;
 		}
 
 		@Override
@@ -142,10 +144,12 @@ class ValueEditingSupport extends EditingSupport {
 				new IContentProposalListener() {
 					@Override
 					public void proposalAccepted(IContentProposal proposal) {
-						if (proposal instanceof IResourceProposal
-								&& ((IResourceProposal) proposal)
+						Object delegate = proposal instanceof JFaceContentProposal ? ((JFaceContentProposal) proposal)
+								.getDelegate() : proposal;
+						if (delegate instanceof IResourceProposal
+								&& ((IResourceProposal) delegate)
 										.getUseAsValue()) {
-							acceptedValueProposal = (IResourceProposal) proposal;
+							acceptedResourceProposal = (IResourceProposal) delegate;
 						}
 					}
 				});
@@ -220,7 +224,7 @@ class ValueEditingSupport extends EditingSupport {
 
 	@Override
 	protected CellEditor getCellEditor(Object element) {
-		acceptedValueProposal = null;
+		acceptedResourceProposal = null;
 		currentElement = unwrap(element);
 
 		if (createNew) {
@@ -244,11 +248,19 @@ class ValueEditingSupport extends EditingSupport {
 					proposalAdapter.setLabelProvider(new LabelProvider() {
 						@Override
 						public String getText(Object element) {
+							if (element instanceof JFaceContentProposal) {
+								element = ((JFaceContentProposal) element)
+										.getDelegate();
+							}
 							return labelProvider.getText(element);
 						}
 
 						@Override
 						public Image getImage(Object element) {
+							if (element instanceof JFaceContentProposal) {
+								element = ((JFaceContentProposal) element)
+										.getDelegate();
+							}
 							return ExtendedImageRegistry.getInstance()
 									.getImage(labelProvider.getImage(element));
 						}
@@ -256,8 +268,9 @@ class ValueEditingSupport extends EditingSupport {
 				} else {
 					proposalAdapter.setLabelProvider(null);
 				}
-				proposalAdapter.setContentProposalProvider(proposals
-						.getProposalProvider());
+				proposalAdapter
+						.setContentProposalProvider(JFaceProposalProvider
+								.wrap(proposals.getProposalProvider()));
 				proposalAdapter.setAutoActivationCharacters(proposals
 						.getAutoActivationCharacters());
 			} else {
@@ -320,10 +333,9 @@ class ValueEditingSupport extends EditingSupport {
 		ICommand newObjectCommand = null;
 		if (currentEditor == textCellEditor) {
 			// if value is completely defined by last accepted proposal
-			if (acceptedValueProposal != null) {
+			if (acceptedResourceProposal != null) {
 				newObjectCommand = new IdentityCommand(
-						((IResourceProposal) acceptedValueProposal)
-								.getResource());
+						acceptedResourceProposal.getResource());
 			} else {
 				// create value with external property editing support
 				newObjectCommand = propertyEditingSupport
