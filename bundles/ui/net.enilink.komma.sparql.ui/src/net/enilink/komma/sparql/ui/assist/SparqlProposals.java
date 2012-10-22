@@ -19,13 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.jface.fieldassist.ContentProposal;
-import org.eclipse.jface.fieldassist.IContentProposal;
 import org.parboiled.support.ParsingResult;
 
 import net.enilink.komma.KommaCore;
-import net.enilink.komma.edit.ui.assist.ISemanticProposal;
-import net.enilink.komma.edit.ui.assist.ISemanticProposalProvider;
+import net.enilink.komma.edit.assist.ContentProposal;
+import net.enilink.komma.edit.assist.IContentProposal;
+import net.enilink.komma.edit.assist.ISemanticProposal;
+import net.enilink.komma.edit.assist.ISemanticProposalProvider;
 import net.enilink.komma.parser.sparql.tree.Variable;
 import net.enilink.komma.parser.sparql.tree.visitor.TreeWalker;
 import net.enilink.komma.parser.sparql.tree.visitor.Visitable;
@@ -96,8 +96,7 @@ public class SparqlProposals implements ISemanticProposalProvider {
 					.process((Visitable) result.resultValue)) {
 				String content = '?' + var;
 				// content = content.substring(prefix.length());
-				results.add(new ContentProposal(content, content, content,
-						content.length()));
+				results.add(new ContentProposal(content, content, content));
 			}
 			return results.toArray(new IContentProposal[results.size()]);
 		}

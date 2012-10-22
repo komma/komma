@@ -62,7 +62,8 @@ import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.ui.assist.ContentProposals;
-import net.enilink.komma.edit.ui.assist.ParboiledProposalProvider;
+import net.enilink.komma.edit.assist.ParboiledProposalProvider;
+import net.enilink.komma.edit.ui.assist.JFaceProposalProvider;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelCore;
@@ -506,11 +507,10 @@ class SparqlPart extends AbstractEditorPart {
 		});
 		queryText.setMenu(menuManager.createContextMenu(queryText));
 		ContentProposalAdapter proposalAdapter = ContentProposals
-				.enableContentProposal(
-						queryText,
-						new ParboiledProposalProvider(Parboiled.createParser(
-								Sparql11Parser.class).Query(),
-								new SparqlProposals()), null);
+				.enableContentProposal(queryText, JFaceProposalProvider
+						.wrap(new ParboiledProposalProvider(Parboiled
+								.createParser(Sparql11Parser.class).Query(),
+								new SparqlProposals())), null);
 		proposalAdapter.setAutoActivationDelay(1000);
 		proposalAdapter.setPopupSize(new Point(200, 120));
 
