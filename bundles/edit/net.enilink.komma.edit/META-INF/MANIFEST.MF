@@ -9,8 +9,10 @@ Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: net.enilink.komma.edit,
+ net.enilink.komma.edit.assist,
  net.enilink.komma.edit.command,
  net.enilink.komma.edit.domain,
+ net.enilink.komma.edit.properties,
  net.enilink.komma.edit.provider,
  net.enilink.komma.edit.provider.model,
  net.enilink.komma.edit.util
@@ -18,7 +20,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.commands,
  net.enilink.komma.common;visibility:=reexport,
  net.enilink.komma.model;visibility:=reexport,
- net.enilink.commons.util
+ net.enilink.commons.util,
+ org.parboiled
 Eclipse-LazyStart: true
 Bundle-ActivationPolicy: lazy
 Import-Package: com.google.inject;version="2.0.0",
