@@ -6,9 +6,4 @@ public interface IContentProposalExt {
 	};
 
 	Type getType();
-
-	/**
-	 * Returns the replacement content in case this proposal is of type REPLACE.
-	 */
-	String getReplacement();
 }

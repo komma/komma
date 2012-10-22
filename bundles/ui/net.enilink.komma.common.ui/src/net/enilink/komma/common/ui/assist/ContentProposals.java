@@ -30,16 +30,12 @@ public class ContentProposals {
 		proposalAdapter
 				.addContentProposalListener(new IContentProposalListener() {
 					public void proposalAccepted(IContentProposal proposal) {
-						if (proposal instanceof IContentProposalExt) {
-							switch (((IContentProposalExt) proposal).getType()) {
-							case REPLACE:
-								controlContentAdapter.setControlContents(
-										control,
-										((IContentProposalExt) proposal)
-												.getReplacement(), proposal
-												.getCursorPosition());
-								return;
-							}
+						if (proposal instanceof IContentProposalExt
+								&& ((IContentProposalExt) proposal).getType() == IContentProposalExt.Type.REPLACE) {
+							controlContentAdapter.setControlContents(control,
+									proposal.getContent(),
+									proposal.getCursorPosition());
+							return;
 						}
 						if (proposalAdapter.getProposalAcceptanceStyle() == ContentProposalAdapter.PROPOSAL_IGNORE) {
 							// default is insert
