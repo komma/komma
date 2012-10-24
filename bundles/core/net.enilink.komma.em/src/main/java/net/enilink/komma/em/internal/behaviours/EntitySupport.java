@@ -10,6 +10,8 @@
  *******************************************************************************/
 package net.enilink.komma.em.internal.behaviours;
 
+import net.enilink.composition.traits.Behaviour;
+
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;
@@ -20,9 +22,19 @@ import net.enilink.komma.core.URI;
  * and toString.
  * 
  */
-public abstract class EntitySupport implements IEntity, IEntityManagerAware {
+public abstract class EntitySupport implements IEntity, IEntityManagerAware,
+		Behaviour<IEntity> {
 	private IEntityManager manager;
 	private IReference reference;
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> T as(Class<T> concept) {
+		if (concept.isAssignableFrom(getBehaviourDelegate().getClass())) {
+			return (T) getBehaviourDelegate();
+		}
+		return getEntityManager().find(this, concept);
+	}
 
 	public IEntityManager getEntityManager() {
 		return manager;
