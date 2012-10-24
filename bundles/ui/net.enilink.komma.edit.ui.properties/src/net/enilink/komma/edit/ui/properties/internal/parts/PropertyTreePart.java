@@ -73,11 +73,11 @@ import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
 import net.enilink.komma.edit.ui.properties.internal.context.IPropertiesContext;
 import net.enilink.komma.edit.ui.properties.internal.wizards.EditPropertyWizard;
-import net.enilink.komma.edit.ui.properties.internal.wizards.PropertyUtil;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 import net.enilink.komma.edit.ui.util.EditUIUtil;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
+import net.enilink.komma.edit.util.PropertyUtil;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
@@ -354,7 +354,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 							.getInstance()
 							.getImage(
 									KommaEditUIPropertiesPlugin.INSTANCE
-											.getImage(IEditUIPropertiesImages.TASK_COMPLETE));
+											.getImage(IEditUIPropertiesImages.CHECKED));
 				}
 			}
 
@@ -621,7 +621,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				SWT.NONE);
 		itemEdit.setImage(ExtendedImageRegistry.getInstance().getImage(
 				KommaEditUIPropertiesPlugin.INSTANCE
-						.getImage(IEditUIPropertiesImages.TASK_COMPLETE)));
+						.getImage(IEditUIPropertiesImages.CHECKED)));
 		itemEdit.setToolTipText("Edit property value");
 		itemEdit.addSelectionListener(new EditButtonListener());
 		itemEdit.setLayoutData(new GridData());

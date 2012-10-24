@@ -1,159 +1,27 @@
 package net.enilink.komma.edit.ui.properties.internal.parts;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.fieldassist.ContentProposalAdapter;
-import org.eclipse.jface.fieldassist.IContentProposal;
-import org.eclipse.jface.fieldassist.IContentProposalListener;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.EditingSupport;
-import org.eclipse.jface.viewers.ICellEditorListener;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Item;
 
-import net.enilink.vocab.owl.DatatypeProperty;
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.owl.ObjectProperty;
-import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.komma.common.adapter.IAdapterFactory;
-import net.enilink.komma.common.command.CommandResult;
-import net.enilink.komma.common.command.CompositeCommand;
-import net.enilink.komma.common.command.ICommand;
-import net.enilink.komma.common.command.ICompositeCommand;
-import net.enilink.komma.common.command.IdentityCommand;
-import net.enilink.komma.common.ui.assist.ContentProposals;
-import net.enilink.komma.common.ui.celleditor.TextCellEditorWithContentProposal;
 import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.concepts.IResource;
-import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.properties.IPropertyEditingSupport;
-import net.enilink.komma.edit.properties.IResourceProposal;
-import net.enilink.komma.edit.properties.LiteralEditingSupport;
-import net.enilink.komma.edit.properties.ManchesterEditingSupport;
-import net.enilink.komma.edit.properties.ResourceEditingSupport;
-import net.enilink.komma.edit.provider.IItemLabelProvider;
-import net.enilink.komma.edit.ui.KommaEditUIPlugin;
-import net.enilink.komma.edit.ui.assist.JFaceContentProposal;
-import net.enilink.komma.edit.ui.assist.JFaceProposalProvider;
-import net.enilink.komma.edit.ui.properties.internal.wizards.PropertyUtil;
-import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
-import net.enilink.komma.edit.ui.util.EditUIUtil;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.IReference;
+import net.enilink.komma.edit.ui.celleditor.StatementEditingSupport;
 import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.Statement;
 
-class ValueEditingSupport extends EditingSupport {
-	private static final int PROPOSAL_DELAY = 1000;
-
-	private Object currentElement;
-	private boolean createNew;
+class ValueEditingSupport extends StatementEditingSupport {
 	private IEditingDomain editingDomain;
-
-	private CellEditor currentEditor;
-
-	private TextCellEditorWithContentProposal textCellEditor;
-
-	private IPropertyEditingSupport propertyEditingSupport;
-
-	private boolean editPredicate;
-
-	private IResourceProposal acceptedResourceProposal;
-
-	private ICellEditorListener cellEditorListener = new ICellEditorListener() {
-		@Override
-		public void editorValueChanged(boolean oldValidState,
-				boolean newValidState) {
-			// user modifications reset the last value proposal
-			acceptedResourceProposal = null;
-		}
-
-		@Override
-		public void cancelEditor() {
-			applyEditorValue();
-		}
-
-		@Override
-		public void applyEditorValue() {
-			if (createNew) {
-				// ensure that initial state is restored
-				((PropertyNode) currentElement)
-						.setCreateNewStatementOnEdit(false);
-				getViewer().update(currentElement, null);
-			}
-		}
-	};
-
-	private IAdapterFactory delegatingAdapterFactory = new IAdapterFactory() {
-		@Override
-		public boolean isFactoryForType(Object type) {
-			IAdapterFactory factory = getAdapterFactory();
-			return factory == null ? false : getAdapterFactory()
-					.isFactoryForType(type);
-		}
-
-		@Override
-		public Object adapt(Object object, Object type) {
-			IAdapterFactory factory = getAdapterFactory();
-			return factory == null ? null : getAdapterFactory().adapt(object,
-					type);
-		}
-	};
+	private boolean createNew;
 
 	public ValueEditingSupport(TreeViewer viewer) {
 		this(viewer, false);
 	}
 
 	public ValueEditingSupport(final TreeViewer viewer, boolean editPredicate) {
-		super(viewer);
-		this.editPredicate = editPredicate;
-
-		textCellEditor = new TextCellEditorWithContentProposal(
-				viewer.getTree(), SWT.MULTI | SWT.WRAP | SWT.V_SCROLL
-						| SWT.BORDER, null, null) {
-			@Override
-			public void deactivate() {
-				fireApplyEditorValue();
-				super.deactivate();
-			}
-
-			protected void focusLost() {
-			}
-
-			@Override
-			public LayoutData getLayoutData() {
-				LayoutData layoutData = super.getLayoutData();
-				layoutData.verticalAlignment = SWT.TOP;
-				layoutData.minimumHeight = viewer.getTree().getItemHeight() * 6;
-				return layoutData;
-			}
-		};
-		textCellEditor.getContentProposalAdapter().setAutoActivationDelay(
-				PROPOSAL_DELAY);
-		textCellEditor.getContentProposalAdapter().addContentProposalListener(
-				new IContentProposalListener() {
-					@Override
-					public void proposalAccepted(IContentProposal proposal) {
-						Object delegate = proposal instanceof JFaceContentProposal ? ((JFaceContentProposal) proposal)
-								.getDelegate() : proposal;
-						if (delegate instanceof IResourceProposal
-								&& ((IResourceProposal) delegate)
-										.getUseAsValue()) {
-							acceptedResourceProposal = (IResourceProposal) delegate;
-						}
-					}
-				});
-		textCellEditor.addListener(cellEditorListener);
+		super(viewer, editPredicate, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
 	}
 
 	@Override
@@ -162,298 +30,86 @@ class ValueEditingSupport extends EditingSupport {
 				&& ((StatementNode) element).isInverse()) {
 			return false;
 		}
-
 		boolean expandedNode = element instanceof PropertyNode
 				&& ((AbstractTreeViewer) getViewer()).getExpandedState(element);
 		createNew = expandedNode
 				|| element instanceof PropertyNode
 				&& (((PropertyNode) element).isCreateNewStatementOnEdit() || ((PropertyNode) element)
 						.isIncomplete());
-		IStatement stmt = getStatement(element);
-		// forbid changing the predicate of existing statements
-		if (editPredicate) {
-			return !expandedNode && (createNew || stmt.getObject() == null);
-		}
-
-		if (stmt.getPredicate() == null || stmt.isInferred()) {
+		if (editPredicate && expandedNode) {
 			return false;
 		}
-
-		IPropertyEditingSupport propertyEditingSupport = getPropertyEditingSupport(stmt);
-		if (propertyEditingSupport != null) {
-			return propertyEditingSupport.canEdit((IEntity) stmt.getSubject(),
-					stmt.getPredicate(), stmt.getObject());
-		}
-		return true;
-	}
-
-	protected IPropertyEditingSupport getPropertyEditingSupport(IStatement stmt) {
-		// use the resource editor for predicates
-		if (editPredicate) {
-			return new ResourceEditingSupport(delegatingAdapterFactory, true);
-		}
-
-		IAdapterFactory adapterFactory = getAdapterFactory();
-		IPropertyEditingSupport support = adapterFactory == null ? null
-				: (IPropertyEditingSupport) adapterFactory.adapt(
-						stmt.getPredicate(), IPropertyEditingSupport.class);
-		if (support != null) {
-			return support;
-		}
-
-		IProperty property = ((IEntity) stmt.getSubject()).getEntityManager()
-				.find(stmt.getPredicate(), IProperty.class);
-		if (property.getRdfsRanges().contains(RDFS.TYPE_CLASS)
-				|| property.getRdfsRanges().contains(OWL.TYPE_CLASS)) {
-			return new ManchesterEditingSupport(delegatingAdapterFactory);
-		} else if (!(property instanceof DatatypeProperty || property
-				.getRdfsRanges().contains(RDFS.TYPE_LITERAL))
-				&& (stmt.getObject() instanceof IReference
-						|| property instanceof ObjectProperty
-						|| property.getRdfsRanges()
-								.contains(RDFS.TYPE_RESOURCE) //
-						|| property.getRdfsRanges().contains(OWL.TYPE_THING) || property
-						.getRdfsRanges().contains(OWL.TYPE_ONTOLOGY))) {
-			// TODO implement correct selection strategy for resource editor in
-			// all possible cases
-			return new ResourceEditingSupport(delegatingAdapterFactory);
-		}
-
-		return new LiteralEditingSupport();
+		return super.canEdit(element);
 	}
 
 	@Override
 	protected CellEditor getCellEditor(Object element) {
-		acceptedResourceProposal = null;
-		currentElement = unwrap(element);
-
 		if (createNew) {
-			((PropertyNode) currentElement).setCreateNewStatementOnEdit(true);
+			((PropertyNode) unwrap(element)).setCreateNewStatementOnEdit(true);
 			getViewer().update(element, null);
 		}
-
-		IStatement stmt = getStatement(element);
-
-		propertyEditingSupport = getPropertyEditingSupport(stmt);
-		if (propertyEditingSupport != null) {
-			IPropertyEditingSupport.ProposalSupport proposals = propertyEditingSupport
-					.getProposalSupport((IEntity) stmt.getSubject(),
-							stmt.getPredicate(), stmt.getObject());
-			ContentProposalAdapter proposalAdapter = textCellEditor
-					.getContentProposalAdapter();
-			if (proposals != null) {
-				final IItemLabelProvider labelProvider = proposals
-						.getLabelProvider();
-				if (labelProvider != null) {
-					proposalAdapter.setLabelProvider(new LabelProvider() {
-						@Override
-						public String getText(Object element) {
-							if (element instanceof JFaceContentProposal) {
-								element = ((JFaceContentProposal) element)
-										.getDelegate();
-							}
-							return labelProvider.getText(element);
-						}
-
-						@Override
-						public Image getImage(Object element) {
-							if (element instanceof JFaceContentProposal) {
-								element = ((JFaceContentProposal) element)
-										.getDelegate();
-							}
-							return ExtendedImageRegistry.getInstance()
-									.getImage(labelProvider.getImage(element));
-						}
-					});
-				} else {
-					proposalAdapter.setLabelProvider(null);
-				}
-				proposalAdapter
-						.setContentProposalProvider(JFaceProposalProvider
-								.wrap(proposals.getProposalProvider()));
-				proposalAdapter.setAutoActivationCharacters(proposals
-						.getAutoActivationCharacters());
-			} else {
-				proposalAdapter.setLabelProvider(null);
-				proposalAdapter
-						.setContentProposalProvider(ContentProposals.NULL_PROPOSAL_PROVIDER);
-				proposalAdapter.setAutoActivationCharacters(null);
-			}
-			return currentEditor = textCellEditor;
-		}
-
-		return currentEditor = null;
-	}
-
-	Object unwrap(Object itemOrData) {
-		if (itemOrData instanceof Item) {
-			return ((Item) itemOrData).getData();
-		}
-		return itemOrData;
-	}
-
-	IStatement getStatement(Object element) {
-		if (createNew) {
-			return new Statement(((PropertyNode) element).getResource(),
-					((PropertyNode) element).getProperty(), null);
-		}
-
-		element = unwrap(element);
-		return ((StatementNode) element).getStatement();
+		return super.getCellEditor(element);
 	}
 
 	@Override
-	protected Object getValue(Object element) {
-		Object editorValue = ((StatementNode) unwrap(element)).getEditorValue();
-		if (editorValue != null) {
-			return editorValue;
-		}
-		return getValueFromStatement(getStatement(element));
-	}
-
-	protected Object getValueFromStatement(IStatement stmt) {
-		IPropertyEditingSupport propertyEditingSupport = getPropertyEditingSupport(stmt);
-		if (propertyEditingSupport != null) {
-			return propertyEditingSupport.getValueForEditor(
-					(IEntity) stmt.getSubject(), stmt.getPredicate(),
-					stmt.getObject());
-		}
-		return null;
-	}
-
-	@Override
-	protected void setValue(final Object element, final Object value) {
-		if (value == null || value.equals(getValue(element))) {
-			return;
-		}
-
-		final IStatement stmt = getStatement(element);
-		final IResource subject = (IResource) stmt.getSubject();
-
-		ICommand newObjectCommand = null;
-		if (currentEditor == textCellEditor) {
-			// if value is completely defined by last accepted proposal
-			if (acceptedResourceProposal != null) {
-				newObjectCommand = new IdentityCommand(
-						acceptedResourceProposal.getResource());
-			} else {
-				// create value with external property editing support
-				newObjectCommand = propertyEditingSupport
-						.convertValueFromEditor(value,
-								(IEntity) stmt.getSubject(),
-								stmt.getPredicate(), stmt.getObject());
-			}
-			if (editPredicate && newObjectCommand != null) {
-				try {
-					newObjectCommand.execute(new NullProgressMonitor(), null);
-				} catch (ExecutionException e) {
-					IStatus status = EditUIUtil.createErrorStatus(e);
-					KommaEditUIPlugin.getPlugin().log(status);
-				}
-				Object newPredicate = newObjectCommand.getCommandResult()
-						.getReturnValue();
-				if (newPredicate instanceof IProperty) {
-					final PropertyNode node = (PropertyNode) element;
-					node.setProperty((IProperty) newPredicate);
-					getViewer().update(node, null);
-					getViewer().getControl().getDisplay()
-							.asyncExec(new Runnable() {
-								@Override
-								public void run() {
-									// TODO find a more generic way to
-									// do this
-									getViewer().editElement(node, 1);
-								}
-							});
-
-					((PropertyTreeContentProvider) getViewer()
-							.getContentProvider()).registerPropertyNode(node);
-				}
-				newObjectCommand = null;
-			}
-		}
-
-		StatementNode node = (StatementNode) unwrap(element);
-		node.setStatus(Status.OK_STATUS);
-
-		if (newObjectCommand != null) {
-			ICompositeCommand command = new CompositeCommand() {
-				@Override
-				protected CommandResult doExecuteWithResult(
-						IProgressMonitor progressMonitor, IAdaptable info)
-						throws ExecutionException {
-					ITransaction transaction = subject.getEntityManager()
-							.getTransaction();
-					transaction.begin();
-					try {
-						CommandResult result = super.doExecuteWithResult(
-								progressMonitor, info);
-						if (!result.getStatus().isOK()) {
-							return result;
-						}
-						// ensure that previously created data is readable (if
-						// isolation != READ UNCOMMITTED)
-						transaction.commit();
-						transaction.begin();
-
-						// if stmt.getObject() == null then this is a new
-						// statement
-						// and therefore must not be removed
-						IStatus status = stmt.getObject() == null ? Status.OK_STATUS
-								: addAndExecute(PropertyUtil.getRemoveCommand(
-										editingDomain,
-										(IResource) stmt.getSubject(),
-										(IProperty) stmt.getPredicate(),
-										stmt.getObject()), progressMonitor,
-										info);
-						if (status.isOK()) {
-							status = addAndExecute(PropertyUtil.getAddCommand(
-									editingDomain, subject,
-									(IProperty) stmt.getPredicate(), result
-											.getReturnValues().iterator()
-											.next()), progressMonitor, info);
-						}
-						if (status.isOK()) {
-							transaction.commit();
-						}
-
-						return new CommandResult(status);
-					} finally {
-						if (transaction.isActive()) {
-							transaction.rollback();
-						}
-					}
-				}
-			};
-			command.add(newObjectCommand);
-
-			IStatus status = Status.CANCEL_STATUS;
-			try {
-				status = editingDomain.getCommandStack().execute(command, null,
-						null);
-			} catch (ExecutionException exc) {
-				status = EditUIUtil.createErrorStatus(exc);
-			}
-
-			node.setStatus(status);
-			node.setEditorValue(status.isOK() ? null : value);
-			// a new value was directly added to the property node
-			if (status.isOK() && node instanceof PropertyNode) {
-				((PropertyNode) node).refreshChildren();
-			}
-			getViewer().refresh(node);
-		}
-	}
-
-	protected IAdapterFactory getAdapterFactory() {
-		if (editingDomain instanceof AdapterFactoryEditingDomain) {
-			return ((AdapterFactoryEditingDomain) editingDomain)
-					.getAdapterFactory();
-		}
-		return null;
+	protected IEditingDomain getEditingDomain() {
+		return editingDomain;
 	}
 
 	public void setEditingDomain(IEditingDomain editingDomain) {
 		this.editingDomain = editingDomain;
+	}
+
+	@Override
+	protected IStatement getStatement(Object element) {
+		if (createNew) {
+			return new Statement(((PropertyNode) element).getResource(),
+					((PropertyNode) element).getProperty(), null);
+		}
+		return ((StatementNode) element).getStatement();
+	}
+
+	@Override
+	protected void editorClosed(Object element) {
+		if (createNew) {
+			// ensure that initial state is restored
+			((PropertyNode) element).setCreateNewStatementOnEdit(false);
+			getViewer().update(element, null);
+		}
+	}
+
+	@Override
+	protected void setProperty(Object element, IProperty property) {
+		final PropertyNode node = (PropertyNode) element;
+		node.setProperty(property);
+		getViewer().update(node, null);
+		getViewer().getControl().getDisplay().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				// TODO find a more generic way to
+				// do this
+				getViewer().editElement(node, 1);
+			}
+		});
+		((PropertyTreeContentProvider) getViewer().getContentProvider())
+				.registerPropertyNode(node);
+	}
+
+	@Override
+	protected void setEditStatus(Object element, IStatus status, Object value) {
+		StatementNode node = (StatementNode) element;
+		node.setStatus(status);
+		node.setEditorValue(status.isOK() ? null : value);
+		// a new value was directly added to the property node
+		if (status.isOK() && node instanceof PropertyNode) {
+			((PropertyNode) node).refreshChildren();
+		}
+		getViewer().refresh(node);
+	}
+
+	@Override
+	protected Object getValue(Object element) {
+		Object value = ((StatementNode) unwrap(element)).getEditorValue();
+		return value != null ? value : super.getValue(element);
 	}
 }

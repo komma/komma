@@ -13,6 +13,7 @@ import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.ui.util.EditUIUtil;
+import net.enilink.komma.edit.util.PropertyUtil;
 
 public class EditPropertyWizard extends Wizard {
 	private Context context;

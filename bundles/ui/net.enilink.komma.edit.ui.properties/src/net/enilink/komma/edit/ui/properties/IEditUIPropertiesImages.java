@@ -18,7 +18,7 @@ public interface IEditUIPropertiesImages {
 	static String INDIVIDUAL_DELETE = "full/clcl16/individual_delete_icon.png";
 	static String INDIVIDUAL_CREATE = "full/clcl16/individual_create_icon.png";
 	static String INDIVIDUAL_CREATE_SMALL = "full/clcl16/individual_create_icon_small.png";
-	static String TASK_COMPLETE = "full/clcl16/complete_tsk.gif";
+	static String CHECKED = "full/clcl16/checked.gif";
 	static String ADD = "full/clcl16/add.png";
 	static String REMOVE = "full/clcl16/delete.png";
 	static String EDIT = "full/clcl16/edit.png";
