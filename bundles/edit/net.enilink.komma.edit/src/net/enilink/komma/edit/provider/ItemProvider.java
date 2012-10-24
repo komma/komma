@@ -35,7 +35,6 @@ import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IList;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.provider.ItemProvider.ItemProviderNotifyingArrayList;
 import net.enilink.komma.model.IObject;
 
 /**

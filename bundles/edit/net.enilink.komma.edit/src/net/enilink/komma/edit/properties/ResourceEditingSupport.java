@@ -166,7 +166,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			// additionally, if limit not exceeded, find properties from other
 			// namespaces
 			String uriPattern = template;
-			if (!template.matches("[#/]")) {
+			if (!template.matches(".*[#/].*")) {
 				uriPattern = "#" + template;
 
 				int colonIndex = template.lastIndexOf(':');
