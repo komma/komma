@@ -49,11 +49,14 @@
 
    <element name="module">
       <complexType>
-         <attribute name="uri" type="string" use="required">
+         <attribute name="uri" type="string">
             <annotation>
                <documentation>
                   Namespace URI as String, DON&apos;T end this with the &apos;#&apos; character.
 Full string comparison is used to match these.
+
+If this attribute is left blank then the module is registered for
+any namespace.
                </documentation>
             </annotation>
          </attribute>
@@ -105,4 +108,6 @@ Full string comparison is used to match these.
          [Enter information about supplied implementation of this extension point.]
       </documentation>
    </annotation>
+
+
 </schema>
