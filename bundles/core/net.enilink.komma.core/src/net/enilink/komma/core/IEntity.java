@@ -11,6 +11,20 @@
 package net.enilink.komma.core;
 
 public interface IEntity extends IReference, IReferenceable {
+	/**
+	 * View this entity as an instance of the given concept.
+	 * 
+	 * @return This entity or a new instance that implements the given concept.
+	 * 
+	 * @see IEntityManager#find(IReference, Class, Class...)
+	 */
+	<T> T as(Class<T> concept);
+
+	/**
+	 * The associated entity manager of this entity.
+	 * 
+	 * @return The entity manager
+	 */
 	IEntityManager getEntityManager();
 
 	/**
