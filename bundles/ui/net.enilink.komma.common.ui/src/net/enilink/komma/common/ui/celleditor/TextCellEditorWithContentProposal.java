@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import net.enilink.commons.ui.CommonsUi;
 import net.enilink.komma.common.ui.assist.ContentProposals;
 
 public class TextCellEditorWithContentProposal extends TextCellEditor {
@@ -51,7 +52,7 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 	@Override
 	protected Control createControl(Composite parent) {
 		Control text = super.createControl(parent);
-		if ((getStyle() & SWT.MULTI) != 0) {
+		if ((getStyle() & SWT.MULTI) != 0 || CommonsUi.IS_RAP_RUNNING) {
 			text.addListener(SWT.Traverse, new Listener() {
 				public void handleEvent(Event e) {
 					switch (e.character) {
@@ -72,7 +73,7 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 
 	@Override
 	protected void keyReleaseOccured(KeyEvent keyEvent) {
-		if (keyEvent.character == '\r') {
+		if (CommonsUi.IS_RAP_RUNNING && keyEvent.character == '\r') {
 			// correctly handle CTRL+Enter in RAP
 			if (text != null && !text.isDisposed()
 					&& (getStyle() & SWT.MULTI) != 0
