@@ -13,10 +13,16 @@ package net.enilink.komma.em;
 import java.util.List;
 
 import org.infinispan.Cache;
-import org.infinispan.config.Configuration;
-import org.infinispan.config.GlobalConfiguration;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted;
+import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
+import org.infinispan.notifications.cachemanagerlistener.event.Event;
 import org.infinispan.tree.Fqn;
 import org.infinispan.tree.TreeCache;
 import org.infinispan.tree.TreeCacheFactory;
@@ -38,6 +44,33 @@ import net.enilink.komma.core.IEntity;
 import net.enilink.komma.util.IClosable;
 
 public class CacheModule extends AbstractModule {
+	/**
+	 * Listener that closes the cache container after the last cache has been
+	 * stopped.
+	 */
+	@Listener
+	public static class StartStopListener {
+		int runningCaches = 0;
+
+		@CacheStarted
+		@CacheStopped
+		public void doSomething(Event event) {
+			if (event.getType() == Event.Type.CACHE_STARTED) {
+				runningCaches++;
+			} else if (event.getType() == Event.Type.CACHE_STOPPED) {
+				runningCaches--;
+			}
+			if (runningCaches <= 0) {
+				synchronized (CacheModule.class) {
+					if (cacheContainer != null) {
+						cacheContainer.stop();
+						cacheContainer = null;
+					}
+				}
+			}
+		}
+	}
+
 	static class CacheClosable implements IClosable {
 		@Inject
 		Cache<Object, Object> cache;
@@ -46,10 +79,16 @@ public class CacheModule extends AbstractModule {
 		public void close() {
 			if (cache != null) {
 				cache.stop();
-				cache.getCacheManager().stop();
 				cache = null;
 			}
 		}
+	}
+
+	private String cacheName;
+	static CacheContainer cacheContainer;
+
+	public CacheModule(String cacheName) {
+		this.cacheName = cacheName;
 	}
 
 	@Override
@@ -62,24 +101,33 @@ public class CacheModule extends AbstractModule {
 	}
 
 	@Provides
-	@Singleton
 	CacheContainer provideCacheContainer() {
-		GlobalConfiguration globalConfig = new GlobalConfiguration();
-
-		Configuration config = new Configuration();
-		config.setInvocationBatchingEnabled(true);
-		config.setCacheMode(Configuration.CacheMode.LOCAL);
-		config.setEvictionMaxEntries(10000);
-
-		// workaround for classloading issues w/ factory methods
-		// http://community.jboss.org/wiki/ModuleCompatibleClassloadingGuide
-		ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
-		try {
-			Thread.currentThread().setContextClassLoader(
-					DefaultCacheManager.class.getClassLoader());
-			return new DefaultCacheManager(globalConfig, config);
-		} finally {
-			Thread.currentThread().setContextClassLoader(oldTCCL);
+		synchronized (CacheModule.class) {
+			if (cacheContainer == null) {
+				Configuration configuration = new ConfigurationBuilder()
+						.invocationBatching().enable() // required for TreeCache
+						.eviction().strategy(EvictionStrategy.LIRS) // LIRS
+																	// instead
+																	// of LRU?
+						.maxEntries(30000) // a reasonable limit?
+						.jmxStatistics().enable() // expose statistics via JMX
+						.build();
+				// workaround for classloading issues w/ factory methods
+				// http://community.jboss.org/wiki/ModuleCompatibleClassloadingGuide
+				ClassLoader oldTCCL = Thread.currentThread()
+						.getContextClassLoader();
+				try {
+					Thread.currentThread().setContextClassLoader(
+							DefaultCacheManager.class.getClassLoader());
+					EmbeddedCacheManager cacheManager = new DefaultCacheManager(
+							configuration);
+					cacheManager.addListener(new StartStopListener());
+					cacheContainer = cacheManager;
+				} finally {
+					Thread.currentThread().setContextClassLoader(oldTCCL);
+				}
+			}
+			return cacheContainer;
 		}
 	}
 
@@ -92,7 +140,7 @@ public class CacheModule extends AbstractModule {
 		try {
 			Thread.currentThread().setContextClassLoader(
 					DefaultCacheManager.class.getClassLoader());
-			return cacheContainer.getCache();
+			return cacheContainer.getCache(cacheName);
 		} finally {
 			Thread.currentThread().setContextClassLoader(oldTCCL);
 		}
