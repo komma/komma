@@ -208,7 +208,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 
 	@Override
 	public void collectInjectionModules(Collection<Module> modules) {
-		modules.add(new CacheModule());
+		modules.add(new CacheModule(getReference().toString()));
 		// ensure that one shared data manager is used throughout the model set
 		modules.add(new AbstractModule() {
 			protected void configure() {

@@ -81,7 +81,6 @@ public class ModelSetModule extends AbstractModule {
 
 					@Singleton
 					@Provides
-					@SuppressWarnings("unused")
 					Repository provideRepository() {
 						return createMetaDataRepository();
 					}
