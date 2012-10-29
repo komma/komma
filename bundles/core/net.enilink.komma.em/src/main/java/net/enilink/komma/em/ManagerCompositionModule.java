@@ -14,9 +14,7 @@ import net.enilink.composition.mappers.ComposedRoleMapper;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.mappers.TypeFactory;
 import net.enilink.composition.properties.PropertyMapper;
-import net.enilink.composition.properties.PropertySetDescriptorFactory;
 import net.enilink.composition.properties.behaviours.PropertyMapperProcessor;
-import net.enilink.composition.properties.komma.KommaPropertySetDescriptorFactory;
 import net.enilink.composition.properties.sparql.SparqlBehaviourMethodProcessor;
 
 import com.google.inject.AbstractModule;
@@ -111,10 +109,6 @@ public class ManagerCompositionModule extends AbstractModule {
 
 		bind(new TypeLiteral<ClassResolver<URI>>() {
 		}).in(Singleton.class);
-
-		bind(new TypeLiteral<Class<? extends PropertySetDescriptorFactory>>() {
-		}).toInstance(
-				(Class<? extends PropertySetDescriptorFactory>) KommaPropertySetDescriptorFactory.class);
 	}
 
 	@Provides
