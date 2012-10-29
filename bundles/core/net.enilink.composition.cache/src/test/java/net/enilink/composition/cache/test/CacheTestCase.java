@@ -69,13 +69,13 @@ public abstract class CacheTestCase {
 				bind(new TypeLiteral<ClassResolver<String>>() {
 				});
 
-				getBehaviourMethodProcessorBinder().addBinding().to(
-						CacheBehaviourMethodProcessor.class).in(Singleton.class);
+				getBehaviourMethodProcessorBinder().addBinding()
+						.to(CacheBehaviourMethodProcessor.class)
+						.in(Singleton.class);
 			}
 
 			@Provides
 			@Singleton
-			@SuppressWarnings("unused")
 			protected TypeFactory<String> provideTypeFactory() {
 				return new TypeFactory<String>() {
 					@Override
@@ -92,7 +92,6 @@ public abstract class CacheTestCase {
 
 			@Provides
 			@Singleton
-			@SuppressWarnings("unused")
 			protected IPropertyCache provideCache() {
 				final Map<Object, Object> map = new HashMap<Object, Object>();
 				return new IPropertyCache() {
