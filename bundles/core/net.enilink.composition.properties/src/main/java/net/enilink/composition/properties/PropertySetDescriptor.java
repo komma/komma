@@ -31,8 +31,6 @@ package net.enilink.composition.properties;
 /**
  * Internal interface to create {@link PropertySet} objects.
  * 
- * @author James Leigh
- * 
  * @param <E>
  *            property type
  */
@@ -42,10 +40,10 @@ public interface PropertySetDescriptor<E> {
 	public static final String GET_NAME = "getName";
 
 	/**
-	 * Create a new instance of ElmoProperty for this bean.
+	 * Create a new property set instance for this bean.
 	 * 
 	 * @param bean
-	 * @return ElmoProperty
+	 * @return {@link PropertySet}
 	 */
 	PropertySet<E> createPropertySet(Object bean);
 
