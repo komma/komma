@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
+import net.enilink.composition.properties.PropertySetDescriptor;
+import net.enilink.composition.properties.PropertySetDescriptorFactory;
 
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -67,10 +69,19 @@ public interface IModelSet extends INotifier<INotification> {
 		 * Initialize the model set.
 		 * 
 		 * @param injector
-		 *            The injector that is can be used to retrieve an
+		 *            The injector that is used to retrieve an
 		 *            {@link IEntityManagerFactory}.
 		 */
 		void init(Injector injector);
+
+		/**
+		 * Allows to use a special property set implementation (e.g. with added
+		 * security) within a model set.
+		 * 
+		 * @return Factory class for {@link PropertySetDescriptor}s or
+		 *         <code>null</code>.
+		 */
+		Class<? extends PropertySetDescriptorFactory> providePropertySetImplementation();
 	}
 
 	/**
@@ -175,16 +186,16 @@ public interface IModelSet extends INotifier<INotification> {
 	 * {@link #getURIConverter URI converter} to {@link IURIConverter#normalize
 	 * normalize} the URI and then to compare it with the normalized URI of each
 	 * resource; if it finds a match, that resource becomes the result. Failing
-	 * that, it {@link ModelSetSupport#delegatedGetModel delegates} to
-	 * allow the URI to be resolved elsewhere. The important point is that an
-	 * arbitrary implementation may resolve the URI to any model, not
-	 * necessarily to one contained by this particular model set. If the
-	 * delegation step fails to provide a result, and if
-	 * <code>loadOnDemand</code> is <code>true</code>, a model is
-	 * {@link ModelSetSupport#demandCreateModel created} and that model
-	 * becomes the result. If <code>loadOnDemand</code> is <code>true</code> and
-	 * the result model is not {@link IModel#isLoaded loaded}, it will be
-	 * {@link ModelSetSupport#demandLoad loaded} before it is returned.
+	 * that, it {@link ModelSetSupport#delegatedGetModel delegates} to allow the
+	 * URI to be resolved elsewhere. The important point is that an arbitrary
+	 * implementation may resolve the URI to any model, not necessarily to one
+	 * contained by this particular model set. If the delegation step fails to
+	 * provide a result, and if <code>loadOnDemand</code> is <code>true</code>,
+	 * a model is {@link ModelSetSupport#demandCreateModel created} and that
+	 * model becomes the result. If <code>loadOnDemand</code> is
+	 * <code>true</code> and the result model is not {@link IModel#isLoaded
+	 * loaded}, it will be {@link ModelSetSupport#demandLoad loaded} before it
+	 * is returned.
 	 * </p>
 	 * 
 	 * @param uri

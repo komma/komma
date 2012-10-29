@@ -8,6 +8,7 @@ import java.util.Enumeration;
 import java.util.Properties;
 
 import org.eclipse.core.runtime.Platform;
+import net.enilink.composition.properties.PropertySetDescriptorFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -87,9 +88,20 @@ public class ModelSetModule extends AbstractModule {
 				},
 				new SesameModule(),
 				new EntityManagerFactoryModule(module, null,
-						new EagerCachingEntityManagerModule())).getInstance(
-				ModelSetFactory.class);
+						new EagerCachingEntityManagerModule()) {
+					@Override
+					protected Class<? extends PropertySetDescriptorFactory> providePropertySetImplementation() {
+						Class<? extends PropertySetDescriptorFactory> factoryClass = ModelSetModule.this
+								.providePropertySetImplementation();
+						return factoryClass != null ? factoryClass : super
+								.providePropertySetImplementation();
+					}
+				}).getInstance(ModelSetFactory.class);
 		return factory;
+	}
+
+	protected Class<? extends PropertySetDescriptorFactory> providePropertySetImplementation() {
+		return null;
 	}
 
 	/**

@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.Platform;
+import net.enilink.composition.properties.PropertySetDescriptorFactory;
 import net.enilink.composition.traits.Behaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -217,11 +218,24 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 			}
 		});
 		modules.add(new EntityManagerFactoryModule(getModule(), null,
-				new CachingEntityManagerModule()));
+				new CachingEntityManagerModule()) {
+			@Override
+			protected Class<? extends PropertySetDescriptorFactory> providePropertySetImplementation() {
+				Class<? extends PropertySetDescriptorFactory> factoryClass = getBehaviourDelegate()
+						.providePropertySetImplementation();
+				return factoryClass != null ? factoryClass : super
+						.providePropertySetImplementation();
+			}
+		});
 	}
 
 	@Override
 	public URI getDefaultGraph() {
+		return null;
+	}
+
+	@Override
+	public Class<? extends PropertySetDescriptorFactory> providePropertySetImplementation() {
 		return null;
 	}
 
