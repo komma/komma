@@ -26,18 +26,18 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 
-class KommaPropertySetDescriptor<E> implements PropertySetDescriptor<E> {
-	private String name;
+public class KommaPropertySetDescriptor<E> implements PropertySetDescriptor<E> {
+	protected String name;
 
-	private Class<?> type;
+	protected Class<?> type;
 
-	private boolean localized;
+	protected boolean localized;
 
-	private boolean readOnly;
+	protected boolean readOnly;
 
-	private URI predicate;
+	protected URI predicate;
 
-	private URI rdfValueType;
+	protected URI rdfValueType;
 
 	public KommaPropertySetDescriptor(PropertyDescriptor property,
 			String predicate) {

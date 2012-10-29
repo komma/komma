@@ -108,7 +108,6 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 		} catch (KommaException e) {
 			throw new PropertyException(e);
 		}
-
 		refreshEntity();
 		refresh(o);
 		return true;
@@ -264,9 +263,13 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 		return (IExtendedIterator<E>) query.evaluate();
 	}
 
-	protected IExtendedIterator<E> createElementsIterator() {
-		IQuery<?> query = manager.createQuery(QUERY).setParameter("s", bean)
+	protected IQuery<?> createElementsQuery() {
+		return manager.createQuery(QUERY).setParameter("s", bean)
 				.setParameter("p", property);
+	}
+
+	protected IExtendedIterator<E> createElementsIterator() {
+		IQuery<?> query = createElementsQuery();
 		return new ConvertingIterator<E, E>(evaluateQueryForTypes(query)) {
 			private List<E> list = new ArrayList<E>(Math.min(CACHE_LIMIT,
 					getCacheLimit()));
