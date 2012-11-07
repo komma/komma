@@ -215,7 +215,7 @@ public abstract class ModelContentProvider implements IContentProvider {
 
 		runnables.add(new Runnable() {
 			public void run() {
-				((StructuredViewer) viewer).refresh();
+				viewer.refresh();
 
 				// make sure no other update operations are executed after this
 				// one

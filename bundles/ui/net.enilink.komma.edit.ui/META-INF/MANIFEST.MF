@@ -19,6 +19,7 @@ Export-Package: net.enilink.komma.edit.ui,
  net.enilink.komma.edit.ui.provider,
  net.enilink.komma.edit.ui.provider.reflective,
  net.enilink.komma.edit.ui.util,
+ net.enilink.komma.edit.ui.viewers,
  net.enilink.komma.edit.ui.views,
  net.enilink.komma.edit.ui.wizards
 Require-Bundle: org.eclipse.core.runtime,

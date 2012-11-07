@@ -51,7 +51,7 @@ public class StatementPatternContentProvider extends ModelContentProvider
 	protected Object[] instanceReferences;
 	protected Map<Object, Integer> instanceToIndex;
 
-	protected StructuredViewer viewer;
+	protected Viewer viewer;
 	protected boolean isVirtualViewer;
 
 	protected IReference descendantProperty;
@@ -218,13 +218,9 @@ public class StatementPatternContentProvider extends ModelContentProvider
 				patterns.add((IStatementPattern) element);
 			}
 		}
-
-		if (viewer instanceof ColumnViewer) {
-			this.viewer = (ColumnViewer) viewer;
-		} else {
-			this.viewer = null;
-		}
-		this.isVirtualViewer = (this.viewer.getControl().getStyle() & SWT.VIRTUAL) != 0;
+		this.viewer = viewer;
+		this.isVirtualViewer = this.viewer instanceof ColumnViewer
+				&& (this.viewer.getControl().getStyle() & SWT.VIRTUAL) != 0;
 
 		IModel newModel = getModelFromPatterns(patterns);
 		super.inputChanged(viewer, this.model, newModel);
