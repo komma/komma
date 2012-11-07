@@ -15,6 +15,9 @@ import net.enilink.commons.ui.CommonsUi;
 import net.enilink.komma.common.ui.assist.ContentProposals;
 
 public class TextCellEditorWithContentProposal extends TextCellEditor {
+	private IContentProposalProvider contentProposalProvider;
+	private char[] autoActivationCharacters;
+
 	private ContentProposalAdapter contentProposalAdapter;
 	private boolean popupOpen = false; // true, iff popup is currently open
 
@@ -26,7 +29,11 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 			IContentProposalProvider contentProposalProvider,
 			char[] autoActivationCharacters) {
 		super(parent, style);
+	}
 
+	@Override
+	protected Control createControl(Composite parent) {
+		Control text = super.createControl(parent);
 		if (contentProposalProvider == null) {
 			contentProposalProvider = ContentProposals.NULL_PROPOSAL_PROVIDER;
 		}
@@ -47,11 +54,6 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 						popupOpen = true;
 					}
 				});
-	}
-
-	@Override
-	protected Control createControl(Composite parent) {
-		Control text = super.createControl(parent);
 		if ((getStyle() & SWT.MULTI) != 0 || CommonsUi.IS_RAP_RUNNING) {
 			text.addListener(SWT.Traverse, new Listener() {
 				public void handleEvent(Event e) {
