@@ -8,11 +8,11 @@ import org.eclipse.swt.SWT;
 
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.ui.celleditor.StatementEditingSupport;
+import net.enilink.komma.edit.ui.celleditor.PropertyCellEditingSupport;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.Statement;
 
-class ValueEditingSupport extends StatementEditingSupport {
+class ValueEditingSupport extends PropertyCellEditingSupport {
 	private IEditingDomain editingDomain;
 	private boolean createNew;
 
