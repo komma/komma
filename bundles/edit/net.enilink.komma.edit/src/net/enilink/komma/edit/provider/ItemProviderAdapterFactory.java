@@ -29,6 +29,7 @@ import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationSupport;
 import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.URI;
@@ -82,7 +83,7 @@ public abstract class ItemProviderAdapterFactory<T> extends AdapterFactory
 
 	@Override
 	protected Object createAdapter(Object object, Object type) {
-		if (object instanceof IObject) {
+		if (object instanceof IResource) {
 			Collection<T> types = getTypes(object);
 			Pair<IModel, Collection<? extends T>> key = new Pair<IModel, Collection<? extends T>>(
 					object instanceof IObject ? ((IObject) object).getModel()

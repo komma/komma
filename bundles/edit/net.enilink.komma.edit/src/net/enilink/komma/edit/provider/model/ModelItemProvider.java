@@ -222,13 +222,13 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 					URIImpl.createURI(getResourceLocator().getImage(
 							"full/obj16/Classes.png").toString()), classes));
 
-			List<IObject> properties = (List<IObject>) ((IModel) object)
-					.getManager().createQuery(QUERY_PROPERTIES).evaluate()
-					.toList();
-			children.add(new ItemProvider(getRootAdapterFactory(),
-					"Properties", URIImpl.createURI(getResourceLocator()
-							.getImage("full/obj16/Properties.png").toString()),
-					properties));
+//			List<IObject> properties = (List<IObject>) ((IModel) object)
+//					.getManager().createQuery(QUERY_PROPERTIES).evaluate()
+//					.toList();
+//			children.add(new ItemProvider(getRootAdapterFactory(),
+//					"Properties", URIImpl.createURI(getResourceLocator()
+//							.getImage("full/obj16/Properties.png").toString()),
+//					properties));
 		}
 
 		// List<IObject> instances = (List<IObject>) ((IModel) object)

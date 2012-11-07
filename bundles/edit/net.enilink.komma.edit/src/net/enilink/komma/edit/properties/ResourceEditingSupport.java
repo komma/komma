@@ -336,6 +336,10 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 	@Override
 	public ICommand convertValueFromEditor(Object editorValue,
 			final IEntity subject, IReference property, Object oldValue) {
+		if (editorValue.toString().isEmpty()) {
+			return new IdentityCommand("Remove statement.");
+		}
+
 		final URI[] name = { null };
 		boolean createNew = false;
 		ConstructorParser parser = createConstructorParser();
