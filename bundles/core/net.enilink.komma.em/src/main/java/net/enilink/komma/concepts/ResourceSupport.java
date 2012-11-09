@@ -125,22 +125,20 @@ public abstract class ResourceSupport extends BehaviorBase implements
 			+ "?resource a ?class ." //
 			+ "?class rdfs:subClassOf [owl:onProperty ?property] ." //
 			+ "?property rdfs:subPropertyOf komma:contains ." //
-			+ "OPTIONAL {" //
+			+ "FILTER NOT EXISTS {" //
 			+ "    ?otherProperty rdfs:subPropertyOf ?property ." //
 			+ "    ?class rdfs:subClassOf [owl:onProperty ?otherProperty]" //
 			+ "	FILTER (?property != ?otherProperty)" //
 			+ "} " //
-			+ "FILTER (! bound(?otherProperty))" //
 			// select already used child properties
 			+ "} UNION {" //
 			+ "    ?resource ?property ?someObject ." //
 			+ "    ?property rdfs:subPropertyOf komma:contains ." //
-			+ "    OPTIONAL {" //
+			+ "    FILTER NOT EXISTS {" //
 			+ "        ?otherProperty rdfs:subPropertyOf ?property ." //
 			+ "        ?resource ?otherProperty ?someObject ." //
 			+ "        FILTER (?property != ?otherProperty)" //
 			+ "    }" //
-			+ "    FILTER (! bound(?otherProperty))" //
 			+ "}" //
 			+ "} ORDER BY ?property";
 
