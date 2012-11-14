@@ -1,6 +1,8 @@
 package net.enilink.komma.common.ui.celleditor;
 
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
+import org.eclipse.jface.fieldassist.IContentProposal;
+import org.eclipse.jface.fieldassist.IContentProposalListener;
 import org.eclipse.jface.fieldassist.IContentProposalListener2;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.viewers.TextCellEditor;
@@ -20,6 +22,7 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 
 	private ContentProposalAdapter contentProposalAdapter;
 	private boolean popupOpen = false; // true, iff popup is currently open
+	private boolean proposalAccepted = false;
 
 	public TextCellEditorWithContentProposal(Composite parent) {
 		this(parent, SWT.SINGLE, null, null);
@@ -40,6 +43,7 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 
 		contentProposalAdapter = ContentProposals.enableContentProposal(text,
 				contentProposalProvider, autoActivationCharacters);
+
 		// Listen for popup open/close events to be able to handle focus events
 		// correctly
 		contentProposalAdapter
@@ -51,7 +55,14 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 
 					public void proposalPopupOpened(
 							ContentProposalAdapter adapter) {
+						proposalAccepted = false;
 						popupOpen = true;
+					}
+				});
+		contentProposalAdapter
+				.addContentProposalListener(new IContentProposalListener() {
+					public void proposalAccepted(IContentProposal proposal) {
+						proposalAccepted = true;
 					}
 				});
 		if ((getStyle() & SWT.MULTI) != 0 || CommonsUi.IS_RAP_RUNNING) {
@@ -60,13 +71,15 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 					switch (e.character) {
 					case SWT.LF:
 					case SWT.CR:
-						if (e.stateMask == 0 && !popupOpen) {
+						if (e.stateMask == 0
+								&& !(popupOpen || proposalAccepted)) {
 							// apply editor value if enter is pressed
 							e.doit = false;
 							fireApplyEditorValue();
 							deactivate();
 						}
 					}
+					proposalAccepted = false;
 				}
 			});
 		}
@@ -75,6 +88,7 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 
 	@Override
 	protected void keyReleaseOccured(KeyEvent keyEvent) {
+		proposalAccepted = false;
 		if (CommonsUi.IS_RAP_RUNNING && keyEvent.character == '\r') {
 			// correctly handle CTRL+Enter in RAP
 			if (text != null && !text.isDisposed()
