@@ -3012,14 +3012,12 @@ public abstract class FilteredList {
 		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 		 */
 		public int compare(Object o1, Object o2) {
-
 			int leftCategory = getCamelCaseCategory(o1);
 			int rightCategory = getCamelCaseCategory(o2);
 			if (leftCategory < rightCategory)
 				return -1;
 			if (leftCategory > rightCategory)
 				return +1;
-
 			return getItemsComparator().compare(o1, o2);
 		}
 

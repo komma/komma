@@ -45,8 +45,7 @@ public abstract class ObjectNamePage extends WizardPage {
 		nameLabel
 				.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		nameText = new Text(composite, SWT.BORDER);
-		nameText
-				.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false));
+		nameText.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false));
 		nameText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				name = validate(getNameAsText());
@@ -56,10 +55,18 @@ public abstract class ObjectNamePage extends WizardPage {
 		name = validate(getNameAsText());
 	}
 
+	@Override
+	public void setVisible(boolean visible) {
+		super.setVisible(visible);
+		if (visible) {
+			nameText.setFocus();
+		}
+	}
+
 	protected String getNameAsText() {
 		return nameText != null ? nameText.getText().trim() : "";
 	}
-	
+
 	protected URI getObjectName() {
 		return name;
 	}
