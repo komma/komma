@@ -13,7 +13,7 @@ package net.enilink.vocab.rdfs;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.properties.annotations.localized;
+import net.enilink.composition.properties.annotations.Localized;
 
 import net.enilink.komma.core.IEntity;
 
@@ -22,7 +22,7 @@ import net.enilink.komma.core.IEntity;
 public interface Resource extends IEntity {
 
 	/** A description of the subject resource. */
-	@localized
+	@Localized
 	@Iri("http://www.w3.org/2000/01/rdf-schema#comment")
 	public abstract String getRdfsComment();
 
@@ -37,7 +37,7 @@ public interface Resource extends IEntity {
 	public abstract void setRdfsIsDefinedBy(Set<?> value);
 
 	/** A human-readable name for the subject. */
-	@localized
+	@Localized
 	@Iri("http://www.w3.org/2000/01/rdf-schema#label")
 	public abstract String getRdfsLabel();
 
