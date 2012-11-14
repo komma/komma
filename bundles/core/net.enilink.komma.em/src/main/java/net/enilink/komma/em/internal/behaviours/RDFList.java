@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.annotations.precedes;
+import net.enilink.composition.annotations.Precedes;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.composition.traits.Behaviour;
@@ -64,7 +64,7 @@ import net.enilink.komma.util.LinearExtension;
  * when read uncommitted is supported.
  */
 @Iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#List")
-@precedes(ResourceSupport.class)
+@Precedes(ResourceSupport.class)
 public abstract class RDFList extends AbstractSequentialList<Object> implements
 		java.util.List<Object>, Refreshable, Mergeable, IEntity,
 		Behaviour<IEntity> {

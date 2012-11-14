@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.annotations.precedes;
+import net.enilink.composition.annotations.Precedes;
 
 import net.enilink.komma.concepts.ResourceSupport;
 
@@ -46,7 +46,7 @@ import net.enilink.komma.concepts.ResourceSupport;
  * 
  */
 @Iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#List")
-@precedes(ResourceSupport.class)
+@Precedes(ResourceSupport.class)
 public abstract class RDFSContainerDisabler extends RDFSContainer {
 	@Override
 	public boolean equals(Object o) {

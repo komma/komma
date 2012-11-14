@@ -24,7 +24,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.annotations.matches;
+import net.enilink.composition.annotations.Matches;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +53,7 @@ public class RoleClassLoader {
 			if (Iri.class.getName().equals(name)) {
 				return true;
 			}
-			if (matches.class.getName().equals(name)) {
+			if (Matches.class.getName().equals(name)) {
 				return true;
 			}
 		}
@@ -108,7 +108,6 @@ public class RoleClassLoader {
 	private void load(Properties p) throws IOException {
 		for (Map.Entry<Object, Object> e : p.entrySet()) {
 			String role = (String) e.getKey();
-
 			String types = (String) e.getValue();
 			try {
 				Class<?> clazz = Class.forName(role, true,
