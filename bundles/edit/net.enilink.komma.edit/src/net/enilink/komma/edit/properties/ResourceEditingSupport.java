@@ -151,9 +151,9 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		Set<IResource> resources = new HashSet<IResource>(20);
 		template = template.trim();
 
-		if (subject instanceof IObject && predicate != null && template != null
+		if (subject instanceof IObject && template != null
 				&& !template.contains(":")) {
-			// find properties within the default namespace first
+			// find resources within the default namespace first
 			URI uri = ((IObject) subject).getModel().getURI();
 			String uriPattern = uri.appendLocalPart(template).toString();
 			String uriNamespace = uri.appendLocalPart("").toString();
@@ -163,7 +163,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		}
 
 		if (resources.size() < limit) {
-			// additionally, if limit not exceeded, find properties from other
+			// additionally, if limit not exceeded, find resources from other
 			// namespaces
 			String uriPattern = template;
 			if (!template.matches(".*[#/].*")) {
