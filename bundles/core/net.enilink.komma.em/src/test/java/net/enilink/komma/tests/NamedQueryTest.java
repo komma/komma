@@ -19,7 +19,7 @@ import java.util.Set;
 import org.junit.Test;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.properties.annotations.Name;
-import net.enilink.composition.properties.sparql.sparql;
+import net.enilink.composition.properties.sparql.Sparql;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.core.IGraph;
@@ -50,44 +50,44 @@ public class NamedQueryTest extends EntityManagerTest {
 
 		void setFriends(Set<Person> friends);
 
-		@sparql(PREFIX + "SELECT ?friend WHERE { $this :friend ?friend . "
+		@Sparql(PREFIX + "SELECT ?friend WHERE { $this :friend ?friend . "
 				+ "?friend :name $name }")
 		Person findFriendByName(@Name("name") String arg1);
 
-		@sparql(PREFIX + "SELECT ?friend WHERE { $this :friend ?friend . "
+		@Sparql(PREFIX + "SELECT ?friend WHERE { $this :friend ?friend . "
 				+ "?friend :name $name }")
 		Object[] findByName(@Name("name") String arg1);
 
-		@sparql(PREFIX
+		@Sparql(PREFIX
 				+ "CONSTRUCT { ?friend :name $name } WHERE { $this :friend ?friend . "
 				+ "?friend :name $name }")
 		IStatement findStatementByName(@Name("name") String arg1);
 
-		@sparql(PREFIX + "ASK { $this :friend $friend }")
+		@Sparql(PREFIX + "ASK { $this :friend $friend }")
 		boolean isFriend(@Name("friend") Person arg1);
 
-		@sparql(PREFIX + "SELECT ?person WHERE { ?person a :Person }")
+		@Sparql(PREFIX + "SELECT ?person WHERE { ?person a :Person }")
 		IExtendedIterator<Person> findAllPeople();
 
-		@sparql(PREFIX + "SELECT ?person ?name "
+		@Sparql(PREFIX + "SELECT ?person ?name "
 				+ "WHERE { ?person :name ?name } ORDER BY ?name")
 		IExtendedIterator<Object[]> findAllPeopleName();
 
-		@sparql(PREFIX + "CONSTRUCT { ?person a :Person; :name ?name } "
+		@Sparql(PREFIX + "CONSTRUCT { ?person a :Person; :name ?name } "
 				+ "WHERE { ?person :name ?name } ORDER BY ?name")
 		IExtendedIterator<IStatement> loadAllPeople();
 
-		@sparql(PREFIX + "CONSTRUCT { ?person a :Person; :name ?name } "
+		@Sparql(PREFIX + "CONSTRUCT { ?person a :Person; :name ?name } "
 				+ "WHERE { ?person :name ?name } ORDER BY ?name")
 		IGraph loadAllPeopleInGraph();
 
-		@sparql(PREFIX + "SELECT ?person WHERE { ?person a :Person }")
+		@Sparql(PREFIX + "SELECT ?person WHERE { ?person a :Person }")
 		Set<Person> findFriends();
 
-		@sparql(PREFIX + "SELECT $age WHERE { $this :age $age }")
+		@Sparql(PREFIX + "SELECT $age WHERE { $this :age $age }")
 		int findAge(@Name("age") int age);
 
-		@sparql(PREFIX + "SELECT ?nothing WHERE { $this :age $bool }")
+		@Sparql(PREFIX + "SELECT ?nothing WHERE { $this :age $bool }")
 		Object findNull(@Name("bool") boolean bool);
 	}
 
@@ -104,7 +104,7 @@ public class NamedQueryTest extends EntityManagerTest {
 			this.name = name;
 		}
 
-		@sparql(PREFIX + "SELECT ?name WHERE { $this :name ?name }")
+		@Sparql(PREFIX + "SELECT ?name WHERE { $this :name ?name }")
 		public String findName() {
 			return "not overriden";
 		}
