@@ -18,7 +18,7 @@ import java.util.Set;
 
 import org.junit.Test;
 import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.properties.annotations.name;
+import net.enilink.composition.properties.annotations.Name;
 import net.enilink.composition.properties.sparql.sparql;
 
 import net.enilink.commons.iterator.IExtendedIterator;
@@ -52,19 +52,19 @@ public class NamedQueryTest extends EntityManagerTest {
 
 		@sparql(PREFIX + "SELECT ?friend WHERE { $this :friend ?friend . "
 				+ "?friend :name $name }")
-		Person findFriendByName(@name("name") String arg1);
+		Person findFriendByName(@Name("name") String arg1);
 
 		@sparql(PREFIX + "SELECT ?friend WHERE { $this :friend ?friend . "
 				+ "?friend :name $name }")
-		Object[] findByName(@name("name") String arg1);
+		Object[] findByName(@Name("name") String arg1);
 
 		@sparql(PREFIX
 				+ "CONSTRUCT { ?friend :name $name } WHERE { $this :friend ?friend . "
 				+ "?friend :name $name }")
-		IStatement findStatementByName(@name("name") String arg1);
+		IStatement findStatementByName(@Name("name") String arg1);
 
 		@sparql(PREFIX + "ASK { $this :friend $friend }")
-		boolean isFriend(@name("friend") Person arg1);
+		boolean isFriend(@Name("friend") Person arg1);
 
 		@sparql(PREFIX + "SELECT ?person WHERE { ?person a :Person }")
 		IExtendedIterator<Person> findAllPeople();
@@ -85,10 +85,10 @@ public class NamedQueryTest extends EntityManagerTest {
 		Set<Person> findFriends();
 
 		@sparql(PREFIX + "SELECT $age WHERE { $this :age $age }")
-		int findAge(@name("age") int age);
+		int findAge(@Name("age") int age);
 
 		@sparql(PREFIX + "SELECT ?nothing WHERE { $this :age $bool }")
-		Object findNull(@name("bool") boolean bool);
+		Object findNull(@Name("bool") boolean bool);
 	}
 
 	@Iri(NS + "Employee")

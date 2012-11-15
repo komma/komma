@@ -32,7 +32,7 @@ import java.util.AbstractList;
 import java.util.HashSet;
 
 import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.annotations.precedes;
+import net.enilink.composition.annotations.Precedes;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.composition.traits.Behaviour;
@@ -54,7 +54,7 @@ import net.enilink.komma.core.URI;
  * 
  */
 @Iri("http://www.w3.org/2000/01/rdf-schema#Container")
-@precedes(ResourceSupport.class)
+@Precedes(ResourceSupport.class)
 public abstract class RDFSContainer extends AbstractList<Object> implements
 		java.util.List<Object>, Refreshable, Mergeable, IEntity,
 		Behaviour<IEntity> {
