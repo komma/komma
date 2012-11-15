@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, 2010, James Leigh All rights reserved.
+ * Copyright (c) 2007, 2010, James Leigh All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -37,14 +37,14 @@ import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.vocabulary.OBJ;
 
 /**
- * The query binding name used with the sparql or xslt annotation.
+ * Methods with this annotation will use the configured locale to use the
+ * closest matching or the set of closest matching String values.
  * 
  * @author James Leigh
- * 
  */
-@Iri(OBJ.NAMESPACE + "name")
+@Iri(OBJ.NAMESPACE + "localized")
 @Retention(RetentionPolicy.RUNTIME)
-@Target( { ElementType.PARAMETER, ElementType.METHOD, ElementType.TYPE })
-public @interface name {
-	String[] value();
+@Target( { ElementType.METHOD, ElementType.FIELD })
+public @interface Localized {
+	String[] value() default {};
 }

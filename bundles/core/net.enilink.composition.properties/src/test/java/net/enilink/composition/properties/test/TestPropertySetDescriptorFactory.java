@@ -22,7 +22,7 @@ import java.util.Set;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetDescriptor;
 import net.enilink.composition.properties.PropertySetDescriptorFactory;
-import net.enilink.composition.properties.annotations.localized;
+import net.enilink.composition.properties.annotations.Localized;
 
 public class TestPropertySetDescriptorFactory implements
 		PropertySetDescriptorFactory {
@@ -38,7 +38,7 @@ public class TestPropertySetDescriptorFactory implements
 		public TestPropertySetDescriptor(PropertyDescriptor property,
 				String predicate) {
 			Method getter = property.getReadMethod();
-			localized = getter.isAnnotationPresent(localized.class);
+			localized = getter.isAnnotationPresent(Localized.class);
 			readOnly = property.getWriteMethod() == null;
 
 			name = property.getName();
