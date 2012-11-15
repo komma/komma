@@ -34,6 +34,7 @@ import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 
+import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.dm.change.DataChangeTracker;
 import net.enilink.komma.dm.change.IDataChange;
@@ -159,7 +160,7 @@ public class CacheModule extends AbstractModule {
 					if (change instanceof IStatementChange) {
 						IStatementChange stmtChange = (IStatementChange) change;
 
-						Fqn baseFqn = (stmtChange.getContext() != null) ? Fqn
+						Fqn baseFqn = stmtChange.getContext() != null ? Fqn
 								.fromElements(stmtChange.getContext()) : Fqn
 								.root();
 
@@ -177,8 +178,17 @@ public class CacheModule extends AbstractModule {
 							((IEntity) object).refresh();
 						}
 
+						// clear model cache completely if owl:imports has
+						// changed
+						if (stmtChange.getContext() != null
+								&& OWL.PROPERTY_IMPORTS.equals(stmtChange
+										.getPredicate())) {
+							entityCache.removeNode(baseFqn);
+							continue;
+						}
+
 						// do only remove "properties" node from cache to ensure
-						// that the above refresh logic is working
+						// that the above refresh logic keeps working
 						entityCache
 								.removeNode(Fqn.fromRelativeElements(baseFqn,
 										stmtChange.getSubject(), "properties"));
@@ -188,9 +198,8 @@ public class CacheModule extends AbstractModule {
 						// remove entity completely from cache if its type has
 						// been changed
 						if (subject != null
-								&& RDF.PROPERTY_TYPE
-										.equals(((IStatementChange) change)
-												.getPredicate())) {
+								&& RDF.PROPERTY_TYPE.equals(stmtChange
+										.getPredicate())) {
 							entityCache.removeNode(Fqn.fromRelativeElements(
 									baseFqn, stmtChange.getSubject()));
 						}
