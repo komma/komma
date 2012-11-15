@@ -64,7 +64,6 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 			if (superClass != null) {
 				viewerNotifications.add(new ViewerNotification(superClass));
 			}
-
 			IEntity thing = resolveReference(OWL.TYPE_THING);
 			if (thing != null) {
 				// manually refresh cached values for owl:Thing
@@ -155,7 +154,6 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 				dragCommand = IdentityCommand.INSTANCE;
 				dropCommand = AddCommand
 						.create(domain, owner, null, collection);
-
 				return dropCommand.canExecute();
 			}
 
@@ -192,7 +190,6 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 							return owner == null ? Collections.emptySet()
 									: Collections.singleton(owner);
 						}
-
 					}
 				});
 			} else {
@@ -278,13 +275,11 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 			if (RDFS.TYPE_RESOURCE.equals(object)) {
 				return null;
 			}
-
 			// always return rdfs:Resource as parent of owl:Thing
 			if (OWL.TYPE_THING.equals(object)) {
 				return ((IEntity) object).getEntityManager().find(
 						RDFS.TYPE_RESOURCE);
 			}
-
 			IExtendedIterator<?> it = ((IClass) object)
 					.getDirectNamedSuperClasses();
 			try {

@@ -114,16 +114,12 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 						throws ExecutionException {
 					child = helper.createChild(owner, property,
 							childDescription);
-
 					if (child != null) {
 						addAndExecute(AddCommand.create(domain, child,
 								property, owner, index), progressMonitor, info);
 					}
-
 					affectedObjects = helper.getCreateChildResult(child);
-
 					Collection<?> result = helper.getCreateChildResult(child);
-
 					return CommandResult
 							.newOKCommandResult(result == null ? Collections.EMPTY_LIST
 									: result);
@@ -152,7 +148,6 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 			return UnexecutableCommand.INSTANCE;
 		}
 		CompositeCommand addCommand = new CompositeCommand();
-
 		Object owner = commandParameter.getOwner();
 		for (Object value : commandParameter.getCollection()) {
 			if (owner instanceof IProperty
