@@ -65,7 +65,7 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 		parent.setLayout(gridLayout);
 		createActions();
 
-		tree = getWidgetFactory().createTree(parent, SWT.NONE);
+		tree = getWidgetFactory().createTree(parent, SWT.MULTI);
 		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		treeViewer = new TreeViewer(tree);

@@ -61,7 +61,7 @@ public class ClassesPart extends AbstractEditingDomainPart {
 		parent.setLayout(gridLayout);
 		createActions();
 
-		tree = getWidgetFactory().createTree(parent, SWT.VIRTUAL);
+		tree = getWidgetFactory().createTree(parent, SWT.VIRTUAL | SWT.MULTI);
 		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		treeViewer = new TreeViewer(tree);

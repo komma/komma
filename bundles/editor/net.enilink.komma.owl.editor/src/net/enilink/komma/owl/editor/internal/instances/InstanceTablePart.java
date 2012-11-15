@@ -1,7 +1,6 @@
 package net.enilink.komma.owl.editor.internal.instances;
 
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.jface.viewers.AbstractTableViewer;
 import org.eclipse.jface.viewers.ContentViewer;
