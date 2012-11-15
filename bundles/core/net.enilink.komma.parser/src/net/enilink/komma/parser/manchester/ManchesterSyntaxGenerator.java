@@ -145,7 +145,7 @@ public class ManchesterSyntaxGenerator {
 		while (it.hasNext()) {
 			value(it.next());
 			if (it.hasNext()) {
-				append(" ").append(", ").append(" ");
+				append(", ").append(" ");
 			}
 		}
 		append("}");
