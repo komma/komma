@@ -43,7 +43,7 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import net.enilink.composition.asm.util.BehaviourMethodGenerator;
 import net.enilink.composition.exceptions.ConfigException;
 import net.enilink.composition.properties.PropertyMapper;
-import net.enilink.composition.properties.annotations.name;
+import net.enilink.composition.properties.annotations.Name;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.core.IGraph;
@@ -95,8 +95,8 @@ public class SPARQLQueryOptimizer {
 		for (int i = 0, params = method.getParameterTypes().length; i < params; i++) {
 			boolean named = false;
 			for (Annotation ann : method.getParameterAnnotations()[i]) {
-				if (ann.annotationType().equals(name.class)) {
-					for (String name : ((name) ann).value()) {
+				if (ann.annotationType().equals(Name.class)) {
+					for (String name : ((Name) ann).value()) {
 						named = true;
 
 						gen.dup();

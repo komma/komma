@@ -37,6 +37,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import net.enilink.composition.mappers.RoleMapper;
+import net.enilink.composition.properties.Filterable;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.exceptions.PropertyException;
 import net.enilink.composition.properties.traits.Mergeable;
@@ -64,7 +65,8 @@ import net.enilink.komma.core.URI;
  * 
  * @param <E>
  */
-public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
+public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
+		Filterable<E> {
 	private static final int CACHE_LIMIT = 10;
 
 	protected static final String QUERY = "SELECT DISTINCT ?o WHERE { ?s ?p ?o }";
@@ -263,16 +265,39 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 		return (IExtendedIterator<E>) query.evaluate();
 	}
 
-	protected IQuery<?> createElementsQuery() {
-		return manager.createQuery(QUERY).setParameter("s", bean)
+	protected IQuery<?> createElementsQuery(String query, String filterPattern,
+			int limit) {
+		boolean useFilter = filterPattern != null && !filterPattern.isEmpty();
+		if (useFilter || limit != Integer.MAX_VALUE) {
+			StringBuilder querySb = new StringBuilder(query);
+			if (useFilter) {
+				querySb.insert(query.lastIndexOf('}'),
+						" FILTER regex(str(?o), ?filter, \"i\")");
+			}
+			if (limit != Integer.MAX_VALUE) {
+				querySb.append(" LIMIT " + limit);
+			}
+			query = querySb.toString();
+		}
+		IQuery<?> result = manager.createQuery(query).setParameter("s", bean)
 				.setParameter("p", property);
+		if (useFilter) {
+			result.setParameter("filter", ".*" + filterPattern + ".*");
+		}
+		return result;
 	}
 
 	protected IExtendedIterator<E> createElementsIterator() {
-		IQuery<?> query = createElementsQuery();
+		return createElementsIterator(null, Integer.MAX_VALUE);
+	}
+
+	protected IExtendedIterator<E> createElementsIterator(
+			final String filterPattern, final int limit) {
+		IQuery<?> query = createElementsQuery(QUERY, filterPattern, limit);
 		return new ConvertingIterator<E, E>(evaluateQueryForTypes(query)) {
-			private List<E> list = new ArrayList<E>(Math.min(CACHE_LIMIT,
-					getCacheLimit()));
+			private List<E> list = filterPattern == null
+					&& limit == Integer.MAX_VALUE ? new ArrayList<E>(Math.min(
+					CACHE_LIMIT, getCacheLimit())) : null;
 			private E current;
 
 			@Override
@@ -694,5 +719,15 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E> {
 			}
 		}
 		return sb.toString();
+	}
+
+	@Override
+	public Iterator<E> filter(String pattern, int limit) {
+		return createElementsIterator(pattern, limit);
+	}
+
+	@Override
+	public Iterator<E> filter(String pattern) {
+		return filter(pattern, Integer.MAX_VALUE);
 	}
 }

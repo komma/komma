@@ -19,7 +19,7 @@ import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetDescriptor;
 import net.enilink.composition.properties.annotations.Type;
-import net.enilink.composition.properties.annotations.localized;
+import net.enilink.composition.properties.annotations.Localized;
 import net.enilink.composition.properties.util.UnmodifiablePropertySet;
 
 import net.enilink.komma.core.IReference;
@@ -42,7 +42,7 @@ public class KommaPropertySetDescriptor<E> implements PropertySetDescriptor<E> {
 	public KommaPropertySetDescriptor(PropertyDescriptor property,
 			String predicate) {
 		Method getter = property.getReadMethod();
-		localized = getter.isAnnotationPresent(localized.class);
+		localized = getter.isAnnotationPresent(Localized.class);
 		readOnly = property.getWriteMethod() == null;
 
 		Iri rdf = getter.getAnnotation(Iri.class);

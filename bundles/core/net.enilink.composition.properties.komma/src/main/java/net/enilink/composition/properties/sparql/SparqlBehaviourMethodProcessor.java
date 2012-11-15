@@ -51,7 +51,7 @@ import com.google.inject.Inject;
 import net.enilink.komma.core.IEntityManager;
 
 /**
- * Generate a behaviour for {@link sparql} annotated methods.
+ * Generate a behaviour for {@link Sparql} annotated methods.
  * 
  */
 public class SparqlBehaviourMethodProcessor implements
@@ -66,13 +66,13 @@ public class SparqlBehaviourMethodProcessor implements
 
 	@Override
 	public boolean implementsMethod(Class<?> targetClass, Method method) {
-		return method.isAnnotationPresent(sparql.class)
+		return method.isAnnotationPresent(Sparql.class)
 				&& Modifier.isAbstract(method.getModifiers());
 	}
 
 	@Override
 	public boolean appliesTo(BehaviourClassNode classNode, ExtendedMethod method) {
-		return method.getMethodDescriptor().isAnnotationPresent(sparql.class)
+		return method.getMethodDescriptor().isAnnotationPresent(Sparql.class)
 				&& method.instructions.size() == 0;
 	}
 
@@ -102,7 +102,7 @@ public class SparqlBehaviourMethodProcessor implements
 		BehaviourMethodGenerator gen = new BehaviourMethodGenerator(method);
 
 		String sparql = method.getMethodDescriptor()
-				.getAnnotation(sparql.class).value();
+				.getAnnotation(Sparql.class).value();
 		String base;
 		if (method.getMethodDescriptor().getDeclaringClass()
 				.isAnnotationPresent(Iri.class)) {
