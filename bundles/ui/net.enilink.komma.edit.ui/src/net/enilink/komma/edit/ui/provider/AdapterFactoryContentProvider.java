@@ -32,6 +32,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySourceProvider;
 
@@ -46,6 +47,7 @@ import net.enilink.komma.edit.provider.IStructuredItemContentProvider;
 import net.enilink.komma.edit.provider.ITreeItemContentProvider;
 import net.enilink.komma.edit.provider.IViewerNotification;
 import net.enilink.komma.edit.provider.ViewerNotification;
+import net.enilink.komma.model.IModelAware;
 
 /**
  * This content provider wraps an AdapterFactory and it delegates its JFace
@@ -399,7 +401,6 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 
 		protected void refresh(IViewerNotification notification) {
 			Object element = notification.getElement();
-
 			if (viewer instanceof StructuredViewer) {
 				StructuredViewer structuredViewer = (StructuredViewer) viewer;
 
@@ -411,24 +412,36 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 				}
 
 				if (element != null) {
-					if (notification.isContentRefresh()) {
+					// the following test may also be done with an
+					// IElementComparer on the viewer
+					Widget widget = structuredViewer.testFindItem(element);
+					if (widget != null) {
 						// <FIX> for
 						// https://bugs.eclipse.org/bugs/show_bug.cgi?id=389482
 						if (viewer instanceof TreeViewer
 								&& (viewer.getControl().getStyle() & SWT.VIRTUAL) != 0) {
-							TreeItem widget = (TreeItem) structuredViewer
-									.testFindItem(element);
 							if (widget != null && !widget.isDisposed()) {
 								// force widget to be refreshed
-								widget.getChecked();
+								((TreeItem) widget).getChecked();
 							}
 						}
 						// </FIX>
 
-						structuredViewer.refresh(element,
-								notification.isLabelUpdate());
-					} else if (notification.isLabelUpdate()) {
-						structuredViewer.update(element, null);
+						Object oldElement = widget.getData();
+						// ensure that old and new element are contained within
+						// the same model or in no model at all
+						if (element instanceof IModelAware
+								&& oldElement instanceof IModelAware
+								&& ((IModelAware) element).getModel().equals(
+										((IModelAware) oldElement).getModel())
+								|| !(element instanceof IModelAware || oldElement instanceof IModelAware)) {
+							if (notification.isContentRefresh()) {
+								structuredViewer.refresh(element,
+										notification.isLabelUpdate());
+							} else if (notification.isLabelUpdate()) {
+								structuredViewer.update(element, null);
+							}
+						}
 					}
 				} else {
 					structuredViewer.refresh(notification.isLabelUpdate());

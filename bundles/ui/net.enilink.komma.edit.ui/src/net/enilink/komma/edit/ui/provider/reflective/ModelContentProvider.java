@@ -30,6 +30,7 @@ import net.enilink.komma.common.notify.NotificationFilter;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IModelAware;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.IEntity;
@@ -89,7 +90,7 @@ public abstract class ModelContentProvider implements IContentProvider {
 
 	protected boolean executedFullRefresh = false;
 	private Viewer viewer;
-	protected IModel model;
+	protected volatile IModel model;
 	protected boolean listenerRegistered = false;
 	protected boolean registerListener = false;
 	protected boolean transformStatementObjects = true;
@@ -212,11 +213,9 @@ public abstract class ModelContentProvider implements IContentProvider {
 	protected void postRefresh(final Collection<Runnable> runnables) {
 		// remove all previous update operations
 		runnables.clear();
-
 		runnables.add(new Runnable() {
 			public void run() {
 				viewer.refresh();
-
 				// make sure no other update operations are executed after this
 				// one
 				executedFullRefresh = true;
@@ -231,8 +230,11 @@ public abstract class ModelContentProvider implements IContentProvider {
 		runnables.add(new Runnable() {
 			public void run() {
 				for (Iterator<?> iter = toRefresh.iterator(); iter.hasNext();) {
-					((StructuredViewer) viewer).refresh(iter.next(),
-							updateLabels);
+					Object element = iter.next();
+					if (isValid(element)) {
+						((StructuredViewer) viewer).refresh(element,
+								updateLabels);
+					}
 				}
 			}
 		});
@@ -242,36 +244,52 @@ public abstract class ModelContentProvider implements IContentProvider {
 			Collection<Runnable> runnables) {
 		assert viewer instanceof TreeViewer : "This method may only be called for tree viewers";
 
-		runnables.add(new Runnable() {
-			public void run() {
-				Widget[] items = ((TreeViewer) viewer).testFindItems(element);
-				for (int i = 0; i < items.length; i++) {
-					Widget item = items[i];
-					if (item instanceof TreeItem && !item.isDisposed()) {
-						TreeItem parentItem = ((TreeItem) item).getParentItem();
-						if (parentItem != null && !parentItem.isDisposed()
-								&& parent.equals(parentItem.getData())) {
-							return; // no add, element already added (most
-							// likely by a refresh)
+		if (isValid(element)) {
+			runnables.add(new Runnable() {
+				public void run() {
+					Widget[] items = ((TreeViewer) viewer)
+							.testFindItems(element);
+					for (int i = 0; i < items.length; i++) {
+						Widget item = items[i];
+						if (item instanceof TreeItem && !item.isDisposed()) {
+							TreeItem parentItem = ((TreeItem) item)
+									.getParentItem();
+							if (parentItem != null && !parentItem.isDisposed()
+									&& parent.equals(parentItem.getData())) {
+								return; // no add, element already added (most
+								// likely by a refresh)
+							}
 						}
 					}
+					((TreeViewer) viewer).add(parent, element);
 				}
-				((TreeViewer) viewer).add(parent, element);
-			}
-		});
+			});
+		}
 	}
 
 	protected void postRemove(final Object element,
 			Collection<Runnable> runnables) {
-		runnables.add(new Runnable() {
-			public void run() {
-				if (viewer instanceof TableViewer) {
-					((TableViewer) viewer).remove(element);
-				} else if (viewer instanceof TreeViewer) {
-					((TreeViewer) viewer).remove(element);
+		if (isValid(element)) {
+			runnables.add(new Runnable() {
+				public void run() {
+					if (viewer instanceof TableViewer) {
+						((TableViewer) viewer).remove(element);
+					} else if (viewer instanceof TreeViewer) {
+						((TreeViewer) viewer).remove(element);
+					}
 				}
-			}
-		});
+			});
+		}
+	}
+
+	/**
+	 * Tests if the element belongs to the same model as this content provider
+	 * is responsible for.
+	 */
+	protected boolean isValid(Object element) {
+		return model != null && element instanceof IModelAware
+				&& model.equals(((IModelAware) element).getModel())
+				|| model == null && !(element instanceof IModelAware);
 	}
 
 	/**
