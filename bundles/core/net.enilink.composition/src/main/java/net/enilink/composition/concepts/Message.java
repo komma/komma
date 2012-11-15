@@ -30,7 +30,7 @@ package net.enilink.composition.concepts;
 
 import java.util.Set;
 
-import net.enilink.composition.annotations.parameterTypes;
+import net.enilink.composition.annotations.ParameterTypes;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.vocabulary.OBJ;
 
@@ -38,7 +38,7 @@ import net.enilink.composition.vocabulary.OBJ;
 /**
  * Invocation context for behaviour methods. Can be used in conjunction with
  * 
- * @{link {@link parameterTypes} to intersect method invocations.
+ * @{link {@link ParameterTypes} to intersect method invocations.
  * 
  * @author James Leigh
  * 

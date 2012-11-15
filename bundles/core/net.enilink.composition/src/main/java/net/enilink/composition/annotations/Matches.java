@@ -38,7 +38,7 @@ import net.enilink.composition.vocabulary.OBJ;
 /**
  * Any resource with a URI matching an entire given expression is an instance of
  * this class. Expressions ending with '*' are matched against the prefix.
- * Expressions starting with '/' are matched from the begining of the path (if
+ * Expressions starting with '/' are matched from the beginning of the path (if
  * hierarchical).
  * 
  * @author James Leigh
@@ -47,6 +47,6 @@ import net.enilink.composition.vocabulary.OBJ;
 @Iri(OBJ.NAMESPACE + "matches")
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface matches {
+public @interface Matches {
 	String[] value();
 }

@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.junit.Assert;
-import net.enilink.composition.annotations.parameterTypes;
+import net.enilink.composition.annotations.ParameterTypes;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.concepts.Message;
 import net.enilink.composition.mappers.RoleMapper;
@@ -68,7 +68,7 @@ public class SubMessageTest extends CompositionTestCase {
 		}
 
 		@subMessageOf("urn:test:base")
-		@parameterTypes( {})
+		@ParameterTypes( {})
 		public void msg1(Message msg) throws Exception {
 			message++;
 			msg.proceed();

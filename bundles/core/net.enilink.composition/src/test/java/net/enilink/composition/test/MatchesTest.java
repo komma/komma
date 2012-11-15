@@ -12,32 +12,32 @@ package net.enilink.composition.test;
 
 import org.junit.Assert;
 import org.junit.Test;
-import net.enilink.composition.annotations.matches;
+import net.enilink.composition.annotations.Matches;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.mappers.RoleMapper;
 
 public class MatchesTest extends CompositionTestCase {
-	@matches("urn:test:*")
+	@Matches("urn:test:*")
 	public interface TestResource {
 	}
 
-	@matches("urn:test:something")
+	@Matches("urn:test:something")
 	public interface TestSomething {
 	}
 
-	@matches("*")
+	@Matches("*")
 	public interface Anything {
 	}
 
-	@matches("/*")
+	@Matches("/*")
 	public interface AnyPath {
 	}
 
-	@matches("/path")
+	@Matches("/path")
 	public interface Path {
 	}
 
-	@matches("/path/*")
+	@Matches("/path/*")
 	public interface AnySubPath {
 	}
 

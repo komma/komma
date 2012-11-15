@@ -46,6 +46,6 @@ import net.enilink.composition.vocabulary.OBJ;
 @Iri(OBJ.NAMESPACE + "precedes")
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface precedes {
+public @interface Precedes {
 	Class<?>[] value();
 }

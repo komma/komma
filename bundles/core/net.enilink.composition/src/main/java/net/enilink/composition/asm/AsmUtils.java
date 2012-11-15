@@ -24,7 +24,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.util.CheckClassAdapter;
 import org.objectweb.asm.util.TraceClassVisitor;
 import net.enilink.composition.ClassDefiner;
-import net.enilink.composition.annotations.parameterTypes;
+import net.enilink.composition.annotations.ParameterTypes;
 import net.enilink.composition.asm.meta.ClassInfo;
 
 /**
@@ -146,8 +146,8 @@ public class AsmUtils {
 	}
 
 	public static Class<?>[] getParameterTypes(Method m) {
-		if (m.isAnnotationPresent(parameterTypes.class)) {
-			return m.getAnnotation(parameterTypes.class).value();
+		if (m.isAnnotationPresent(ParameterTypes.class)) {
+			return m.getAnnotation(ParameterTypes.class).value();
 		}
 		return m.getParameterTypes();
 	}

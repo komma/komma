@@ -53,7 +53,7 @@ import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 import net.enilink.composition.ClassDefiner;
 import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.annotations.parameterTypes;
+import net.enilink.composition.annotations.ParameterTypes;
 import net.enilink.composition.asm.AsmUtils;
 import net.enilink.composition.asm.CompositeClassNode;
 import net.enilink.composition.asm.ExtendedMethod;
@@ -235,7 +235,7 @@ public class ClassCompositor<T> implements Types, Opcodes {
 
 	private int getRank(Method m) {
 		int rank = m.getAnnotations().length;
-		if (m.isAnnotationPresent(parameterTypes.class))
+		if (m.isAnnotationPresent(ParameterTypes.class))
 			return rank - 1;
 		return rank;
 	}
@@ -253,8 +253,8 @@ public class ClassCompositor<T> implements Types, Opcodes {
 	}
 
 	private Class<?>[] getParameterTypes(Method m) {
-		if (m.isAnnotationPresent(parameterTypes.class))
-			return m.getAnnotation(parameterTypes.class).value();
+		if (m.isAnnotationPresent(ParameterTypes.class))
+			return m.getAnnotation(ParameterTypes.class).value();
 		return m.getParameterTypes();
 	}
 
@@ -586,7 +586,7 @@ public class ClassCompositor<T> implements Types, Opcodes {
 	private boolean isMessage(Class<?> javaClass, Method method)
 			throws Exception {
 		return getMethod(javaClass, method).isAnnotationPresent(
-				parameterTypes.class);
+				ParameterTypes.class);
 	}
 
 	private Method getMethod(Class<?> javaClass, Method method)
@@ -604,7 +604,7 @@ public class ClassCompositor<T> implements Types, Opcodes {
 		Class<?>[] type = method.getParameterTypes();
 		for (Method m : javaClass.getMethods()) {
 			if (m.getName().equals(method.getName())) {
-				parameterTypes ann = m.getAnnotation(parameterTypes.class);
+				ParameterTypes ann = m.getAnnotation(ParameterTypes.class);
 				if (ann != null && Arrays.equals(ann.value(), type)) {
 					return m;
 				}

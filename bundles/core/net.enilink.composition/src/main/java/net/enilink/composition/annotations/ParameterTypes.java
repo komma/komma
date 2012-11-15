@@ -45,6 +45,6 @@ import net.enilink.composition.concepts.Message;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface parameterTypes {
+public @interface ParameterTypes {
 	Class<?>[] value();
 }

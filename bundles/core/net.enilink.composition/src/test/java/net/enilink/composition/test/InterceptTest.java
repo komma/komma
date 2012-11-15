@@ -12,7 +12,7 @@ package net.enilink.composition.test;
 
 import org.junit.Assert;
 import org.junit.Test;
-import net.enilink.composition.annotations.parameterTypes;
+import net.enilink.composition.annotations.ParameterTypes;
 import net.enilink.composition.concepts.Message;
 import net.enilink.composition.mappers.RoleMapper;
 
@@ -38,13 +38,13 @@ public class InterceptTest extends CompositionTestCase {
 	public static class CConceptBehaviour2 {
 		public static int count;
 
-		@parameterTypes({})
+		@ParameterTypes({})
 		public void increment1(Message msg) {
 			count++;
 			msg.proceed();
 		}
 
-		@parameterTypes({})
+		@ParameterTypes({})
 		public void increment2(Message msg) {
 			count++;
 		}
