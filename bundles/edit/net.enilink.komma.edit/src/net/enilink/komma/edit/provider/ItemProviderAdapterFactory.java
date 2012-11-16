@@ -62,6 +62,7 @@ public abstract class ItemProviderAdapterFactory<T> extends AdapterFactory
 		supportedTypes.add(IEditingDomainItemProvider.class);
 		supportedTypes.add(IStructuredItemContentProvider.class);
 		supportedTypes.add(ITreeItemContentProvider.class);
+		supportedTypes.add(IItemFontProvider.class);
 		supportedTypes.add(IItemLabelProvider.class);
 		supportedTypes.add(IItemPropertySource.class);
 		supportedTypes.add(ITableItemLabelProvider.class);

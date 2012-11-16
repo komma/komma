@@ -28,10 +28,12 @@ import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
+import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.URI;
 
 /**
  * This adapter implementation provides reflective support that emulates the
@@ -39,8 +41,8 @@ import net.enilink.komma.core.IReference;
  */
 public class ReflectiveItemProvider extends ItemProviderAdapter implements
 		IEditingDomainItemProvider, IStructuredItemContentProvider,
-		ITreeItemContentProvider, IItemLabelProvider, IItemPropertySource,
-		ISearchableItemProvider {
+		ITreeItemContentProvider, IItemFontProvider, IItemLabelProvider,
+		IItemPropertySource, ISearchableItemProvider {
 
 	protected IResourceLocator resourceLocator;
 	protected Collection<IClass> supportedTypes;
@@ -150,6 +152,20 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 			}
 		}
 		return super.getCreateChildImage(owner, property, childType, selection);
+	}
+
+	@Override
+	public Object getFont(Object object) {
+		if (object instanceof IObject) {
+			URI uri = ((IObject) object).getReference().getURI();
+			if (uri.namespace()
+					.trimFragment()
+					.equals(((IObject) object).getModel().getOntology()
+							.getURI())) {
+				return IItemFontProvider.BOLD_FONT;
+			}
+		}
+		return super.getFont(object);
 	}
 
 	@Override
