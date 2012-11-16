@@ -38,6 +38,7 @@ import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
+import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider.FontProvider;
 import net.enilink.komma.edit.ui.provider.reflective.ObjectComparator;
 import net.enilink.komma.edit.ui.util.FilterWidget;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
@@ -237,8 +238,9 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 								return super.getElements(object);
 							}
 						});
-				treeViewer.setLabelProvider(new AdapterFactoryLabelProvider(
-						adapterFactory));
+				treeViewer
+						.setLabelProvider(new AdapterFactoryLabelProvider.FontProvider(
+								adapterFactory, treeViewer));
 			}
 			createContextMenuFor(treeViewer);
 			treeViewer.setInput(new Object[] { model.getManager().find(
