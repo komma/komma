@@ -18,7 +18,10 @@ package net.enilink.komma.edit.ui.provider;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.eclipse.jface.resource.DeviceResourceException;
 import org.eclipse.jface.resource.FontDescriptor;
@@ -39,19 +42,8 @@ import net.enilink.komma.core.URI;
 public class ExtendedFontRegistry {
 	public static final ExtendedFontRegistry INSTANCE = new ExtendedFontRegistry();
 
-	protected Display display;
-	protected HashMap<Collection<?>, Font> table = new HashMap<Collection<?>, Font>(
-			10);
-
-	public ExtendedFontRegistry() {
-		display = Display.getCurrent();
-		hookDisplayDispose(display);
-	}
-
-	public ExtendedFontRegistry(Display display) {
-		this.display = display;
-		hookDisplayDispose(display);
-	}
+	protected Map<Display, Map<Collection<?>, Font>> fonts = Collections
+			.synchronizedMap(new WeakHashMap<Display, Map<Collection<?>, Font>>());
 
 	public Font getFont(Font baseFont, Object object) {
 		if (object instanceof Font) {
@@ -61,7 +53,21 @@ public class ExtendedFontRegistry {
 			key.add(baseFont);
 			key.add(object);
 
-			Font result = table.get(key);
+			Display display = Display.getCurrent();
+			Font result = null;
+			Map<Collection<?>, Font> cache = null;
+			if (display != null) {
+				synchronized (display) {
+					cache = fonts.get(display);
+					if (cache == null) {
+						hookDisplayDispose(display);
+						cache = new HashMap<Collection<?>, Font>();
+						fonts.put(display, cache);
+					}
+					result = cache.get(object);
+				}
+			}
+
 			if (result == null) {
 				if (object instanceof FontDescriptor) {
 					FontDescriptor fontDescriptor = (FontDescriptor) object;
@@ -111,11 +117,12 @@ public class ExtendedFontRegistry {
 
 					for (int i = 0; i < baseFontData.length; ++i) {
 						fontData[i] = new FontData(
-								fontNameSpecification == null ? baseFontData[i]
-										.getName() : fontNameSpecification,
+								fontNameSpecification == null ? baseFontData[i].getName()
+										: fontNameSpecification,
 								delta ? baseFontData[i].getHeight() + height
-										: height, style == -1 ? baseFontData[i]
-										.getStyle() : style);
+										: height,
+								style == -1 ? baseFontData[i].getStyle()
+										: style);
 					}
 
 					try {
@@ -126,25 +133,25 @@ public class ExtendedFontRegistry {
 					}
 				}
 
-				if (result != null) {
-					table.put(key, result);
+				if (result != null && display != null) {
+					synchronized (display) {
+						cache.put(key, result);
+					}
 				}
 			}
 			return result;
 		}
 	}
 
-	protected void handleDisplayDispose() {
-		for (Font image : table.values()) {
-			image.dispose();
-		}
-		table = null;
-	}
-
-	protected void hookDisplayDispose(Display display) {
+	protected void hookDisplayDispose(final Display display) {
 		display.disposeExec(new Runnable() {
 			public void run() {
-				handleDisplayDispose();
+				Map<Collection<?>, Font> cache = fonts.remove(display);
+				if (cache != null) {
+					for (Font font : cache.values()) {
+						font.dispose();
+					}
+				}
 			}
 		});
 	}

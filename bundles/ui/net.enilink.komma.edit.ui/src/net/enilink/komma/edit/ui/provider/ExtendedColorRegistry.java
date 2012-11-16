@@ -18,7 +18,10 @@ package net.enilink.komma.edit.ui.provider;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.eclipse.jface.resource.ColorDescriptor;
 import org.eclipse.jface.resource.DeviceResourceException;
@@ -38,19 +41,8 @@ import net.enilink.komma.core.URI;
 public class ExtendedColorRegistry {
 	public static final ExtendedColorRegistry INSTANCE = new ExtendedColorRegistry();
 
-	protected Display display;
-	protected HashMap<Collection<?>, Color> table = new HashMap<Collection<?>, Color>(
-			10);
-
-	public ExtendedColorRegistry() {
-		display = Display.getCurrent();
-		hookDisplayDispose(display);
-	}
-
-	public ExtendedColorRegistry(Display display) {
-		this.display = display;
-		hookDisplayDispose(display);
-	}
+	protected Map<Display, Map<Collection<?>, Color>> colors = Collections
+			.synchronizedMap(new WeakHashMap<Display, Map<Collection<?>, Color>>());
 
 	public Color getColor(Color foregroundColor, Color backgroundColor,
 			Object object) {
@@ -62,7 +54,20 @@ public class ExtendedColorRegistry {
 			key.add(backgroundColor);
 			key.add(object);
 
-			Color result = table.get(key);
+			Display display = Display.getCurrent();
+			Color result = null;
+			Map<Collection<?>, Color> cache = null;
+			if (display != null) {
+				synchronized (display) {
+					cache = colors.get(display);
+					if (cache == null) {
+						hookDisplayDispose(display);
+						cache = new HashMap<Collection<?>, Color>();
+						colors.put(display, cache);
+					}
+					result = cache.get(object);
+				}
+			}
 			if (result == null) {
 				if (object instanceof ColorDescriptor) {
 					ColorDescriptor colorDescriptor = (ColorDescriptor) object;
@@ -90,10 +95,9 @@ public class ExtendedColorRegistry {
 							String segment = colorURI.segment(i);
 							hsb[i] = "".equals(segment)
 									|| "foreground".equals(segment) ? foregroundColor
-									.getRGB().getHSB()[i]
-									: "background".equals(segment) ? backgroundColor
-											.getRGB().getHSB()[i]
-											: Float.parseFloat(segment);
+									.getRGB().getHSB()[i] : "background"
+									.equals(segment) ? backgroundColor.getRGB()
+									.getHSB()[i] : Float.parseFloat(segment);
 						}
 						colorData = new RGB(hsb[0], hsb[1], hsb[2]);
 					} else {
@@ -110,25 +114,25 @@ public class ExtendedColorRegistry {
 					}
 				}
 
-				if (result != null) {
-					table.put(key, result);
+				if (result != null && display != null) {
+					synchronized (display) {
+						cache.put(key, result);
+					}
 				}
 			}
 			return result;
 		}
 	}
 
-	protected void handleDisplayDispose() {
-		for (Color color : table.values()) {
-			color.dispose();
-		}
-		table = null;
-	}
-
-	protected void hookDisplayDispose(Display display) {
+	protected void hookDisplayDispose(final Display display) {
 		display.disposeExec(new Runnable() {
 			public void run() {
-				handleDisplayDispose();
+				Map<Collection<?>, Color> cache = colors.remove(display);
+				if (cache != null) {
+					for (Color color : cache.values()) {
+						color.dispose();
+					}
+				}
 			}
 		});
 	}

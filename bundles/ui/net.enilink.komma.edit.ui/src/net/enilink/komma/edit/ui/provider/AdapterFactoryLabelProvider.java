@@ -200,7 +200,7 @@ public class AdapterFactoryLabelProvider implements ILabelProvider,
 
 	/**
 	 * This keep track of the one factory we are using. Use a
-	 * {@link org.eclipse.emf.edit.provider.ComposedAdapterFactory} if adapters
+	 * {@link net.enilink.komma.edit.provider.ComposedAdapterFactory} if adapters
 	 * from more the one factory are involved in the model.
 	 */
 	protected IAdapterFactory adapterFactory;
@@ -361,7 +361,7 @@ public class AdapterFactoryLabelProvider implements ILabelProvider,
 	/**
 	 * This implements {@link org.eclipse.jface.viewers.ILabelProvider}.getImage
 	 * by forwarding it to an object that implements
-	 * {@link org.eclipse.emf.edit.provider.IItemLabelProvider#getImage
+	 * {@link net.enilink.komma.edit.provider.IItemLabelProvider#getImage
 	 * IItemLabelProvider.getImage}
 	 */
 	public Image getImage(Object object) {
@@ -410,7 +410,7 @@ public class AdapterFactoryLabelProvider implements ILabelProvider,
 	/**
 	 * This implements {@link org.eclipse.jface.viewers.IFontProvider}.getFont
 	 * by forwarding it to an object that implements
-	 * {@link org.eclipse.emf.edit.provider.IItemFontProvider#getFont
+	 * {@link net.enilink.komma.edit.provider.IItemFontProvider#getFont
 	 * IItemFontProvider.getFont}
 	 */
 	public Font getFont(Object object) {
@@ -430,7 +430,7 @@ public class AdapterFactoryLabelProvider implements ILabelProvider,
 	/**
 	 * This implements {@link org.eclipse.jface.viewers.IColorProvider}
 	 * .getForeground by forwarding it to an object that implements
-	 * {@link org.eclipse.emf.edit.provider.IItemColorProvider#getForeground
+	 * {@link net.enilink.komma.edit.provider.IItemColorProvider#getForeground
 	 * IItemColorProvider.getForeground}
 	 */
 	public Color getForeground(Object object) {
@@ -445,7 +445,7 @@ public class AdapterFactoryLabelProvider implements ILabelProvider,
 	/**
 	 * This implements {@link org.eclipse.jface.viewers.IColorProvider}
 	 * .getBackground by forwarding it to an object that implements
-	 * {@link org.eclipse.emf.edit.provider.IItemColorProvider#getBackground
+	 * {@link net.enilink.komma.edit.provider.IItemColorProvider#getBackground
 	 * IItemColorProvider.getBackground}
 	 */
 	public Color getBackground(Object object) {
