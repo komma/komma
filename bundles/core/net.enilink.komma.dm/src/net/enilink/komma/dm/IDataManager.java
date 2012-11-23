@@ -1,6 +1,7 @@
 package net.enilink.komma.dm;
 
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.komma.core.IDialect;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
@@ -75,6 +76,13 @@ public interface IDataManager {
 	 */
 	<R> IDataManagerQuery<R> createQuery(String query, String baseURI,
 			boolean includeInferred, IReference... contexts);
+
+	/**
+	 * Return the SPARQL dialect that is specific for the underlying store.
+	 * 
+	 * @return The specific dialect.
+	 */
+	IDialect getDialect();
 
 	/**
 	 * Return the inferencing capability of the underlying store.
