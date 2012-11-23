@@ -35,7 +35,7 @@ import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.IModelAware;
 import net.enilink.komma.model.IObject;
 
 /**
@@ -101,14 +101,13 @@ public class DeleteCommand extends AbstractOverrideableCommand {
 	protected CommandResult doExecuteWithResult(
 			IProgressMonitor progressMonitor, IAdaptable info)
 			throws ExecutionException {
-		Set<IModelSet> modelSets = new LinkedHashSet<IModelSet>();
+		Set<IModel> models = new LinkedHashSet<IModel>();
 
 		Collection<IObject> objects = new LinkedHashSet<IObject>();
 		for (Object wrappedObject : collection) {
 			Object object = AdapterFactoryEditingDomain.unwrap(wrappedObject);
 			if (object instanceof IObject) {
-				modelSets.add(((IObject) object).getModel().getModelSet());
-
+				models.add(((IModelAware) object).getModel());
 				objects.add((IObject) object);
 
 				// walks object contents transitively by using a queue
@@ -117,7 +116,6 @@ public class DeleteCommand extends AbstractOverrideableCommand {
 						((IResource) object).getContents());
 				while (!queue.isEmpty()) {
 					IResource contentObject = queue.remove();
-
 					objects.add((IObject) contentObject);
 					queue.addAll(contentObject.getContents());
 				}
@@ -131,17 +129,14 @@ public class DeleteCommand extends AbstractOverrideableCommand {
 			}
 		}
 
-		for (IModelSet modelSet : modelSets) {
-			for (IModel model : modelSet.getModels()) {
-				if (getDomain().isReadOnly(model)) {
-					continue;
-				}
-				for (IObject toDelete : objects) {
-					model.getManager().remove(toDelete);
-				}
+		for (IModel model : models) {
+			if (getDomain().isReadOnly(model)) {
+				continue;
+			}
+			for (IObject toDelete : objects) {
+				model.getManager().remove(toDelete);
 			}
 		}
-
 		return CommandResult.newOKCommandResult();
 	}
 

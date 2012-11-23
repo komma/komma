@@ -1,6 +1,7 @@
 package net.enilink.komma.edit.properties;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -33,9 +34,11 @@ import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.parser.BaseRdfParser;
 import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.QName;
+import net.enilink.komma.core.IDialect;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.QueryFragment;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.util.ISparqlConstants;
@@ -147,44 +150,42 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 	}
 
 	protected Iterable<IResource> getResourceProposals(IEntity subject,
-			IReference predicate, String template, int limit) {
+			IReference predicate, String pattern, int limit) {
 		Set<IResource> resources = new HashSet<IResource>(20);
-		template = template.trim();
+		pattern = pattern.trim();
 
-		if (subject instanceof IObject && template != null
-				&& !template.contains(":")) {
+		if (subject instanceof IObject && pattern != null
+				&& !pattern.contains(":")) {
 			// find resources within the default namespace first
 			URI uri = ((IObject) subject).getModel().getURI();
-			String uriPattern = uri.appendLocalPart(template).toString();
 			String uriNamespace = uri.appendLocalPart("").toString();
-
-			resources.addAll(retrieve(subject, predicate, template, uriPattern,
+			resources.addAll(retrieve(subject, predicate, pattern, pattern,
 					uriNamespace, limit));
 		}
 
 		if (resources.size() < limit) {
 			// additionally, if limit not exceeded, find resources from other
 			// namespaces
-			String uriPattern = template;
-			if (!template.matches(".*[#/].*")) {
-				uriPattern = "#" + template;
+			String uriPattern = pattern;
+			String uriNamespace = null;
+			if (!pattern.matches(".*[#/].*")) {
+				uriPattern = "#" + pattern;
 
-				int colonIndex = template.lastIndexOf(':');
+				int colonIndex = pattern.lastIndexOf(':');
 				if (colonIndex == 0) {
-					uriPattern = "#" + template.substring(1);
+					uriPattern = "#" + pattern.substring(1);
 				} else if (colonIndex > 0) {
-					String prefix = template.substring(0, colonIndex);
+					String prefix = pattern.substring(0, colonIndex);
 					URI namespaceUri = subject.getEntityManager().getNamespace(
 							prefix);
 					if (namespaceUri != null) {
-						uriPattern = namespaceUri.appendFragment(
-								template.substring(colonIndex + 1)).toString();
+						uriNamespace = namespaceUri.toString();
 					}
 				}
 			}
 
 			List<IResource> fallbackResources = retrieve(subject, predicate,
-					template, uriPattern, null, limit);
+					pattern, uriPattern, uriNamespace, limit);
 			int count = 0;
 			while (resources.size() < limit && count < fallbackResources.size()) {
 				resources.add(fallbackResources.get(count));
@@ -195,8 +196,16 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		return resources;
 	}
 
+	private String[] split(String s, String pattern) {
+		List<String> tokens = new ArrayList<String>(Arrays.asList(s
+				.split(pattern)));
+		while (tokens.remove(""))
+			;
+		return tokens.toArray(new String[tokens.size()]);
+	}
+
 	protected List<IResource> retrieve(IEntity subject, IReference predicate,
-			String template, String uriPattern, String uriNamespace, int limit) {
+			String pattern, String uriPattern, String namespace, int limit) {
 		StringBuilder sparql = new StringBuilder(ISparqlConstants.PREFIX
 				+ "SELECT DISTINCT ?s WHERE { ");
 
@@ -213,25 +222,34 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			}
 		}
 
-		sparql.append("{ ?s ?p ?o . FILTER regex(str(?s), ?uriPattern) }");
+		IDialect dialect = subject.getEntityManager().getDialect();
+		QueryFragment searchS = dialect.fullTextSearch("s",
+				IDialect.CASE_INSENSITIVE | IDialect.ALL,
+				split(uriPattern, "\\s*[#/]\\s*"));
+		QueryFragment searchL = dialect.fullTextSearch("l",
+				IDialect.CASE_INSENSITIVE, pattern);
+
+		sparql.append("{ ?s ?p ?o . " + searchS);
+		sparql.append(" FILTER regex(str(?s), ?uriPattern)");
+		sparql.append(" }");
 		sparql.append(" UNION ");
 		sparql.append("{ ");
-		sparql.append("?s rdfs:label ?l . FILTER regex(str(?l), ?template)");
-		if (uriNamespace != null) {
-			sparql.append(". FILTER regex(str(?s), ?uriNamespace)");
-		}
+		sparql.append("?s rdfs:label ?l . " + searchL);
 		sparql.append(" }");
+		if (namespace != null) {
+			sparql.append(" FILTER regex(str(?s), ?namespace)");
+		}
 		sparql.append(" } LIMIT " + limit);
 
 		// TODO incorporate correct ranges
-		IQuery<?> query = subject.getEntityManager()
-				.createQuery(sparql.toString())
-				.setParameter("uriPattern", uriPattern)
-				.setParameter("template", "^" + template);
-		if (uriNamespace != null) {
-			query.setParameter("uriNamespace", uriNamespace);
+		IQuery<?> query = subject.getEntityManager().createQuery(
+				sparql.toString());
+		searchS.addParameters(query);
+		searchL.addParameters(query);
+		query.setParameter("uriPattern", uriPattern);
+		if (namespace != null) {
+			query.setParameter("namespace", "^" + namespace);
 		}
-
 		if (!editPredicate) {
 			query.setParameter("subject", subject);
 			query.setParameter("property", predicate);
@@ -239,8 +257,8 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 
 		List<IResource> list = query.evaluate(IResource.class).toList();
 		if (list.isEmpty() && predicate != null) {
-			return this.retrieve(subject, null, template, uriPattern,
-					uriNamespace, limit);
+			return this.retrieve(subject, null, pattern, uriPattern, namespace,
+					limit);
 		} else {
 			return list;
 		}
