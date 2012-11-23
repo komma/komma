@@ -75,6 +75,7 @@ import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.em.internal.behaviours.IEntityManagerAware;
 import net.enilink.komma.em.internal.query.EntityManagerQuery;
 import net.enilink.komma.literals.LiteralConverter;
+import net.enilink.komma.core.IDialect;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
@@ -547,6 +548,11 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	@Override
 	public IEntityManagerFactory getFactory() {
 		return factory;
+	}
+
+	@Override
+	public IDialect getDialect() {
+		return dm.getDialect();
 	}
 
 	@Override
