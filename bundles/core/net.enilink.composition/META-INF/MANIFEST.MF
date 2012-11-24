@@ -4,6 +4,7 @@ Bundle-Name: Composition
 Bundle-SymbolicName: net.enilink.composition
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Eclipse-BuddyPolicy: dependent
 Export-Package: net.enilink.composition,
  net.enilink.composition.annotations,
  net.enilink.composition.asm,

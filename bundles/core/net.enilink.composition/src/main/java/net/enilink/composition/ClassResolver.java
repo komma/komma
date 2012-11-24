@@ -53,7 +53,7 @@ import com.google.inject.Singleton;
  */
 @Singleton
 public class ClassResolver<T> {
-	private static final String PKG_PREFIX = "object.proxies._";
+	public static final String PKG_PREFIX = "object.proxies.";
 	private static final String CLASS_PREFIX = "_EntityProxy";
 
 	private ClassDefiner definer;
@@ -216,7 +216,7 @@ public class ClassResolver<T> {
 	private String getJavaClassName(Collection<Class<?>> javaClasses) {
 		String phex = packagesToHexString(javaClasses);
 		String chex = classesToHexString(javaClasses);
-		return PKG_PREFIX + phex + "." + CLASS_PREFIX + chex;
+		return PKG_PREFIX + "_" + phex + "." + CLASS_PREFIX + chex;
 	}
 
 	private String packagesToHexString(Collection<Class<?>> javaClasses) {

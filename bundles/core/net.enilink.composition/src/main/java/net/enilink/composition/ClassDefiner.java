@@ -37,9 +37,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import net.enilink.composition.asm.DefaultBehaviourFactory;
 
 /**
  * Factory class for creating Classes.
@@ -109,11 +110,9 @@ public class ClassDefiner extends ClassLoader {
 				throw new AssertionError(e);
 			}
 		}
-
 		if (bytecodes != null && bytecodes.containsKey(name)) {
 			return exists;
 		}
-
 		return super.getResource(name);
 	}
 
@@ -128,18 +127,11 @@ public class ClassDefiner extends ClassLoader {
 				}
 			}
 		}
-
 		if (bytecodes != null && bytecodes.containsKey(name)) {
 			byte[] b = bytecodes.get(name);
 			return new ByteArrayInputStream(b);
 		}
-
 		return getParent().getResourceAsStream(name);
-	}
-
-	@Override
-	public Enumeration<URL> getResources(String name) throws IOException {
-		return super.getResources(name);
 	}
 
 	public Class<?> defineClass(String name, byte[] bytecode) {
@@ -147,11 +139,9 @@ public class ClassDefiner extends ClassLoader {
 		if (output != null) {
 			saveResource(resource, bytecode);
 		}
-
 		if (bytecodes != null) {
 			bytecodes.putIfAbsent(resource, bytecode);
 		}
-
 		return defineClass(name, bytecode, 0, bytecode.length);
 	}
 
@@ -168,5 +158,33 @@ public class ClassDefiner extends ClassLoader {
 		} catch (IOException e) {
 			throw new AssertionError(e);
 		}
+	}
+
+	@Override
+	protected Class<?> loadClass(String name, boolean resolve)
+			throws ClassNotFoundException {
+		if (name.startsWith(ClassResolver.PKG_PREFIX)
+				|| name.startsWith(DefaultBehaviourFactory.PKG_PREFIX)) {
+			// prevent delegation to parent class loader,
+			// since this class should be defined in this class loader
+			synchronized (getClassLoadingLock(name)) {
+				Class<?> c = findLoadedClass(name);
+				if (c == null) {
+					throw new ClassNotFoundException(name);
+				}
+				if (resolve) {
+					resolveClass(c);
+				}
+				return c;
+			}
+		}
+		return super.loadClass(name, resolve);
+	}
+
+	@Override
+	protected Class<?> findClass(String name) throws ClassNotFoundException {
+		// required to load classes from this bundle or from other (dynamically)
+		// imported bundles
+		return getClass().getClassLoader().loadClass(name);
 	}
 }

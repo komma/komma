@@ -14,12 +14,12 @@ package net.enilink.composition.asm;
  * The default factory that is used to transform abstract behaviours into
  * concrete behaviours.
  * 
- * @author Ken Wenzel
- * 
  */
 public class DefaultBehaviourFactory extends BehaviourFactoryBase {
+	public static final String PKG_PREFIX = "object.behaviours.";
+	
 	@Override
 	protected String getExtendedClassName(Class<?> behaviourClass) {
-		return "openrdf.beans." + behaviourClass.getName() + "$$behaviour";
+		return PKG_PREFIX + behaviourClass.getName() + "$$behaviour";
 	}
 }
