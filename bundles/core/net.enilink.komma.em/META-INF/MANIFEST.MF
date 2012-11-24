@@ -47,5 +47,4 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.composition.properties.komma,
  net.enilink.composition.cache;visibility:=reexport,
  net.enilink.komma.query;visibility:=reexport
-DynamicImport-Package: *
 Bundle-ClassPath: .
