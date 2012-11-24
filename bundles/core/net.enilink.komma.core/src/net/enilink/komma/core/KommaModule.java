@@ -31,9 +31,9 @@ package net.enilink.komma.core;
 import static java.util.Collections.unmodifiableSet;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,29 +63,6 @@ public class KommaModule {
 			this.rdfType = rdfType;
 		}
 
-		public Class<?> getJavaClass() {
-			return javaClass;
-		}
-
-		public String getRdfType() {
-			return rdfType;
-		}
-
-		public String toString() {
-			return javaClass.getName() + "=" + rdfType;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result
-					+ ((javaClass == null) ? 0 : javaClass.hashCode());
-			result = prime * result
-					+ ((rdfType == null) ? 0 : rdfType.hashCode());
-			return result;
-		}
-
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -106,6 +83,29 @@ public class KommaModule {
 			} else if (!rdfType.equals(other.rdfType))
 				return false;
 			return true;
+		}
+
+		public Class<?> getJavaClass() {
+			return javaClass;
+		}
+
+		public String getRdfType() {
+			return rdfType;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((javaClass == null) ? 0 : javaClass.hashCode());
+			result = prime * result
+					+ ((rdfType == null) ? 0 : rdfType.hashCode());
+			return result;
+		}
+
+		public String toString() {
+			return javaClass.getName() + "=" + rdfType;
 		}
 	}
 
@@ -133,9 +133,23 @@ public class KommaModule {
 		}
 
 		@Override
-		public URL getResource(String name) {
-			URL resource = super.getResource(name);
-			if (resource == null && alternatives != null) {
+		protected Class<?> findClass(String name) throws ClassNotFoundException {
+			if (alternatives != null) {
+				for (ClassLoader alt : alternatives) {
+					try {
+						return alt.loadClass(name);
+					} catch (ClassNotFoundException e2) {
+						// ignore and try next alternative class loader
+					}
+				}
+			}
+			throw new ClassNotFoundException(name);
+		}
+
+		@Override
+		protected URL findResource(String name) {
+			URL resource = null;
+			if (alternatives != null) {
 				for (ClassLoader alt : alternatives) {
 					resource = alt.getResource(name);
 					if (resource != null) {
@@ -147,57 +161,23 @@ public class KommaModule {
 		}
 
 		@Override
-		public InputStream getResourceAsStream(String name) {
-			InputStream stream = super.getResourceAsStream(name);
-			if (stream == null && alternatives != null) {
-				for (ClassLoader alt : alternatives) {
-					stream = alt.getResourceAsStream(name);
-					if (stream != null) {
-						break;
-					}
-				}
-			}
-			return stream;
-		}
-
-		@Override
-		public Enumeration<URL> getResources(String name) throws IOException {
-			Vector<URL> list = new Vector<URL>();
-			Enumeration<URL> e = super.getResources(name);
-			while (e.hasMoreElements()) {
-				list.add(e.nextElement());
-			}
+		protected Enumeration<URL> findResources(String name)
+				throws IOException {
 			if (alternatives != null) {
+				Vector<URL> list = new Vector<URL>();
 				for (ClassLoader alt : alternatives) {
-					e = alt.getResources(name);
+					Enumeration<URL> e = alt.getResources(name);
 					while (e.hasMoreElements()) {
 						list.add(e.nextElement());
 					}
 				}
+				return list.elements();
 			}
-			return list.elements();
-		}
-
-		@Override
-		public Class<?> loadClass(String name) throws ClassNotFoundException {
-			try {
-				return super.loadClass(name);
-			} catch (ClassNotFoundException e) {
-				if (alternatives != null) {
-					for (ClassLoader alt : alternatives) {
-						try {
-							return alt.loadClass(name);
-						} catch (ClassNotFoundException e2) {
-							// ignore and try next alternative class loader
-						}
-					}
-				}
-				throw e;
-			}
+			return Collections.emptyEnumeration();
 		}
 	}
 
-	private CombinedClassLoader cl;
+	private final CombinedClassLoader cl;
 
 	private Map<Class<?>, Association> annotations = new HashMap<Class<?>, Association>();
 
@@ -212,98 +192,12 @@ public class KommaModule {
 	private Set<URI> writableGraphs = new LinkedHashSet<URI>();
 
 	public KommaModule() {
-		ClassLoader contextClassLoader = Thread.currentThread()
-				.getContextClassLoader();
-		if (contextClassLoader != null) {
-			cl = new CombinedClassLoader(contextClassLoader);
-		}
-		if (cl == null) {
-			cl = new CombinedClassLoader(getClass().getClassLoader());
-		}
+		cl = new CombinedClassLoader(getClass().getClassLoader());
 	}
 
 	public KommaModule(ClassLoader classLoader) {
 		cl = new CombinedClassLoader(classLoader);
 		cl.addAlternative(getClass().getClassLoader());
-	}
-
-	public synchronized ClassLoader getClassLoader() {
-		return cl;
-	}
-
-	public Set<URI> getWritableGraphs() {
-		return unmodifiableSet(writableGraphs);
-	}
-
-	/**
-	 * Adds a writable graph this module. This limits the writable and the
-	 * readable scope to this and other writable graphs and causes any add
-	 * operations to be added to these graphs.
-	 * 
-	 * @param graph
-	 * @return this
-	 */
-	public KommaModule addWritableGraph(URI graph) {
-		writableGraphs.add(graph);
-		addReadableGraph(graph);
-		return this;
-	}
-
-	/**
-	 * Adds a readable graph this module. This limits the readable scope to this
-	 * and other readable graphs.
-	 * 
-	 * @param graph
-	 * @return this
-	 */
-	public KommaModule addReadableGraph(URI graph) {
-		readableGraphs.add(graph);
-		return this;
-	}
-
-	/**
-	 * Include all the information from the given module in this module.
-	 * 
-	 * @param module
-	 *            to be included
-	 * @return this
-	 */
-	public KommaModule includeModule(KommaModule module) {
-		annotations.putAll(module.annotations);
-		datatypes.addAll(module.datatypes);
-		concepts.addAll(module.concepts);
-		behaviours.addAll(module.behaviours);
-		readableGraphs.addAll(module.writableGraphs);
-		readableGraphs.addAll(module.readableGraphs);
-		if (!cl.equals(module.cl)) {
-			cl.addAlternative(module.cl);
-		}
-		return this;
-	}
-
-	public Set<URI> getReadableGraphs() {
-		return unmodifiableSet(readableGraphs);
-	}
-
-	public Collection<Association> getDatatypes() {
-		return unmodifiableSet(datatypes);
-	}
-
-	/**
-	 * Associates this datatype with the given uri within this factory.
-	 * 
-	 * @param type
-	 *            serializable class
-	 * @param datatype
-	 *            URI
-	 */
-	public KommaModule addDatatype(Class<?> type, String uri) {
-		datatypes.add(new Association(type, uri));
-		return this;
-	}
-
-	public Collection<Association> getAnnotations() {
-		return annotations.values();
 	}
 
 	/**
@@ -340,8 +234,28 @@ public class KommaModule {
 		return this;
 	}
 
-	public Collection<Association> getConcepts() {
-		return unmodifiableSet(concepts);
+	/**
+	 * Associates this behaviour with its default subject type.
+	 * 
+	 * @param behaviour
+	 *            class
+	 */
+	public KommaModule addBehaviour(Class<?> behaviour) {
+		behaviours.add(new Association(behaviour, null));
+		return this;
+	}
+
+	/**
+	 * Associates this behaviour with the given subject type.
+	 * 
+	 * @param behaviour
+	 *            class
+	 * @param type
+	 *            URI
+	 */
+	public KommaModule addBehaviour(Class<?> behaviour, String type) {
+		behaviours.add(new Association(behaviour, type));
+		return this;
 	}
 
 	/**
@@ -368,52 +282,43 @@ public class KommaModule {
 		return this;
 	}
 
-	public Collection<Association> getBehaviours() {
-		return unmodifiableSet(behaviours);
-	}
-
 	/**
-	 * Associates this behaviour with its default subject type.
+	 * Associates this datatype with the given uri within this factory.
 	 * 
-	 * @param behaviour
-	 *            class
-	 */
-	public KommaModule addBehaviour(Class<?> behaviour) {
-		behaviours.add(new Association(behaviour, null));
-		return this;
-	}
-
-	/**
-	 * Associates this behaviour with the given subject type.
-	 * 
-	 * @param behaviour
-	 *            class
 	 * @param type
+	 *            serializable class
+	 * @param datatype
 	 *            URI
 	 */
-	public KommaModule addBehaviour(Class<?> behaviour, String type) {
-		behaviours.add(new Association(behaviour, type));
+	public KommaModule addDatatype(Class<?> type, String uri) {
+		datatypes.add(new Association(type, uri));
 		return this;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((annotations == null) ? 0 : annotations.hashCode());
-		result = prime * result
-				+ ((behaviours == null) ? 0 : behaviours.hashCode());
-		result = prime * result + ((cl == null) ? 0 : cl.hashCode());
-		result = prime * result
-				+ ((concepts == null) ? 0 : concepts.hashCode());
-		result = prime * result
-				+ ((datatypes == null) ? 0 : datatypes.hashCode());
-		result = prime * result
-				+ ((readableGraphs == null) ? 0 : readableGraphs.hashCode());
-		result = prime * result
-				+ ((writableGraphs == null) ? 0 : writableGraphs.hashCode());
-		return result;
+	/**
+	 * Adds a readable graph this module. This limits the readable scope to this
+	 * and other readable graphs.
+	 * 
+	 * @param graph
+	 * @return this
+	 */
+	public KommaModule addReadableGraph(URI graph) {
+		readableGraphs.add(graph);
+		return this;
+	}
+
+	/**
+	 * Adds a writable graph this module. This limits the writable and the
+	 * readable scope to this and other writable graphs and causes any add
+	 * operations to be added to these graphs.
+	 * 
+	 * @param graph
+	 * @return this
+	 */
+	public KommaModule addWritableGraph(URI graph) {
+		writableGraphs.add(graph);
+		addReadableGraph(graph);
+		return this;
 	}
 
 	@Override
@@ -461,6 +366,74 @@ public class KommaModule {
 		} else if (!writableGraphs.equals(other.writableGraphs))
 			return false;
 		return true;
+	}
+
+	public Collection<Association> getAnnotations() {
+		return annotations.values();
+	}
+
+	public Collection<Association> getBehaviours() {
+		return unmodifiableSet(behaviours);
+	}
+
+	public synchronized ClassLoader getClassLoader() {
+		return cl;
+	}
+
+	public Collection<Association> getConcepts() {
+		return unmodifiableSet(concepts);
+	}
+
+	public Collection<Association> getDatatypes() {
+		return unmodifiableSet(datatypes);
+	}
+
+	public Set<URI> getReadableGraphs() {
+		return unmodifiableSet(readableGraphs);
+	}
+
+	public Set<URI> getWritableGraphs() {
+		return unmodifiableSet(writableGraphs);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((annotations == null) ? 0 : annotations.hashCode());
+		result = prime * result
+				+ ((behaviours == null) ? 0 : behaviours.hashCode());
+		result = prime * result + ((cl == null) ? 0 : cl.hashCode());
+		result = prime * result
+				+ ((concepts == null) ? 0 : concepts.hashCode());
+		result = prime * result
+				+ ((datatypes == null) ? 0 : datatypes.hashCode());
+		result = prime * result
+				+ ((readableGraphs == null) ? 0 : readableGraphs.hashCode());
+		result = prime * result
+				+ ((writableGraphs == null) ? 0 : writableGraphs.hashCode());
+		return result;
+	}
+
+	/**
+	 * Include all the information from the given module in this module.
+	 * 
+	 * @param module
+	 *            to be included
+	 * @return this
+	 */
+	public KommaModule includeModule(KommaModule module) {
+		annotations.putAll(module.annotations);
+		datatypes.addAll(module.datatypes);
+		concepts.addAll(module.concepts);
+		behaviours.addAll(module.behaviours);
+		readableGraphs.addAll(module.writableGraphs);
+		readableGraphs.addAll(module.readableGraphs);
+		if (!cl.equals(module.cl)) {
+			cl.addAlternative(module.cl);
+		}
+		return this;
 	}
 
 	@Override
