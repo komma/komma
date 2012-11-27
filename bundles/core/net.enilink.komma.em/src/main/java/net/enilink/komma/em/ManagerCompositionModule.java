@@ -1,5 +1,6 @@
 package net.enilink.komma.em;
 
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Locale;
 import java.util.Map;
@@ -37,6 +38,7 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 
 public class ManagerCompositionModule extends AbstractModule {
+	private static Map<ClassLoader, WeakReference<ClassLoader>> classLoaders = new WeakHashMap<ClassLoader, WeakReference<ClassLoader>>();
 	private static Map<ClassLoader, WeakReference<ClassDefiner>> definers = new WeakHashMap<ClassLoader, WeakReference<ClassDefiner>>();
 
 	private KommaModule module;
@@ -194,8 +196,21 @@ public class ManagerCompositionModule extends AbstractModule {
 				definer = ref.get();
 			}
 			if (definer == null) {
-				definer = new ClassDefiner(cl);
-				definers.put(cl, new WeakReference<ClassDefiner>(definer));
+				ClassLoader internedLoader = null;
+				synchronized (classLoaders) {
+					Reference<ClassLoader> loaderRef = classLoaders.get(cl);
+					if (loaderRef != null) {
+						internedLoader = loaderRef.get();
+					}
+					if (internedLoader == null) {
+						classLoaders.put(internedLoader,
+								new WeakReference<ClassLoader>(internedLoader));
+						internedLoader = cl;
+					}
+				}
+				definer = new ClassDefiner(internedLoader);
+				definers.put(internedLoader, new WeakReference<ClassDefiner>(
+						definer));
 			}
 		}
 		return definer;

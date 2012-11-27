@@ -24,6 +24,7 @@ import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.core.IGraph;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IQuery;
@@ -382,6 +383,11 @@ public abstract class ThreadLocalEntityManager implements IEntityManager {
 	@Override
 	public Object toInstance(IValue value) {
 		return getDelegate().toInstance(value);
+	}
+
+	@Override
+	public Object toInstance(Object value, Class<?> type, IGraph graph) {
+		return getDelegate().toInstance(value, type, graph);
 	}
 
 	@Override

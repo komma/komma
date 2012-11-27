@@ -90,6 +90,7 @@ import net.enilink.komma.core.IStatementPattern;
 import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.InferencingCapability;
+import net.enilink.komma.core.Initializable;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.LockModeType;
 import net.enilink.komma.core.Statement;
@@ -302,7 +303,6 @@ public abstract class AbstractEntityManager implements IEntityManager,
 					}
 				}
 			}
-
 			if (entityTypes.isEmpty()) {
 				entityTypes.addAll(getTypeManager().getTypes(resource));
 			}
@@ -327,6 +327,9 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				classResolver.resolveComposite(entityTypes));
 		if (graph != null) {
 			initializeBean(bean, graph);
+		}
+		if (bean instanceof Initializable) {
+			((Initializable) bean).init(graph);
 		}
 		return bean;
 	}
@@ -667,18 +670,15 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				if (method.getParameterTypes().length > 0) {
 					continue;
 				}
-
 				// initialize a property set
-				if (method.isAnnotationPresent(Iri.class)) {
+				if (method.isAnnotationPresent(Iri.class)
+						&& Set.class.isAssignableFrom(method.getReturnType())) {
 					Iri Iri = method.getAnnotation(Iri.class);
-
-					if (graph.contains(bean, URIImpl.createURI(Iri.value()),
-							null)) {
+					URI property = URIImpl.createURI(Iri.value());
+					if (graph.contains(bean, property, null)) {
 						Set<Object> objects = new LinkedHashSet<Object>(graph
-								.filter(bean, URIImpl.createURI(Iri.value()),
-										null).objects());
-						graph.remove(bean, URIImpl.createURI(Iri.value()), null);
-
+								.filter(bean, property, null).objects());
+						graph.remove(bean, property, null);
 						Object result = method.invoke(bean);
 						if (result instanceof PropertySet<?>) {
 							((PropertySet) result).init(getInstances(
@@ -752,7 +752,6 @@ public abstract class AbstractEntityManager implements IEntityManager,
 					}
 				}
 			}
-
 		} catch (Exception e) {
 			throw new KommaException(e);
 		}

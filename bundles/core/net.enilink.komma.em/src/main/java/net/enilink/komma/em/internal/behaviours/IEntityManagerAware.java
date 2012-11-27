@@ -14,7 +14,7 @@ import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;
 
 /**
- * Internal interface implemented by KommaEntitySupport.
+ * Internal interface implemented by {@link EntitySupport}.
  */
 public interface IEntityManagerAware {
 	void initEntityManager(IEntityManager manager);

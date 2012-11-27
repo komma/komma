@@ -32,15 +32,17 @@ import java.util.AbstractSequentialList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
-import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.annotations.Precedes;
+import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.composition.traits.Behaviour;
@@ -49,8 +51,11 @@ import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.concepts.ResourceSupport;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IGraph;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IValue;
+import net.enilink.komma.core.Initializable;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
@@ -66,7 +71,7 @@ import net.enilink.komma.util.LinearExtension;
 @Iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#List")
 @Precedes(ResourceSupport.class)
 public abstract class RDFList extends AbstractSequentialList<Object> implements
-		java.util.List<Object>, Refreshable, Mergeable, IEntity,
+		java.util.List<Object>, Refreshable, Mergeable, Initializable, IEntity,
 		Behaviour<IEntity> {
 	private static final boolean INIT_CACHE_WITH_PROPERTY_PATH = true;
 	private static final Item NIL_ITEM = new Item(RDF.NIL, null, null);
@@ -160,6 +165,45 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 			return new Item(self, null, null);
 		} finally {
 			results.close();
+		}
+	}
+
+	/**
+	 * Initialize this list with data contained in <code>graph</code>.
+	 */
+	@Override
+	public void init(IGraph graph) {
+		if (graph != null && cache == null) {
+			IReference list = getReference();
+			List<Item> items = new ArrayList<Item>();
+			Set<IReference> seen = new HashSet<IReference>();
+			while (list != null && seen.add(list) && !RDF.NIL.equals(list)) {
+				IReference rest = null;
+				IValue first = null;
+				for (IStatement stmt : graph.filter(list, null, null)) {
+					if (RDF.PROPERTY_FIRST.equals(stmt.getPredicate())) {
+						first = (IValue) stmt.getObject();
+					} else if (RDF.PROPERTY_REST.equals(stmt.getPredicate())) {
+						if (stmt.getObject() instanceof IReference) {
+							rest = (IReference) stmt.getObject();
+						} else {
+							// invalid list data
+							break;
+						}
+					}
+				}
+				if (first != null) {
+					// eagerly initialize the item
+					// getEntityManager().toInstance(first, null, graph);
+					items.add(new Item(list, first, rest));
+					list = rest;
+				}
+			}
+			items.add(NIL_ITEM);
+			// only initialize cache if list has been fully traversed
+			if (list == null || RDF.NIL.equals(list)) {
+				cache = items;
+			}
 		}
 	}
 
@@ -259,7 +303,6 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 					}
 					items.add(next);
 					if (next.first == null) {
-						// TODO maybe only if (!cached)
 						cache = new ArrayList<Item>(items);
 					}
 				}
