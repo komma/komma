@@ -724,6 +724,14 @@ public interface IEntityManager {
 	Object toInstance(IValue value);
 
 	/**
+	 * Returns the value converted to a Java type and initialized with data from
+	 * <code>graph</code>.
+	 * 
+	 * @return the converted value
+	 */
+	Object toInstance(Object value, Class<?> type, IGraph graph);
+
+	/**
 	 * Checks if this entity manager has a mapping for the given
 	 * <code>role</code>
 	 * 

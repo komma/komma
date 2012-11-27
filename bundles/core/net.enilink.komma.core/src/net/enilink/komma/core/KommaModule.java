@@ -121,15 +121,16 @@ public class KommaModule {
 				alternatives = new LinkedHashSet<ClassLoader>();
 			}
 			if (loader instanceof CombinedClassLoader) {
+				alternatives.add(loader.getParent());
 				if (((CombinedClassLoader) loader).alternatives != null) {
 					alternatives
 							.addAll(((CombinedClassLoader) loader).alternatives);
-				} else {
-					alternatives.add(loader.getParent());
 				}
 			} else {
 				alternatives.add(loader);
 			}
+			// do not include parent class loader in alternatives
+			alternatives.remove(getParent());
 		}
 
 		@Override
@@ -174,6 +175,39 @@ public class KommaModule {
 				return list.elements();
 			}
 			return Collections.emptyEnumeration();
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((getParent() == null) ? 0 : getParent().hashCode());
+			result = prime * result
+					+ ((alternatives == null) ? 0 : alternatives.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof CombinedClassLoader))
+				return false;
+			CombinedClassLoader other = (CombinedClassLoader) obj;
+			if (getParent() == null) {
+				if (other.getParent() != null)
+					return false;
+			} else if (!getParent().equals(other.getParent()))
+				return false;
+			if (alternatives == null) {
+				if (other.alternatives != null)
+					return false;
+			} else if (!alternatives.equals(other.alternatives))
+				return false;
+			return true;
 		}
 	}
 
