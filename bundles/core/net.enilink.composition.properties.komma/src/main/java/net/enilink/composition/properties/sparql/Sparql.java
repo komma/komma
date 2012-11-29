@@ -33,8 +33,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.vocabulary.OBJ;
+import net.enilink.composition.properties.annotations.Name;
 
 /**
  * Named SPARQL queries should be placed in this annotation on methods that
@@ -44,10 +43,7 @@ import net.enilink.composition.vocabulary.OBJ;
  * datatype, set of concept or datatype, or one of the result classes of tuple,
  * graph, or boolean query.
  * 
- * @author James Leigh
- * 
  */
-@Iri(OBJ.NAMESPACE + "sparql")
 @Retention(RetentionPolicy.RUNTIME)
 @Target( { ElementType.TYPE, ElementType.METHOD })
 public @interface Sparql {
