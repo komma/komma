@@ -1,2 +1,1 @@
-net.enilink.composition.annotations.Precedes
-net.enilink.composition.annotations.Matches
+net.enilink.composition.annotations.Matching

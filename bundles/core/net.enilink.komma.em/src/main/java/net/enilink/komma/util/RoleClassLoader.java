@@ -24,7 +24,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.annotations.Matches;
+import net.enilink.composition.annotations.Matching;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +53,7 @@ public class RoleClassLoader {
 			if (Iri.class.getName().equals(name)) {
 				return true;
 			}
-			if (Matches.class.getName().equals(name)) {
+			if (Matching.class.getName().equals(name)) {
 				return true;
 			}
 		}
