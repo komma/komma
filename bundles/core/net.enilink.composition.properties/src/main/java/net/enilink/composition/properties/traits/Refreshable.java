@@ -31,9 +31,6 @@ package net.enilink.composition.properties.traits;
 /**
  * Implemented by all behaviours that cache locally modified state and need to
  * be refreshed when the remote state changes.
- * 
- * @author James Leigh
- * 
  */
 public interface Refreshable {
 	/**

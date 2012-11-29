@@ -38,9 +38,7 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 /**
- * Property used when only a getter method exists for the Bean property.
- * 
- * @author James Leigh
+ * Property used when only a getter method exists for the bean property.
  * 
  * @param <E>
  *            property type

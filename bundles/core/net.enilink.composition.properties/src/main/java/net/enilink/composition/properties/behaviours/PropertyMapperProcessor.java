@@ -31,7 +31,6 @@ package net.enilink.composition.properties.behaviours;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -41,6 +40,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.FieldNode;
 import net.enilink.composition.ClassDefiner;
+import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.asm.BehaviourClassNode;
 import net.enilink.composition.asm.BehaviourClassProcessor;
 import net.enilink.composition.asm.ExtendedMethod;
@@ -58,11 +58,8 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 /**
- * Properties that have the rdf or localname annotation are replaced with
- * getters and setters that access the Sesame Repository directly.
- * 
- * @author James Leigh
- * 
+ * Properties that have the {@link Iri} annotation are replaced with getters and
+ * setters that access an underlying repository directly.
  */
 public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		Opcodes, Types {
@@ -72,42 +69,12 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 	private static final String PROPERTY_SUFFIX = "Property";
 
-	public static Class<?> getClassType(Method method) {
-		return method.getReturnType();
-	}
-
-	public static Class<?> getContentClassType(Method method) {
-		java.lang.reflect.Type[] types = getTypeArguments(method);
-		if (types == null || types.length != 1)
-			return null;
-		if (types[0] instanceof Class<?>)
-			return (Class<?>) types[0];
-		if (types[0] instanceof ParameterizedType)
-			return (Class<?>) ((ParameterizedType) types[0]).getRawType();
-		return null;
-	}
-
-	public static java.lang.reflect.Type[] getContentTypeArguments(Method method) {
-		java.lang.reflect.Type[] types = getTypeArguments(method);
-		if (types == null || types.length != 1)
-			return null;
-		if (types[0] instanceof ParameterizedType)
-			return ((ParameterizedType) types[0]).getActualTypeArguments();
-		return null;
-	}
-
-	public static java.lang.reflect.Type[] getTypeArguments(Method method) {
-		java.lang.reflect.Type type = method.getGenericReturnType();
-		if (type instanceof ParameterizedType)
-			return ((ParameterizedType) type).getActualTypeArguments();
-		return null;
-	}
-
 	@Inject
 	protected ClassDefiner definer;
 
 	protected PropertyMapper propertyMapper;
 
+	@Inject
 	protected Class<? extends PropertySetDescriptorFactory> propertySetDescriptorFactoryClass;
 
 	private void addDescriptorFactoryField(BehaviourClassNode node) {
@@ -115,7 +82,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 		FieldNode factoryField = new FieldNode(Opcodes.ACC_PRIVATE
 				| Opcodes.ACC_STATIC, fieldName,
-				Type.getDescriptor(propertySetDescriptorFactoryClass), null,
+				Type.getDescriptor(PropertySetDescriptorFactory.class), null,
 				null);
 		node.addField(factoryField);
 
@@ -126,7 +93,8 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.dup();
 		gen.invokeConstructor(factoryType,
 				org.objectweb.asm.commons.Method.getMethod("void <init>()"));
-		gen.putStatic(node.getType(), fieldName, factoryType);
+		gen.putStatic(node.getType(), fieldName,
+				Type.getType(PropertySetDescriptorFactory.class));
 	}
 
 	private FieldNode createDescriptorField(PropertyDescriptor pd,
@@ -345,7 +313,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 	private void loadFactory(BehaviourClassNode node, MethodNodeGenerator gen) {
 		gen.getStatic(node.getType(), getFactoryField(),
-				Type.getType(propertySetDescriptorFactoryClass));
+				Type.getType(PropertySetDescriptorFactory.class));
 	}
 
 	private void mergeProperty(String property, Class<?> type,
@@ -499,11 +467,5 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 	@Inject
 	public void setPropertyMapper(PropertyMapper mapper) {
 		this.propertyMapper = mapper;
-	}
-
-	@Inject
-	public void setPropertySetDescriptorFactoryClass(
-			Class<? extends PropertySetDescriptorFactory> propertySetDescriptorFactoryClass) {
-		this.propertySetDescriptorFactoryClass = propertySetDescriptorFactoryClass;
 	}
 }

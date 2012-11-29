@@ -37,8 +37,6 @@ import net.enilink.composition.properties.traits.Refreshable;
  * Internal interface for mapping roles. Allows access to property values as a
  * Set or as a single value.
  * 
- * @author James Leigh
- * 
  * @param <E>
  *            property type
  */

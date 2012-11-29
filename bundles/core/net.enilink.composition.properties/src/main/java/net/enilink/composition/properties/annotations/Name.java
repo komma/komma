@@ -33,18 +33,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.vocabulary.OBJ;
-
 /**
  * The query binding name used with the sparql or xslt annotation.
- * 
- * @author James Leigh
- * 
  */
-@Iri(OBJ.NAMESPACE + "name")
 @Retention(RetentionPolicy.RUNTIME)
-@Target( { ElementType.PARAMETER, ElementType.METHOD, ElementType.TYPE })
+@Target({ ElementType.PARAMETER, ElementType.METHOD, ElementType.TYPE })
 public @interface Name {
 	String[] value();
 }

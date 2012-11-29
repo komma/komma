@@ -30,9 +30,6 @@ package net.enilink.composition.properties.exceptions;
 
 /**
  * Exception indicates that mapping of properties failed.
- * 
- * @author James Leigh
- * 
  */
 public class PropertyException extends RuntimeException {
 	private static final long serialVersionUID = 6299010514003759105L;

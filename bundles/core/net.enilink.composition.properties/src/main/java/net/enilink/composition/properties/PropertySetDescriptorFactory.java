@@ -31,9 +31,7 @@ package net.enilink.composition.properties;
 import java.beans.PropertyDescriptor;
 
 /**
- * Internal interface to create {@link ElmoProperty} objects.
- * 
- * @author James Leigh
+ * Internal interface to create {@link PropertySetDescriptor} objects.
  * 
  * @param <E>
  *            property type

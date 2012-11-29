@@ -33,18 +33,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.vocabulary.OBJ;
-
 /**
  * Methods with this annotation will use the configured locale to use the
  * closest matching or the set of closest matching String values.
- * 
- * @author James Leigh
  */
-@Iri(OBJ.NAMESPACE + "localized")
 @Retention(RetentionPolicy.RUNTIME)
-@Target( { ElementType.METHOD, ElementType.FIELD })
+@Target({ ElementType.METHOD, ElementType.FIELD })
 public @interface Localized {
 	String[] value() default {};
 }

@@ -55,9 +55,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Reads in property mapping files and determines which properties should be
  * eagarly loaded.
- * 
- * @author James Leigh
- * 
  */
 public class PropertyMapper {
 	private static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";

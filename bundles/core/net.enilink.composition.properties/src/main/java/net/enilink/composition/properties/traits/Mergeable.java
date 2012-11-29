@@ -32,8 +32,6 @@ package net.enilink.composition.properties.traits;
 /**
  * Implemented by all behaviours that can be merged into an Object outside of
  * the managed entities.
- * 
- * @author James Leigh
  */
 public interface Mergeable {
 	/**
