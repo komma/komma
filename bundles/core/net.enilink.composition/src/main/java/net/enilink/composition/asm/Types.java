@@ -13,14 +13,11 @@ package net.enilink.composition.asm;
 import java.lang.reflect.Method;
 
 import org.objectweb.asm.Type;
-import net.enilink.composition.helpers.InvocationMessageContext;
+import net.enilink.composition.helpers.MethodInvocationChain;
 import net.enilink.composition.traits.Behaviour;
 
 /**
  * Common type definitions.
- * 
- * @author Ken Wenzel
- *
  */
 public interface Types {
 	final Type OBJECT_TYPE = Type.getType(Object.class);
@@ -29,6 +26,6 @@ public interface Types {
 	final Type STRING_TYPE = Type.getType(String.class);
 	
 	final Type BEHAVIOUR_TYPE = Type.getType(Behaviour.class);
-	final Type INVOCATIONMESSAGECONTEXT_TYPE = Type
-			.getType(InvocationMessageContext.class);
+	final Type METHODINVOCATIONCHAIN_TYPE = Type
+			.getType(MethodInvocationChain.class);
 }

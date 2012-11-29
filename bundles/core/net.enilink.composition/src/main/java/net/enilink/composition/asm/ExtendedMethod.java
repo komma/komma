@@ -16,9 +16,6 @@ import org.objectweb.asm.Type;
 
 /**
  * Represents a mutable method that knows its owner class.
- * 
- * @author Ken Wenzel
- *
  */
 public class ExtendedMethod extends org.objectweb.asm.tree.MethodNode {
 	private ExtendedClassNode owner;

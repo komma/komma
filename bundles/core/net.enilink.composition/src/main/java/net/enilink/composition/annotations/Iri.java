@@ -39,12 +39,10 @@ import java.lang.annotation.Target;
  * this package defines. If on a getter method, this is the URI of the predicate
  * for this bean property. If on a method, this is the URI of the message class.
  * If on a parameter, this is the URI of the message property.
- * 
- * @author James Leigh
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target( { ElementType.TYPE, ElementType.FIELD, ElementType.METHOD,
-		ElementType.PARAMETER, ElementType.ANNOTATION_TYPE, ElementType.PACKAGE })
+@Target({ ElementType.TYPE, ElementType.FIELD, ElementType.METHOD,
+		ElementType.PARAMETER, ElementType.PACKAGE })
 public @interface Iri {
 	String value();
 }

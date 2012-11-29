@@ -35,9 +35,6 @@ import com.google.inject.Inject;
  * Abstract implementation for {@link BehaviourFactory}s that use
  * {@link BehaviourClassProcessor}s and {@link BehaviourMethodProcessor}s to
  * create concrete behaviour classes.
- * 
- * @author Ken Wenzel
- * 
  */
 public abstract class BehaviourFactoryBase implements BehaviourFactory {
 	class MethodProcessorRunner {
@@ -92,7 +89,6 @@ public abstract class BehaviourFactoryBase implements BehaviourFactory {
 			for (Method method : methods) {
 				ExtendedMethod behaviourMethod = classNode
 						.getExtendedMethod(method);
-
 				for (BehaviourMethodProcessor methodProcessor : methodProcessors) {
 					boolean implementsMethod = false;
 					if (behaviourMethod == null
@@ -108,7 +104,6 @@ public abstract class BehaviourFactoryBase implements BehaviourFactory {
 						if (initialized.add(methodProcessor)) {
 							methodProcessor.initialize(classNode);
 						}
-
 						methodProcessor.process(classNode, behaviourMethod);
 					} else if (implementsMethod) {
 						throw new CompositionException("Processor "
@@ -167,13 +162,10 @@ public abstract class BehaviourFactoryBase implements BehaviourFactory {
 					.getObjectType(extendedClassName.replace('.', '/')),
 					behaviourClass, AsmUtils.getClassInfo(behaviourClass
 							.getName(), definer));
-
 			for (BehaviourClassProcessor classProcessor : classProcessors) {
 				classProcessor.process(classNode);
 			}
-
 			runner.process(classNode);
-
 			return AsmUtils.defineExtendedClass(definer, classNode);
 		}
 		return null;
@@ -228,7 +220,6 @@ public abstract class BehaviourFactoryBase implements BehaviourFactory {
 		// first check whether we did not already create and load the
 		// extension of the given behaviour class
 		String extendedClassName = getExtendedClassName(behaviourClass);
-
 		Class<?> extendedClass = AsmUtils.findClass(extendedClassName, definer);
 		if (extendedClass == null) {
 			extendedClass = extendBehaviourClass(extendedClassName,

@@ -13,9 +13,6 @@ package net.enilink.composition.asm;
 /**
  * Interface for processors that implement a transformation
  * of a {@link CompositeClassNode}.
- * 
- * @author Ken Wenzel
- *
  */
 public interface CompositeClassProcessor {
 	/**

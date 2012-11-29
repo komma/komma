@@ -12,9 +12,6 @@ package net.enilink.composition.asm;
 
 /**
  * Implements or transforms {@link BehaviourClassNode}s.
- * 
- * @author Ken Wenzel
- * 
  */
 public interface BehaviourClassProcessor {
 	/**

@@ -1,5 +1,6 @@
 package net.enilink.composition.mappers;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 
 import net.enilink.composition.exceptions.ConfigException;
@@ -10,6 +11,10 @@ public interface RoleMapper<T> {
 
 	void addAnnotation(Class<?> annotation, T uri);
 
+	void addAnnotation(Method annotation);
+
+	void addAnnotation(Method annotation, T uri);
+
 	void addBehaviour(Class<?> role) throws ConfigException;
 
 	void addBehaviour(Class<?> role, T type) throws ConfigException;
@@ -18,9 +23,9 @@ public interface RoleMapper<T> {
 
 	void addConcept(Class<?> role, T type) throws ConfigException;
 
-	T findAnnotation(Class<?> type);
+	RoleMapper<T> clone();
 
-	String findAnnotationString(Class<?> type);
+	T findAnnotation(Method ann);
 
 	Collection<Class<?>> findIndividualRoles(T instance,
 			Collection<Class<?>> classes);
@@ -39,6 +44,4 @@ public interface RoleMapper<T> {
 	boolean isIndividualRolesPresent(T instance);
 
 	boolean isRecordedConcept(T type);
-
-	RoleMapper<T> clone();
 }

@@ -25,9 +25,6 @@ import net.enilink.composition.asm.util.MethodNodeGenerator;
 
 /**
  * Represents the mutable structure of a composite class. 
- * 
- * @author Ken Wenzel
- *
  */
 public class CompositeClassNode extends ExtendedClassNode {
 	protected Set<Class<?>> interfaceClassesSet = new LinkedHashSet<Class<?>>();

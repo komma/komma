@@ -14,9 +14,6 @@ import net.enilink.composition.exceptions.CompositionException;
 
 /**
  * Utility methods for general assertions.
- * 
- * @author Ken Wenzel
- * 
  */
 public final class Checks {
 

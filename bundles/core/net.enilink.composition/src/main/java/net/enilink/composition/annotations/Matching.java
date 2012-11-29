@@ -33,20 +33,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import net.enilink.composition.vocabulary.OBJ;
+import net.enilink.composition.vocabulary.MSG;
 
 /**
  * Any resource with a URI matching an entire given expression is an instance of
  * this class. Expressions ending with '*' are matched against the prefix.
  * Expressions starting with '/' are matched from the beginning of the path (if
  * hierarchical).
- * 
- * @author James Leigh
- * 
  */
-@Iri(OBJ.NAMESPACE + "matches")
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Matches {
+public @interface Matching {
+	@Iri(MSG.MATCHING)
 	String[] value();
 }

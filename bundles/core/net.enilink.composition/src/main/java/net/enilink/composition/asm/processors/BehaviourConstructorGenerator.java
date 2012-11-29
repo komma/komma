@@ -22,9 +22,6 @@ import net.enilink.composition.asm.util.MethodNodeGenerator;
 
 /**
  * Creates the byte code to implement the constructor of a behaviour class.
- * 
- * @author Ken Wenzel
- * 
  */
 public class BehaviourConstructorGenerator implements BehaviourClassProcessor,
 		Opcodes, Types {

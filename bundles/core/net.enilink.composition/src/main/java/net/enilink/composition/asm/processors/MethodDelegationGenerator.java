@@ -26,9 +26,6 @@ import net.enilink.composition.traits.Behaviour;
 /**
  * Implements abstract behaviour methods by delegating to the respective methods
  * of the composite class.
- * 
- * @author Ken Wenzel
- * 
  */
 @DependsOn(
 // successor of all other method processors

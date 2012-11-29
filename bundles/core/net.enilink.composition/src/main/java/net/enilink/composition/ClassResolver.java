@@ -39,9 +39,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import net.enilink.composition.exceptions.CompositionException;
-import net.enilink.composition.helpers.ClassCompositor;
+import net.enilink.composition.helpers.ClassComposer;
 import net.enilink.composition.mappers.RoleMapper;
-import net.enilink.composition.mappers.TypeFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -62,17 +61,14 @@ public class ClassResolver<T> {
 
 	private Injector injector;
 
-	private TypeFactory<T> typeFactory;
-
 	@Inject
 	Set<BehaviourFactory> behaviourFactories;
 
 	@Inject
 	public ClassResolver(RoleMapper<T> mapper, ClassDefiner cp,
-			TypeFactory<T> typeFactory, Injector injector) {
+			Injector injector) {
 		this.mapper = mapper;
 		this.definer = cp;
-		this.typeFactory = typeFactory;
 		this.injector = injector;
 	}
 
@@ -134,14 +130,11 @@ public class ClassResolver<T> {
 		List<Class<?>> types = new ArrayList<Class<?>>(roles.size());
 		types.addAll(roles);
 		types = removeSuperClasses(types);
-		ClassCompositor<T> cc = new ClassCompositor<T>(className, types.size());
+		ClassComposer<T> cc = new ClassComposer<T>(className, types.size());
 
 		// TODO check what must be done to make this work for TypeFactory and
 		// RoleMapper
 		injector.injectMembers(cc);
-
-		cc.setTypeFactory(typeFactory);
-		cc.setRoleMapper(mapper);
 
 		Set<Class<?>> behaviours = new LinkedHashSet<Class<?>>(types.size());
 		for (Class<?> role : types) {
@@ -154,7 +147,6 @@ public class ClassResolver<T> {
 
 		cc.addAllBehaviours(findImplementations(behaviours));
 		cc.addAllBehaviours(findImplementations(cc.getInterfaces()));
-
 		return cc.compose();
 	}
 

@@ -21,9 +21,6 @@ import net.enilink.composition.BehaviourFactory;
  * Annotation for {@link BehaviourClassProcessor}s and
  * {@link BehaviourMethodProcessor}s to restrict the {@link BehaviourFactory}s
  * that are allowed use them.
- * 
- * @author Ken Wenzel
- * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

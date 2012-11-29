@@ -29,7 +29,6 @@ import net.enilink.composition.asm.meta.ClassInfo;
 
 /**
  * Utility methods for the transformation process.
- * 
  */
 public class AsmUtils {
 	protected static Map<ClassLoader, Map<String, ClassInfo>> classInfos = new WeakHashMap<ClassLoader, Map<String, ClassInfo>>();

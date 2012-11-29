@@ -33,15 +33,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import net.enilink.composition.concepts.Message;
-
+import org.aopalliance.intercept.MethodInvocation;
 
 /**
  * Overrides the parameter types this method intersects. This allows methods to
- * accept a {@link Message}, while intercepting methods with the given parameter
- * types.
- * 
- * @author James Leigh
+ * accept a {@link MethodInvocation}, while intercepting methods with the given
+ * parameter types.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

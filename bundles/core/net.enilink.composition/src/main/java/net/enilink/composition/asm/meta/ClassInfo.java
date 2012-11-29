@@ -29,7 +29,6 @@ import org.objectweb.asm.tree.MethodNode;
 /**
  * Reflective meta data for classes that also contains the visible and invisible
  * annotations of their methods.
- * 
  */
 public class ClassInfo extends ClassVisitor {
 

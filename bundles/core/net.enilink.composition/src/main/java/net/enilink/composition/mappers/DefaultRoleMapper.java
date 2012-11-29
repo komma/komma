@@ -30,6 +30,7 @@ package net.enilink.composition.mappers;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -42,7 +43,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.exceptions.ConfigException;
-import net.enilink.composition.vocabulary.OBJ;
+import net.enilink.composition.vocabulary.MSG;
 import net.enilink.composition.vocabulary.OWL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 	private static Logger logger = LoggerFactory
 			.getLogger(DefaultRoleMapper.class);
 
-	private Map<Class<?>, T> annotations = new HashMap<Class<?>, T>();
+	private Map<Method, T> annotations = new HashMap<Method, T>();
 	private Map<Class<?>, Class<?>> complements = new ConcurrentHashMap<Class<?>, Class<?>>();
 	private Map<T, List<Class<?>>> instances = new ConcurrentHashMap<T, List<Class<?>>>(
 			256);
@@ -70,39 +71,48 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		roleMapper.setTypeFactory(typeFactory);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.enilink.composition.mappers.RoleMapper#addAnnotation(java.lang.Class)
-	 */
 	@Override
 	public void addAnnotation(Class<?> annotation) {
+		for (Method m : annotation.getDeclaredMethods()) {
+			if (!m.isAnnotationPresent(Iri.class)) {
+				String msg = "@" + Iri.class.getSimpleName()
+						+ " annotation required in " + m.toGenericString();
+				throw new IllegalArgumentException(msg);
+			}
+			String uri = m.getAnnotation(Iri.class).value();
+			addAnnotation(m, typeFactory.createType(uri));
+		}
+	}
+
+	@Override
+	public void addAnnotation(Class<?> annotation, T uri) {
+		if (annotation.getDeclaredMethods().length != 1)
+			throw new IllegalArgumentException(
+					"Must specify annotation method if multiple methods exist: "
+							+ annotation);
+		addAnnotation(annotation.getDeclaredMethods()[0], uri);
+	}
+
+	@Override
+	public void addAnnotation(Method annotation) {
 		if (!annotation.isAnnotationPresent(Iri.class))
-			throw new IllegalArgumentException("@Iri annotation required in "
-					+ annotation.getSimpleName());
+			throw new IllegalArgumentException("@" + Iri.class.getSimpleName()
+					+ " annotation required in " + annotation.toGenericString());
 		String uri = annotation.getAnnotation(Iri.class).value();
 		addAnnotation(annotation, typeFactory.createType(uri));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.enilink.composition.mappers.RoleMapper#addAnnotation(java.lang.Class,
-	 * T)
-	 */
 	@Override
-	public void addAnnotation(Class<?> annotation, T uri) {
+	public void addAnnotation(Method annotation, T uri) {
 		annotations.put(annotation, uri);
+		if (annotation.isAnnotationPresent(Iri.class)) {
+			String Iri = annotation.getAnnotation(Iri.class).value();
+			if (!uri.toString().equals(Iri)) {
+				addAnnotation(annotation);
+			}
+		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.enilink.composition.mappers.RoleMapper#addBehaviour(java.lang.Class)
-	 */
 	@Override
 	public void addBehaviour(Class<?> role) throws ConfigException {
 		assertBehaviour(role);
@@ -128,36 +138,17 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 					+ " must implement a concept or mapped explicitly");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.enilink.composition.mappers.RoleMapper#addBehaviour(java.lang.Class,
-	 * T)
-	 */
 	@Override
 	public void addBehaviour(Class<?> role, T type) throws ConfigException {
 		assertBehaviour(role);
 		recordRole(role, null, type, false);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.enilink.composition.mappers.RoleMapper#addConcept(java.lang.Class)
-	 */
 	@Override
 	public void addConcept(Class<?> role) throws ConfigException {
 		recordRole(role, role, null, true);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.enilink.composition.mappers.RoleMapper#addConcept(java.lang.Class, T)
-	 */
 	@Override
 	public void addConcept(Class<?> role, T type) throws ConfigException {
 		recordRole(role, role, type, false);
@@ -205,12 +196,12 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		if (role.isInterface())
 			throw new ConfigException(role.getSimpleName()
 					+ " is an interface and not a behaviour");
-//		for (Method method : role.getDeclaredMethods()) {
-//			if (isAnnotationPresent(method)
-//					&& method.getName().startsWith("get"))
-//				throw new ConfigException(role.getSimpleName()
-//						+ " cannot have a property annotation");
-//		}
+		// for (Method method : role.getDeclaredMethods()) {
+		// if (isAnnotationPresent(method)
+		// && method.getName().startsWith("get"))
+		// throw new ConfigException(role.getSimpleName()
+		// + " cannot have a property annotation");
+		// }
 	}
 
 	/*
@@ -225,7 +216,7 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 			DefaultRoleMapper<T> cloned = (DefaultRoleMapper<T>) super.clone();
 			cloned.roleMapper = roleMapper.clone();
 			cloned.matches = matches.clone();
-			cloned.annotations = new HashMap<Class<?>, T>(annotations);
+			cloned.annotations = new HashMap<Method, T>(annotations);
 			cloned.complements = new ConcurrentHashMap<Class<?>, Class<?>>(
 					complements);
 			cloned.intersections = clone(intersections);
@@ -269,29 +260,9 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		return set;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.enilink.composition.mappers.RoleMapper#findAnnotation(java.lang.Class
-	 * )
-	 */
 	@Override
-	public T findAnnotation(Class<?> type) {
-		return annotations.get(type);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.enilink.composition.mappers.RoleMapper#findAnnotationString(java.
-	 * lang.Class)
-	 */
-	@Override
-	public String findAnnotationString(Class<?> type) {
-		T annotation = findAnnotation(type);
-		return annotation != null ? typeFactory.toString(annotation) : null;
+	public T findAnnotation(Method ann) {
+		return annotations.get(ann);
 	}
 
 	private T findDefaultType(Class<?> role, AnnotatedElement element) {
@@ -304,12 +275,6 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.enilink.composition.mappers.RoleMapper#findIndividualRoles(T,
-	 * java.util.Collection)
-	 */
 	@Override
 	public Collection<Class<?>> findIndividualRoles(T instance,
 			Collection<Class<?>> classes) {
@@ -321,11 +286,6 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		return classes;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.enilink.composition.mappers.RoleMapper#findInterfaceConcept(T)
-	 */
 	@Override
 	public Class<?> findInterfaceConcept(T uri) {
 		Class<?> concept = null;
@@ -410,23 +370,12 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.enilink.composition.mappers.RoleMapper#isIndividualRolesPresent(T)
-	 */
 	@Override
 	public boolean isIndividualRolesPresent(T instance) {
 		return !matches.isEmpty() || !instances.isEmpty()
 				&& instances.containsKey(instance);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.enilink.composition.mappers.RoleMapper#isRecordedConcept(T)
-	 */
 	@Override
 	public boolean isRecordedConcept(T type) {
 		if (roleMapper.isTypeRecorded(type)) {
@@ -443,93 +392,103 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 			throws ConfigException {
 		boolean recorded = false;
 		for (Annotation ann : elm.getAnnotations()) {
-			try {
-				T name = findAnnotation(ann.annotationType());
-				if (name == null
-						&& ann.annotationType().isAnnotationPresent(Iri.class)) {
-					addAnnotation(ann.annotationType());
-					name = findAnnotation(ann.annotationType());
-				}
-				if (name == null) {
+			for (Method m : ann.annotationType().getDeclaredMethods()) {
+				try {
+					T name = findAnnotation(m);
+					if (name == null && m.isAnnotationPresent(Iri.class)) {
+						addAnnotation(m);
+						name = findAnnotation(m);
+					}
+					if (name == null) {
+						continue;
+					}
+					Object value = m.invoke(ann);
+					recorded |= recordAnonymous(role, name, value);
+				} catch (Exception e) {
+					logger.error(e.getMessage(), e);
 					continue;
 				}
+			}
+		}
+		return recorded;
+	}
 
-				String nameStr = typeFactory.toString(name);
-
-				Object value = ann.getClass().getMethod("value").invoke(ann);
-				if (OBJ.MATCHES.equals(nameStr)) {
-					String[] values = (String[]) value;
-					for (String pattern : values) {
-						matches.addRoles(pattern, role);
-						recorded = true;
-					}
-				}
-				if (OWL.ONEOF.equals(nameStr)) {
-					String[] values = (String[]) value;
-					for (String instance : values) {
-						T uri = typeFactory.createType(instance);
-						List<Class<?>> list = instances.get(uri);
-						if (list == null) {
-							list = new CopyOnWriteArrayList<Class<?>>();
-							instances.put(uri, list);
-						}
-						list.add(role);
-						recorded = true;
-					}
-				}
-				if (OWL.COMPLEMENTOF.equals(nameStr)) {
-					if (value instanceof Class<?>) {
-						Class<?> concept = (Class<?>) value;
-						recordRole(concept, concept, null, true);
-						complements.put(role, concept);
-						recorded = true;
-					} else {
-						for (Class<?> concept : findRoles(
-								typeFactory.createType((String) value),
-								new HashSet<Class<?>>())) {
-							complements.put(role, concept);
-							recorded = true;
-						}
-					}
-				}
-				if (OWL.INTERSECTIONOF.equals(nameStr)) {
-					List<Class<?>> ofs = new ArrayList<Class<?>>();
-					for (Object v : (Object[]) value) {
-						if (v instanceof Class<?>) {
-							Class<?> concept = (Class<?>) v;
-							recordRole(concept, concept, null, true);
-							ofs.add(concept);
-						} else {
-							ofs.addAll(findRoles(
-									typeFactory.createType((String) v),
-									new HashSet<Class<?>>()));
-						}
-					}
-					intersections.put(role, ofs);
+	private boolean recordAnonymous(Class<?> role, T name, Object value)
+			throws ConfigException {
+		boolean recorded = false;
+		try {
+			String nameStr = typeFactory.toString(name);
+			if (MSG.MATCHING.equals(nameStr)) {
+				String[] values = (String[]) value;
+				for (String pattern : values) {
+					matches.addRoles(pattern, role);
 					recorded = true;
 				}
-				if (OWL.UNIONOF.equals(nameStr)) {
-					for (Object v : (Object[]) value) {
-						if (v instanceof Class<?>) {
-							Class<?> concept = (Class<?>) v;
-							recordRole(concept, concept, null, true);
-							recorded |= recordRole(role, concept, null, true);
-						} else {
-							for (Class<?> concept : findRoles(
-									typeFactory.createType((String) v),
-									new HashSet<Class<?>>())) {
-								if (!role.equals(concept)) {
-									recorded |= recordRole(role, concept, null,
-											true);
-								}
+			}
+			if (OWL.ONEOF.equals(nameStr)) {
+				String[] values = (String[]) value;
+				for (String instance : values) {
+					T uri = typeFactory.createType(instance);
+					List<Class<?>> list = instances.get(uri);
+					if (list == null) {
+						list = new CopyOnWriteArrayList<Class<?>>();
+						instances.put(uri, list);
+					}
+					list.add(role);
+					recorded = true;
+				}
+			}
+			if (OWL.COMPLEMENTOF.equals(nameStr)) {
+				if (value instanceof Class<?>) {
+					Class<?> concept = (Class<?>) value;
+					recordRole(concept, concept, null, true);
+					complements.put(role, concept);
+					recorded = true;
+				} else {
+					for (Class<?> concept : findRoles(
+							typeFactory.createType((String) value),
+							new HashSet<Class<?>>())) {
+						complements.put(role, concept);
+						recorded = true;
+					}
+				}
+			}
+			if (OWL.INTERSECTIONOF.equals(nameStr)) {
+				List<Class<?>> ofs = new ArrayList<Class<?>>();
+				for (Object v : (Object[]) value) {
+					if (v instanceof Class<?>) {
+						Class<?> concept = (Class<?>) v;
+						recordRole(concept, concept, null, true);
+						ofs.add(concept);
+					} else {
+						ofs.addAll(findRoles(
+								typeFactory.createType((String) v),
+								new HashSet<Class<?>>()));
+					}
+				}
+				intersections.put(role, ofs);
+				recorded = true;
+			}
+			if (OWL.UNIONOF.equals(nameStr)) {
+				for (Object v : (Object[]) value) {
+					if (v instanceof Class<?>) {
+						Class<?> concept = (Class<?>) v;
+						recordRole(concept, concept, null, true);
+						recorded |= recordRole(role, concept, null, true);
+					} else {
+						for (Class<?> concept : findRoles(
+								typeFactory.createType((String) v),
+								new HashSet<Class<?>>())) {
+							if (!role.equals(concept)) {
+								recorded |= recordRole(role, concept, null,
+										true);
 							}
 						}
 					}
 				}
-			} catch (Exception e) {
-				logger.error(e.getMessage(), e);
-				continue;
 			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
 		}
 		return recorded;
 	}

@@ -18,9 +18,6 @@ import java.lang.annotation.Target;
 /**
  * Annotation for {@link BehaviourMethodProcessor}s to express a dependency to
  * other processors.
- * 
- * @author Ken Wenzel
- * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

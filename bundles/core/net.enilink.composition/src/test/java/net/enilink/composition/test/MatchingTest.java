@@ -12,32 +12,32 @@ package net.enilink.composition.test;
 
 import org.junit.Assert;
 import org.junit.Test;
-import net.enilink.composition.annotations.Matches;
+import net.enilink.composition.annotations.Matching;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.mappers.RoleMapper;
 
-public class MatchesTest extends CompositionTestCase {
-	@Matches("urn:test:*")
+public class MatchingTest extends CompositionTestCase {
+	@Matching("urn:test:*")
 	public interface TestResource {
 	}
 
-	@Matches("urn:test:something")
+	@Matching("urn:test:something")
 	public interface TestSomething {
 	}
 
-	@Matches("*")
+	@Matching("*")
 	public interface Anything {
 	}
 
-	@Matches("/*")
+	@Matching("/*")
 	public interface AnyPath {
 	}
 
-	@Matches("/path")
+	@Matching("/path")
 	public interface Path {
 	}
 
-	@Matches("/path/*")
+	@Matching("/path/*")
 	public interface AnySubPath {
 	}
 
@@ -83,17 +83,6 @@ public class MatchesTest extends CompositionTestCase {
 		Assert.assertFalse(o instanceof Path);
 		Assert.assertFalse(o instanceof AnySubPath);
 	}
-
-	// public void testMatchWithTypes() throws Exception {
-	// Object o = con.getObject("urn:test:something");
-	// o = con.addDesignation(o, Something.class);
-	// Assert.assertTrue(o instanceof TestResource);
-	// Assert.assertTrue(o instanceof TestSomething);
-	// Assert.assertTrue(o instanceof Anything);
-	// Assert.assertFalse(o instanceof AnyPath);
-	// Assert.assertFalse(o instanceof Path);
-	// Assert.assertFalse(o instanceof AnySubPath);
-	// }
 
 	@Test
 	public void testMatchPath() throws Exception {

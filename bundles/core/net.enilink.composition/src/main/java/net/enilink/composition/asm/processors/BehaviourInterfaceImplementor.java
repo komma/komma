@@ -21,9 +21,6 @@ import net.enilink.composition.traits.Behaviour;
 
 /**
  * Creates the byte code to implement the {@link Behaviour} interface.
- * 
- * @author Ken Wenzel
- * 
  */
 public class BehaviourInterfaceImplementor implements BehaviourClassProcessor,
 		Opcodes, Types {

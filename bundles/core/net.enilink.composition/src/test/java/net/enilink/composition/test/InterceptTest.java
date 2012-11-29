@@ -10,10 +10,10 @@
  *******************************************************************************/
 package net.enilink.composition.test;
 
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Assert;
 import org.junit.Test;
 import net.enilink.composition.annotations.ParameterTypes;
-import net.enilink.composition.concepts.Message;
 import net.enilink.composition.mappers.RoleMapper;
 
 public class InterceptTest extends CompositionTestCase {
@@ -39,13 +39,13 @@ public class InterceptTest extends CompositionTestCase {
 		public static int count;
 
 		@ParameterTypes({})
-		public void increment1(Message msg) {
+		public void increment1(MethodInvocation invocation) throws Throwable {
 			count++;
-			msg.proceed();
+			invocation.proceed();
 		}
 
 		@ParameterTypes({})
-		public void increment2(Message msg) {
+		public void increment2(MethodInvocation invocation) {
 			count++;
 		}
 	}

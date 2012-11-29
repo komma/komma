@@ -33,12 +33,12 @@ import static java.lang.reflect.Modifier.isTransient;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -52,8 +52,9 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 import net.enilink.composition.ClassDefiner;
-import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.annotations.ParameterTypes;
+import net.enilink.composition.annotations.Precedes;
+import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.asm.AsmUtils;
 import net.enilink.composition.asm.CompositeClassNode;
 import net.enilink.composition.asm.ExtendedMethod;
@@ -62,10 +63,7 @@ import net.enilink.composition.asm.processors.CompositeConstructorGenerator;
 import net.enilink.composition.asm.util.ExtendedMethodGenerator;
 import net.enilink.composition.asm.util.MethodNodeGenerator;
 import net.enilink.composition.exceptions.CompositionException;
-import net.enilink.composition.mappers.RoleMapper;
-import net.enilink.composition.mappers.TypeFactory;
 import net.enilink.composition.traits.Behaviour;
-import net.enilink.composition.vocabulary.OBJ;
 
 import com.google.inject.Inject;
 
@@ -74,11 +72,10 @@ import com.google.inject.Inject;
  * composition to combine this into a single class.
  * 
  */
-public class ClassCompositor<T> implements Types, Opcodes {
+public class ClassComposer<T> implements Types, Opcodes {
 	private String RDFS_SUBCLASSOF = "http://www.w3.org/2000/01/rdf-schema#subClassOf";
 
 	private ClassDefiner definer;
-	private RoleMapper<T> mapper;
 	private String className;
 	private Class<?> baseClass = Object.class;
 	private Set<Class<?>> interfaces;
@@ -89,28 +86,18 @@ public class ClassCompositor<T> implements Types, Opcodes {
 
 	private Map<Method, String> superMethods = new HashMap<Method, String>();
 
-	private TypeFactory<T> typeFactory;
-
 	private CompositeClassNode compositeClass;
 
-	public ClassCompositor(String className, int size) {
+	public ClassComposer(String className, int size) {
 		this.className = className;
 
 		interfaces = new LinkedHashSet<Class<?>>(size);
 		javaClasses = new LinkedHashSet<Class<?>>(size);
 	}
 
-	public void setTypeFactory(TypeFactory<T> typeFactory) {
-		this.typeFactory = typeFactory;
-	}
-
 	@Inject
 	public void setClassDefiner(ClassDefiner definer) {
 		this.definer = definer;
-	}
-
-	public void setRoleMapper(RoleMapper<T> mapper) {
-		this.mapper = mapper;
 	}
 
 	public void setBaseClass(Class<?> baseClass) {
@@ -287,11 +274,11 @@ public class ClassCompositor<T> implements Types, Opcodes {
 		if (implementations.isEmpty()) {
 			return false;
 		}
-		// TODO use direct chaining if not isMessage(chain, method)
+		// TODO use direct chaining if not isInterceptor(chain, method)
 		Class<?> returnType = method.getReturnType();
 		boolean chained = implementations.size() > 1
 				|| !returnType.equals(((Method) implementations.get(0)[1])
-						.getReturnType()) || isMessage(chain, method);
+						.getReturnType()) || isInterceptor(chain, method);
 		Method face = AsmUtils.findInterfaceOrSuperMethod(method,
 				method.getDeclaringClass(),
 				compositeClass.getInterfacesClasses());
@@ -317,28 +304,19 @@ public class ClassCompositor<T> implements Types, Opcodes {
 				if (!chainStarted) {
 					chainStarted = true;
 
-					gen.newInstance(INVOCATIONMESSAGECONTEXT_TYPE);
+					gen.newInstance(METHODINVOCATIONCHAIN_TYPE);
 					gen.dup();
-
 					gen.loadThis();
-					Class<?> mtype = getMessageType(method);
-					if (mtype != null) {
-						gen.push(Type.getType(mtype));
-					} else {
-						gen.push((String) null);
-					}
-
-					// push method
-					loadMethodObject(Type.getType(m.getDeclaringClass()),
-							m.getName(), Type.getType(m.getReturnType()),
-							toTypes(m.getParameterTypes()), gen);
+					// push outer method
+					loadMethodObject(Type.getType(method.getDeclaringClass()),
+							method.getName(),
+							Type.getType(method.getReturnType()),
+							toTypes(method.getParameterTypes()), gen);
 					gen.loadArgArray();
-
 					gen.invokeConstructor(
-							INVOCATIONMESSAGECONTEXT_TYPE,
+							METHODINVOCATIONCHAIN_TYPE,
 							new org.objectweb.asm.commons.Method("<init>",
 									Type.VOID_TYPE, new Type[] { OBJECT_TYPE,
-											Type.getType(Class.class),
 											Type.getType(Method.class),
 											Type.getType(Object[].class) }));
 				}
@@ -359,19 +337,12 @@ public class ClassCompositor<T> implements Types, Opcodes {
 		}
 		boolean voidReturnType = returnType.equals(Void.TYPE);
 		if (chainStarted) {
-			String proceed;
-			if (!voidReturnType && returnType.isPrimitive()) {
-				proceed = "Object getFunctionalLiteralResponse()";
-			} else if (returnType.equals(Set.class)) {
-				proceed = "java.util.Set getObjectResponse()";
-			} else if (!voidReturnType) {
-				proceed = "Object getFunctionalObjectResponse()";
+			gen.invokeVirtual(METHODINVOCATIONCHAIN_TYPE,
+					org.objectweb.asm.commons.Method
+							.getMethod("Object proceed()"));
+			if (voidReturnType) {
+				gen.pop();
 			} else {
-				proceed = "void proceed()";
-			}
-			gen.invokeVirtual(INVOCATIONMESSAGECONTEXT_TYPE,
-					org.objectweb.asm.commons.Method.getMethod(proceed));
-			if (!voidReturnType) {
 				gen.unbox(Type.getType(returnType));
 			}
 			chainStarted = false;
@@ -400,14 +371,6 @@ public class ClassCompositor<T> implements Types, Opcodes {
 		gen.endMethod();
 		superMethods.put(m, name);
 		return name;
-	}
-
-	private Class<?> getMessageType(Method method) {
-		if (method.isAnnotationPresent(Iri.class)) {
-			String id = method.getAnnotation(Iri.class).value();
-			return mapper.findInterfaceConcept(typeFactory.createType(id));
-		}
-		return null;
 	}
 
 	private List<Class<?>> chain(Method method) throws Exception {
@@ -439,7 +402,7 @@ public class ClassCompositor<T> implements Types, Opcodes {
 		iter = all.iterator();
 		while (iter.hasNext()) {
 			Class<?> behaviour = iter.next();
-			if (isMessage(behaviour, method)) {
+			if (isInterceptor(behaviour, method)) {
 				rest.add(behaviour);
 				iter.remove();
 			}
@@ -467,11 +430,11 @@ public class ClassCompositor<T> implements Types, Opcodes {
 		return list;
 	}
 
-	private boolean isMessage(List<Class<?>> behaviours, Method method)
+	private boolean isInterceptor(List<Class<?>> behaviours, Method method)
 			throws Exception {
 		if (behaviours != null) {
 			for (Class<?> behaviour : behaviours) {
-				if (isMessage(behaviour, method)) {
+				if (isInterceptor(behaviour, method)) {
 					return true;
 				}
 			}
@@ -504,7 +467,7 @@ public class ClassCompositor<T> implements Types, Opcodes {
 				// no super method
 			}
 		}
-		for (Method m : getSubMethods(method)) {
+		for (Method m : getSuperMethods(method)) {
 			if (m.equals(method)) {
 				continue;
 			}
@@ -513,27 +476,44 @@ public class ClassCompositor<T> implements Types, Opcodes {
 		return list;
 	}
 
-	private List<Method> getSubMethods(Method method) {
+	private List<Method> getSuperMethods(Method method) {
+		List<Method> list = new ArrayList<Method>();
+		for (String uri : getAnnotationValueByIri(method, RDFS_SUBCLASSOF)) {
+			Method m = namedMethods.get(uri);
+			if (m != null && !isSpecial(m)) {
+				list.add(m);
+			}
+		}
+		return list;
+	}
+
+	private String[] getAnnotationValueByIri(Method method, String annotationID) {
 		for (Annotation ann : method.getAnnotations()) {
-			Class<? extends Annotation> type = ann.annotationType();
-			if (RDFS_SUBCLASSOF.equals(mapper.findAnnotationString(type))) {
-				try {
-					Object value = type.getMethod("value").invoke(ann);
-					String[] uris = (String[]) value;
-					List<Method> list = new ArrayList<Method>(uris.length);
-					for (String uri : uris) {
-						Method m = namedMethods.get(uri);
-						if (m != null) {
-							list.add(m);
-						}
-					}
-					return list;
-				} catch (Exception e) {
+			for (Method am : ann.annotationType().getDeclaredMethods()) {
+				if (am.getParameterTypes().length > 0)
 					continue;
+				Iri Iri = am.getAnnotation(Iri.class);
+				if (Iri != null && annotationID.equals(Iri.value())) {
+					Object value = invoke(am, ann);
+					if (value instanceof String[]) {
+						return (String[]) value;
+					}
 				}
 			}
 		}
-		return Collections.emptyList();
+		return new String[0];
+	}
+
+	private Object invoke(Method method, Annotation ann) {
+		try {
+			return method.invoke(ann);
+		} catch (IllegalAccessException e) {
+			IllegalAccessError error = new IllegalAccessError(e.getMessage());
+			error.initCause(e);
+			throw error;
+		} catch (InvocationTargetException e) {
+			throw new CompositionException(e.getCause());
+		}
 	}
 
 	private void appendInvocation(Object target, Type declaringClass,
@@ -545,10 +525,10 @@ public class ClassCompositor<T> implements Types, Opcodes {
 			loadBehaviour((Class<?>) target, gen);
 		}
 		loadMethodObject(declaringClass, name, returnType, paramTypes, gen);
-		gen.invokeVirtual(INVOCATIONMESSAGECONTEXT_TYPE,
+		gen.invokeVirtual(METHODINVOCATIONCHAIN_TYPE,
 				new org.objectweb.asm.commons.Method("appendInvocation",
-						INVOCATIONMESSAGECONTEXT_TYPE, new Type[] {
-								OBJECT_TYPE, Type.getType(Method.class) }));
+						METHODINVOCATIONCHAIN_TYPE, new Type[] { OBJECT_TYPE,
+								Type.getType(Method.class) }));
 	}
 
 	private void loadBehaviour(Class<?> behaviourClass, MethodNodeGenerator gen) {
@@ -583,7 +563,7 @@ public class ClassCompositor<T> implements Types, Opcodes {
 		return getMethod(javaClass, method) != null;
 	}
 
-	private boolean isMessage(Class<?> javaClass, Method method)
+	private boolean isInterceptor(Class<?> javaClass, Method method)
 			throws Exception {
 		return getMethod(javaClass, method).isAnnotationPresent(
 				ParameterTypes.class);
@@ -614,25 +594,15 @@ public class ClassCompositor<T> implements Types, Opcodes {
 	}
 
 	private boolean isOverridesPresent(Class<?> javaClass) {
-		for (Annotation ann : javaClass.getAnnotations()) {
-			Class<? extends Annotation> type = ann.annotationType();
-			if (OBJ.PRECEDES.equals(mapper.findAnnotationString(type))) {
-				return true;
-			}
-		}
-		return false;
+		return javaClass.getAnnotation(Precedes.class) != null;
 	}
 
 	private boolean overrides(Class<?> javaClass, Class<?> b1) throws Exception {
-		for (Annotation ann : javaClass.getAnnotations()) {
-			Class<? extends Annotation> type = ann.annotationType();
-			if (OBJ.PRECEDES.equals(mapper.findAnnotationString(type))) {
-				Method m = type.getMethod("value");
-				for (Object c : ((Object[]) m.invoke(ann))) {
-					if (c instanceof Class<?>
-							&& ((Class<?>) c).isAssignableFrom(b1)) {
-						return true;
-					}
+		Precedes precedes = javaClass.getAnnotation(Precedes.class);
+		if (precedes != null) {
+			for (Class<?> c : precedes.value()) {
+				if (c.isAssignableFrom(b1)) {
+					return true;
 				}
 			}
 		}

@@ -13,7 +13,6 @@ package net.enilink.composition.asm;
 /**
  * The default factory that is used to transform abstract behaviours into
  * concrete behaviours.
- * 
  */
 public class DefaultBehaviourFactory extends BehaviourFactoryBase {
 	public static final String PKG_PREFIX = "object.behaviours.";

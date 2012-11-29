@@ -1,5 +1,6 @@
 package net.enilink.composition.mappers;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -94,6 +95,16 @@ public class ComposedRoleMapper<T> implements Cloneable, RoleMapper<T> {
 	}
 
 	@Override
+	public void addAnnotation(Method annotation, T uri) {
+		getPrimary().addAnnotation(annotation, uri);
+	}
+
+	@Override
+	public void addAnnotation(Method annotation) {
+		getPrimary().addAnnotation(annotation);
+	}
+
+	@Override
 	public void addBehaviour(Class<?> role) throws ConfigException {
 		getPrimary().addBehaviour(role);
 	}
@@ -149,20 +160,9 @@ public class ComposedRoleMapper<T> implements Cloneable, RoleMapper<T> {
 	}
 
 	@Override
-	public T findAnnotation(Class<?> type) {
+	public T findAnnotation(Method m) {
 		for (RoleMapper<T> delegate : iterator()) {
-			T annotation = delegate.findAnnotation(type);
-			if (annotation != null) {
-				return annotation;
-			}
-		}
-		return null;
-	}
-
-	@Override
-	public String findAnnotationString(Class<?> type) {
-		for (RoleMapper<T> delegate : iterator()) {
-			String annotation = delegate.findAnnotationString(type);
+			T annotation = delegate.findAnnotation(m);
 			if (annotation != null) {
 				return annotation;
 			}

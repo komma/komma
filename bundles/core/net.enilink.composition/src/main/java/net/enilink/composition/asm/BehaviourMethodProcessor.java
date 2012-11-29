@@ -17,9 +17,6 @@ import java.lang.reflect.Method;
  * 
  * @see DependsOn
  * @see UseWith
- * 
- * @author Ken Wenzel
- * 
  */
 public interface BehaviourMethodProcessor {
 	/**

@@ -15,17 +15,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.Set;
 
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Assert;
 import net.enilink.composition.annotations.ParameterTypes;
 import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.concepts.Message;
 import net.enilink.composition.mappers.RoleMapper;
 
 public class SubMessageTest extends CompositionTestCase {
-	@Iri("http://www.w3.org/2000/01/rdf-schema#" + "subClassOf")
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface subMessageOf {
-		public String[] value();
+		@Iri("http://www.w3.org/2000/01/rdf-schema#subClassOf")
+		String[] value();
 	}
 
 	@Iri("urn:test:Concept")
@@ -54,10 +54,6 @@ public class SubMessageTest extends CompositionTestCase {
 		String msg11();
 	}
 
-	@Iri("urn:test:msg6")
-	public interface Msg6 extends Message {
-	}
-
 	public static abstract class Behaviour implements Concept {
 		public static int base;
 		public static int message;
@@ -68,10 +64,10 @@ public class SubMessageTest extends CompositionTestCase {
 		}
 
 		@subMessageOf("urn:test:base")
-		@ParameterTypes( {})
-		public void msg1(Message msg) throws Exception {
+		@ParameterTypes({})
+		public void msg1(MethodInvocation invocation) throws Throwable {
 			message++;
-			msg.proceed();
+			invocation.proceed();
 		}
 
 		@subMessageOf("urn:test:base")
@@ -91,10 +87,8 @@ public class SubMessageTest extends CompositionTestCase {
 		}
 
 		@Iri("urn:test:msg5")
-		public void msg5(Message msg) {
-			if (msg instanceof Msg6) {
-				message++;
-			}
+		public void msg5(MethodInvocation invocation) {
+			message++;
 		}
 
 		@subMessageOf("urn:test:msg5")
@@ -150,7 +144,6 @@ public class SubMessageTest extends CompositionTestCase {
 
 		roleMapper.addAnnotation(subMessageOf.class);
 		roleMapper.addConcept(Concept.class);
-		roleMapper.addConcept(Msg6.class);
 		roleMapper.addBehaviour(Behaviour.class);
 		roleMapper.addBehaviour(Behaviour2.class);
 	}

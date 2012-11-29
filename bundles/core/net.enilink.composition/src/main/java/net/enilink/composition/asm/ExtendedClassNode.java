@@ -32,9 +32,6 @@ import com.google.inject.Injector;
 
 /**
  * Represents the mutable structure of a Java class.
- * 
- * @author Ken Wenzel
- *
  */
 public abstract class ExtendedClassNode extends ClassNode {
 	public static final String INJECTOR_FIELD = "_$injector";

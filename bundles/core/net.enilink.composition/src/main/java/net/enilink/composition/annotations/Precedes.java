@@ -33,17 +33,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import net.enilink.composition.vocabulary.OBJ;
-
 /**
  * Establishes a call hierarchy between behaviours. This allows behaviours to
  * indicate which behaviours they override or intercept, without requiring their
  * behaviour.
- * 
- * @author James Leigh
- * 
  */
-@Iri(OBJ.NAMESPACE + "precedes")
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Precedes {

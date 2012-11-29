@@ -15,9 +15,6 @@ import net.enilink.composition.asm.meta.ClassInfo;
 
 /**
  * Represents the mutable structure of a behaviour class.
- * 
- * @author Ken Wenzel
- * 
  */
 public class BehaviourClassNode extends ExtendedClassNode {
 	public BehaviourClassNode(Type type, Class<?> parentClass,
