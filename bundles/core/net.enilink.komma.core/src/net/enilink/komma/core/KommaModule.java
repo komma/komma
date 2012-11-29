@@ -31,6 +31,7 @@ package net.enilink.komma.core;
 import static java.util.Collections.unmodifiableSet;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,10 +48,6 @@ import net.enilink.composition.annotations.Iri;
 /**
  * Defines the Scope of an {@link IEntityManager} and its factory. This includes
  * roles, literals, factories, datasets, and contexts.
- * 
- * @author James Leigh
- * @author Ken Wenzel
- * 
  */
 public class KommaModule {
 	public static class Association {
@@ -241,10 +238,18 @@ public class KommaModule {
 	 *            annotation class
 	 */
 	public KommaModule addAnnotation(Class<?> annotation) {
-		if (!annotation.isAnnotationPresent(Iri.class))
-			throw new IllegalArgumentException("@Iri annotation required in "
-					+ annotation.getSimpleName());
-		String uri = annotation.getAnnotation(Iri.class).value();
+		String uri = null;
+		for (Method m : annotation.getDeclaredMethods()) {
+			if (m.isAnnotationPresent(Iri.class)) {
+				uri = m.getAnnotation(Iri.class).value();
+				break;
+			}
+		}
+		if (uri == null) {
+			throw new IllegalArgumentException(
+					"@Iri annotation required on method of "
+							+ annotation.getSimpleName());
+		}
 		addAnnotation(annotation, uri);
 		return this;
 	}
