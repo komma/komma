@@ -15,15 +15,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.vocabulary.OBJ;
-
 /**
  * Return values of methods with this annotation will be cached.
- * 
- * @author Ken Wenzel
  */
-@Iri(OBJ.NAMESPACE + "Cached")
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.FIELD })
 public @interface Cacheable {
