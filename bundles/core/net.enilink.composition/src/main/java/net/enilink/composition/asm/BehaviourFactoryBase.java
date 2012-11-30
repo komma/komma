@@ -15,6 +15,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -62,8 +63,8 @@ public abstract class BehaviourFactoryBase implements BehaviourFactory {
 			}
 			for (Method m : c.getDeclaredMethods()) {
 				if (Modifier.isProtected(m.getModifiers())) {
-					Object key = Arrays.asList(m.getName(), Arrays.asList(m
-							.getParameterTypes()));
+					Object key = Arrays.asList(m.getName(),
+							Arrays.asList(m.getParameterTypes()));
 					if (!methods.containsKey(key)) {
 						methods.put(key, m);
 					}
@@ -92,8 +93,8 @@ public abstract class BehaviourFactoryBase implements BehaviourFactory {
 				for (BehaviourMethodProcessor methodProcessor : methodProcessors) {
 					boolean implementsMethod = false;
 					if (behaviourMethod == null
-							&& methodProcessor.implementsMethod(classNode
-									.getParentClass(), method)) {
+							&& methodProcessor.implementsMethod(
+									classNode.getParentClass(), method)) {
 						behaviourMethod = classNode.addExtendedMethod(method,
 								definer);
 						implementsMethod = true;
@@ -119,9 +120,10 @@ public abstract class BehaviourFactoryBase implements BehaviourFactory {
 		}
 	}
 
-	private List<BehaviourClassProcessor> classProcessors;
+	@Inject
+	protected ClassDefiner definer;
 
-	private ClassDefiner definer;
+	protected List<BehaviourClassProcessor> classProcessors;
 
 	private List<BehaviourMethodProcessor> methodProcessors;
 
@@ -158,10 +160,10 @@ public abstract class BehaviourFactoryBase implements BehaviourFactory {
 		}
 		MethodProcessorRunner runner = new MethodProcessorRunner(behaviourClass);
 		if (createBehaviour | runner.implementsClass()) {
-			BehaviourClassNode classNode = new BehaviourClassNode(Type
-					.getObjectType(extendedClassName.replace('.', '/')),
-					behaviourClass, AsmUtils.getClassInfo(behaviourClass
-							.getName(), definer));
+			BehaviourClassNode classNode = new BehaviourClassNode(
+					Type.getObjectType(extendedClassName.replace('.', '/')),
+					behaviourClass, AsmUtils.getClassInfo(
+							behaviourClass.getName(), definer));
 			for (BehaviourClassProcessor classProcessor : classProcessors) {
 				classProcessor.process(classNode);
 			}
@@ -216,7 +218,8 @@ public abstract class BehaviourFactoryBase implements BehaviourFactory {
 
 	protected abstract String getExtendedClassName(Class<?> behaviourClass);
 
-	public Class<?> implement(Class<?> behaviourClass) throws Exception {
+	public Collection<Class<?>> implement(Class<?> behaviourClass)
+			throws Exception {
 		// first check whether we did not already create and load the
 		// extension of the given behaviour class
 		String extendedClassName = getExtendedClassName(behaviourClass);
@@ -225,12 +228,9 @@ public abstract class BehaviourFactoryBase implements BehaviourFactory {
 			extendedClass = extendBehaviourClass(extendedClassName,
 					behaviourClass);
 		}
-		return extendedClass;
-	}
-
-	@Inject
-	public void setClassDefiner(ClassDefiner definer) {
-		this.definer = definer;
+		return extendedClass != null ? Collections
+				.<Class<?>> singleton(extendedClass) : Collections
+				.<Class<?>> emptySet();
 	}
 
 	@Inject
@@ -243,5 +243,4 @@ public abstract class BehaviourFactoryBase implements BehaviourFactory {
 			Set<BehaviourMethodProcessor> methodProcessors) {
 		this.methodProcessors = filterAndSort(methodProcessors);
 	}
-
 }

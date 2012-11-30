@@ -28,6 +28,8 @@
  */
 package net.enilink.composition;
 
+import java.util.Collection;
+
 /**
  * Base class for constructing behaviours from other interfaces or classes.
  * 
@@ -38,10 +40,10 @@ public interface BehaviourFactory {
 	 * 
 	 * @param behaviourClass
 	 *            An interface or an abstract class for a behaviour.
-	 * @return A concrete class if this factory is able to implement
-	 *         <code>behaviourClass</code>, else <code>null</code>.
+	 * @return A set if concrete class that implement methods of the given
+	 *         <code>behaviourClass</code>.
 	 * @throws Exception
 	 *             An exception if the processing has been failed.
 	 */
-	Class<?> implement(Class<?> behaviourClass) throws Exception;
+	Collection<Class<?>> implement(Class<?> behaviourClass) throws Exception;
 }

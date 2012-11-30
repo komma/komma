@@ -160,10 +160,7 @@ public class ClassResolver<T> {
 			List<Class<?>> behaviours = new ArrayList<Class<?>>();
 			for (Class<?> face : faces) {
 				for (BehaviourFactory factory : behaviourFactories) {
-					Class<?> implementation = factory.implement(face);
-					if (implementation != null) {
-						behaviours.add(implementation);
-					}
+					behaviours.addAll(factory.implement(face));
 				}
 			}
 			return behaviours;
