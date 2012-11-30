@@ -16,7 +16,7 @@ import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.properties.PropertySetDescriptor;
-import net.enilink.composition.properties.PropertySetDescriptorFactory;
+import net.enilink.composition.properties.PropertySetFactory;
 
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -81,7 +81,7 @@ public interface IModelSet extends INotifier<INotification> {
 		 * @return Factory class for {@link PropertySetDescriptor}s or
 		 *         <code>null</code>.
 		 */
-		Class<? extends PropertySetDescriptorFactory> providePropertySetImplementation();
+		Class<? extends PropertySetFactory> providePropertySetImplementation();
 	}
 
 	/**

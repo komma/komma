@@ -25,7 +25,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.Platform;
-import net.enilink.composition.properties.PropertySetDescriptorFactory;
+import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.traits.Behaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -220,8 +220,8 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		modules.add(new EntityManagerFactoryModule(getModule(), null,
 				new CachingEntityManagerModule()) {
 			@Override
-			protected Class<? extends PropertySetDescriptorFactory> providePropertySetImplementation() {
-				Class<? extends PropertySetDescriptorFactory> factoryClass = getBehaviourDelegate()
+			protected Class<? extends PropertySetFactory> providePropertySetImplementation() {
+				Class<? extends PropertySetFactory> factoryClass = getBehaviourDelegate()
 						.providePropertySetImplementation();
 				return factoryClass != null ? factoryClass : super
 						.providePropertySetImplementation();
@@ -235,7 +235,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	}
 
 	@Override
-	public Class<? extends PropertySetDescriptorFactory> providePropertySetImplementation() {
+	public Class<? extends PropertySetFactory> providePropertySetImplementation() {
 		return null;
 	}
 
@@ -545,7 +545,6 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 				}
 			}
 			module.addReadableGraph(getBehaviourDelegate().getDefaultGraph());
-
 			state().module = module;
 		}
 		return state().module;
