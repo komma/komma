@@ -11,15 +11,26 @@
 package net.enilink.composition.properties.komma;
 
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 
+import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetDescriptor;
-import net.enilink.composition.properties.PropertySetDescriptorFactory;
+import net.enilink.composition.properties.PropertySetFactory;
 
-public class KommaPropertySetDescriptorFactory implements
-		PropertySetDescriptorFactory {
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.URIImpl;
+
+public class KommaPropertySetFactory implements PropertySetFactory {
 	@Override
 	public <E> PropertySetDescriptor<E> createDescriptor(
 			PropertyDescriptor property, String uri, boolean readOnly) {
 		return new KommaPropertySetDescriptor<E>(property, uri);
+	}
+
+	@Override
+	public <E> PropertySet<E> createPropertySet(Object bean, String uri,
+			boolean readonly, Annotation... annotations) {
+		return new KommaPropertySet<E>((IReference) bean,
+				URIImpl.createURI(uri));
 	}
 }

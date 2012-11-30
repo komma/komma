@@ -85,11 +85,9 @@ public class KommaPropertySetDescriptor<E> implements PropertySetDescriptor<E> {
 			propertySet = new KommaPropertySet<E>((IReference) bean, predicate,
 					(Class<E>) type, rdfValueType);
 		}
-
 		if (readOnly) {
 			return new UnmodifiablePropertySet<E>(propertySet);
 		}
-
 		return propertySet;
 	}
 
