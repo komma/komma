@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import net.enilink.composition.properties.PropertySet;
-import net.enilink.composition.properties.PropertySetDescriptorFactory;
+import net.enilink.composition.properties.PropertySetFactory;
 
 public abstract class Methods {
 	public static final Method PROPERTYSET_GET_ALL;
@@ -25,7 +25,7 @@ public abstract class Methods {
 	public static final Method PROPERTYSET_SET_SINGLE;
 	public static final Method PROPERTYSET_ADD_ALL;
 	public static final Method PROPERTYSET_ADD_SINGLE;
-	public static final Method PROPERTYSETDESCRIPTORFACTORY_CREATEDESCRIPTOR;
+	public static final Method PROPERTYSETFACTORY_CREATEDESCRIPTOR;
 
 	static {
 		PROPERTYSET_GET_ALL = getMethod(PropertySet.class, "getAll");
@@ -38,8 +38,8 @@ public abstract class Methods {
 		PROPERTYSET_ADD_SINGLE = getMethod(PropertySet.class, "add",
 				Object.class);
 
-		PROPERTYSETDESCRIPTORFACTORY_CREATEDESCRIPTOR = getMethod(
-				PropertySetDescriptorFactory.class, "createDescriptor",
+		PROPERTYSETFACTORY_CREATEDESCRIPTOR = getMethod(
+				PropertySetFactory.class, "createDescriptor",
 				PropertyDescriptor.class, String.class, boolean.class);
 	}
 

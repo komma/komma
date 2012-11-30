@@ -50,7 +50,7 @@ import net.enilink.composition.asm.util.MethodNodeGenerator;
 import net.enilink.composition.properties.PropertyMapper;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetDescriptor;
-import net.enilink.composition.properties.PropertySetDescriptorFactory;
+import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.Refreshable;
 
@@ -75,14 +75,14 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 	protected PropertyMapper propertyMapper;
 
 	@Inject
-	protected Class<? extends PropertySetDescriptorFactory> propertySetDescriptorFactoryClass;
+	protected Class<? extends PropertySetFactory> propertySetDescriptorFactoryClass;
 
 	private void addDescriptorFactoryField(BehaviourClassNode node) {
 		String fieldName = getFactoryField();
 
 		FieldNode factoryField = new FieldNode(Opcodes.ACC_PRIVATE
 				| Opcodes.ACC_STATIC, fieldName,
-				Type.getDescriptor(PropertySetDescriptorFactory.class), null,
+				Type.getDescriptor(PropertySetFactory.class), null,
 				null);
 		node.addField(factoryField);
 
@@ -94,7 +94,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.invokeConstructor(factoryType,
 				org.objectweb.asm.commons.Method.getMethod("void <init>()"));
 		gen.putStatic(node.getType(), fieldName,
-				Type.getType(PropertySetDescriptorFactory.class));
+				Type.getType(PropertySetFactory.class));
 	}
 
 	private FieldNode createDescriptorField(PropertyDescriptor pd,
@@ -133,7 +133,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.push(false);
 
 		// call PropertySetDescriptor.createDescriptor(...)
-		gen.invoke(Methods.PROPERTYSETDESCRIPTORFACTORY_CREATEDESCRIPTOR);
+		gen.invoke(Methods.PROPERTYSETFACTORY_CREATEDESCRIPTOR);
 		gen.putStatic(node.getType(), descriptorField.name, propertySetDescType);
 
 		return descriptorField;
@@ -313,7 +313,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 	private void loadFactory(BehaviourClassNode node, MethodNodeGenerator gen) {
 		gen.getStatic(node.getType(), getFactoryField(),
-				Type.getType(PropertySetDescriptorFactory.class));
+				Type.getType(PropertySetFactory.class));
 	}
 
 	private void mergeProperty(String property, Class<?> type,

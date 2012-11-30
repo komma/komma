@@ -18,7 +18,7 @@ import net.enilink.composition.ObjectFactory;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.mappers.TypeFactory;
 import net.enilink.composition.properties.PropertyMapper;
-import net.enilink.composition.properties.PropertySetDescriptorFactory;
+import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.behaviours.PropertyMapperProcessor;
 
 import com.google.inject.Guice;
@@ -64,11 +64,9 @@ public abstract class PropertiesCompositionTestCase {
 				});
 				bind(new TypeLiteral<ClassResolver<String>>() {
 				});
-				bind(
-						new TypeLiteral<Class<? extends PropertySetDescriptorFactory>>() {
-						})
-						.toInstance(
-								(Class<? extends PropertySetDescriptorFactory>) TestPropertySetDescriptorFactory.class);
+				bind(new TypeLiteral<Class<? extends PropertySetFactory>>() {
+				}).toInstance(
+						(Class<? extends PropertySetFactory>) TestPropertySetFactory.class);
 
 				bind(PropertyMapperProcessor.class).in(Singleton.class);
 				getBehaviourClassProcessorBinder().addBinding().to(

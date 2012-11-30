@@ -11,6 +11,7 @@
 package net.enilink.composition.properties.test;
 
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -21,11 +22,10 @@ import java.util.Set;
 
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetDescriptor;
-import net.enilink.composition.properties.PropertySetDescriptorFactory;
+import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.annotations.Localized;
 
-public class TestPropertySetDescriptorFactory implements
-		PropertySetDescriptorFactory {
+public class TestPropertySetFactory implements PropertySetFactory {
 	class TestPropertySetDescriptor<E> implements PropertySetDescriptor<E> {
 		private String name;
 
@@ -104,7 +104,7 @@ public class TestPropertySetDescriptorFactory implements
 		public void init(Collection<? extends E> values) {
 			// not required
 		}
-		
+
 		@Override
 		public Class<E> getElementType() {
 			return null;
@@ -115,5 +115,11 @@ public class TestPropertySetDescriptorFactory implements
 	public <E> PropertySetDescriptor<E> createDescriptor(
 			PropertyDescriptor property, String uri, boolean readOnly) {
 		return new TestPropertySetDescriptor<E>(property, uri);
+	}
+
+	@Override
+	public <E> PropertySet<E> createPropertySet(Object bean, String uri,
+			boolean readonly, Annotation... annotations) {
+		return new TestPropertySet<E>();
 	}
 }
