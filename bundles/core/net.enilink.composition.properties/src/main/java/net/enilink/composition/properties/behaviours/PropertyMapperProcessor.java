@@ -29,8 +29,10 @@
 package net.enilink.composition.properties.behaviours;
 
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -46,16 +48,13 @@ import net.enilink.composition.asm.BehaviourClassProcessor;
 import net.enilink.composition.asm.ExtendedMethod;
 import net.enilink.composition.asm.Types;
 import net.enilink.composition.asm.util.BehaviourMethodGenerator;
-import net.enilink.composition.asm.util.MethodNodeGenerator;
 import net.enilink.composition.properties.PropertyMapper;
 import net.enilink.composition.properties.PropertySet;
-import net.enilink.composition.properties.PropertySetDescriptor;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.Refreshable;
 
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 
 /**
  * Properties that have the {@link Iri} annotation are replaced with getters and
@@ -63,9 +62,7 @@ import com.google.inject.Injector;
  */
 public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		Opcodes, Types {
-	private static final String DESCRIPTOR_SUFFIX = "Descriptor";
-
-	private static final String FACTORY_FIELD = "_$descriptorFactory";
+	private static final String FACTORY_FIELD = "_$propertySetFactory";
 
 	private static final String PROPERTY_SUFFIX = "Property";
 
@@ -74,82 +71,12 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 	protected PropertyMapper propertyMapper;
 
-	@Inject
-	protected Class<? extends PropertySetFactory> propertySetDescriptorFactoryClass;
-
-	private void addDescriptorFactoryField(BehaviourClassNode node) {
-		String fieldName = getFactoryField();
-
-		FieldNode factoryField = new FieldNode(Opcodes.ACC_PRIVATE
-				| Opcodes.ACC_STATIC, fieldName,
-				Type.getDescriptor(PropertySetFactory.class), null,
-				null);
+	private void addPropertySetFactoryField(BehaviourClassNode node) {
+		FieldNode factoryField = new FieldNode(Opcodes.ACC_PRIVATE,
+				getFactoryField(),
+				Type.getDescriptor(PropertySetFactory.class), null, null);
+		factoryField.visitAnnotation(Type.getDescriptor(Inject.class), true);
 		node.addField(factoryField);
-
-		Type factoryType = Type.getType(propertySetDescriptorFactoryClass);
-
-		MethodNodeGenerator gen = node.getClassInitGen();
-		gen.newInstance(factoryType);
-		gen.dup();
-		gen.invokeConstructor(factoryType,
-				org.objectweb.asm.commons.Method.getMethod("void <init>()"));
-		gen.putStatic(node.getType(), fieldName,
-				Type.getType(PropertySetFactory.class));
-	}
-
-	private FieldNode createDescriptorField(PropertyDescriptor pd,
-			BehaviourClassNode node) throws Exception {
-		Method method = pd.getReadMethod();
-		Method setter = pd.getWriteMethod();
-		String property = pd.getName();
-		String setterName = setter == null ? null : setter.getName();
-		Class<?> dc = method.getDeclaringClass();
-		String getterName = method.getName();
-		Type propertyDescType = Type.getType(PropertyDescriptor.class);
-		Type propertySetDescType = Type.getType(PropertySetDescriptor.class);
-		String fieldName = getDescriptorField(property);
-
-		FieldNode descriptorField = new FieldNode(Opcodes.ACC_PRIVATE
-				| Opcodes.ACC_STATIC, fieldName,
-				propertySetDescType.getDescriptor(), null, null);
-		node.addField(descriptorField);
-
-		MethodNodeGenerator gen = node.getClassInitGen();
-		loadFactory(node, gen);
-
-		// instantiate PropertyDescriptor
-		gen.newInstance(propertyDescType);
-		gen.dup();
-		gen.push(property);
-		gen.push(Type.getType(dc));
-		gen.push(getterName);
-		gen.push(setterName);
-		gen.invokeConstructor(propertyDescType,
-				new org.objectweb.asm.commons.Method("<init>", Type.VOID_TYPE,
-						new Type[] { STRING_TYPE, CLASS_TYPE, STRING_TYPE,
-								STRING_TYPE }));
-
-		gen.push(propertyMapper.findPredicate(pd));
-		gen.push(false);
-
-		// call PropertySetDescriptor.createDescriptor(...)
-		gen.invoke(Methods.PROPERTYSETFACTORY_CREATEDESCRIPTOR);
-		gen.putStatic(node.getType(), descriptorField.name, propertySetDescType);
-
-		return descriptorField;
-	}
-
-	private FieldNode createPropertyField(String property,
-			BehaviourClassNode node) throws Exception {
-		String fieldName = getPropertyFieldName(property);
-		FieldNode propertyField = new FieldNode(Opcodes.ACC_PRIVATE, fieldName,
-				Type.getDescriptor(PropertySet.class), null, null);
-		node.addField(propertyField);
-		return propertyField;
-	}
-
-	private String getDescriptorField(String property) {
-		return "_$" + property + DESCRIPTOR_SUFFIX;
 	}
 
 	private String getFactoryField() {
@@ -170,25 +97,119 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		return fields;
 	}
 
-	private void implementGetter(Method getter, FieldNode field,
-			FieldNode descriptorField, BehaviourClassNode node)
+	private void loadPropertySet(PropertyDescriptor pd,
+			BehaviourMethodGenerator gen) {
+		gen.loadThis();
+		gen.invokeVirtual(
+				gen.getMethod().getOwner().getType(),
+				new org.objectweb.asm.commons.Method("_$get" + pd.getName(),
+						Type.getMethodDescriptor(Type
+								.getType(PropertySet.class))));
+	}
+
+	private void createPropertySetAccessor(PropertyDescriptor pd,
+			BehaviourClassNode node) throws Exception {
+		String fieldName = getPropertyFieldName(pd.getName());
+		FieldNode propertyField = new FieldNode(Opcodes.ACC_PRIVATE, fieldName,
+				Type.getDescriptor(PropertySet.class), null, null);
+		node.addField(propertyField);
+
+		ExtendedMethod propertyAccessor = new ExtendedMethod(node,
+				Opcodes.ACC_PRIVATE, "_$get" + pd.getName(),
+				Type.getMethodDescriptor(Type.getType(PropertySet.class)),
+				null, null);
+		node.methods.add(propertyAccessor);
+		BehaviourMethodGenerator gen = new BehaviourMethodGenerator(
+				propertyAccessor);
+		lazyInitializePropertySet(pd, node, propertyField, gen);
+		gen.returnValue();
+		gen.endMethod();
+	}
+
+	private void lazyInitializePropertySet(PropertyDescriptor pd,
+			BehaviourClassNode node, FieldNode field,
+			BehaviourMethodGenerator gen) throws Exception {
+		gen.loadThis();
+		gen.getField(field.name, Type.getType(field.desc));
+		gen.dup();
+
+		Label exists = gen.newLabel();
+		gen.ifNonNull(exists);
+		gen.pop();
+
+		Method getter = pd.getReadMethod();
+		Method setter = pd.getWriteMethod();
+
+		loadFactory(node, gen);
+		gen.loadBean();
+		gen.push(propertyMapper.findPredicate(pd));
+
+		// load element type
+		Class<?> propertyType = pd.getPropertyType();
+		if (Set.class.equals(propertyType)) {
+			java.lang.reflect.Type t = pd.getReadMethod()
+					.getGenericReturnType();
+			if (t instanceof ParameterizedType) {
+				ParameterizedType pt = (ParameterizedType) t;
+				java.lang.reflect.Type[] args = pt.getActualTypeArguments();
+				if (args.length == 1 && args[0] instanceof Class<?>) {
+					propertyType = (Class<?>) args[0];
+				}
+			}
+		}
+		gen.push(Type.getType(propertyType));
+		gen.push(setter == null);
+
+		// instantiate PropertyDescriptor
+		Type propertyDescType = Type.getType(PropertyDescriptor.class);
+		gen.newInstance(propertyDescType);
+		gen.dup();
+
+		// call constructor
+		gen.push(pd.getName());
+		gen.push(Type.getType(getter.getDeclaringClass()));
+		gen.push(getter.getName());
+		gen.push(setter == null ? null : setter.getName());
+		gen.invokeConstructor(propertyDescType,
+				new org.objectweb.asm.commons.Method("<init>", Type.VOID_TYPE,
+						new Type[] { STRING_TYPE, CLASS_TYPE, STRING_TYPE,
+								STRING_TYPE }));
+
+		// retrieve read method annotations
+		gen.invokeVirtual(propertyDescType,
+				new org.objectweb.asm.commons.Method("getReadMethod",
+						METHOD_TYPE, new Type[0]));
+		gen.invokeVirtual(
+				METHOD_TYPE,
+				new org.objectweb.asm.commons.Method("getAnnotations", Type
+						.getType(Annotation[].class), new Type[0]));
+
+		gen.invoke(Methods.PROPERTYSETFACTORY_CREATEPROPERTYSET);
+		gen.dup();
+		// gen.injectMembers();
+
+		// store property set in field
+		gen.loadThis();
+		gen.swap();
+		gen.putField(field.name, Type.getType(field.desc));
+
+		gen.mark(exists);
+	}
+
+	private void implementGetter(PropertyDescriptor pd, BehaviourClassNode node)
 			throws Exception {
-		Class<?> classType = getter.getReturnType();
+		Class<?> classType = pd.getReadMethod().getReturnType();
 		Type type = Type.getType(classType);
 
-		ExtendedMethod mn = node.addExtendedMethod(getter, definer);
+		ExtendedMethod mn = node.addExtendedMethod(pd.getReadMethod(), definer);
 		BehaviourMethodGenerator gen = new BehaviourMethodGenerator(mn);
 
-		lazyInitializePropertySet(field, descriptorField, gen);
+		loadPropertySet(pd, gen);
 
 		if (isCollection(classType)) {
-			gen.loadThis();
-			gen.getField(field.name, Type.getType(field.desc));
 			gen.invoke(Methods.PROPERTYSET_GET_ALL);
 			gen.returnValue();
 		} else if (classType.isPrimitive()) {
-			gen.loadThis();
-			gen.getField(field.name, Type.getType(field.desc));
 			gen.invoke(Methods.PROPERTYSET_GET_SINGLE);
 			gen.dup();
 			Label isNull = gen.newLabel();
@@ -204,8 +225,6 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		} else {
 			Label tryLabel = gen.mark();
 			// try
-			gen.loadThis();
-			gen.getField(field.name, Type.getType(field.desc));
 			gen.invoke(Methods.PROPERTYSET_GET_SINGLE);
 			gen.checkCast(type);
 			gen.returnValue();
@@ -220,8 +239,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 			gen.newStringBuilder();
 
 			// reload property value
-			gen.loadThis();
-			gen.getField(field.name, Type.getType(field.desc));
+			loadPropertySet(pd, gen);
 			gen.invoke(Methods.PROPERTYSET_GET_SINGLE);
 			gen.invokeToString();
 			gen.appendToStringBuilder();
@@ -241,15 +259,13 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 	private void implementProperty(PropertyDescriptor pd,
 			BehaviourClassNode node) throws Exception {
-		String property = pd.getName();
-		FieldNode field = createPropertyField(property, node);
-		FieldNode descriptor = createDescriptorField(pd, node);
+		createPropertySetAccessor(pd, node);
 
-		implementGetter(pd.getReadMethod(), field, descriptor, node);
+		implementGetter(pd, node);
 
 		Method setter = pd.getWriteMethod();
 		if (setter != null) {
-			implementSetter(setter, field, descriptor, node);
+			implementSetter(pd, node);
 		}
 	}
 
@@ -258,19 +274,16 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		return !propertyMapper.findProperties(concept).isEmpty();
 	}
 
-	private void implementSetter(Method setter, FieldNode field,
-			FieldNode descriptorField, BehaviourClassNode node)
+	private void implementSetter(PropertyDescriptor pd, BehaviourClassNode node)
 			throws Exception {
-		Class<?> classType = setter.getParameterTypes()[0];
+		Class<?> classType = pd.getWriteMethod().getParameterTypes()[0];
 		Type type = Type.getType(classType);
 
-		ExtendedMethod mn = node.addExtendedMethod(setter, definer);
+		ExtendedMethod mn = node
+				.addExtendedMethod(pd.getWriteMethod(), definer);
 		BehaviourMethodGenerator gen = new BehaviourMethodGenerator(mn);
 
-		lazyInitializePropertySet(field, descriptorField, gen);
-
-		gen.loadThis();
-		gen.getField(field.name, Type.getType(field.desc));
+		loadPropertySet(pd, gen);
 
 		gen.loadArgs();
 		if (isCollection(classType)) {
@@ -287,52 +300,26 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		return Set.class.equals(type);
 	}
 
-	private void lazyInitializePropertySet(FieldNode field,
-			FieldNode descriptorField, BehaviourMethodGenerator gen)
-			throws Exception {
+	private void loadFactory(BehaviourClassNode node,
+			BehaviourMethodGenerator gen) {
 		gen.loadThis();
-		gen.getField(field.name, Type.getType(field.desc));
-
-		Label exists = gen.newLabel();
-		gen.ifNonNull(exists);
-		gen.loadThis(); // required for put field
-		gen.getStatic(descriptorField.name, Type.getType(descriptorField.desc));
-
-		gen.loadBean();
-		gen.invokeInterface(
-				Type.getType(PropertySetDescriptor.class),
-				new org.objectweb.asm.commons.Method(
-						PropertySetDescriptor.CREATE_PROPERTY_SET, Type
-								.getType(PropertySet.class),
-						new Type[] { OBJECT_TYPE }));
-		gen.injectMembers();
-		gen.putField(field.name, Type.getType(field.desc));
-
-		gen.mark(exists);
+		gen.getField(getFactoryField(), Type.getType(PropertySetFactory.class));
 	}
 
-	private void loadFactory(BehaviourClassNode node, MethodNodeGenerator gen) {
-		gen.getStatic(node.getType(), getFactoryField(),
-				Type.getType(PropertySetFactory.class));
-	}
-
-	private void mergeProperty(String property, Class<?> type,
+	private void mergeProperty(PropertyDescriptor pd,
 			BehaviourMethodGenerator gen) throws Exception {
-		FieldNode field = gen.getMethod().getOwner()
-				.getField(getPropertyFieldName(property));
-		FieldNode descriptorField = gen.getMethod().getOwner()
-				.getField(getDescriptorField(property));
+		Class<?> type = pd.getPropertyType();
 		if (type.isPrimitive()) {
-			lazyInitializePropertySet(field, descriptorField, gen);
-			persistValue(field, type, gen);
+			loadPropertySet(pd, gen);
+			persistValue(type, gen);
 		} else {
 			gen.dup();
 
 			Label isNull = gen.newLabel();
 			gen.ifNull(isNull);
 
-			lazyInitializePropertySet(field, descriptorField, gen);
-			persistValue(field, type, gen);
+			loadPropertySet(pd, gen);
+			persistValue(type, gen);
 
 			Label end = gen.newLabel();
 			gen.goTo(end);
@@ -375,7 +362,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 			gen.checkCast(Type.getType(pd.getReadMethod().getDeclaringClass()));
 			gen.invoke(pd.getReadMethod());
 
-			mergeProperty(pd.getName(), pd.getPropertyType(), gen);
+			mergeProperty(pd, gen);
 		}
 
 		gen.mark(notInstanceOf);
@@ -423,10 +410,8 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.endMethod();
 	}
 
-	private void persistValue(FieldNode field, Class<?> type,
-			BehaviourMethodGenerator gen) throws Exception {
-		gen.loadThis();
-		gen.getField(field.name, Type.getType(field.desc));
+	private void persistValue(Class<?> type, BehaviourMethodGenerator gen)
+			throws Exception {
 		gen.swap();
 		if (isCollection(type)) {
 			gen.invoke(Methods.PROPERTYSET_ADD_ALL);
@@ -437,23 +422,13 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.pop();
 	}
 
-	private static final String INJECTOR_FIELD = "_$injector";
-
-	@SuppressWarnings("unchecked")
-	protected void addInjectorField(BehaviourClassNode classNode) {
-		FieldNode injectorField = new FieldNode(ACC_PROTECTED, INJECTOR_FIELD,
-				Type.getDescriptor(Injector.class), null, null);
-		injectorField.visitAnnotation(Type.getDescriptor(Inject.class), true);
-		classNode.fields.add(injectorField);
-	}
-
 	@Override
 	public void process(BehaviourClassNode classNode) throws Exception {
 		classNode.addInterface(Type.getInternalName(Mergeable.class));
 		classNode.addInterface(Type.getInternalName(Refreshable.class));
 
-		addDescriptorFactoryField(classNode);
 		classNode.addInjectorField();
+		addPropertySetFactoryField(classNode);
 
 		for (PropertyDescriptor pd : propertyMapper.findProperties(classNode
 				.getParentClass())) {

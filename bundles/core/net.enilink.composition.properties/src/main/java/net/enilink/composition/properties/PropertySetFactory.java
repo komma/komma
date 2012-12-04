@@ -28,30 +28,12 @@
  */
 package net.enilink.composition.properties;
 
-import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 
 /**
- * Internal interface to create {@link PropertySetDescriptor} objects.
+ * Internal interface to create {@link PropertySet} objects.
  */
 public interface PropertySetFactory {
-	/**
-	 * Create a property set descriptor for a given property.
-	 * 
-	 * @param property
-	 *            A descriptor for a property of a Java bean.
-	 * @param uri
-	 *            The property's URI.
-	 * @param readonly
-	 *            Controls if the resulting property set is read-only or not.
-	 * @param <E>
-	 *            The element type.
-	 * 
-	 * @return A property set descriptor for the given <code>property</code>.
-	 */
-	<E> PropertySetDescriptor<E> createDescriptor(PropertyDescriptor property,
-			String uri, boolean readOnly);
-
 	/**
 	 * Create a property set for the given <code>bean</code> and property
 	 * <code>uri</code>.
@@ -60,6 +42,8 @@ public interface PropertySetFactory {
 	 *            Subject of the property set.
 	 * @param uri
 	 *            The property's URI.
+	 * @param elementType
+	 *            The element type.
 	 * @param readonly
 	 *            Controls if the resulting property set is read-only or not.
 	 * @param annotations
@@ -72,5 +56,5 @@ public interface PropertySetFactory {
 	 *         <code>uri</code>.
 	 */
 	<E> PropertySet<E> createPropertySet(Object bean, String uri,
-			boolean readonly, Annotation... annotations);
+			Class<E> elementType, boolean readonly, Annotation... annotations);
 }

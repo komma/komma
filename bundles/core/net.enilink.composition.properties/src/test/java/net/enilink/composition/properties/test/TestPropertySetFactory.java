@@ -10,62 +10,17 @@
  *******************************************************************************/
 package net.enilink.composition.properties.test;
 
-import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 import net.enilink.composition.properties.PropertySet;
-import net.enilink.composition.properties.PropertySetDescriptor;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.annotations.Localized;
 
 public class TestPropertySetFactory implements PropertySetFactory {
-	class TestPropertySetDescriptor<E> implements PropertySetDescriptor<E> {
-		private String name;
-
-		private Class<?> type;
-
-		private boolean localized;
-
-		private boolean readOnly;
-
-		public TestPropertySetDescriptor(PropertyDescriptor property,
-				String predicate) {
-			Method getter = property.getReadMethod();
-			localized = getter.isAnnotationPresent(Localized.class);
-			readOnly = property.getWriteMethod() == null;
-
-			name = property.getName();
-			type = property.getPropertyType();
-			if (Set.class.equals(type)) {
-				Type t = property.getReadMethod().getGenericReturnType();
-				if (t instanceof ParameterizedType) {
-					ParameterizedType pt = (ParameterizedType) t;
-					Type[] args = pt.getActualTypeArguments();
-					if (args.length == 1 && args[0] instanceof Class<?>) {
-						type = (Class<?>) args[0];
-					}
-				}
-			}
-		}
-
-		@Override
-		public PropertySet<E> createPropertySet(Object bean) {
-			return new TestPropertySet<E>();
-		}
-
-		@Override
-		public String getName() {
-			return name;
-		}
-	}
-
 	class TestPropertySet<E> extends HashSet<E> implements PropertySet<E> {
 		private static final long serialVersionUID = 1L;
 
@@ -112,14 +67,14 @@ public class TestPropertySetFactory implements PropertySetFactory {
 	}
 
 	@Override
-	public <E> PropertySetDescriptor<E> createDescriptor(
-			PropertyDescriptor property, String uri, boolean readOnly) {
-		return new TestPropertySetDescriptor<E>(property, uri);
-	}
-
-	@Override
 	public <E> PropertySet<E> createPropertySet(Object bean, String uri,
-			boolean readonly, Annotation... annotations) {
+			Class<E> elementType, boolean readonly, Annotation... annotations) {
+		boolean localized = false;
+		for (Annotation annotation : annotations) {
+			if (Localized.class.equals(annotation.annotationType())) {
+				localized = true;
+			}
+		}
 		return new TestPropertySet<E>();
 	}
 }

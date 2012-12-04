@@ -10,7 +10,7 @@
  *******************************************************************************/
 package net.enilink.composition.properties.behaviours;
 
-import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Set;
@@ -25,7 +25,7 @@ public abstract class Methods {
 	public static final Method PROPERTYSET_SET_SINGLE;
 	public static final Method PROPERTYSET_ADD_ALL;
 	public static final Method PROPERTYSET_ADD_SINGLE;
-	public static final Method PROPERTYSETFACTORY_CREATEDESCRIPTOR;
+	public static final Method PROPERTYSETFACTORY_CREATEPROPERTYSET;
 
 	static {
 		PROPERTYSET_GET_ALL = getMethod(PropertySet.class, "getAll");
@@ -38,9 +38,9 @@ public abstract class Methods {
 		PROPERTYSET_ADD_SINGLE = getMethod(PropertySet.class, "add",
 				Object.class);
 
-		PROPERTYSETFACTORY_CREATEDESCRIPTOR = getMethod(
-				PropertySetFactory.class, "createDescriptor",
-				PropertyDescriptor.class, String.class, boolean.class);
+		PROPERTYSETFACTORY_CREATEPROPERTYSET = getMethod(
+				PropertySetFactory.class, "createPropertySet", Object.class,
+				String.class, Class.class, boolean.class, Annotation[].class);
 	}
 
 	private static Method getMethod(Class<?> owner, String name,

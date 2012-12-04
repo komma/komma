@@ -64,9 +64,8 @@ public abstract class PropertiesCompositionTestCase {
 				});
 				bind(new TypeLiteral<ClassResolver<String>>() {
 				});
-				bind(new TypeLiteral<Class<? extends PropertySetFactory>>() {
-				}).toInstance(
-						(Class<? extends PropertySetFactory>) TestPropertySetFactory.class);
+				bind(PropertySetFactory.class).to(TestPropertySetFactory.class)
+						.in(Singleton.class);
 
 				bind(PropertyMapperProcessor.class).in(Singleton.class);
 				getBehaviourClassProcessorBinder().addBinding().to(
@@ -75,7 +74,6 @@ public abstract class PropertiesCompositionTestCase {
 
 			@Provides
 			@Singleton
-			@SuppressWarnings("unused")
 			protected TypeFactory<String> provideTypeFactory() {
 				return new TypeFactory<String>() {
 					@Override
@@ -90,7 +88,6 @@ public abstract class PropertiesCompositionTestCase {
 				};
 			}
 
-			@SuppressWarnings("unused")
 			@Provides
 			protected @Singleton
 			PropertyMapper providePropertyMapper() {
