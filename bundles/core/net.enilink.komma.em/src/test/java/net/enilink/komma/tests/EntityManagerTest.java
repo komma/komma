@@ -62,7 +62,6 @@ public abstract class EntityManagerTest {
 						bind(IUnitOfWork.class).toInstance(uow);
 					}
 
-					@SuppressWarnings("unused")
 					@Provides
 					protected IDataManager provideDataManager(
 							IDataManagerFactory dmFactory) {

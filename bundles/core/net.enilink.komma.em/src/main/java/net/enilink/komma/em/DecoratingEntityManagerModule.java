@@ -10,6 +10,9 @@
  *******************************************************************************/
 package net.enilink.komma.em;
 
+import net.enilink.composition.properties.PropertySetFactory;
+import net.enilink.composition.properties.komma.KommaPropertySetFactory;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
 import com.google.inject.Injector;
@@ -25,8 +28,14 @@ import net.enilink.komma.util.UnitOfWork;
 public class DecoratingEntityManagerModule extends AbstractModule {
 	@Override
 	protected void configure() {
+		Class<? extends IEntityManager> managerClass = getManagerClass();
+		bind(managerClass);
 		bind(IEntityManager.class).annotatedWith(Names.named("unmanaged")).to(
-				getManagerClass());
+				managerClass);
+
+		Class<? extends PropertySetFactory> factoryClass = getPropertySetFactoryClass();
+		bind(factoryClass).in(Singleton.class);
+		bind(PropertySetFactory.class).to(factoryClass);
 	}
 
 	@Provides
@@ -44,5 +53,9 @@ public class DecoratingEntityManagerModule extends AbstractModule {
 
 	protected Class<? extends IEntityManager> getManagerClass() {
 		return DecoratingEntityManager.class;
+	}
+
+	protected Class<? extends PropertySetFactory> getPropertySetFactoryClass() {
+		return KommaPropertySetFactory.class;
 	}
 }

@@ -12,9 +12,6 @@ package net.enilink.komma.em;
 
 import java.util.Locale;
 
-import net.enilink.composition.properties.PropertySetFactory;
-import net.enilink.composition.properties.komma.KommaPropertySetFactory;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -55,11 +52,6 @@ public class EntityManagerFactoryModule extends AbstractModule {
 		bind(IDataChangeTracker.class).to(DataChangeTracker.class);
 
 		install(new EntityVarModule());
-	}
-
-	@Provides
-	protected Class<? extends PropertySetFactory> providePropertySetImplementation() {
-		return KommaPropertySetFactory.class;
 	}
 
 	@Singleton
