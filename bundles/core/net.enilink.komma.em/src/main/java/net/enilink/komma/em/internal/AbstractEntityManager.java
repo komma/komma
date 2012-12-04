@@ -292,6 +292,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		entityTypes = entityTypes != null ? new HashSet<URI>(entityTypes)
 				: new HashSet<URI>();
 		if (!restrictTypes) {
+			boolean retrieveTypes = true;
 			if (graph != null) {
 				// this ensures that only types with an IRI are added to
 				// entityTypes
@@ -300,10 +301,11 @@ public abstract class AbstractEntityManager implements IEntityManager,
 					URI typeUri = type.getURI();
 					if (typeUri != null) {
 						entityTypes.add(typeUri);
+						retrieveTypes = false;
 					}
 				}
 			}
-			if (entityTypes.isEmpty()) {
+			if (retrieveTypes) {
 				entityTypes.addAll(getTypeManager().getTypes(resource));
 			}
 		}
