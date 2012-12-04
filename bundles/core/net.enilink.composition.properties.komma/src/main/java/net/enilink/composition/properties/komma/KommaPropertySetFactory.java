@@ -16,7 +16,6 @@ import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.annotations.Localized;
 import net.enilink.composition.properties.annotations.Type;
-import net.enilink.composition.properties.util.UnmodifiablePropertySet;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -31,7 +30,7 @@ public class KommaPropertySetFactory implements PropertySetFactory {
 
 	@Override
 	public <E> PropertySet<E> createPropertySet(Object bean, String uri,
-			Class<E> elementType, boolean readonly, Annotation... annotations) {
+			Class<E> elementType, Annotation... annotations) {
 		URI predicate = URIImpl.createURI(uri);
 		URI rdfValueType = null;
 		boolean localized = false;
@@ -49,9 +48,6 @@ public class KommaPropertySetFactory implements PropertySetFactory {
 		} else {
 			propertySet = new KommaPropertySet<E>((IReference) bean, predicate,
 					elementType, rdfValueType);
-		}
-		if (readonly) {
-			propertySet = new UnmodifiablePropertySet<E>(propertySet);
 		}
 		injector.injectMembers(propertySet);
 		return propertySet;

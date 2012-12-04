@@ -432,7 +432,9 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 
 	@Override
 	public void init(Collection<? extends E> values) {
-		setCache(new ArrayList<E>(values));
+		if (getCache() == null) {
+			setCache(new ArrayList<E>(values));
+		}
 	}
 
 	private boolean isCacheComplete(List<E> cache) {
