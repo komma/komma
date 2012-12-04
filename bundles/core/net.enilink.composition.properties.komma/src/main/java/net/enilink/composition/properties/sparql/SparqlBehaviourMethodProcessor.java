@@ -72,7 +72,7 @@ public class SparqlBehaviourMethodProcessor implements
 
 	@Override
 	public boolean appliesTo(BehaviourClassNode classNode, ExtendedMethod method) {
-		return method.getMethodDescriptor().isAnnotationPresent(Sparql.class)
+		return method.getOverriddenMethod().isAnnotationPresent(Sparql.class)
 				&& method.instructions.size() == 0;
 	}
 
@@ -101,16 +101,16 @@ public class SparqlBehaviourMethodProcessor implements
 			throws Exception {
 		BehaviourMethodGenerator gen = new BehaviourMethodGenerator(method);
 
-		String sparql = method.getMethodDescriptor()
+		String sparql = method.getOverriddenMethod()
 				.getAnnotation(Sparql.class).value();
 		String base;
-		if (method.getMethodDescriptor().getDeclaringClass()
+		if (method.getOverriddenMethod().getDeclaringClass()
 				.isAnnotationPresent(Iri.class)) {
-			base = method.getMethodDescriptor().getDeclaringClass()
+			base = method.getOverriddenMethod().getDeclaringClass()
 					.getAnnotation(Iri.class).value();
 		} else {
 			base = "java:"
-					+ method.getMethodDescriptor().getDeclaringClass()
+					+ method.getOverriddenMethod().getDeclaringClass()
 							.getName();
 		}
 
@@ -118,7 +118,7 @@ public class SparqlBehaviourMethodProcessor implements
 		// try
 		SPARQLQueryOptimizer oqo = new SPARQLQueryOptimizer();
 		oqo.implementQuery(sparql, base, propertyMapper,
-				method.getMethodDescriptor(), gen);
+				method.getOverriddenMethod(), gen);
 
 		// catch (RuntimeException e) {
 		// throw e;

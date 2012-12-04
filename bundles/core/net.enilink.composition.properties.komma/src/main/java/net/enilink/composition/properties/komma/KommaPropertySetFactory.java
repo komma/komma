@@ -10,27 +10,50 @@
  *******************************************************************************/
 package net.enilink.composition.properties.komma;
 
-import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 
 import net.enilink.composition.properties.PropertySet;
-import net.enilink.composition.properties.PropertySetDescriptor;
 import net.enilink.composition.properties.PropertySetFactory;
+import net.enilink.composition.properties.annotations.Localized;
+import net.enilink.composition.properties.annotations.Type;
+import net.enilink.composition.properties.util.UnmodifiablePropertySet;
+
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 
 public class KommaPropertySetFactory implements PropertySetFactory {
-	@Override
-	public <E> PropertySetDescriptor<E> createDescriptor(
-			PropertyDescriptor property, String uri, boolean readOnly) {
-		return new KommaPropertySetDescriptor<E>(property, uri);
-	}
+	@Inject
+	protected Injector injector;
 
 	@Override
 	public <E> PropertySet<E> createPropertySet(Object bean, String uri,
-			boolean readonly, Annotation... annotations) {
-		return new KommaPropertySet<E>((IReference) bean,
-				URIImpl.createURI(uri));
+			Class<E> elementType, boolean readonly, Annotation... annotations) {
+		URI predicate = URIImpl.createURI(uri);
+		URI rdfValueType = null;
+		boolean localized = false;
+		for (Annotation annotation : annotations) {
+			if (Localized.class.equals(annotation.annotationType())) {
+				localized = true;
+			} else if (Type.class.equals(annotation.annotationType())) {
+				rdfValueType = URIImpl.createURI(((Type) annotation).value());
+			}
+		}
+		PropertySet<E> propertySet;
+		if (localized) {
+			propertySet = (PropertySet<E>) new LocalizedKommaPropertySet(
+					(IReference) bean, predicate);
+		} else {
+			propertySet = new KommaPropertySet<E>((IReference) bean, predicate,
+					elementType, rdfValueType);
+		}
+		if (readonly) {
+			propertySet = new UnmodifiablePropertySet<E>(propertySet);
+		}
+		injector.injectMembers(propertySet);
+		return propertySet;
 	}
 }
