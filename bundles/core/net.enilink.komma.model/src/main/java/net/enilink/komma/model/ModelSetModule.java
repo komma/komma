@@ -88,19 +88,19 @@ public class ModelSetModule extends AbstractModule {
 				},
 				new SesameModule(),
 				new EntityManagerFactoryModule(module, null,
-						new EagerCachingEntityManagerModule()) {
-					@Override
-					protected Class<? extends PropertySetFactory> providePropertySetImplementation() {
-						Class<? extends PropertySetFactory> factoryClass = ModelSetModule.this
-								.providePropertySetImplementation();
-						return factoryClass != null ? factoryClass : super
-								.providePropertySetImplementation();
-					}
-				}).getInstance(ModelSetFactory.class);
+						new EagerCachingEntityManagerModule() {
+							@Override
+							protected Class<? extends PropertySetFactory> getPropertySetFactoryClass() {
+								Class<? extends PropertySetFactory> factoryClass = ModelSetModule.this
+										.getPropertySetFactoryClass();
+								return factoryClass != null ? factoryClass
+										: super.getPropertySetFactoryClass();
+							}
+						})).getInstance(ModelSetFactory.class);
 		return factory;
 	}
 
-	protected Class<? extends PropertySetFactory> providePropertySetImplementation() {
+	protected Class<? extends PropertySetFactory> getPropertySetFactoryClass() {
 		return null;
 	}
 

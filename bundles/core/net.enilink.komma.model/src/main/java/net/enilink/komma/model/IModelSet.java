@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.properties.PropertySetDescriptor;
+import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
 
 import com.google.inject.Injector;
@@ -78,10 +78,9 @@ public interface IModelSet extends INotifier<INotification> {
 		 * Allows to use a special property set implementation (e.g. with added
 		 * security) within a model set.
 		 * 
-		 * @return Factory class for {@link PropertySetDescriptor}s or
-		 *         <code>null</code>.
+		 * @return Factory class for {@link PropertySet}s or <code>null</code>.
 		 */
-		Class<? extends PropertySetFactory> providePropertySetImplementation();
+		Class<? extends PropertySetFactory> getPropertySetFactoryClass();
 	}
 
 	/**

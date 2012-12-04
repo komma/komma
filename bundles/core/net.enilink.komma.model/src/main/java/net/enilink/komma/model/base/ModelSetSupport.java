@@ -218,15 +218,15 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 			}
 		});
 		modules.add(new EntityManagerFactoryModule(getModule(), null,
-				new CachingEntityManagerModule()) {
-			@Override
-			protected Class<? extends PropertySetFactory> providePropertySetImplementation() {
-				Class<? extends PropertySetFactory> factoryClass = getBehaviourDelegate()
-						.providePropertySetImplementation();
-				return factoryClass != null ? factoryClass : super
-						.providePropertySetImplementation();
-			}
-		});
+				new CachingEntityManagerModule() {
+					@Override
+					protected Class<? extends PropertySetFactory> getPropertySetFactoryClass() {
+						Class<? extends PropertySetFactory> factoryClass = getBehaviourDelegate()
+								.getPropertySetFactoryClass();
+						return factoryClass != null ? factoryClass : super
+								.getPropertySetFactoryClass();
+					}
+				}));
 	}
 
 	@Override
@@ -235,7 +235,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	}
 
 	@Override
-	public Class<? extends PropertySetFactory> providePropertySetImplementation() {
+	public Class<? extends PropertySetFactory> getPropertySetFactoryClass() {
 		return null;
 	}
 
