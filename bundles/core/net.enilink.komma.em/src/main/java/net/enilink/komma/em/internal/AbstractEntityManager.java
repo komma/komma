@@ -50,12 +50,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections.map.ReferenceIdentityMap;
 import net.enilink.composition.ClassResolver;
-import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.cache.annotations.Cacheable;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.komma.ConversionUtil;
 import net.enilink.composition.properties.traits.Mergeable;
+import net.enilink.composition.properties.traits.PropertySetOwner;
 import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.composition.traits.Behaviour;
 import org.slf4j.Logger;
@@ -325,11 +325,12 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 		IEntity bean = createBeanForClass(resource,
 				classResolver.resolveComposite(entityTypes));
+		if (bean instanceof Initializable) {
+			// bean knows how to initialize itself
+			((Initializable) bean).init(graph);
+		}
 		if (graph != null) {
 			initializeBean(bean, graph);
-		}
-		if (bean instanceof Initializable) {
-			((Initializable) bean).init(graph);
 		}
 		return bean;
 	}
@@ -660,34 +661,35 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				readContexts);
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void initializeBean(IEntity bean, IGraph graph) {
 		if (!graph.contains(bean, null, null)) {
 			return;
 		}
 		try {
+			if (bean instanceof PropertySetOwner) {
+				for (IReference predicate : new ArrayList<IReference>(graph
+						.filter(bean, null, null).predicates())) {
+					if (graph.contains(bean, predicate, null)) {
+						PropertySet<Object> propertySet = ((PropertySetOwner) bean)
+								.getPropertySet(predicate.toString());
+						if (propertySet != null) {
+							Set<Object> objects = new LinkedHashSet<Object>(
+									graph.filter(bean, predicate, null)
+											.objects());
+							graph.remove(bean, predicate, null);
+							propertySet.init(getInstances(
+									filterResultNode(objects),
+									propertySet.getElementType(), graph));
+						}
+					}
+				}
+			}
 			for (Method method : bean.getClass().getMethods()) {
 				if (method.getParameterTypes().length > 0) {
 					continue;
 				}
-				// initialize a property set
-				if (method.isAnnotationPresent(Iri.class)
-						&& Set.class.isAssignableFrom(method.getReturnType())) {
-					Iri Iri = method.getAnnotation(Iri.class);
-					URI property = URIImpl.createURI(Iri.value());
-					if (graph.contains(bean, property, null)) {
-						Set<Object> objects = new LinkedHashSet<Object>(graph
-								.filter(bean, property, null).objects());
-						graph.remove(bean, property, null);
-						Object result = method.invoke(bean);
-						if (result instanceof PropertySet<?>) {
-							((PropertySet) result).init(getInstances(
-									filterResultNode(objects),
-									((PropertySet) result).getElementType(),
-									graph));
-						}
-					}
-				} else if (method.isAnnotationPresent(Cacheable.class)) {
+				// initialize a cached method
+				if (method.isAnnotationPresent(Cacheable.class)) {
 					Cacheable cacheable = method.getAnnotation(Cacheable.class);
 					if (cacheable.key().isEmpty()) {
 						continue;
@@ -735,10 +737,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 										valueType = (Class<?>) args[0];
 									}
 								}
-
 								collection.addAll(getInstances(valuesIt,
 										valueType, graph));
-
 								if (isIterator) {
 									value = collection.iterator();
 								} else {

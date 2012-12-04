@@ -17,7 +17,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.enilink.composition.properties.komma.KommaPropertySet;
+import net.enilink.composition.properties.PropertySet;
+import net.enilink.composition.properties.PropertySetFactory;
+import net.enilink.composition.properties.traits.PropertySetOwner;
 import net.enilink.composition.traits.Behaviour;
 
 import com.google.inject.Inject;
@@ -42,16 +44,19 @@ import net.enilink.komma.util.Pair;
 
 public abstract class ResourceSupport extends BehaviorBase implements
 		IResource, Behaviour<IResource> {
+	@Inject
+	protected PropertySetFactory propertySetFactory;
+
 	class PropertyInfo {
 		private IReference property;
-		private KommaPropertySet<Object> propertySet;
+		private PropertySet<Object> propertySet;
 		private Boolean single;
 
 		PropertyInfo(IReference property) {
 			this.property = getEntityManager().find(property);
 		}
 
-		KommaPropertySet<Object> getPropertySet() {
+		PropertySet<Object> getPropertySet() {
 			if (propertySet != null) {
 				return propertySet;
 			}
@@ -59,11 +64,18 @@ public abstract class ResourceSupport extends BehaviorBase implements
 					&& ((IProperty) property).isOrderedContainment()) {
 				propertySet = new OrderedPropertySet<Object>(
 						getBehaviourDelegate(), property);
+				injector.injectMembers(propertySet);
 			} else {
-				propertySet = new KommaPropertySet<Object>(
-						getBehaviourDelegate(), property);
+				Object self = getBehaviourDelegate();
+				if (self instanceof PropertySetOwner) {
+					propertySet = ((PropertySetOwner) self)
+							.getPropertySet(property.getURI().toString());
+				}
+				if (propertySet == null) {
+					propertySet = propertySetFactory.createPropertySet(self,
+							property.getURI().toString(), null);
+				}
 			}
-			injector.injectMembers(propertySet);
 			return propertySet;
 		}
 
@@ -237,7 +249,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public Set<Object> getAsSet(IReference property) {
-		return ensurePropertyInfo(property).getPropertySet();
+		return ensurePropertyInfo(property).getPropertySet().getAll();
 	}
 
 	@Override
@@ -518,7 +530,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		boolean functional = propertyInfo.isSingle();
 
 		if (value == null) {
-			propertyInfo.getPropertySet().clear();
+			propertyInfo.getPropertySet().getAll().clear();
 		} else if (!functional && value instanceof Collection<?>) {
 			if (value instanceof Set<?>) {
 				propertyInfo.getPropertySet().setAll((Set<Object>) value);
