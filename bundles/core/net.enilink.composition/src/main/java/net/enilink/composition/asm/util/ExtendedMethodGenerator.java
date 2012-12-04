@@ -18,9 +18,6 @@ import com.google.inject.Injector;
 
 /**
  * Generator for {@link ExtendedMethod}s.
- * 
- * @author Ken Wenzel
- * 
  */
 public class ExtendedMethodGenerator extends MethodNodeGenerator {
 

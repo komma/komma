@@ -16,9 +16,6 @@ import net.enilink.composition.asm.Types;
 
 /**
  * Generator for methods of {@link BehaviourClassNode}s.
- * 
- * @author Ken Wenzel
- * 
  */
 public class BehaviourMethodGenerator extends ExtendedMethodGenerator {
 	public BehaviourMethodGenerator(ExtendedMethod mn) {
@@ -27,7 +24,6 @@ public class BehaviourMethodGenerator extends ExtendedMethodGenerator {
 
 	/**
 	 * Loads delegate of this behaviour.
-	 * 
 	 */
 	public void loadBean() {
 		loadThis();

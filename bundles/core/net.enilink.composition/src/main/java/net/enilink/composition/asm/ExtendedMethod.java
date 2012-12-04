@@ -34,7 +34,7 @@ public class ExtendedMethod extends org.objectweb.asm.tree.MethodNode {
 		this.method = method;
 	}
 
-	public Method getMethodDescriptor() {
+	public Method getOverriddenMethod() {
 		return method;
 	}
 

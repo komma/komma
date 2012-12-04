@@ -110,7 +110,7 @@ public abstract class BehaviourFactoryBase implements BehaviourFactory {
 						throw new CompositionException("Processor "
 								+ methodProcessor.getClass()
 								+ " pretended to implement method "
-								+ behaviourMethod.getMethodDescriptor()
+								+ behaviourMethod.getOverriddenMethod()
 								+ " of class "
 								+ classNode.getType().getClassName()
 								+ " but was not applied.");

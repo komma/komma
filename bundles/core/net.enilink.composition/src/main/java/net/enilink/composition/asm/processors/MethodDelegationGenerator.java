@@ -69,7 +69,7 @@ public class MethodDelegationGenerator implements BehaviourMethodProcessor,
 
 		// if (method.getMethodDescriptor().getDeclaringClass().isInterface()) {
 
-		Type faceType = Type.getType(method.getMethodDescriptor()
+		Type faceType = Type.getType(method.getOverriddenMethod()
 				.getDeclaringClass());
 		gen.checkCast(faceType);
 

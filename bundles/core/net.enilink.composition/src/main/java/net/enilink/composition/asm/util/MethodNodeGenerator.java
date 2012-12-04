@@ -34,8 +34,6 @@ import net.enilink.composition.asm.Types;
 /**
  * Generator for method nodes.
  * 
- * @author Ken Wenzel
- * 
  */
 public class MethodNodeGenerator extends InsnListGenerator {
 	public MethodNode mn;
