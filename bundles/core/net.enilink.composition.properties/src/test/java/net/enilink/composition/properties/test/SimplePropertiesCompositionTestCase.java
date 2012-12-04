@@ -19,6 +19,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.mappers.RoleMapper;
+import net.enilink.composition.properties.traits.PropertySetOwner;
 
 public class SimplePropertiesCompositionTestCase extends
 		PropertiesCompositionTestCase {
@@ -64,14 +65,30 @@ public class SimplePropertiesCompositionTestCase extends
 		Node<String> node = objectFactory.createObject(Node.class);
 
 		node.getChildren().add("a");
-		Assert.assertEquals(node.getChildren(), new HashSet<String>(Arrays
-				.asList("a")));
+		Assert.assertEquals(node.getChildren(),
+				new HashSet<String>(Arrays.asList("a")));
 
 		node.setChildren(new HashSet<String>(Arrays.asList("a", "b", "c")));
-		Assert.assertEquals(node.getChildren(), new HashSet<String>(Arrays
-				.asList("a", "b", "c")));
+		Assert.assertEquals(node.getChildren(),
+				new HashSet<String>(Arrays.asList("a", "b", "c")));
 
 		node.getChildren().clear();
 		Assert.assertTrue(node.getChildren().isEmpty());
+	}
+
+	@Test
+	public void testPropertySetOwner() throws Exception {
+		@SuppressWarnings("unchecked")
+		Node<String> node = objectFactory.createObject(Node.class);
+
+		node.setSibling("a");
+		String sibling = ((PropertySetOwner) node).<String> getPropertySet(
+				"urn:test:sibling").getSingle();
+		Assert.assertEquals(node.getSibling(), sibling);
+
+		node.getChildren().addAll(Arrays.asList("a", "b"));
+		Set<String> children = ((PropertySetOwner) node)
+				.<String> getPropertySet("urn:test:children").getAll();
+		Assert.assertEquals(node.getChildren(), children);
 	}
 }

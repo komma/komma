@@ -44,8 +44,6 @@ public interface PropertySetFactory {
 	 *            The property's URI.
 	 * @param elementType
 	 *            The element type.
-	 * @param readonly
-	 *            Controls if the resulting property set is read-only or not.
 	 * @param annotations
 	 *            Annotations to control the behaviour of the underlying
 	 *            property set.
@@ -56,5 +54,5 @@ public interface PropertySetFactory {
 	 *         <code>uri</code>.
 	 */
 	<E> PropertySet<E> createPropertySet(Object bean, String uri,
-			Class<E> elementType, boolean readonly, Annotation... annotations);
+			Class<E> elementType, Annotation... annotations);
 }

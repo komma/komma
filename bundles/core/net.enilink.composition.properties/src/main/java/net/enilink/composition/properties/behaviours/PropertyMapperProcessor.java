@@ -52,6 +52,7 @@ import net.enilink.composition.properties.PropertyMapper;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.traits.Mergeable;
+import net.enilink.composition.properties.traits.PropertySetOwner;
 import net.enilink.composition.properties.traits.Refreshable;
 
 import com.google.inject.Inject;
@@ -107,6 +108,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 								.getType(PropertySet.class))));
 	}
 
+	@SuppressWarnings("unchecked")
 	private void createPropertySetAccessor(PropertyDescriptor pd,
 			BehaviourClassNode node) throws Exception {
 		String fieldName = getPropertyFieldName(pd.getName());
@@ -158,7 +160,6 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 			}
 		}
 		gen.push(Type.getType(propertyType));
-		gen.push(setter == null);
 
 		// instantiate PropertyDescriptor
 		Type propertyDescType = Type.getType(PropertyDescriptor.class);
@@ -186,7 +187,11 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 		gen.invoke(Methods.PROPERTYSETFACTORY_CREATEPROPERTYSET);
 		gen.dup();
-		// gen.injectMembers();
+
+		if (setter == null) {
+			// this property set is readonly
+			gen.invoke(Methods.PROPERTYSETS_UNMODIFIABLE);
+		}
 
 		// store property set in field
 		gen.loadThis();
@@ -335,21 +340,8 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		BehaviourMethodGenerator gen = new BehaviourMethodGenerator(
 				node.addExtendedMethod(merge, definer));
 
-		try {
-			// check if there is an already implemented merge method
-			Method implementedMerge = node.getParentClass().getMethod("merge",
-					Object.class);
-			if ((implementedMerge.getModifiers() & Modifier.ABSTRACT) == 0) {
-				// invoke super.merge()
-				gen.loadThis();
-				gen.loadArgs();
-				gen.invokeSpecial(node.getParentType(),
-						org.objectweb.asm.commons.Method
-								.getMethod(implementedMerge));
-			}
-		} catch (NoSuchMethodException e) {
-			// continue
-		}
+		// invoke overridden method
+		invokeSuper(gen, merge);
 
 		gen.loadArg(0);
 		gen.instanceOf(node.getParentType());
@@ -376,20 +368,8 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		BehaviourMethodGenerator gen = new BehaviourMethodGenerator(
 				node.addExtendedMethod(refresh, definer));
 
-		try {
-			// check if there is an already implemented refresh method
-			Method implementedRefresh = node.getParentClass().getMethod(
-					"refresh");
-			if ((implementedRefresh.getModifiers() & Modifier.ABSTRACT) == 0) {
-				// invoke super.refresh()
-				gen.loadThis();
-				gen.invokeSpecial(node.getParentType(),
-						org.objectweb.asm.commons.Method
-								.getMethod(implementedRefresh));
-			}
-		} catch (NoSuchMethodException e) {
-			// continue
-		}
+		// invoke overridden method
+		invokeSuper(gen, refresh);
 
 		for (FieldNode field : getPropertySetFields(node)) {
 			gen.loadThis();
@@ -422,21 +402,78 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.pop();
 	}
 
+	private void invokeSuper(BehaviourMethodGenerator gen, Method method) {
+		try {
+			// check if there is an already implemented merge method
+			Method implementedMethod = gen.getMethod().getOwner()
+					.getParentClass()
+					.getMethod(method.getName(), method.getParameterTypes());
+			if ((implementedMethod.getModifiers() & Modifier.ABSTRACT) == 0) {
+				// invoke super.getPropertySet()
+				gen.loadThis();
+				gen.loadArgs();
+				gen.invokeSpecial(gen.getMethod().getOwner().getParentType(),
+						org.objectweb.asm.commons.Method
+								.getMethod(implementedMethod));
+			}
+		} catch (NoSuchMethodException e) {
+			// continue
+		}
+	}
+
+	private void overrideGetPropertySetMethod(BehaviourClassNode node,
+			Collection<PropertyDescriptor> properties) throws Exception {
+		Method getPropertySet = PropertySetOwner.class.getMethod(
+				"getPropertySet", String.class);
+		BehaviourMethodGenerator gen = new BehaviourMethodGenerator(
+				node.addExtendedMethod(getPropertySet, definer));
+
+		// invoke overridden method
+		invokeSuper(gen, getPropertySet);
+
+		org.objectweb.asm.commons.Method equals = new org.objectweb.asm.commons.Method(
+				"equals", Type.BOOLEAN_TYPE, new Type[] { OBJECT_TYPE });
+
+		Label endLabel = gen.newLabel();
+		for (PropertyDescriptor pd : properties) {
+			Label notEqualsLabel = gen.newLabel();
+			gen.push(propertyMapper.findPredicate(pd));
+			gen.loadArg(0);
+			gen.invokeVirtual(STRING_TYPE, equals);
+			gen.ifZCmp(IFEQ, notEqualsLabel);
+			// if ("...".equals(uri))
+
+			loadPropertySet(pd, gen);
+
+			gen.goTo(endLabel);
+			gen.mark(notEqualsLabel);
+		}
+		// else
+		gen.push((String) null);
+		gen.mark(endLabel);
+
+		gen.returnValue();
+		gen.endMethod();
+	}
+
 	@Override
 	public void process(BehaviourClassNode classNode) throws Exception {
 		classNode.addInterface(Type.getInternalName(Mergeable.class));
 		classNode.addInterface(Type.getInternalName(Refreshable.class));
+		classNode.addInterface(Type.getInternalName(PropertySetOwner.class));
 
 		classNode.addInjectorField();
 		addPropertySetFactoryField(classNode);
 
-		for (PropertyDescriptor pd : propertyMapper.findProperties(classNode
-				.getParentClass())) {
+		Collection<PropertyDescriptor> properties = propertyMapper
+				.findProperties(classNode.getParentClass());
+		for (PropertyDescriptor pd : properties) {
 			implementProperty(pd, classNode);
 		}
 
 		overrideMergeMethod(classNode);
 		overrideRefreshMethod(classNode);
+		overrideGetPropertySetMethod(classNode, properties);
 	}
 
 	@Inject

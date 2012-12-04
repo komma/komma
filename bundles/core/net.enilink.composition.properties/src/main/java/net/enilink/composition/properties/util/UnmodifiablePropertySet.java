@@ -34,22 +34,19 @@ import java.util.Set;
 
 import net.enilink.composition.properties.PropertySet;
 
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-
 /**
  * Property used when only a getter method exists for the bean property.
  * 
  * @param <E>
  *            property type
  */
-public class UnmodifiablePropertySet<E> implements PropertySet<E> {
+class UnmodifiablePropertySet<E> implements PropertySet<E> {
 	private PropertySet<E> delegate;
 
-	public UnmodifiablePropertySet(PropertySet<E> delegate) {
+	UnmodifiablePropertySet(PropertySet<E> delegate) {
 		this.delegate = delegate;
 	}
-	
+
 	@Override
 	public Class<E> getElementType() {
 		return delegate.getElementType();
@@ -59,16 +56,16 @@ public class UnmodifiablePropertySet<E> implements PropertySet<E> {
 		return Collections.unmodifiableSet(delegate.getAll());
 	}
 
-	public Object getSingle() {
+	public E getSingle() {
 		return delegate.getSingle();
 	}
 
 	public void setAll(Set<E> all) {
-		delegate.setAll(all);
+		throw new UnsupportedOperationException();
 	}
 
 	public void setSingle(E single) {
-		delegate.setSingle(single);
+		throw new UnsupportedOperationException();
 	}
 
 	public void refresh() {
@@ -76,16 +73,11 @@ public class UnmodifiablePropertySet<E> implements PropertySet<E> {
 	}
 
 	public boolean add(E single) {
-		return delegate.add(single);
+		throw new UnsupportedOperationException();
 	}
 
 	public boolean addAll(Collection<? extends E> all) {
-		return delegate.addAll(all);
-	}
-
-	@Inject
-	protected void setInjector(Injector injector) {
-		injector.injectMembers(delegate);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

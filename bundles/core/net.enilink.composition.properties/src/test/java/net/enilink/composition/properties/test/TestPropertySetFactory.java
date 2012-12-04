@@ -30,7 +30,7 @@ public class TestPropertySetFactory implements PropertySetFactory {
 		}
 
 		@Override
-		public Object getSingle() {
+		public E getSingle() {
 			Iterator<E> it = iterator();
 			if (it.hasNext()) {
 				return it.next();
@@ -68,7 +68,7 @@ public class TestPropertySetFactory implements PropertySetFactory {
 
 	@Override
 	public <E> PropertySet<E> createPropertySet(Object bean, String uri,
-			Class<E> elementType, boolean readonly, Annotation... annotations) {
+			Class<E> elementType, Annotation... annotations) {
 		boolean localized = false;
 		for (Annotation annotation : annotations) {
 			if (Localized.class.equals(annotation.annotationType())) {

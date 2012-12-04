@@ -40,7 +40,6 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -54,7 +53,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Reads in property mapping files and determines which properties should be
- * eagarly loaded.
+ * eagerly loaded.
  */
 public class PropertyMapper {
 	private static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
@@ -72,19 +71,6 @@ public class PropertyMapper {
 	public PropertyMapper(ClassLoader cl, boolean readTypes) {
 		loadProperties(cl);
 		this.readTypes = readTypes;
-	}
-
-	public Collection<Field> findFields(Class<?> concept) {
-		List<Field> fields = new ArrayList<Field>();
-		while (concept != null) {
-			for (Field field : concept.getDeclaredFields()) {
-				if (isMappedField(field)) {
-					fields.add(field);
-				}
-			}
-			concept = concept.getSuperclass();
-		}
-		return fields;
 	}
 
 	public Collection<PropertyDescriptor> findProperties(Class<?> concept) {
@@ -130,14 +116,6 @@ public class PropertyMapper {
 		return properties.values();
 	}
 
-	public Collection<Field> findFunctionalFields(Class<?> type) {
-		if (type.isInterface())
-			return Collections.emptySet();
-		Map<String, Field> properties = new HashMap<String, Field>();
-		findFunctionalFields(type, properties);
-		return properties.values();
-	}
-
 	/** @return map of name to uri */
 	public Map<String, String> findEagerProperties(Class<?> type) {
 		Map<String, String> properties = new HashMap<String, String>();
@@ -165,18 +143,6 @@ public class PropertyMapper {
 			findFunctionalProperties(concept.getSuperclass(), properties);
 	}
 
-	private void findFunctionalFields(Class<?> concept,
-			Map<String, Field> properties) {
-		for (Field field : findFields(concept)) {
-			Class<?> type = field.getType();
-			if (Set.class.equals(type))
-				continue;
-			properties.put(field.getName(), field);
-		}
-		if (concept.getSuperclass() != null)
-			findFunctionalFields(concept.getSuperclass(), properties);
-	}
-
 	private Map<String, String> findEagerProperties(Class<?> concept,
 			Map<String, String> properties) {
 		for (PropertyDescriptor pd : findProperties(concept)) {
@@ -185,12 +151,6 @@ public class PropertyMapper {
 			if (!isEagerPropertyType(generic, type))
 				continue;
 			properties.put(pd.getName(), findPredicate(pd));
-		}
-		for (Field field : findFields(concept)) {
-			Class<?> type = field.getType();
-			if (!isEagerPropertyType(field.getGenericType(), type))
-				continue;
-			properties.put(field.getName(), findPredicate(field));
 		}
 		for (Class<?> face : concept.getInterfaces()) {
 			findEagerProperties(face, properties);
@@ -245,16 +205,6 @@ public class PropertyMapper {
 			return false;
 		String name = method.getDeclaringClass().getName();
 		String key = name + "." + getPropertyName(method);
-		return properties.containsKey(key);
-	}
-
-	private boolean isMappedField(Field field) {
-		if (field.isAnnotationPresent(Iri.class))
-			return true;
-		if (properties.isEmpty())
-			return false;
-		String name = field.getDeclaringClass().getName();
-		String key = name + "#" + field.getName();
 		return properties.containsKey(key);
 	}
 

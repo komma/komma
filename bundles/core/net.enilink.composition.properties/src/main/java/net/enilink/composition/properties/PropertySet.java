@@ -46,7 +46,7 @@ public interface PropertySet<E> extends Refreshable {
 	 * @return
 	 */
 	Class<E> getElementType();
-	
+
 	/**
 	 * Get all values for property.
 	 * 
@@ -66,7 +66,7 @@ public interface PropertySet<E> extends Refreshable {
 	 * 
 	 * @return null or the single value
 	 */
-	Object getSingle();
+	E getSingle();
 
 	/**
 	 * Replace all values with this value

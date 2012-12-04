@@ -35,7 +35,6 @@ package net.enilink.composition.properties.traits;
 public interface Refreshable {
 	/**
 	 * Flushes the local state of the entity forcing it to refresh.
-	 * 
 	 */
 	void refresh();
 }
