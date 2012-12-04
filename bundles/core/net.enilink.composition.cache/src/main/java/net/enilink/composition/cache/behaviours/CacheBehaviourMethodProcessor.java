@@ -37,8 +37,8 @@ public class CacheBehaviourMethodProcessor implements BehaviourMethodProcessor,
 	@Override
 	public boolean appliesTo(BehaviourClassNode classNode, ExtendedMethod method) {
 		return AsmUtils.findAnnotation(Cacheable.class, method
-				.getMethodDescriptor()) != null
-				&& !method.getMethodDescriptor().getReturnType().equals(
+				.getOverriddenMethod()) != null
+				&& !method.getOverriddenMethod().getReturnType().equals(
 						Void.TYPE);
 	}
 
@@ -66,7 +66,7 @@ public class CacheBehaviourMethodProcessor implements BehaviourMethodProcessor,
 		Type returnType = Type.getReturnType(method.desc);
 
 		Cacheable cacheable = AsmUtils.findAnnotation(Cacheable.class, method
-				.getMethodDescriptor());
+				.getOverriddenMethod());
 		String cacheKey = cacheable.key().isEmpty() ? method.name : cacheable
 				.key();
 
