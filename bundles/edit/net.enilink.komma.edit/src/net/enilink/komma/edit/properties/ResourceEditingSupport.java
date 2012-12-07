@@ -149,6 +149,10 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		return value.toString();
 	}
 
+	protected String toUriRegex(String pattern) {
+		return "[#/]" + pattern + "[^#/]*$";
+	}
+
 	protected Iterable<IResource> getResourceProposals(IEntity subject,
 			IReference predicate, String pattern, int limit) {
 		Set<IResource> resources = new HashSet<IResource>(20);
@@ -159,8 +163,8 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			// find resources within the default namespace first
 			URI uri = ((IObject) subject).getModel().getURI();
 			String uriNamespace = uri.appendLocalPart("").toString();
-			resources.addAll(retrieve(subject, predicate, pattern, pattern,
-					uriNamespace, limit));
+			resources.addAll(retrieve(subject, predicate, pattern,
+					toUriRegex(pattern), uriNamespace, limit));
 		}
 
 		if (resources.size() < limit) {
@@ -169,11 +173,11 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			String uriPattern = pattern;
 			String uriNamespace = null;
 			if (!pattern.matches(".*[#/].*")) {
-				uriPattern = "#" + pattern;
+				uriPattern = toUriRegex(pattern);
 
 				int colonIndex = pattern.lastIndexOf(':');
 				if (colonIndex == 0) {
-					uriPattern = "#" + pattern.substring(1);
+					uriPattern = toUriRegex(pattern.substring(1));
 				} else if (colonIndex > 0) {
 					String prefix = pattern.substring(0, colonIndex);
 					URI namespaceUri = subject.getEntityManager().getNamespace(
@@ -225,7 +229,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		IDialect dialect = subject.getEntityManager().getDialect();
 		QueryFragment searchS = dialect.fullTextSearch("s",
 				IDialect.CASE_INSENSITIVE | IDialect.ALL,
-				split(uriPattern, "\\s*[#/]\\s*"));
+				split(pattern, "\\s*[#/]\\s*"));
 		QueryFragment searchL = dialect.fullTextSearch("l",
 				IDialect.CASE_INSENSITIVE, pattern);
 
