@@ -2,9 +2,11 @@ package net.enilink.komma.edit.provider;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
+import net.enilink.komma.core.IDialect;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IQuery;
+import net.enilink.komma.core.QueryFragment;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.util.ISparqlConstants;
 
@@ -35,7 +37,7 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 			String pattern = (String) expression;
 			String uriPattern = pattern;
 			if (!pattern.matches(".*[#/].*")) {
-				uriPattern = "[#/][^#/]*" + pattern;
+				uriPattern = "[#/]" + pattern + "[^#/]*$";
 
 				int colonIndex = pattern.lastIndexOf(':');
 				if (colonIndex == 0) {
@@ -49,13 +51,22 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 					}
 				}
 			}
+			IDialect dialect = em.getDialect();
+			QueryFragment searchS = dialect.fullTextSearch("s",
+					IDialect.CASE_INSENSITIVE | IDialect.ALL, pattern);
+			QueryFragment searchL = dialect.fullTextSearch("l",
+					IDialect.CASE_INSENSITIVE, pattern);
+
 			String queryStr = ISparqlConstants.PREFIX
 					+ "SELECT DISTINCT ?s WHERE {" //
 					+ findPatterns //
 					+ "{" //
-					+ " ?s rdfs:label ?l FILTER regex(str(?l), ?labelPattern, \"i\")" //
+					+ " ?s rdfs:label ?l . " //
+					+ searchL //
+					+ " FILTER regex(str(?l), ?labelPattern, \"i\")" //
 					+ "} UNION {" //
-					+ " ?s ?p ?o FILTER regex(str(?s), ?uriPattern, \"i\")" //
+					+ " ?s ?p ?o . " + searchS
+					+ " FILTER regex(str(?s), ?uriPattern, \"i\")" //
 					+ "}" //
 					+ "}";
 
@@ -64,6 +75,8 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 			}
 
 			IQuery<?> query = em.createQuery(queryStr);
+			searchS.addParameters(query);
+			searchL.addParameters(query);
 			query.setParameter("uriPattern", uriPattern);
 			query.setParameter("labelPattern", pattern);
 			setQueryParameters(query, parent);
