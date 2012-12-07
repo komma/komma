@@ -187,7 +187,6 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 						});
 			}
 
-			@SuppressWarnings("unused")
 			@Singleton
 			@Provides
 			protected Repository provideRepository() {
