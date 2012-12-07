@@ -49,6 +49,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 
 	protected RepositoryConnection connection;
 
+	@Inject(optional = true)
 	protected IDialect dialect;
 
 	@Inject(optional = true)
