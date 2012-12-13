@@ -131,7 +131,8 @@ abstract public class NewObjectWizard extends Wizard {
 							if (name != null
 									&& model.getManager()
 											.createQuery(
-													"ASK { ?subj ?pred ?obj }")
+													"ASK { ?subj ?pred ?obj }",
+													false)
 											.setParameter("subj", name)
 											.getBooleanResult()) {
 								errorMsg = "An entity with the same name is already present in this model.";

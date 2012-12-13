@@ -57,9 +57,10 @@ public class PropertyViewer extends ContentViewer {
 
 	private final PropertyEditingHelper helper = new PropertyEditingHelper(
 			false) {
-		public IPropertyEditingSupport getPropertyEditingSupport(Object element) {
+		protected IPropertyEditingSupport getPropertyEditingSupport(
+				IStatement stmt) {
 			return propertyEditingSupport != null ? propertyEditingSupport
-					: super.getPropertyEditingSupport(element);
+					: super.getPropertyEditingSupport(stmt);
 		}
 
 		@Override
