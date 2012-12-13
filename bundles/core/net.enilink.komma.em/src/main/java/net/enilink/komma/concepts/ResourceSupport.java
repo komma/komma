@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.traits.PropertySetOwner;
+import net.enilink.composition.properties.util.UnmodifiablePropertySet;
 import net.enilink.composition.traits.Behaviour;
 
 import com.google.inject.Inject;
@@ -74,6 +75,11 @@ public abstract class ResourceSupport extends BehaviorBase implements
 				if (propertySet == null) {
 					propertySet = propertySetFactory.createPropertySet(self,
 							property.getURI().toString(), null);
+				}
+				if (propertySet instanceof UnmodifiablePropertySet<?>) {
+					// return a modifiable delegate
+					propertySet = ((UnmodifiablePropertySet<Object>) propertySet)
+							.getDelegate();
 				}
 			}
 			return propertySet;
@@ -244,7 +250,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		if (propertyInfo.isSingle()) {
 			return propertyInfo.getPropertySet().getSingle();
 		}
-		return propertyInfo.getPropertySet();
+		return propertyInfo.getPropertySet().getAll();
 	}
 
 	@Override

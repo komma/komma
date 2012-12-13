@@ -42,7 +42,8 @@ public class CachingEntityManager extends DecoratingEntityManager {
 	}
 
 	public IEntity createBean(IReference resource, Collection<URI> types,
-			Collection<Class<?>> concepts, boolean restrictTypes, IGraph graph) {
+			Collection<Class<?>> concepts, boolean restrictTypes,
+			boolean initialize, IGraph graph) {
 		Object element = cache.get(Fqn.fromRelativeElements(baseFqn, resource),
 				"");
 		if (element != null) {
@@ -63,7 +64,7 @@ public class CachingEntityManager extends DecoratingEntityManager {
 			}
 		}
 		IEntity entity = super.createBean(resource, types, concepts,
-				restrictTypes, graph);
+				restrictTypes, initialize, graph);
 		// do not cache entities created during transactions or with restricted
 		// types
 		if (!(restrictTypes || getTransaction().isActive())) {

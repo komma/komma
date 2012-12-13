@@ -284,7 +284,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@SuppressWarnings("unchecked")
 	public IEntity createBean(IReference resource, Collection<URI> entityTypes,
-			Collection<Class<?>> concepts, boolean restrictTypes, IGraph graph) {
+			Collection<Class<?>> concepts, boolean restrictTypes,
+			boolean initialize, IGraph graph) {
 		if (resource == null) {
 			throw new IllegalArgumentException(
 					"Resource argument must not be null.");
@@ -327,12 +328,14 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 		IEntity bean = createBeanForClass(resource,
 				classResolver.resolveComposite(entityTypes));
-		if (bean instanceof Initializable) {
-			// bean knows how to initialize itself
-			((Initializable) bean).init(graph);
-		}
-		if (graph != null) {
-			initializeBean(bean, graph);
+		if (initialize) {
+			if (bean instanceof Initializable) {
+				// bean knows how to initialize itself
+				((Initializable) bean).init(graph);
+			}
+			if (graph != null) {
+				initializeBean(bean, graph);
+			}
 		}
 		return bean;
 	}
@@ -390,7 +393,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		}
 		Class<?>[] allConcepts = combine(concept, concepts);
 		IEntity bean = createBean(resource, types, Arrays.asList(allConcepts),
-				true, null);
+				true, false, null);
 		assert assertConceptsRecorded(bean, allConcepts);
 		return (T) bean;
 	}
@@ -428,7 +431,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				}
 			}
 		}
-		return createBean(resource, types, null, true, null);
+		return createBean(resource, types, null, true, false, null);
 	}
 
 	public IQuery<?> createQuery(String query) {
@@ -485,7 +488,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		}
 
 		Class<?>[] allConcepts = combine(concept, concepts);
-		IEntity bean = createBean(resource, types, null, false, null);
+		IEntity bean = createBean(resource, types, null, false, true, null);
 		assert assertConceptsRecorded(bean, allConcepts);
 		return (T) bean;
 	}
@@ -502,7 +505,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	public IEntity find(IReference reference) {
-		return createBean(reference, null, null, false, null);
+		return createBean(reference, null, null, false, true, null);
 	}
 
 	@Override
@@ -515,7 +518,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	public IEntity find(IReference reference, Collection<Class<?>> concepts) {
-		return createBean(reference, null, concepts, false, null);
+		return createBean(reference, null, concepts, false, true, null);
 	}
 
 	public <T> IExtendedIterator<T> findAll(final Class<T> concept) {
@@ -547,8 +550,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				return reference;
 			}
 		}
-
-		return createBean(reference, null, concepts, true, null);
+		return createBean(reference, null, concepts, true, true, null);
 	}
 
 	@Override
@@ -842,7 +844,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				for (URI type : types) {
 					getTypeManager().addType(resource, type);
 				}
-				Object result = createBean(resource, types, null, false, null);
+				Object result = createBean(resource, types, null, false, true,
+						null);
 				if (result instanceof Mergeable) {
 					((Mergeable) result).merge(bean);
 				}
@@ -1001,11 +1004,9 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		IReference before = getReferenceOrFail(bean);
 		IReference after = getResourceManager().createResource(uri);
 		getResourceManager().renameResource(before, after);
-
-		T newBean = (T) createBean(after, null, null, false, null);
+		T newBean = (T) createBean(after, null, null, false, true, null);
 		((IEntityManagerAware) bean).initReference(((IReferenceable) newBean)
 				.getReference());
-
 		return newBean;
 	}
 
@@ -1091,9 +1092,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 					types = Collections.singleton(typeUri);
 				}
 			}
-
 			IEntity bean = createBean((IReference) value, types, null, false,
-					graph);
+					true, graph);
 			if (log.isDebugEnabled()) {
 				if (!createQuery("ASK {?s ?p ?o}").setParameter("s",
 						(IReference) value).getBooleanResult()) {

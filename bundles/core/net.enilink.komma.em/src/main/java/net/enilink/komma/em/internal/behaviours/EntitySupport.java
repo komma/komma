@@ -33,7 +33,11 @@ public abstract class EntitySupport implements IEntity, IEntityManagerAware,
 		if (concept.isAssignableFrom(getBehaviourDelegate().getClass())) {
 			return (T) getBehaviourDelegate();
 		}
-		return getEntityManager().find(this, concept);
+		Object entity = getEntityManager().find(this, concept);
+		if (concept.isAssignableFrom(entity.getClass())) {
+			return (T) entity;
+		}
+		return null;
 	}
 
 	public IEntityManager getEntityManager() {
