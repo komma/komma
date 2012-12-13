@@ -24,6 +24,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.traits.Behaviour;
@@ -526,20 +527,24 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 			module.includeModule(KommaUtil.getCoreModule());
 
 			// load modules which are registered for any namespace
-			IExtensionPoint extensionPoint = Platform.getExtensionRegistry()
-					.getExtensionPoint(ModelCore.PLUGIN_ID, "modules");
-			if (extensionPoint != null) {
-				for (IConfigurationElement cfgElement : extensionPoint
-						.getConfigurationElements()) {
-					String namespace = cfgElement.getAttribute("uri");
-					if (namespace == null || namespace.trim().isEmpty()) {
-						try {
-							KommaModule extensionModule = (KommaModule) cfgElement
-									.createExecutableExtension("class");
-							module.includeModule(extensionModule);
-						} catch (CoreException e) {
-							throw new KommaException(
-									"Unable to instantiate extension module", e);
+			IExtensionRegistry registry = Platform.getExtensionRegistry();
+			if (registry != null) {
+				IExtensionPoint extensionPoint = registry.getExtensionPoint(
+						ModelCore.PLUGIN_ID, "modules");
+				if (extensionPoint != null) {
+					for (IConfigurationElement cfgElement : extensionPoint
+							.getConfigurationElements()) {
+						String namespace = cfgElement.getAttribute("uri");
+						if (namespace == null || namespace.trim().isEmpty()) {
+							try {
+								KommaModule extensionModule = (KommaModule) cfgElement
+										.createExecutableExtension("class");
+								module.includeModule(extensionModule);
+							} catch (CoreException e) {
+								throw new KommaException(
+										"Unable to instantiate extension module",
+										e);
+							}
 						}
 					}
 				}

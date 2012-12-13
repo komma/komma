@@ -28,6 +28,7 @@ import org.osgi.framework.BundleContext;
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.internal.model.Messages;
+import net.enilink.komma.internal.model.ModelModule;
 import net.enilink.komma.internal.model.extensions.ContentFactoriesRegistryReader;
 import net.enilink.komma.internal.model.extensions.ContentHandlerRegistryReader;
 import net.enilink.komma.internal.model.extensions.ExtensionFactoriesRegistryReader;
@@ -321,7 +322,6 @@ public class ModelCore extends AbstractKommaPlugin {
 	 */
 	public static Collection<? extends KommaModule> getModelModules() {
 		List<KommaModule> modules = new ArrayList<KommaModule>();
-
 		if (Platform.getExtensionRegistry() != null) {
 			IExtensionPoint extensionPoint = Platform.getExtensionRegistry()
 					.getExtensionPoint(PLUGIN_ID, "modelModules");
@@ -345,8 +345,9 @@ public class ModelCore extends AbstractKommaPlugin {
 					}
 				}
 			}
+		} else {
+			modules.add(new ModelModule());
 		}
-
 		return modules;
 	}
 }

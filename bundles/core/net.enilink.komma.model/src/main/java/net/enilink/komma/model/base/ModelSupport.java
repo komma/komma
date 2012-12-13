@@ -36,6 +36,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.commons.iterator.IMap;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.KommaCore;
@@ -53,17 +54,18 @@ import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ObjectSupport;
 import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.core.EntityVar;
+import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.util.ISparqlConstants;
 
 public abstract class ModelSupport implements IModel, IModel.Internal,
 		INotificationBroadcaster<INotification>, Model,
@@ -287,22 +289,29 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			try {
 				IDataManager dm = getModelSet().getDataManagerFactory().get();
 				try {
-					IExtendedIterator<IStatement> imports = dm.match(null,
-							OWL.PROPERTY_IMPORTS, null, false, getURI());
-
+					// retrieve imported ontologies while filtering those which
+					// are likely already contained within this model
+					IExtendedIterator<IReference> imports = dm
+							.createQuery(
+									ISparqlConstants.PREFIX
+											+ " SELECT ?import WHERE { ?ontology owl:imports ?import FILTER NOT EXISTS { ?import a owl:Ontology } }",
+									getURI().toString(), false, getURI())
+							.evaluate().mapWith(new IMap<Object, IReference>() {
+								@Override
+								public IReference map(Object value) {
+									return (IReference) ((IBindings<?>) value)
+											.get("import");
+								}
+							});
 					while (imports.hasNext()) {
-						Object object = imports.next().getObject();
-
-						if (!(object instanceof IReference)
-								|| ((IReference) object).getURI() == null) {
+						IReference imported = imports.next();
+						if (((IReference) imported).getURI() == null) {
 							continue;
 						}
-
-						URI importedUri = ((IReference) object).getURI();
+						URI importedUri = imported.getURI();
 						try {
 							IModel model = getModelSet().getModel(importedUri,
 									true);
-
 							KommaModule importedModule = ((IModel.Internal) model)
 									.getModule();
 							if (importedModule != null) {
