@@ -376,16 +376,14 @@ public class AddCommand extends AbstractOverrideableCommand {
 
 	protected Class getListType() {
 		if (ownerList == null) {
-			IProperty property = (IProperty) owner.getEntityManager().find(
-					this.property);
-
+			IProperty property = owner.getEntityManager().find(this.property,
+					IProperty.class);
 			for (Class clazz : property.getNamedRanges(owner, true)) {
 				if (clazz.getURI() != null) {
 					return clazz;
 				}
 			}
 		}
-
 		return null;
 	}
 
@@ -426,8 +424,8 @@ public class AddCommand extends AbstractOverrideableCommand {
 		}
 
 		if (property != null) {
-			IProperty property = (IProperty) owner.getEntityManager().find(
-					this.property);
+			IProperty property = owner.getEntityManager().find(this.property,
+					IProperty.class);
 			// Check each object...
 			for (Object object : collection) {
 				boolean containment = false;
