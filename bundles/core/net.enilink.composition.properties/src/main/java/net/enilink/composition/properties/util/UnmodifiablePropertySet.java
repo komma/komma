@@ -40,36 +40,11 @@ import net.enilink.composition.properties.PropertySet;
  * @param <E>
  *            property type
  */
-class UnmodifiablePropertySet<E> implements PropertySet<E> {
+public class UnmodifiablePropertySet<E> implements PropertySet<E> {
 	private PropertySet<E> delegate;
 
 	UnmodifiablePropertySet(PropertySet<E> delegate) {
 		this.delegate = delegate;
-	}
-
-	@Override
-	public Class<E> getElementType() {
-		return delegate.getElementType();
-	}
-
-	public Set<E> getAll() {
-		return Collections.unmodifiableSet(delegate.getAll());
-	}
-
-	public E getSingle() {
-		return delegate.getSingle();
-	}
-
-	public void setAll(Set<E> all) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void setSingle(E single) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void refresh() {
-		delegate.refresh();
 	}
 
 	public boolean add(E single) {
@@ -80,8 +55,37 @@ class UnmodifiablePropertySet<E> implements PropertySet<E> {
 		throw new UnsupportedOperationException();
 	}
 
+	public Set<E> getAll() {
+		return Collections.unmodifiableSet(delegate.getAll());
+	}
+
+	public PropertySet<E> getDelegate() {
+		return delegate;
+	}
+
+	@Override
+	public Class<E> getElementType() {
+		return delegate.getElementType();
+	}
+
+	public E getSingle() {
+		return delegate.getSingle();
+	}
+
 	@Override
 	public void init(Collection<? extends E> values) {
 		delegate.init(values);
+	}
+
+	public void refresh() {
+		delegate.refresh();
+	}
+
+	public void setAll(Set<E> all) {
+		throw new UnsupportedOperationException();
+	}
+	
+	public void setSingle(E single) {
+		throw new UnsupportedOperationException();
 	}
 }
