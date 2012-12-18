@@ -58,7 +58,8 @@ public class MethodInvocationChain implements MethodInvocation {
 
 	private final Object target;
 
-	public MethodInvocationChain(Object target, Method method, Object[] arguments) {
+	public MethodInvocationChain(Object target, Method method,
+			Object[] arguments) {
 		this.target = target;
 		this.method = method;
 		this.arguments = arguments;
@@ -71,7 +72,7 @@ public class MethodInvocationChain implements MethodInvocation {
 		return this;
 	}
 
-	private Object cast(Object result, Class<?> resultType,
+	public static Object cast(Object result, Class<?> resultType,
 			Class<?> responseType) {
 		if (isNil(result, resultType))
 			return nil(responseType);
@@ -140,7 +141,7 @@ public class MethodInvocationChain implements MethodInvocation {
 		return target;
 	}
 
-	private boolean isNil(Object result, Class<?> type) {
+	public static boolean isNil(Object result, Class<?> type) {
 		if (result == null)
 			return true;
 		if (!type.isPrimitive())
@@ -148,7 +149,7 @@ public class MethodInvocationChain implements MethodInvocation {
 		return result.equals(nil(type));
 	}
 
-	private Object nil(Class<?> type) {
+	public static Object nil(Class<?> type) {
 		if (Set.class.equals(type))
 			return Collections.emptySet();
 		if (!type.isPrimitive())

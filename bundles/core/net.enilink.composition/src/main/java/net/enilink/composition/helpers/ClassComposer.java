@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.aopalliance.intercept.MethodInvocation;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -274,11 +275,19 @@ public class ClassComposer<T> implements Types, Opcodes {
 		if (implementations.isEmpty()) {
 			return false;
 		}
-		// TODO use direct chaining if not isInterceptor(chain, method)
 		Class<?> returnType = method.getReturnType();
-		boolean chained = implementations.size() > 1
-				|| !returnType.equals(((Method) implementations.get(0)[1])
-						.getReturnType()) || isInterceptor(chain, method);
+		boolean returnsVoid = returnType.equals(Void.TYPE);
+		boolean dynamicChained = false;
+		for (Object[] ar : implementations) {
+			Method m = (Method) ar[1];
+			Class<?>[] parameterTypes = m.getParameterTypes();
+			if (parameterTypes.length == 1
+					&& MethodInvocation.class.equals(parameterTypes[0])) {
+				dynamicChained = true;
+				break;
+			}
+		}
+
 		Method face = AsmUtils.findInterfaceOrSuperMethod(method,
 				method.getDeclaringClass(),
 				compositeClass.getInterfacesClasses());
@@ -288,22 +297,19 @@ public class ClassComposer<T> implements Types, Opcodes {
 
 		// clear instruction in the case when faceNode is not an abstract method
 		newMethod.instructions.clear();
-
 		if (bridge) {
 			newMethod.access |= ACC_BRIDGE;
 		}
-
 		MethodNodeGenerator gen = new MethodNodeGenerator(newMethod);
-
+		Label endLabel = gen.newLabel();
 		boolean chainStarted = false;
-		for (Object[] ar : implementations) {
-			assert ar.length == 2;
+		for (Iterator<Object[]> it = implementations.iterator(); it.hasNext();) {
+			Object[] ar = it.next();
 			Object target = ar[0];
 			Method m = (Method) ar[1];
-			if (chained) {
+			if (dynamicChained) {
 				if (!chainStarted) {
 					chainStarted = true;
-
 					gen.newInstance(METHODINVOCATIONCHAIN_TYPE);
 					gen.dup();
 					gen.loadThis();
@@ -332,21 +338,50 @@ public class ClassComposer<T> implements Types, Opcodes {
 							toTypes(m.getParameterTypes()), gen);
 				}
 			} else {
+				// call behaviour method without reflection
 				callMethod(target, m, gen);
+				if (!m.getReturnType().equals(Void.TYPE)) {
+					if (returnsVoid) {
+						// remove the behaviour method's return value from stack
+						gen.pop();
+					} else {
+						// test if the behaviour method's return value is nil
+						gen.box(Type.getType(m.getReturnType()));
+						gen.dup();
+						gen.push(Type.getType(m.getReturnType()));
+						gen.invoke(Methods.METHODINVOCATIONCHAIN_ISNIL);
+						Label isNilLabel = gen.newLabel();
+						gen.ifZCmp(IFNE, isNilLabel);
+						// convert value to correct type if it is not nil
+						gen.push(Type.getType(m.getReturnType()));
+						gen.push(Type.getType(returnType));
+						gen.invoke(Methods.METHODINVOCATIONCHAIN_CAST);
+						gen.unbox(Type.getType(returnType));
+						gen.goTo(endLabel);
+						gen.mark(isNilLabel);
+						gen.pop();
+					}
+				}
 			}
 		}
-		boolean voidReturnType = returnType.equals(Void.TYPE);
+		if (!(dynamicChained || returnsVoid)) {
+			// create a return type specific nil value if not chained by
+			// reflection
+			gen.push(Type.getType(returnType));
+			gen.invoke(Methods.METHODINVOCATIONCHAIN_NIL);
+			gen.unbox(Type.getType(returnType));
+		}
 		if (chainStarted) {
 			gen.invokeVirtual(METHODINVOCATIONCHAIN_TYPE,
 					org.objectweb.asm.commons.Method
 							.getMethod("Object proceed()"));
-			if (voidReturnType) {
+			if (returnsVoid) {
 				gen.pop();
 			} else {
 				gen.unbox(Type.getType(returnType));
 			}
-			chainStarted = false;
 		}
+		gen.mark(endLabel);
 		gen.returnValue();
 		gen.endMethod();
 		return true;
@@ -402,7 +437,8 @@ public class ClassComposer<T> implements Types, Opcodes {
 		iter = all.iterator();
 		while (iter.hasNext()) {
 			Class<?> behaviour = iter.next();
-			if (isInterceptor(behaviour, method)) {
+			if (getMethod(behaviour, method).isAnnotationPresent(
+					ParameterTypes.class)) {
 				rest.add(behaviour);
 				iter.remove();
 			}
@@ -428,18 +464,6 @@ public class ClassComposer<T> implements Types, Opcodes {
 						+ rest.toString());
 		}
 		return list;
-	}
-
-	private boolean isInterceptor(List<Class<?>> behaviours, Method method)
-			throws Exception {
-		if (behaviours != null) {
-			for (Class<?> behaviour : behaviours) {
-				if (isInterceptor(behaviour, method)) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 
 	/**
@@ -550,23 +574,23 @@ public class ClassComposer<T> implements Types, Opcodes {
 	private void callMethod(Object target, Method method,
 			MethodNodeGenerator gen) {
 		gen.loadThis();
-		if (!target.equals("this")) {
-			loadBehaviour((Class<?>) target, gen);
+		if ("super".equals(target)) {
+			gen.loadArgs();
+			gen.invokeSpecial(Type.getType(baseClass),
+					org.objectweb.asm.commons.Method.getMethod(method));
+		} else {
+			if (!"this".equals(target)) {
+				loadBehaviour((Class<?>) target, gen);
+			}
+			gen.loadArgs();
+			gen.invokeVirtual(Type.getType(method.getDeclaringClass()),
+					org.objectweb.asm.commons.Method.getMethod(method));
 		}
-		gen.loadArgs();
-		gen.invokeVirtual(Type.getType(method.getDeclaringClass()),
-				org.objectweb.asm.commons.Method.getMethod(method));
 	}
 
 	private boolean isMethodPresent(Class<?> javaClass, Method method)
 			throws Exception {
 		return getMethod(javaClass, method) != null;
-	}
-
-	private boolean isInterceptor(Class<?> javaClass, Method method)
-			throws Exception {
-		return getMethod(javaClass, method).isAnnotationPresent(
-				ParameterTypes.class);
 	}
 
 	private Method getMethod(Class<?> javaClass, Method method)
