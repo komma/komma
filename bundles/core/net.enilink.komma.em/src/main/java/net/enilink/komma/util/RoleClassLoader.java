@@ -13,18 +13,15 @@ package net.enilink.komma.util;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.annotations.Matching;
+import net.enilink.composition.annotations.Iri;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,22 +57,12 @@ public class RoleClassLoader {
 		return false;
 	}
 
-	public void load(Iterable<? extends URL> libraries) {
-		List<URL> libraryList = new ArrayList<URL>();
-		for (URL library : libraries) {
-			libraryList.add(library);
-		}
-
-		URLClassLoader urlCl = new URLClassLoader(
-				libraryList.toArray(new URL[libraryList.size()]));
-
+	public void load() {
 		Set<URL> seenUrls = new HashSet<URL>();
 		for (String roles : Arrays.asList(CONCEPTS, BEHAVIOURS, ANNOTATIONS)) {
 			try {
-				IExtendedIterator<URL> resources = WrappedIterator.create(
-						module.getClassLoader().getResources(roles)).andThen(
-						WrappedIterator.create(urlCl.getResources(roles)));
-
+				IExtendedIterator<URL> resources = WrappedIterator
+						.create(module.getClassLoader().getResources(roles));
 				load(resources, seenUrls);
 			} catch (Exception e) {
 				throw new KommaException(e);

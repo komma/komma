@@ -32,12 +32,12 @@ import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
 import net.enilink.komma.KommaCore;
+import net.enilink.komma.concepts.CONCEPTS;
 import net.enilink.komma.concepts.ClassSupport;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IOntology;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
-import net.enilink.komma.concepts.KommaConcepts;
 import net.enilink.komma.concepts.OntologySupport;
 import net.enilink.komma.concepts.PropertySupport;
 import net.enilink.komma.concepts.ResourceSupport;
@@ -52,20 +52,14 @@ import net.enilink.komma.core.URIImpl;
 public class KommaUtil implements ISparqlConstants {
 	public static KommaModule getCoreModule() {
 		KommaModule module = new KommaModule(KommaUtil.class.getClassLoader());
+		module.includeModule(new KommaModule(OWL.class.getClassLoader()));
+		module.includeModule(new KommaModule(RDFS.class.getClassLoader()));
+		module.includeModule(new KommaModule(CONCEPTS.class.getClassLoader()));
 
 		RoleClassLoader roleClassLoader = new RoleClassLoader(module);
 
 		// install basic RDF(S) and OWL support
-		roleClassLoader
-				.load(KommaUtil
-						.getBundleMetaInfLocations(
-								"net.enilink.vocab.owl")
-						.andThen(
-								KommaUtil
-										.getBundleMetaInfLocations("net.enilink.vocab.rdfs"))
-						.andThen(
-								KommaUtil
-										.getBundleMetaInfLocations(KommaConcepts.PLUGIN_ID)));
+		roleClassLoader.load();
 
 		module.addBehaviour(ResourceSupport.class);
 		module.addBehaviour(ClassSupport.class);
@@ -114,37 +108,6 @@ public class KommaUtil implements ISparqlConstants {
 		}
 
 		return WrappedIterator.emptyIterator();
-	}
-
-	public static IExtendedIterator<URL> getBundleMetaInfLocations(Bundle bundle) {
-		if (bundle != null) {
-			Enumeration<URL> libraries = bundle.findEntries("/", "META-INF",
-					true);
-
-			if (libraries != null) {
-				return WrappedIterator.create(libraries).mapWith(
-						new IMap<URL, URL>() {
-							@Override
-							public URL map(URL value) {
-								try {
-									return FileLocator.resolve(new URL(URIImpl
-											.createURI(value.toString())
-											.trimSegments(2).toString()));
-								} catch (Exception e) {
-									KommaCore.log(e);
-									return value;
-								}
-							}
-						});
-			}
-		}
-
-		return WrappedIterator.emptyIterator();
-	}
-
-	public static IExtendedIterator<URL> getBundleMetaInfLocations(
-			String symbolicName) {
-		return getBundleMetaInfLocations(Platform.getBundle(symbolicName));
 	}
 
 	public static boolean isW3cNamespace(URI namespace) {
