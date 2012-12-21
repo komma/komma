@@ -80,24 +80,14 @@ public class ModelUtil {
 			} else {
 				URI uri = resource.getURI();
 				if (uri != null) {
-					String prefix;
-					if (resource instanceof IObject
-							&& ((IObject) resource).getModel().getURI()
-									.trimFragment()
-									.equals(uri.namespace().trimFragment())) {
-						prefix = "";
-					} else {
-						prefix = resource.getEntityManager().getPrefix(
-								uri.namespace());
-					}
-
+					String prefix = resource.getEntityManager().getPrefix(
+							uri.namespace());
 					String localPart = uri.localPart();
 					boolean hasLocalPart = localPart != null
 							&& localPart.length() > 0;
 					if (prefix != null && prefix.length() > 0 && hasLocalPart) {
 						text.append(prefix).append(":");
 					}
-
 					text.append(hasLocalPart && prefix != null ? localPart
 							: uri.toString());
 				} else {

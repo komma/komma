@@ -123,6 +123,22 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 										getBehaviourDelegate().getModule())
 								.create();
 					}
+
+					@Override
+					public URI getNamespace(String prefix) {
+						if (prefix == null || prefix.length() == 0) {
+							return getURI().appendLocalPart("");
+						}
+						return super.getNamespace(prefix);
+					}
+
+					@Override
+					public String getPrefix(URI namespace) {
+						if (namespace.equals(getURI().appendLocalPart(""))) {
+							return "";
+						}
+						return super.getPrefix(namespace);
+					}
 				};
 				injector.injectMembers(s.manager);
 				s.manager.addDecorator(new ModelInjector());
