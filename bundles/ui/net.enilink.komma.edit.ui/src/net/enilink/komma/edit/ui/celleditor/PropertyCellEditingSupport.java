@@ -91,12 +91,12 @@ public abstract class PropertyCellEditingSupport extends EditingSupport {
 			}
 
 			@Override
-			public IPropertyEditingSupport getPropertyEditingSupport(
-					Object element) {
+			protected IPropertyEditingSupport getPropertyEditingSupport(
+					IStatement stmt) {
 				IPropertyEditingSupport support = PropertyCellEditingSupport.this
-						.getPropertyEditingSupport(element);
+						.getPropertyEditingSupport(stmt);
 				return support != null ? support : super
-						.getPropertyEditingSupport(element);
+						.getPropertyEditingSupport(stmt);
 			}
 		};
 
@@ -165,7 +165,7 @@ public abstract class PropertyCellEditingSupport extends EditingSupport {
 		return textCellEditor;
 	}
 
-	protected IPropertyEditingSupport getPropertyEditingSupport(Object element) {
+	protected IPropertyEditingSupport getPropertyEditingSupport(IStatement stmt) {
 		return null;
 	}
 
