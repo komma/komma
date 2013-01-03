@@ -104,17 +104,15 @@ public abstract class PropertyEditingHelper {
 		return null;
 	}
 
-	public IPropertyEditingSupport getPropertyEditingSupport(Object element) {
-		return getPropertyEditingSupport(getStatement(element));
-	}
-
 	public ProposalSupport getProposalSupport(Object element) {
-		IPropertyEditingSupport propertyEditingSupport = getPropertyEditingSupport(element);
-		if (propertyEditingSupport != null) {
-			IStatement stmt = getStatement(element);
-			return propertyEditingSupport.getProposalSupport(
-					(IEntity) stmt.getSubject(), stmt.getPredicate(),
-					stmt.getObject());
+		IStatement stmt = getStatement(element);
+		if (stmt != null) {
+			IPropertyEditingSupport propertyEditingSupport = getPropertyEditingSupport(stmt);
+			if (propertyEditingSupport != null) {
+				return propertyEditingSupport.getProposalSupport(
+						(IEntity) stmt.getSubject(), stmt.getPredicate(),
+						stmt.getObject());
+			}
 		}
 		return null;
 	}

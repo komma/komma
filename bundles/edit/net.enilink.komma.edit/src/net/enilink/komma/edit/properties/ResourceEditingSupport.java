@@ -150,7 +150,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 	}
 
 	protected String toUriRegex(String pattern) {
-		return "[#/]" + pattern + "[^#/]*$";
+		return "[#/:]" + pattern + "[^#/]*$";
 	}
 
 	protected Iterable<IResource> getResourceProposals(IEntity subject,
