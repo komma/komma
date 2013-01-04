@@ -37,17 +37,18 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 			String pattern = (String) expression;
 			String uriPattern = pattern;
 			if (!pattern.matches(".*[#/].*")) {
-				uriPattern = "[#/]" + pattern + "[^#/]*$";
-
 				int colonIndex = pattern.lastIndexOf(':');
 				if (colonIndex == 0) {
-					uriPattern = "[#/]" + pattern.substring(1);
-				} else if (colonIndex > 0) {
+					pattern = pattern.substring(1);
+				}
+				uriPattern = "[#/:]" + pattern + "[^#/]*$";
+				if (colonIndex > 0) {
 					String prefix = pattern.substring(0, colonIndex);
+					pattern = pattern.substring(colonIndex + 1);
 					URI namespaceUri = em.getNamespace(prefix);
 					if (namespaceUri != null) {
-						uriPattern = namespaceUri.appendFragment(
-								pattern.substring(colonIndex + 1)).toString();
+						uriPattern = namespaceUri.appendFragment(pattern)
+								.toString();
 					}
 				}
 			}

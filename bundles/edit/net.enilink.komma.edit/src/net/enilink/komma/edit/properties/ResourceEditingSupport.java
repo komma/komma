@@ -173,11 +173,9 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			String uriPattern = pattern;
 			String uriNamespace = null;
 			if (!pattern.matches(".*[#/].*")) {
-				uriPattern = toUriRegex(pattern);
-
 				int colonIndex = pattern.lastIndexOf(':');
 				if (colonIndex == 0) {
-					uriPattern = toUriRegex(pattern.substring(1));
+					pattern = pattern.substring(1);
 				} else if (colonIndex > 0) {
 					String prefix = pattern.substring(0, colonIndex);
 					URI namespaceUri = subject.getEntityManager().getNamespace(
@@ -185,7 +183,9 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 					if (namespaceUri != null) {
 						uriNamespace = namespaceUri.toString();
 					}
+					pattern = pattern.substring(colonIndex + 1);
 				}
+				uriPattern = toUriRegex(pattern);
 			}
 
 			List<IResource> fallbackResources = retrieve(subject, predicate,
@@ -217,12 +217,13 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			sparql.append("?s a rdf:Property . ");
 		} else {
 			if (predicate != null) {
+				sparql.append("{");
 				sparql.append("{ ?property rdfs:range ?sType FILTER (?sType != owl:Thing) }");
 				sparql.append(" UNION ");
-				sparql.append("{ ?subject a [rdfs:subClassOf ?r] . ?r owl:onProperty ?property { ?r owl:allValuesFrom ?sType }}");
-				sparql.append(" UNION ");
-				sparql.append("{ ?r owl:someValuesFrom ?sType }");
+				sparql.append("{ ?subject a [rdfs:subClassOf ?r] . ?r owl:onProperty ?property { ?r owl:allValuesFrom ?sType } UNION { ?r owl:someValuesFrom ?sType }}");
 				sparql.append(" ?s a ?sType ");
+				// allow to edit properties without range information
+				sparql.append("} UNION { FILTER (NOT EXISTS { ?property rdfs:range ?sType } && NOT EXISTS { ?subject a [rdfs:subClassOf ?r] . ?r owl:onProperty ?property }) }");
 			}
 		}
 
