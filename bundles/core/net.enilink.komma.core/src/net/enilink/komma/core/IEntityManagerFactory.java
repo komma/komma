@@ -82,8 +82,8 @@ public interface IEntityManagerFactory {
 
 	/**
 	 * Creates a new {@link IEntityManagerFactory} that uses the supplied
-	 * {@link IEntityManager} if a managed entity manager is requested. The given
-	 * locale is used for entity managers which are obtained via
+	 * {@link IEntityManager} if a managed entity manager is requested. The
+	 * given locale is used for entity managers which are obtained via
 	 * {@link IEntityManagerFactory#create()}.
 	 * 
 	 * @param sharedManager
@@ -108,6 +108,14 @@ public interface IEntityManagerFactory {
 	 * @return An {@link IEntityManager}.
 	 */
 	IEntityManager get();
+
+	/**
+	 * Returns the parent factory or <code>null</code> if this is the root
+	 * factory.
+	 * 
+	 * @return The parent factory or <code>null</code>.
+	 */
+	IEntityManagerFactory getParent();
 
 	/**
 	 * Returns the {@link KommaModule} that is used by {@link IEntityManager}s
