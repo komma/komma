@@ -115,7 +115,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	protected IDataManager dm;
 
-	private IEntityManagerFactory factory;
+	@Inject
+	protected IEntityManagerFactory factory;
 
 	@Inject
 	protected Injector injector;
@@ -1049,8 +1050,16 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				.toArray(new URI[readAndModifyContexts.size()]);
 	}
 
-	@Inject
-	protected void setManagerFactory(IEntityManagerFactory factory) {
+	/**
+	 * If it is bound then the current child entity manager factory is injected
+	 * with this method that overrides the previously injected field.
+	 * 
+	 * @param factory
+	 *            The current child entity manager factory.
+	 */
+	@Inject(optional = true)
+	protected void setCurrentFactory(
+			@Named("currentFactory") IEntityManagerFactory factory) {
 		this.factory = factory;
 	}
 

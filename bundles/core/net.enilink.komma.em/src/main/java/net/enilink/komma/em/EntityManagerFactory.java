@@ -65,7 +65,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 	@Inject
 	Injector injector;
 
-	private boolean isRootFactory = true;
+	private IEntityManagerFactory parent = null;
 
 	Locale locale;
 
@@ -91,7 +91,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 	public void close() {
 		if (open) {
-			if (isRootFactory) {
+			if (parent == null) {
 				if (dmFactory != null) {
 					dmFactory.close();
 				}
@@ -132,7 +132,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 		EntityManagerFactory childFactory = new EntityManagerFactory(
 				childModule, locale, managerModule);
-		childFactory.isRootFactory = false;
+		childFactory.parent = this;
 		injector.injectMembers(childFactory);
 
 		return childFactory;
@@ -153,7 +153,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 		EntityManagerFactory childFactory = new EntityManagerFactory(
 				childModule, locale, managerModule);
-		childFactory.isRootFactory = false;
+		childFactory.parent = this;
 		childFactory.sharedManager = sharedManager != null ? sharedManager
 				: this.sharedManager;
 		injector.injectMembers(childFactory);
@@ -169,6 +169,11 @@ class EntityManagerFactory implements IEntityManagerFactory {
 		return getManagerInjector().getInstance(IEntityManager.class);
 	}
 
+	@Override
+	public IEntityManagerFactory getParent() {
+		return parent;
+	}
+
 	public synchronized Injector getManagerInjector() {
 		if (managerInjector == null) {
 			managerInjector = injector.createChildInjector(
@@ -176,6 +181,9 @@ class EntityManagerFactory implements IEntityManagerFactory {
 					new AbstractModule() {
 						@Override
 						protected void configure() {
+							bind(IEntityManagerFactory.class).annotatedWith(
+									Names.named("currentFactory")).toInstance(
+									EntityManagerFactory.this);
 							if (sharedManager != null) {
 								bind(IEntityManager.class).annotatedWith(
 										Names.named("shared")).toInstance(
