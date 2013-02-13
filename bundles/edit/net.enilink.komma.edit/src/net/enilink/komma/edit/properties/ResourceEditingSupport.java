@@ -227,7 +227,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			}
 		}
 
-		IDialect dialect = subject.getEntityManager().getDialect();
+		IDialect dialect = subject.getEntityManager().getFactory().getDialect();
 		QueryFragment searchS = dialect.fullTextSearch("s",
 				IDialect.CASE_INSENSITIVE | IDialect.ALL,
 				split(pattern, "\\s*[#/]\\s*"));

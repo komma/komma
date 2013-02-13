@@ -52,7 +52,7 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 					}
 				}
 			}
-			IDialect dialect = em.getDialect();
+			IDialect dialect = em.getFactory().getDialect();
 			QueryFragment searchS = dialect.fullTextSearch("s",
 					IDialect.CASE_INSENSITIVE | IDialect.ALL, pattern);
 			QueryFragment searchL = dialect.fullTextSearch("l",
