@@ -28,8 +28,6 @@ import net.enilink.komma.dm.IDataManagerQuery;
 import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.internal.sesame.result.SesameGraphResult;
 import net.enilink.komma.internal.sesame.result.SesameResult;
-import net.enilink.komma.core.SparqlStandardDialect;
-import net.enilink.komma.core.IDialect;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IReferenceable;
@@ -48,9 +46,6 @@ public class SesameRepositoryDataManager implements IDataManager {
 	protected IDataChangeSupport changeSupport;
 
 	protected RepositoryConnection connection;
-
-	@Inject(optional = true)
-	protected IDialect dialect;
 
 	@Inject(optional = true)
 	protected InferencingCapability inferencing;
@@ -263,18 +258,6 @@ public class SesameRepositoryDataManager implements IDataManager {
 
 	protected RepositoryConnection getConnection() {
 		return connection;
-	}
-
-	@Override
-	public IDialect getDialect() {
-		if (dialect == null) {
-			dialect = createDialect();
-		}
-		return dialect;
-	}
-
-	protected IDialect createDialect() {
-		return new SparqlStandardDialect();
 	}
 
 	@Override
