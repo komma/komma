@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.core.IDialect;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
 import net.enilink.komma.core.IEntityManager;
@@ -156,11 +155,6 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	@Override
 	public IEntityManagerFactory getFactory() {
 		return getDelegate().getFactory();
-	}
-
-	@Override
-	public IDialect getDialect() {
-		return getDelegate().getDialect();
 	}
 
 	@Override

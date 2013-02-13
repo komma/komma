@@ -13,7 +13,6 @@ package net.enilink.komma.em;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerQuery;
-import net.enilink.komma.core.IDialect;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
@@ -57,11 +56,6 @@ public abstract class DelegatingDataManager implements IDataManager {
 	}
 
 	abstract public IDataManager getDelegate();
-
-	@Override
-	public IDialect getDialect() {
-		return getDelegate().getDialect();
-	}
 
 	@Override
 	public InferencingCapability getInferencing() {
