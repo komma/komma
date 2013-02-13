@@ -108,6 +108,13 @@ public interface IEntityManagerFactory {
 	 * @return An {@link IEntityManager}.
 	 */
 	IEntityManager get();
+	
+	/**
+	 * Return the SPARQL dialect that is specific for the underlying store.
+	 * 
+	 * @return The specific dialect.
+	 */
+	IDialect getDialect();
 
 	/**
 	 * Returns the parent factory or <code>null</code> if this is the root

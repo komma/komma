@@ -18,7 +18,7 @@ public interface IDialect {
 	 * {@link IDialect#CASE_INSENSITIVE}.
 	 * 
 	 * @param bindingName
-	 *            The name of the binding which should be matched by fu search.
+	 *            The name of the binding which should be matched by full-text search.
 	 * @param flags
 	 *            The flags to control the full-text search.
 	 * @param patterns

@@ -39,7 +39,7 @@ public class SparqlStandardDialect implements IDialect {
 				}
 			}
 			String var = createVar("pattern");
-			bindings.put(var, regex);
+			bindings.put(var, regex.toString());
 			return new QueryFragment("FILTER (regex(str(?" + bindingName
 					+ "), ?" + var + "))", bindings);
 		} else {

@@ -249,13 +249,6 @@ public interface IEntityManager {
 	IEntityManagerFactory getFactory();
 
 	/**
-	 * Return the SPARQL dialect that is specific for the underlying store.
-	 * 
-	 * @return The specific dialect.
-	 */
-	IDialect getDialect();
-
-	/**
 	 * Return the inferencing capability of the underlying store.
 	 * 
 	 * @return {@link InferencingCapability} The inferencing capability.
