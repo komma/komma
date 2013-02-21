@@ -106,9 +106,9 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 		}
 		String ontology;
 		try {
-			ontology = ModelUtil.findOntology(file.getContents(),
-					fileURI.toString(),
-					ModelUtil.contentDescription(this, fileURI));
+			ontology = ModelUtil.findOntology(file.getContents(), fileURI
+					.toString(), ModelUtil.mimeType(ModelUtil
+					.contentDescription(this, fileURI)));
 			if (ontology != null) {
 				SimpleURIMapRule rule = new SimpleURIMapRule(ontology,
 						fileURI.toString());
