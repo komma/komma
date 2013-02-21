@@ -1,5 +1,10 @@
 package net.enilink.komma.core;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SparqlStandardDialect implements IDialect {
 	protected volatile int varCount = 0;
@@ -26,7 +31,8 @@ public class SparqlStandardDialect implements IDialect {
 	 * of this implementation may be rather slow.
 	 */
 	@Override
-	public QueryFragment fullTextSearch(String bindingName, int flags,
+	public QueryFragment fullTextSearch(
+			Collection<? extends String> bindingNames, int flags,
 			String... patterns) {
 		LinkedHashBindings<Object> bindings = new LinkedHashBindings<Object>();
 		if ((flags & ANY) != 0) {
@@ -40,20 +46,37 @@ public class SparqlStandardDialect implements IDialect {
 			}
 			String var = createVar("pattern");
 			bindings.put(var, regex.toString());
-			return new QueryFragment("FILTER (regex(str(?" + bindingName
-					+ "), ?" + var + "))", bindings);
-		} else {
 			StringBuilder filter = new StringBuilder();
-			for (int i = 0; i < patterns.length; i++) {
-				String pattern = patterns[i];
-				String var = createVar("pattern");
-				filter.append("regex(str(?" + bindingName + "), ?").append(var)
-						.append(")");
-				bindings.put(var, createRegexForPattern(pattern, flags));
-				if (i < patterns.length - 1) {
-					filter.append(" && ");
+			for (String bindingName : bindingNames) {
+				if (filter.length() > 0) {
+					filter.append(" || ");
 				}
+				filter.append("regex(str(?" + bindingName + "), ?" + var + ")");
 			}
+			return new QueryFragment("FILTER (" + filter + ")", bindings);
+		} else {
+			List<String> vars = new ArrayList<String>();
+			for (String pattern : patterns) {
+				String var = createVar("pattern");
+				vars.add(var);
+				bindings.put(var, createRegexForPattern(pattern, flags));
+			}
+			StringBuilder filter = new StringBuilder();
+			for (String bindingName : bindingNames) {
+				if (filter.length() > 0) {
+					filter.append(" || ");
+				}
+				StringBuilder bindingFilter = new StringBuilder();
+				for (String var : vars) {
+					if (bindingFilter.length() > 0) {
+						bindingFilter.append(" && ");
+					}
+					bindingFilter.append("regex(str(?" + bindingName + "), ?")
+							.append(var).append(")");
+				}
+				filter.append(bindingFilter);
+			}
+
 			return new QueryFragment("FILTER (" + filter + ")", bindings);
 		}
 	}
