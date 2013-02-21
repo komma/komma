@@ -605,9 +605,9 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 						.getURIConverter();
 				in = uriConverter.createInputStream(resourceURI);
 
-				String ontology = ModelUtil
-						.findOntology(in, resourceURI.toString(), ModelUtil
-								.contentDescription(uriConverter, resourceURI));
+				String ontology = ModelUtil.findOntology(in, resourceURI
+						.toString(), ModelUtil.mimeType(ModelUtil
+						.contentDescription(uriConverter, resourceURI)));
 				if (ontology != null) {
 					getEditingDomain()
 							.getModelSet()
