@@ -1,5 +1,7 @@
 package net.enilink.komma.edit.provider;
 
+import java.util.Arrays;
+
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.komma.core.IDialect;
@@ -53,9 +55,9 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 				}
 			}
 			IDialect dialect = em.getFactory().getDialect();
-			QueryFragment searchS = dialect.fullTextSearch("s",
+			QueryFragment searchS = dialect.fullTextSearch(Arrays.asList("s"),
 					IDialect.CASE_INSENSITIVE | IDialect.ALL, pattern);
-			QueryFragment searchL = dialect.fullTextSearch("l",
+			QueryFragment searchL = dialect.fullTextSearch(Arrays.asList("l"),
 					IDialect.CASE_INSENSITIVE, pattern);
 
 			String queryStr = ISparqlConstants.PREFIX

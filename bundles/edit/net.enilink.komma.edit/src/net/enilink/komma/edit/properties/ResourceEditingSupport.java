@@ -228,10 +228,10 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		}
 
 		IDialect dialect = subject.getEntityManager().getFactory().getDialect();
-		QueryFragment searchS = dialect.fullTextSearch("s",
+		QueryFragment searchS = dialect.fullTextSearch(Arrays.asList("s"),
 				IDialect.CASE_INSENSITIVE | IDialect.ALL,
 				split(pattern, "\\s*[#/]\\s*"));
-		QueryFragment searchL = dialect.fullTextSearch("l",
+		QueryFragment searchL = dialect.fullTextSearch(Arrays.asList("l"),
 				IDialect.CASE_INSENSITIVE, pattern);
 
 		sparql.append("{ ?s ?p ?o . " + searchS);
