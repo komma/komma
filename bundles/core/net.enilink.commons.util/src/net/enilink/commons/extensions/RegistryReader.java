@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IRegistryChangeEvent;
 import org.eclipse.core.runtime.IRegistryChangeListener;
-import org.eclipse.core.runtime.Platform;
 
 import net.enilink.commons.CommonsPlugin;
 
@@ -59,7 +58,7 @@ public abstract class RegistryReader implements IRegistryChangeListener {
 	 * The constructor.
 	 */
 	protected RegistryReader(String pluginId, String extensionPoint) {
-		this.registry = Platform.getExtensionRegistry();
+		this.registry = RegistryFactoryHelper.getRegistry();
 		this.pluginId = pluginId;
 		this.extensionPointId = extensionPoint;
 	}

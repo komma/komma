@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
 
+import net.enilink.commons.extensions.RegistryFactoryHelper;
 import net.enilink.commons.util.IOpener;
 
 /**
@@ -74,7 +75,7 @@ public class CommonsPlugin extends Plugin {
 
 	public static boolean openResource(String openerId, Object root,
 			Object resource) {
-		IExtensionPoint extensionPoint = Platform.getExtensionRegistry()
+		IExtensionPoint extensionPoint = RegistryFactoryHelper.getRegistry()
 				.getExtensionPoint(PLUGIN_ID, "openers");
 
 		if (extensionPoint == null) {
