@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.Platform;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.traits.Behaviour;
 import org.slf4j.Logger;
@@ -37,6 +36,7 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Singleton;
 
+import net.enilink.commons.extensions.RegistryFactoryHelper;
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.adapter.AdapterSet;
 import net.enilink.komma.common.adapter.IAdapterFactory;
@@ -527,7 +527,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 			module.includeModule(KommaUtil.getCoreModule());
 
 			// load modules which are registered for any namespace
-			IExtensionRegistry registry = Platform.getExtensionRegistry();
+			IExtensionRegistry registry = RegistryFactoryHelper.getRegistry();
 			if (registry != null) {
 				IExtensionPoint extensionPoint = registry.getExtensionPoint(
 						ModelCore.PLUGIN_ID, "modules");

@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import net.enilink.composition.traits.Behaviour;
 
@@ -35,6 +34,7 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 
+import net.enilink.commons.extensions.RegistryFactoryHelper;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.IMap;
 import net.enilink.vocab.owl.OWL;
@@ -272,8 +272,9 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			String modelUri = getURI().toString();
 
 			// support for registering KommaModules as extensions
-			IExtensionPoint extensionPoint = Platform.getExtensionRegistry()
-					.getExtensionPoint(ModelCore.PLUGIN_ID, "modules");
+			IExtensionPoint extensionPoint = RegistryFactoryHelper
+					.getRegistry().getExtensionPoint(ModelCore.PLUGIN_ID,
+							"modules");
 			if (extensionPoint != null) {
 				for (IConfigurationElement cfgElement : extensionPoint
 						.getConfigurationElements()) {

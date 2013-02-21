@@ -11,7 +11,6 @@
 package net.enilink.komma.internal.model.extensions;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
 
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.model.IModel;
@@ -33,9 +32,7 @@ public class ContentFactoriesRegistryReader extends KommaRegistryReader {
 
 	public ContentFactoriesRegistryReader(
 			IModel.Factory.Registry ontologyFactoryRegistry) {
-		super(Platform.getExtensionRegistry(), ModelCore.PLUGIN_ID,
-				"contentFactories");
-
+		super(ModelCore.PLUGIN_ID, "contentFactories");
 		this.modelFactoryRegistry = ontologyFactoryRegistry;
 	}
 

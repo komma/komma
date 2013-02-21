@@ -11,7 +11,6 @@
 package net.enilink.komma.internal.model.extensions;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
 
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.model.IModel;
@@ -33,8 +32,7 @@ public class ProtocolFactoriesRegistryReader extends KommaRegistryReader {
 
 	public ProtocolFactoriesRegistryReader(
 			IModel.Factory.Registry ontologyFactoryRegistry) {
-		super(Platform.getExtensionRegistry(), ModelCore.PLUGIN_ID,
-				"protocolFactories");
+		super(ModelCore.PLUGIN_ID, "protocolFactories");
 		this.modelFactoryRegistry = ontologyFactoryRegistry;
 	}
 
@@ -48,10 +46,8 @@ public class ProtocolFactoriesRegistryReader extends KommaRegistryReader {
 				logMissingAttribute(element, ATT_CLASS);
 			} else if (add) {
 				Object previous = modelFactoryRegistry
-						.getProtocolToFactoryMap().put(
-								protocolName,
-								new ModelFactoryDescriptor(element,
-										ATT_CLASS));
+						.getProtocolToFactoryMap().put(protocolName,
+								new ModelFactoryDescriptor(element, ATT_CLASS));
 				if (previous instanceof ModelFactoryDescriptor) {
 					ModelFactoryDescriptor descriptor = (ModelFactoryDescriptor) previous;
 					KommaCore.logErrorMessage("Both '"

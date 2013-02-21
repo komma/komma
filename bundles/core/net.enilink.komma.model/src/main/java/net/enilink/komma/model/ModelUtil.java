@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
+import org.eclipse.core.runtime.content.IContentTypeManager;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.RDFFormat;
@@ -199,21 +200,18 @@ public class ModelUtil {
 		return null;
 	}
 
-	private static RDFParser createParser(IContentDescription contentDescription) {
+	private static RDFParser createParser(String mimeType) {
 		RDFFormat format = RDFFormat.RDFXML;
-		if (contentDescription != null) {
-			String mimeType = (String) contentDescription
-					.getProperty(new QualifiedName(ModelCore.PLUGIN_ID,
-							"mimeType"));
+		if (mimeType != null) {
 			format = RDFFormat.forMIMEType(mimeType, format);
 		}
 		return Rio.createParser(format);
 	}
 
 	public static String findOntology(InputStream in, String baseURI,
-			IContentDescription contentDescription) throws Exception {
+			String mimeType) throws Exception {
 		final org.openrdf.model.URI[] ontology = { null };
-		RDFParser parser = createParser(contentDescription);
+		RDFParser parser = createParser(mimeType);
 		parser.setRDFHandler(new RDFHandler() {
 			@Override
 			public void startRDF() throws RDFHandlerException {
@@ -267,9 +265,22 @@ public class ModelUtil {
 		return null;
 	}
 
+	public static String mimeType(IContentDescription contentDescription) {
+		if (contentDescription != null) {
+			return (String) contentDescription.getProperty(new QualifiedName(
+					ModelCore.PLUGIN_ID, "mimeType"));
+		}
+		return null;
+	}
+
 	public static IContentDescription determineContentDescription(
 			URI resourceUri, IURIConverter uriConverter, Map<?, ?> options)
 			throws IOException {
+		IContentTypeManager contentTypeManager = Platform
+				.getContentTypeManager();
+		if (contentTypeManager == null) {
+			return null;
+		}
 		if (options == null) {
 			options = Collections.emptyMap();
 		}
@@ -279,8 +290,7 @@ public class ModelUtil {
 				.get(IContentHandler.CONTENT_TYPE_PROPERTY);
 		IContentType contentType = null;
 		if (contentTypeId != null) {
-			contentType = Platform.getContentTypeManager().getContentType(
-					contentTypeId);
+			contentType = contentTypeManager.getContentType(contentTypeId);
 		}
 		if (contentType != null) {
 			contentDescription = contentType.getDefaultDescription();
@@ -291,7 +301,7 @@ public class ModelUtil {
 			// simply use the filename to detect the correct RDF format
 			String lastSegment = normalizedUri.fileExtension();
 			if (lastSegment != null) {
-				IContentType[] matchingTypes = Platform.getContentTypeManager()
+				IContentType[] matchingTypes = contentTypeManager
 						.findContentTypesFor(lastSegment);
 				QualifiedName mimeType = new QualifiedName(ModelCore.PLUGIN_ID,
 						"mimeType");
@@ -308,19 +318,18 @@ public class ModelUtil {
 	}
 
 	public static <V extends IDataVisitor<?>> void readData(InputStream in,
-			String baseURI, IContentDescription contentDescription,
-			final V dataVisitor) {
+			String baseURI, String mimeType, final V dataVisitor) {
 		// generate unique BNode IDs by default
-		readData(in, baseURI, contentDescription, false, dataVisitor);
+		readData(in, baseURI, mimeType, false, dataVisitor);
 	}
 
 	public static <V extends IDataVisitor<?>> void readData(InputStream in,
-			String baseURI, IContentDescription contentDescription,
-			boolean preserveBNodeIDs, final V dataVisitor) {
+			String baseURI, String mimeType, boolean preserveBNodeIDs,
+			final V dataVisitor) {
 		final SesameValueConverter valueConverter = new SesameValueConverter(
 				new ValueFactoryImpl());
 		final boolean handleNamespaces = dataVisitor instanceof IDataAndNamespacesVisitor<?>;
-		RDFParser parser = createParser(contentDescription);
+		RDFParser parser = createParser(mimeType);
 		parser.setPreserveBNodeIDs(preserveBNodeIDs);
 		parser.setRDFHandler(new RDFHandler() {
 			@Override
@@ -378,18 +387,16 @@ public class ModelUtil {
 	}
 
 	private static RDFWriter createWriter(OutputStream os, String baseURI,
-			IContentDescription contentDescription) throws IOException {
+			String mimeType, String charset) throws IOException {
 		RDFFormat format = RDFFormat.RDFXML;
-		if (contentDescription != null) {
-			String mimeType = (String) contentDescription
-					.getProperty(new QualifiedName(ModelCore.PLUGIN_ID,
-							"mimeType"));
+		if (mimeType != null) {
 			format = RDFFormat.forMIMEType(mimeType, format);
 		}
 		if (RDFFormat.RDFXML.equals(format)) {
 			// use a special pretty writer in case of RDF/XML
 			RDFXMLPrettyWriter rdfXmlWriter = new RDFXMLPrettyWriter(
-					new OutputStreamWriter(os, "UTF-8"));
+					new OutputStreamWriter(os, charset != null ? charset
+							: "UTF-8"));
 			rdfXmlWriter.setBaseURI(baseURI);
 			return rdfXmlWriter;
 		} else {
@@ -400,10 +407,10 @@ public class ModelUtil {
 	}
 
 	public static IDataAndNamespacesVisitor<Void> writeData(OutputStream os,
-			String baseURI, IContentDescription contentDescription) {
+			String baseURI, String mimeType, String charset) {
 		try {
-			final RDFWriter writer = createWriter(os, baseURI,
-					contentDescription);
+			final RDFWriter writer = createWriter(os, baseURI, mimeType,
+					charset);
 			return new IDataAndNamespacesVisitor<Void>() {
 				final SesameValueConverter valueConverter = new SesameValueConverter(
 						new ValueFactoryImpl());
@@ -457,5 +464,4 @@ public class ModelUtil {
 			throw new KommaException("Creating RDF writer failed", e);
 		}
 	}
-
 }

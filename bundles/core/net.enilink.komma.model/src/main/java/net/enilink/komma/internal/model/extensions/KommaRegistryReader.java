@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 
+import net.enilink.commons.extensions.RegistryFactoryHelper;
 import net.enilink.commons.extensions.RegistryReader;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.core.KommaException;
@@ -22,6 +23,10 @@ public abstract class KommaRegistryReader extends RegistryReader {
 	protected KommaRegistryReader(IExtensionRegistry registry, String pluginId,
 			String anExtensionPoint) {
 		super(registry, pluginId, anExtensionPoint);
+	}
+
+	protected KommaRegistryReader(String pluginId, String extensionPoint) {
+		super(pluginId, extensionPoint);
 	}
 
 	public static class PluginClassDescriptor {
@@ -43,12 +48,11 @@ public abstract class KommaRegistryReader extends RegistryReader {
 		}
 	}
 
-	static class ModelFactoryDescriptor extends PluginClassDescriptor
-			implements IModel.Factory.IDescriptor {
+	static class ModelFactoryDescriptor extends PluginClassDescriptor implements
+			IModel.Factory.IDescriptor {
 		protected IModel.Factory factoryInstance;
 
-		public ModelFactoryDescriptor(IConfigurationElement e,
-				String attrName) {
+		public ModelFactoryDescriptor(IConfigurationElement e, String attrName) {
 			super(e, attrName);
 		}
 

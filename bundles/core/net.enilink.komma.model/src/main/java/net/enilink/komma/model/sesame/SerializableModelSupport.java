@@ -121,38 +121,43 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 					public void run() {
 						try {
 							try {
+								IDataAndNamespacesVisitor<Void> visitor = new IDataAndNamespacesVisitor<Void>() {
+									@Override
+									public Void visitBegin() {
+										return null;
+									}
+
+									@Override
+									public Void visitEnd() {
+										return null;
+									}
+
+									@Override
+									public Void visitStatement(IStatement stmt) {
+										synchronized (queue) {
+											queue.add(stmt);
+											queue.notify();
+										}
+										return null;
+									}
+
+									@Override
+									public Void visitNamespace(
+											INamespace namespace) {
+										dm.setNamespace(namespace.getPrefix(),
+												namespace.getURI());
+										return null;
+									}
+								};
+								String mimeType = (String) options
+										.get(IModel.OPTION_MIME_TYPE);
+								if (mimeType == null
+										&& contentDescription[0] != null) {
+									mimeType = ModelUtil
+											.mimeType(contentDescription[0]);
+								}
 								ModelUtil.readData(in, getURI().toString(),
-										contentDescription[0],
-										new IDataAndNamespacesVisitor<Void>() {
-											@Override
-											public Void visitBegin() {
-												return null;
-											}
-
-											@Override
-											public Void visitEnd() {
-												return null;
-											}
-
-											@Override
-											public Void visitStatement(
-													IStatement stmt) {
-												synchronized (queue) {
-													queue.add(stmt);
-													queue.notify();
-												}
-												return null;
-											}
-
-											@Override
-											public Void visitNamespace(
-													INamespace namespace) {
-												dm.setNamespace(
-														namespace.getPrefix(),
-														namespace.getURI());
-												return null;
-											}
-										});
+										mimeType, visitor);
 							} finally {
 								finished.set(true);
 								synchronized (queue) {
@@ -195,14 +200,22 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 
 	@Override
 	public void save(OutputStream os, Map<?, ?> options) throws IOException {
+		String mimeType = (String) options.get(IModel.OPTION_MIME_TYPE);
+		String charset = null;
 		final IContentDescription contentDescription = determineContentDescription(options);
+		if (contentDescription != null) {
+			if (mimeType == null) {
+				mimeType = ModelUtil.mimeType(contentDescription);
+			}
+			charset = contentDescription.getCharset();
+		}
+
 		IDataAndNamespacesVisitor<?> dataVisitor = ModelUtil.writeData(os,
-				getURI().toString(), contentDescription);
+				getURI().toString(), mimeType, charset);
 		dataVisitor.visitBegin();
 
 		final IDataManager dm = ((IModelSet.Internal) getModelSet())
 				.getDataManagerFactory().get();
-
 		try {
 			// only include possibly used namespaces
 			Set<URI> readableGraphs = getModule().getReadableGraphs();

@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.Bundle;
 
 import net.enilink.komma.KommaCore;
 import net.enilink.komma.model.IContentHandler;
@@ -38,8 +39,7 @@ public class ContentHandlerRegistryReader extends KommaRegistryReader {
 
 	public ContentHandlerRegistryReader(
 			IContentHandler.Registry contentHandlerRegistry) {
-		super(Platform.getExtensionRegistry(), ModelCore.PLUGIN_ID,
-				"contentHandlers");
+		super(ModelCore.PLUGIN_ID, "contentHandlers");
 		this.contentHandlerRegistry = contentHandlerRegistry;
 	}
 
@@ -59,10 +59,12 @@ public class ContentHandlerRegistryReader extends KommaRegistryReader {
 				String contributorName = element.getContributor().getName();
 				if (add) {
 					try {
+						Bundle contributorBundle = Platform.getBundle(element
+								.getNamespaceIdentifier());
 						@SuppressWarnings("unchecked")
-						Class<IContentHandler> contributorHandlerClass = (Class<IContentHandler>)Platform
-								.getBundle(element.getNamespaceIdentifier())
-								.loadClass(contributorClassName);
+						Class<IContentHandler> contributorHandlerClass = (Class<IContentHandler>) (contributorBundle != null ? contributorBundle
+								.loadClass(contributorClassName) : Class
+								.forName(contributorClassName));
 						Map<String, String> parameters = new HashMap<String, String>();
 						for (IConfigurationElement parameter : element
 								.getChildren("parameter")) {

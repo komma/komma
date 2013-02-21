@@ -56,6 +56,18 @@ public interface IModel {
 	String OPTION_SAVE_ONLY_IF_CHANGED_FILE_BUFFER = "FILE_BUFFER";
 
 	/**
+	 * A load and save option that can be used to specify the MIME type of the
+	 * contents.
+	 */
+	String OPTION_MIME_TYPE = "MIME_TYPE";
+
+	/**
+	 * A load and save option that can be used to specify the character set
+	 * (like UTF-8) of the contents.
+	 */
+	String OPTION_CHARSET = "CHARSET";
+
+	/**
 	 * Adds an import to the model
 	 * 
 	 * @param uri

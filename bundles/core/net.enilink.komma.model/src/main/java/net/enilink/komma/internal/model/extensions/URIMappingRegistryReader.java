@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
 
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.base.IURIMapRuleSet;
@@ -40,9 +39,7 @@ public class URIMappingRegistryReader extends KommaRegistryReader {
 	private IURIMapRuleSet uriMap;
 
 	public URIMappingRegistryReader(IURIMapRuleSet uriMap) {
-		super(Platform.getExtensionRegistry(), ModelCore.PLUGIN_ID,
-				"uriMapRules");
-
+		super(ModelCore.PLUGIN_ID, "uriMapRules");
 		this.uriMap = uriMap;
 	}
 

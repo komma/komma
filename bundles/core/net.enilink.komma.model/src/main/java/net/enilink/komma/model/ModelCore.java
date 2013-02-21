@@ -21,10 +21,10 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
 
+import net.enilink.commons.extensions.RegistryFactoryHelper;
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.internal.model.Messages;
@@ -61,6 +61,11 @@ public class ModelCore extends AbstractKommaPlugin {
 	public static final String PLUGIN_ID = "net.enilink.komma.model";
 
 	private static final ModelCore INSTANCE = new ModelCore();
+	static {
+		if (!IS_ECLIPSE_RUNNING) {
+			readExtensions();
+		}
+	}
 
 	/**
 	 * The constructor
@@ -249,24 +254,28 @@ public class ModelCore extends AbstractKommaPlugin {
 		@Override
 		public void start(BundleContext context) throws Exception {
 			super.start(context);
-
 			if (IS_RESOURCES_BUNDLE_AVAILABLE) {
 				workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 			}
-
-			IModel.Factory.Registry modelFactoryRegistry = ModelCore
-					.getDefault().getModelFactoryRegistry();
-			new ExtensionFactoriesRegistryReader(modelFactoryRegistry)
-					.readRegistry();
-			new ProtocolFactoriesRegistryReader(modelFactoryRegistry)
-					.readRegistry();
-			new ContentFactoriesRegistryReader(modelFactoryRegistry)
-					.readRegistry();
-			new ContentHandlerRegistryReader(ModelCore.getDefault()
-					.getContentHandlerRegistry()).readRegistry();
-			new URIMappingRegistryReader(ModelCore.getDefault().getURIMap())
-					.readRegistry();
+			readExtensions();
 		}
+	}
+
+	/**
+	 * Initialize registered extensions.
+	 */
+	private static void readExtensions() {
+		IModel.Factory.Registry modelFactoryRegistry = ModelCore.getDefault()
+				.getModelFactoryRegistry();
+		new ExtensionFactoriesRegistryReader(modelFactoryRegistry)
+				.readRegistry();
+		new ProtocolFactoriesRegistryReader(modelFactoryRegistry)
+				.readRegistry();
+		new ContentFactoriesRegistryReader(modelFactoryRegistry).readRegistry();
+		new ContentHandlerRegistryReader(ModelCore.getDefault()
+				.getContentHandlerRegistry()).readRegistry();
+		new URIMappingRegistryReader(ModelCore.getDefault().getURIMap())
+				.readRegistry();
 	}
 
 	/**
@@ -277,7 +286,7 @@ public class ModelCore extends AbstractKommaPlugin {
 	public static Collection<ModelDescription> getBaseModels() {
 		List<ModelDescription> descriptions = new ArrayList<ModelDescription>();
 
-		IExtensionPoint extensionPoint = Platform.getExtensionRegistry()
+		IExtensionPoint extensionPoint = RegistryFactoryHelper.getRegistry()
 				.getExtensionPoint(PLUGIN_ID, "models");
 		if (extensionPoint != null) {
 			// Loop through the config elements.
@@ -322,9 +331,9 @@ public class ModelCore extends AbstractKommaPlugin {
 	 */
 	public static Collection<? extends KommaModule> getModelModules() {
 		List<KommaModule> modules = new ArrayList<KommaModule>();
-		if (Platform.getExtensionRegistry() != null) {
-			IExtensionPoint extensionPoint = Platform.getExtensionRegistry()
-					.getExtensionPoint(PLUGIN_ID, "modelModules");
+		if (RegistryFactoryHelper.getRegistry() != null) {
+			IExtensionPoint extensionPoint = RegistryFactoryHelper
+					.getRegistry().getExtensionPoint(PLUGIN_ID, "modelModules");
 			if (extensionPoint != null) {
 				// Loop through the config elements.
 				for (IConfigurationElement configElement : extensionPoint
