@@ -112,65 +112,56 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 
 				final AtomicBoolean finished = new AtomicBoolean(false);
 				final Queue<IStatement> queue = new LinkedList<IStatement>();
-				// new Job("Load model") {
-				// @Override
-				// public IStatus run(IProgressMonitor monitor) {
 				final IContentDescription[] contentDescription = { determineContentDescription(options) };
+				final Throwable[] exception = { null };
 				Executors.newSingleThreadExecutor().execute(new Runnable() {
 					@Override
 					public void run() {
 						try {
-							try {
-								IDataAndNamespacesVisitor<Void> visitor = new IDataAndNamespacesVisitor<Void>() {
-									@Override
-									public Void visitBegin() {
-										return null;
-									}
-
-									@Override
-									public Void visitEnd() {
-										return null;
-									}
-
-									@Override
-									public Void visitStatement(IStatement stmt) {
-										synchronized (queue) {
-											queue.add(stmt);
-											queue.notify();
-										}
-										return null;
-									}
-
-									@Override
-									public Void visitNamespace(
-											INamespace namespace) {
-										dm.setNamespace(namespace.getPrefix(),
-												namespace.getURI());
-										return null;
-									}
-								};
-								String mimeType = (String) options
-										.get(IModel.OPTION_MIME_TYPE);
-								if (mimeType == null
-										&& contentDescription[0] != null) {
-									mimeType = ModelUtil
-											.mimeType(contentDescription[0]);
+							IDataAndNamespacesVisitor<Void> visitor = new IDataAndNamespacesVisitor<Void>() {
+								@Override
+								public Void visitBegin() {
+									return null;
 								}
-								ModelUtil.readData(in, getURI().toString(),
-										mimeType, visitor);
-							} finally {
-								finished.set(true);
-								synchronized (queue) {
-									queue.notify();
+
+								@Override
+								public Void visitEnd() {
+									return null;
 								}
+
+								@Override
+								public Void visitStatement(IStatement stmt) {
+									synchronized (queue) {
+										queue.add(stmt);
+										queue.notify();
+									}
+									return null;
+								}
+
+								@Override
+								public Void visitNamespace(INamespace namespace) {
+									dm.setNamespace(namespace.getPrefix(),
+											namespace.getURI());
+									return null;
+								}
+							};
+							String mimeType = (String) options
+									.get(IModel.OPTION_MIME_TYPE);
+							if (mimeType == null
+									&& contentDescription[0] != null) {
+								mimeType = ModelUtil
+										.mimeType(contentDescription[0]);
 							}
+							ModelUtil.readData(in, getURI().toString(),
+									mimeType, visitor);
 						} catch (RuntimeException e) {
-							throw e;
-							// return new Status(IStatus.ERROR,
-							// ModelCore.PLUGIN_ID,
-							// "Error while loading model", exception);
+							exception[0] = e;
+						} finally {
+							finished.set(true);
+							synchronized (queue) {
+								queue.notify();
+							}
 						}
-						// return Status.OK_STATUS;
 					}
 				});
 
@@ -178,6 +169,9 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 				// until endRDF of the above handler is called
 				dm.add(new BlockingIterator<IStatement>(queue, finished),
 						getURI());
+				if (exception[0] != null) {
+					throw exception[0];
+				}
 				dm.getTransaction().commit();
 			}
 		} catch (Throwable e) {
