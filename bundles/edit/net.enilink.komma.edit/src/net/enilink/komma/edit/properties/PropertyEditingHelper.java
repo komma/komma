@@ -137,28 +137,26 @@ public abstract class PropertyEditingHelper {
 	}
 
 	/**
-	 * Notifies about the resulting status of an editing operation and related
-	 * commands.
-	 */
-	protected void setEditStatus(Object element, IStatus status, Object value) {
-	}
-
-	/**
 	 * Assigns a property to an element if operating in property editing mode.
 	 */
 	protected void setProperty(Object element, IProperty property) {
 	}
 
-	public void setValue(final Object element, final Object value) {
+	/**
+	 * Assigns the given <code>value</code> to the <code>element</code> and
+	 * returns the resulting status of the editing operation and related
+	 * commands.
+	 */
+	public IStatus setValue(final Object element, final Object value) {
 		if (value == null || !(value instanceof IResource)
 				&& value.equals(getValue(element))) {
-			return;
+			return Status.OK_STATUS;
 		}
 
 		final IStatement stmt = getStatement(element);
 		IPropertyEditingSupport propertyEditingSupport = getPropertyEditingSupport(stmt);
 		if (propertyEditingSupport == null) {
-			return;
+			return Status.CANCEL_STATUS;
 		}
 
 		ICommand newObjectCommand = null;
@@ -175,9 +173,7 @@ public abstract class PropertyEditingHelper {
 			try {
 				newObjectCommand.execute(new NullProgressMonitor(), null);
 			} catch (ExecutionException e) {
-				IStatus status = createErrorStatus(e);
-				setEditStatus(element, status, value);
-				return;
+				return createErrorStatus(e);
 			}
 			Object newPredicate = newObjectCommand.getCommandResult()
 					.getReturnValue();
@@ -242,15 +238,17 @@ public abstract class PropertyEditingHelper {
 				}
 			};
 			command.add(newObjectCommand);
+			return execute(command);
+		}
+		return Status.OK_STATUS;
+	}
 
-			IStatus status = Status.CANCEL_STATUS;
-			try {
-				status = getEditingDomain().getCommandStack().execute(command,
-						null, null);
-			} catch (ExecutionException exc) {
-				status = createErrorStatus(exc);
-			}
-			setEditStatus(element, status, value);
+	protected IStatus execute(ICommand command) {
+		try {
+			return getEditingDomain().getCommandStack().execute(command, null,
+					null);
+		} catch (Exception exc) {
+			return createErrorStatus(exc);
 		}
 	}
 }
