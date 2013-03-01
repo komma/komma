@@ -79,13 +79,6 @@ public abstract class PropertyCellEditingSupport extends EditingSupport {
 			}
 
 			@Override
-			protected void setEditStatus(Object element, IStatus status,
-					Object value) {
-				PropertyCellEditingSupport.this.setEditStatus(element, status,
-						value);
-			}
-
-			@Override
 			protected void setProperty(Object element, IProperty property) {
 				PropertyCellEditingSupport.this.setProperty(element, property);
 			}
@@ -218,6 +211,7 @@ public abstract class PropertyCellEditingSupport extends EditingSupport {
 		if (acceptedResourceProposal != null) {
 			value = acceptedResourceProposal.getResource();
 		}
-		helper.setValue(element, value);
+		IStatus status = helper.setValue(element, value);
+		setEditStatus(element, status, value);
 	}
 }
