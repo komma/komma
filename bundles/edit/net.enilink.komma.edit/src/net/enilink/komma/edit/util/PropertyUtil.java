@@ -132,6 +132,11 @@ public class PropertyUtil {
 		if (support != null) {
 			return support;
 		}
+		// assume that property values are literals if current object is
+		// already a literal
+		if (object != null && !(object instanceof IReference)) {
+			return new LiteralEditingSupport();
+		}
 		IProperty property = predicate instanceof IProperty ? (IProperty) predicate
 				: subject.getEntityManager().find(predicate, IProperty.class);
 		if (property.getRdfsRanges().contains(RDFS.TYPE_CLASS)
