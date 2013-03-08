@@ -152,10 +152,7 @@ public final class CommandResult {
 	 *            The return value for the new command result.
 	 */
 	public CommandResult(IStatus status, Object returnValue) {
-		super();
-
 		assert null != status : "null status"; //$NON-NLS-1$
-
 		this.status = status;
 		this.returnValue = returnValue;
 	}
