@@ -211,7 +211,7 @@ public abstract class PropertyCellEditingSupport extends EditingSupport {
 		if (acceptedResourceProposal != null) {
 			value = acceptedResourceProposal.getResource();
 		}
-		IStatus status = helper.setValue(element, value);
+		IStatus status = helper.setValue(element, value).getStatus();
 		setEditStatus(element, status, value);
 	}
 }
