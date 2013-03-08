@@ -5,12 +5,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import net.enilink.composition.annotations.Iri;
 import org.openrdf.model.Resource;
@@ -220,13 +218,11 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 
 		if (AbstractKommaPlugin.IS_ECLIPSE_RUNNING) {
 			RepositoryConnection conn = null;
-
 			try {
 				conn = repository.getConnection();
 				for (String name : bundles) {
-					URL url = FileLocator.find(Platform.getBundle(name),
-							new Path("META-INF/org.openrdf.ontologies"),
-							Collections.emptyMap());
+					URL url = Platform.getBundle(name).getResource(
+							"META-INF/org.openrdf.ontologies");
 					if (url != null) {
 						URL resolvedUrl = FileLocator.resolve(url);
 

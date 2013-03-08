@@ -160,22 +160,17 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				if (!isActive) {
 					manager.getTransaction().begin();
 				}
-
 				if (!manager.hasMatch(this, RDF.PROPERTY_TYPE,
 						OWL.TYPE_ONTOLOGY)) {
 					manager.add(new Statement(this, RDF.PROPERTY_TYPE,
 							OWL.TYPE_ONTOLOGY));
 				}
-
 				if (prefix != null && prefix.trim().length() > 0) {
 					manager.setNamespace(prefix, uri);
 				}
-
 				manager.add(new Statement(this, OWL.PROPERTY_IMPORTS, uri));
-
 				if (!isActive) {
 					manager.getTransaction().commit();
-
 					unloadManager();
 				}
 			} catch (Exception e) {
@@ -471,16 +466,13 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				if (!isActive) {
 					manager.getTransaction().begin();
 				}
-
 				for (INamespace namespace : manager.getNamespaces().toList()) {
 					if (importedOnt.equals(namespace.getURI())) {
 						manager.removeNamespace(namespace.getPrefix());
 					}
 				}
-
 				manager.remove(new Statement(getURI(), OWL.PROPERTY_IMPORTS,
 						importedOnt));
-
 				if (!isActive) {
 					manager.getTransaction().commit();
 					unloadManager();

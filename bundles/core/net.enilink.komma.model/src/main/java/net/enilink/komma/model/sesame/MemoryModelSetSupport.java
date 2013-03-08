@@ -14,12 +14,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import net.enilink.composition.annotations.Iri;
 import org.openrdf.repository.Repository;
@@ -50,8 +48,8 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 		IModelSet.Internal {
 	protected Repository createRepository() throws RepositoryException {
 		MemoryStore store = new MemoryStore();
-		SailRepository owlRepository = new SailRepository(store);
-		owlRepository.initialize();
+		SailRepository repository = new SailRepository(store);
+		repository.initialize();
 
 		String[] bundles = { "net.enilink.vocab.owl",
 				"net.enilink.vocab.rdfs" };
@@ -60,11 +58,10 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 			RepositoryConnection conn = null;
 
 			try {
-				conn = owlRepository.getConnection();
+				conn = repository.getConnection();
 				for (String name : bundles) {
-					URL url = FileLocator.find(Platform.getBundle(name),
-							new Path("META-INF/org.openrdf.ontologies"),
-							Collections.emptyMap());
+					URL url = Platform.getBundle(name).getResource(
+							"META-INF/org.openrdf.ontologies");
 					if (url != null) {
 						URL resolvedUrl = FileLocator.resolve(url);
 
@@ -130,7 +127,6 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 		modules.add(new AbstractModule() {
 			@Override
 			protected void configure() {
-
 			}
 
 			@SuppressWarnings("unused")
