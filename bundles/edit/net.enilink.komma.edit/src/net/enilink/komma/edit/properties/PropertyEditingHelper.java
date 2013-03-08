@@ -15,20 +15,24 @@ import net.enilink.komma.common.command.ICompositeCommand;
 import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
-import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.properties.IPropertyEditingSupport.ProposalSupport;
 import net.enilink.komma.edit.util.PropertyUtil;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.ITransaction;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
 
 /**
  * Helper class to simplify the usage of {@link IPropertyEditingSupport}
  * implementations that are supplied by an adapter factory.
  */
 public abstract class PropertyEditingHelper {
+	public URI NULL_URI = URIImpl.createURI("<urn:null>");
+
 	protected IAdapterFactory delegatingAdapterFactory = new IAdapterFactory() {
 		@Override
 		public Object adapt(Object object, Object type) {
@@ -69,11 +73,6 @@ public abstract class PropertyEditingHelper {
 					stmt.getPredicate(), stmt.getObject());
 		}
 		return true;
-	}
-
-	protected IStatus createErrorStatus(Exception exception) {
-		return new Status(Status.ERROR, KommaEditPlugin.PLUGIN_ID,
-				exception.getMessage(), exception);
 	}
 
 	protected IAdapterFactory getAdapterFactory() {
@@ -147,16 +146,16 @@ public abstract class PropertyEditingHelper {
 	 * returns the resulting status of the editing operation and related
 	 * commands.
 	 */
-	public IStatus setValue(final Object element, final Object value) {
+	public CommandResult setValue(final Object element, final Object value) {
 		if (value == null || !(value instanceof IResource)
 				&& value.equals(getValue(element))) {
-			return Status.OK_STATUS;
+			return CommandResult.newOKCommandResult();
 		}
 
 		final IStatement stmt = getStatement(element);
 		IPropertyEditingSupport propertyEditingSupport = getPropertyEditingSupport(stmt);
 		if (propertyEditingSupport == null) {
-			return Status.CANCEL_STATUS;
+			return CommandResult.newCancelledCommandResult();
 		}
 
 		ICommand newObjectCommand = null;
@@ -173,7 +172,7 @@ public abstract class PropertyEditingHelper {
 			try {
 				newObjectCommand.execute(new NullProgressMonitor(), null);
 			} catch (ExecutionException e) {
-				return createErrorStatus(e);
+				return CommandResult.newErrorCommandResult(e);
 			}
 			Object newPredicate = newObjectCommand.getCommandResult()
 					.getReturnValue();
@@ -210,26 +209,30 @@ public abstract class PropertyEditingHelper {
 						// if stmt.getObject() == null then this is a new
 						// statement
 						// and therefore must not be removed
-						IStatus status = stmt.getObject() == null ? Status.OK_STATUS
+						Object obj = stmt.getObject();
+						IStatus status = obj == null
+								|| NULL_URI.equals(obj)
+								|| (obj instanceof ILiteral && ((ILiteral) obj)
+										.getLabel().isEmpty()) ? Status.OK_STATUS
 								: addAndExecute(PropertyUtil.getRemoveCommand(
 										getEditingDomain(),
 										(IResource) stmt.getSubject(),
 										predicate, stmt.getObject()),
 										progressMonitor, info);
+						Object returnValue = null;
 						if (status.isOK()
 								&& !result.getReturnValues().isEmpty()) {
-							status = addAndExecute(
-									PropertyUtil.getAddCommand(
-											getEditingDomain(), subject,
-											predicate, result.getReturnValues()
-													.iterator().next()),
-									progressMonitor, info);
+							returnValue = result.getReturnValues().iterator()
+									.next();
+							status = addAndExecute(PropertyUtil.getAddCommand(
+									getEditingDomain(), subject, predicate,
+									returnValue), progressMonitor, info);
 
 						}
 						if (status.isOK()) {
 							transaction.commit();
 						}
-						return new CommandResult(status);
+						return new CommandResult(status, returnValue);
 					} finally {
 						if (transaction.isActive()) {
 							transaction.rollback();
@@ -238,17 +241,18 @@ public abstract class PropertyEditingHelper {
 				}
 			};
 			command.add(newObjectCommand);
-			return execute(command);
+			CommandResult result = execute(command);
+			return result == null ? CommandResult.newOKCommandResult() : result;
 		}
-		return Status.OK_STATUS;
+		return CommandResult.newOKCommandResult();
 	}
 
-	protected IStatus execute(ICommand command) {
+	protected CommandResult execute(ICommand command) {
 		try {
-			return getEditingDomain().getCommandStack().execute(command, null,
-					null);
+			getEditingDomain().getCommandStack().execute(command, null, null);
+			return command.getCommandResult();
 		} catch (Exception exc) {
-			return createErrorStatus(exc);
+			return CommandResult.newErrorCommandResult(exc);
 		}
 	}
 }
