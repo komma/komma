@@ -333,9 +333,9 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 						visitor.process(prefix, false, context.getMatcher());
 					}
 				}
-			} else if (proposalIndex == context.getCurrentIndex()) {
+			}
+			if (proposalIndex == context.getCurrentIndex()) {
 				String lastWord = getLastWord(context);
-
 				List<Matcher> matchers = new FollowMatchersVisitor()
 						.getFollowMatchers(context);
 				for (Matcher matcher : matchers) {

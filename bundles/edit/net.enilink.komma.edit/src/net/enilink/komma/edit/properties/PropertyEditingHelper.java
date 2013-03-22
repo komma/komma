@@ -31,7 +31,7 @@ import net.enilink.komma.core.URIImpl;
  * implementations that are supplied by an adapter factory.
  */
 public abstract class PropertyEditingHelper {
-	public URI NULL_URI = URIImpl.createURI("<urn:null>");
+	public URI NULL_URI = URIImpl.createURI("urn:null");
 
 	protected IAdapterFactory delegatingAdapterFactory = new IAdapterFactory() {
 		@Override
