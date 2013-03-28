@@ -1,9 +1,13 @@
 package net.enilink.komma.model;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
@@ -200,18 +205,75 @@ public class ModelUtil {
 		return null;
 	}
 
-	private static RDFParser createParser(String mimeType) {
+	private static RDFParser createParser(String mimeType, InputStream in) {
 		RDFFormat format = RDFFormat.RDFXML;
 		if (mimeType != null) {
 			format = RDFFormat.forMIMEType(mimeType, format);
+		} else if (in.markSupported()) {
+			// try to distinguish RDF/XML and Turtle
+			in.mark(2048);
+			try {
+				Reader r = new InputStreamReader(in, "UTF-8");
+				while (r.ready()) {
+					int ch = r.read();
+					if (!Character.isWhitespace(ch)) {
+						if (ch == '<') {
+							if (r.ready() && (ch = r.read()) == '?') {
+								// <?xml ...>
+								// this is RDF/XML
+								break;
+							}
+							StringBuilder tag = new StringBuilder();
+							tag.append((char) ch);
+							int charsAfterColon = -1;
+							while (r.ready() && (ch = r.read()) != '>') {
+								tag.append((char) ch);
+								if (charsAfterColon >= 0) {
+									charsAfterColon++;
+								}
+								// read up to 4 chars after namespace separator
+								// <ns:rdf [stop here]
+								if (charsAfterColon > 3
+										|| Character.isWhitespace(ch)) {
+									break;
+								} else if (ch == ':' && charsAfterColon < 0) {
+									charsAfterColon = 0;
+								}
+							}
+							// test for content like <ns:RDF ...> or <RDF ...>
+							boolean isRdfXml = Pattern
+									.compile("(^|[^:]+:)rdf\\s+$",
+											Pattern.CASE_INSENSITIVE)
+									.matcher(tag.toString()).matches();
+							if (isRdfXml) {
+								break;
+							}
+						}
+						format = RDFFormat.TURTLE;
+						break;
+					}
+				}
+			} catch (UnsupportedEncodingException e) {
+				// should never happend
+			} catch (IOException e) {
+				throw new KommaException("Reading RDF data failed.", e);
+			}
+			try {
+				in.reset();
+			} catch (IOException e) {
+				throw new KommaException("Detection of RDF format failed.");
+			}
 		}
 		return Rio.createParser(format);
 	}
 
 	public static String findOntology(InputStream in, String baseURI,
 			String mimeType) throws Exception {
+		if (mimeType == null && !in.markSupported()) {
+			in = new BufferedInputStream(in);
+		}
 		final org.openrdf.model.URI[] ontology = { null };
-		RDFParser parser = createParser(mimeType);
+		RDFParser parser = createParser(mimeType, in);
 		parser.setRDFHandler(new RDFHandler() {
 			@Override
 			public void startRDF() throws RDFHandlerException {
@@ -326,10 +388,13 @@ public class ModelUtil {
 	public static <V extends IDataVisitor<?>> void readData(InputStream in,
 			String baseURI, String mimeType, boolean preserveBNodeIDs,
 			final V dataVisitor) {
+		if (mimeType == null && !in.markSupported()) {
+			in = new BufferedInputStream(in);
+		}
 		final SesameValueConverter valueConverter = new SesameValueConverter(
 				new ValueFactoryImpl());
 		final boolean handleNamespaces = dataVisitor instanceof IDataAndNamespacesVisitor<?>;
-		RDFParser parser = createParser(mimeType);
+		RDFParser parser = createParser(mimeType, in);
 		parser.setPreserveBNodeIDs(preserveBNodeIDs);
 		parser.setRDFHandler(new RDFHandler() {
 			@Override
