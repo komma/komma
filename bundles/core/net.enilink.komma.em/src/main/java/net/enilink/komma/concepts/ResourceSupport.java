@@ -163,11 +163,11 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	private static final String SELECT_APPLICABLE_PROPERTIES = PREFIX //
 			+ "SELECT DISTINCT ?property " //
 			+ "WHERE { " //
-			+ "{?property a owl:AnnotationProperty OPTIONAL {?property rdfs:domain ?class} FILTER (!bound(?class))} UNION "
-			+ "{?property rdfs:subPropertyOf rdf:type} UNION "
+			+ "{ ?property a owl:AnnotationProperty FILTER NOT EXISTS { ?property rdfs:domain ?domain }} UNION "
+			+ "{ ?property rdfs:subPropertyOf rdf:type } UNION "
 			+ "{ ?resource a ?class ." // given resource has type class
-			+ "{{?property rdfs:domain ?class} UNION" //
-			+ "{?class rdfs:subClassOf ?restriction . ?restriction owl:onProperty ?property}}" //
+			+ "{{ ?property rdfs:domain ?class } UNION" //
+			+ "{ ?class rdfs:subClassOf ?restriction . ?restriction owl:onProperty ?property }}" //
 
 			// exclude properties that can not be applied to
 			// the actual types of the subject
