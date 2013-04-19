@@ -8,8 +8,10 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.IContributedContentsView;
 import org.eclipse.ui.part.ViewPart;
@@ -165,6 +167,10 @@ public class AbstractEditingDomainView extends ViewPart implements
 			@Override
 			@SuppressWarnings("rawtypes")
 			public Object getAdapter(Class adapter) {
+				if (IWorkbenchPartSite.class.equals(adapter)
+						|| IViewSite.class.equals(adapter)) {
+					return getViewSite();
+				}
 				if (IToolBarManager.class.equals(adapter)) {
 					return getViewSite().getActionBars().getToolBarManager();
 				}

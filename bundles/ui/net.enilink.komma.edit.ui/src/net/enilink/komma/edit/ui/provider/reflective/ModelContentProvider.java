@@ -31,6 +31,7 @@ import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelAware;
+import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.IEntity;
@@ -90,6 +91,7 @@ public abstract class ModelContentProvider implements IContentProvider {
 
 	protected boolean executedFullRefresh = false;
 	private Viewer viewer;
+	protected volatile IModelSet modelSet;
 	protected volatile IModel model;
 	protected boolean listenerRegistered = false;
 	protected boolean registerListener = false;
@@ -134,14 +136,15 @@ public abstract class ModelContentProvider implements IContentProvider {
 	public void registerListener() {
 		unregisterListener();
 		if (!listenerRegistered && registerListener && model != null) {
+			modelSet = model.getModelSet();
+			modelSet.addListener(listener);
 			listenerRegistered = true;
-			model.getModelSet().addListener(listener);
 		}
 	}
 
 	public void unregisterListener() {
-		if (listenerRegistered && model != null) {
-			model.getModelSet().removeListener(listener);
+		if (listenerRegistered && modelSet != null) {
+			modelSet.removeListener(listener);
 			listenerRegistered = false;
 		}
 	}
