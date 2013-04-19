@@ -28,12 +28,8 @@ import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.provider.IItemPropertyDescriptor;
-import net.enilink.komma.edit.provider.IViewerNotification;
 import net.enilink.komma.edit.provider.ReflectiveItemProvider;
-import net.enilink.komma.edit.provider.ViewerNotification;
 import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.event.IStatementNotification;
-import net.enilink.komma.core.IEntity;
 
 /**
  * This is the item provider adapter for a {@link IModelSet} object.
@@ -141,16 +137,5 @@ public class ModelSetItemProvider extends ReflectiveItemProvider {
 	@Override
 	public IResourceLocator getResourceLocator() {
 		return KommaEditPlugin.INSTANCE;
-	}
-
-	protected void addViewerNotifications(
-			Collection<IViewerNotification> viewerNotifications,
-			IStatementNotification notification, boolean contentRefresh,
-			boolean labelUpdate) {
-		IEntity subject = resolveReference(notification.getSubject());
-		if (subject instanceof IModelSet) {
-			viewerNotifications.add(new ViewerNotification(subject,
-					contentRefresh, labelUpdate));
-		}
 	}
 }

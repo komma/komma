@@ -94,8 +94,7 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 			int insertPos = index - prefix.length();
 
 			List<IContentProposal> proposals = new ArrayList<IContentProposal>();
-			for (IEntity resource : getResourceProposals(subject, null, prefix,
-					20)) {
+			for (IEntity resource : getAnyResources(subject, null, prefix, 20)) {
 				String label = getLabel(resource);
 				String origText = text.substring(insertPos, index);
 				// insert proposal text

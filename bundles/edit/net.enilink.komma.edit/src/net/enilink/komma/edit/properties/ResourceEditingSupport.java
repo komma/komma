@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -103,24 +103,48 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				position = contents.length();
 			}
 
-			List<IContentProposal> proposals = new ArrayList<IContentProposal>();
-			for (IEntity resource : getResourceProposals(subject,
-					ctor.matched ? null : predicate,
-					contents.substring(0, position), 20)) {
-				String content = getLabel(resource);
-				if (content.length() > 0) {
-					content = prefix + content;
-					proposals.add(new ResourceProposal(content, content
-							.length(), resource).setUseAsValue(!ctor.matched));
-				}
-			}
-			Collections.sort(proposals, new Comparator<IContentProposal>() {
+			List<IContentProposal> allProposals = new ArrayList<IContentProposal>();
+			Comparator<IContentProposal> comparator = new Comparator<IContentProposal>() {
 				@Override
 				public int compare(IContentProposal c1, IContentProposal c2) {
 					return c1.getLabel().compareTo(c2.getLabel());
 				}
-			});
-			return proposals.toArray(new IContentProposal[proposals.size()]);
+			};
+			int limit = 20;
+			List<IReference> predicates = new ArrayList<IReference>();
+			if (!ctor.matched) {
+				predicates.add(predicate);
+			}
+			predicates.add(null);
+			// ensures that resources which match the predicate's range are
+			// added in front of the result list
+			for (IReference p : predicates) {
+				if (allProposals.size() >= limit) {
+					break;
+				}
+				List<IContentProposal> proposals = toProposals(
+						getRestrictedResources(subject, p,
+								contents.substring(0, position), limit),
+						prefix, !ctor.matched);
+				Collections.sort(proposals, comparator);
+				allProposals.addAll(proposals);
+			}
+			return allProposals.toArray(new IContentProposal[allProposals
+					.size()]);
+		}
+
+		protected List<IContentProposal> toProposals(
+				Iterable<IResource> resources, String prefix, boolean useAsValue) {
+			List<IContentProposal> proposals = new ArrayList<IContentProposal>();
+			for (IEntity resource : resources) {
+				String content = getLabel(resource);
+				if (content.length() > 0) {
+					content = prefix + content;
+					proposals.add(new ResourceProposal(content, content
+							.length(), resource).setUseAsValue(useAsValue));
+				}
+			}
+			return proposals;
 		}
 	}
 
@@ -153,11 +177,29 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		return "[#/:]" + pattern + "[^#/]*$";
 	}
 
-	protected Iterable<IResource> getResourceProposals(IEntity subject,
+	protected Iterable<IResource> getAnyResources(IEntity subject,
 			IReference predicate, String pattern, int limit) {
-		Set<IResource> resources = new HashSet<IResource>(20);
-		pattern = pattern.trim();
+		Set<IResource> resources = new LinkedHashSet<IResource>(limit);
+		Iterator<IResource> restricted = getRestrictedResources(subject,
+				predicate, pattern, limit).iterator();
+		while (restricted.hasNext() && resources.size() < limit) {
+			resources.add(restricted.next());
+		}
+		if (predicate != null && resources.size() < limit) {
+			// find resource without consideration of ranges
+			Iterator<IResource> fallback = getRestrictedResources(subject,
+					null, pattern, limit).iterator();
+			while (fallback.hasNext() && resources.size() < limit) {
+				resources.add(fallback.next());
+			}
+		}
+		return resources;
+	}
 
+	protected Iterable<IResource> getRestrictedResources(IEntity subject,
+			IReference predicate, String pattern, int limit) {
+		Set<IResource> resources = new LinkedHashSet<IResource>(limit);
+		pattern = pattern.trim();
 		if (subject instanceof IObject && pattern != null
 				&& !pattern.contains(":")) {
 			// find resources within the default namespace first
@@ -166,7 +208,6 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			resources.addAll(retrieve(subject, predicate, pattern,
 					toUriRegex(pattern), uriNamespace, limit));
 		}
-
 		if (resources.size() < limit) {
 			// additionally, if limit not exceeded, find resources from other
 			// namespaces
@@ -187,13 +228,10 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				}
 				uriPattern = toUriRegex(pattern);
 			}
-
-			List<IResource> fallbackResources = retrieve(subject, predicate,
-					pattern, uriPattern, uriNamespace, limit);
-			int count = 0;
-			while (resources.size() < limit && count < fallbackResources.size()) {
-				resources.add(fallbackResources.get(count));
-				count++;
+			Iterator<IResource> fallback = retrieve(subject, predicate,
+					pattern, uriPattern, uriNamespace, limit).iterator();
+			while (fallback.hasNext() && resources.size() < limit) {
+				resources.add(fallback.next());
 			}
 		}
 
@@ -259,14 +297,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			query.setParameter("subject", subject);
 			query.setParameter("property", predicate);
 		}
-
-		List<IResource> list = query.evaluate(IResource.class).toList();
-		if (list.isEmpty() && predicate != null) {
-			return this.retrieve(subject, null, pattern, uriPattern, namespace,
-					limit);
-		} else {
-			return list;
-		}
+		return query.evaluate(IResource.class).toList();
 	}
 
 	protected ConstructorParser createConstructorParser() {
@@ -398,7 +429,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				};
 			}
 		}
-		Iterator<IResource> resources = getResourceProposals(subject,
+		Iterator<IResource> resources = getAnyResources(subject,
 				createNew ? null : property, (String) editorValue + "$", 1)
 				.iterator();
 		if (resources.hasNext()) {
