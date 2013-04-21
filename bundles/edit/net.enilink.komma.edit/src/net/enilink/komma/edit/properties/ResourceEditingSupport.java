@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -116,15 +117,22 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				predicates.add(predicate);
 			}
 			predicates.add(null);
+			Set<IResource> allResources = new HashSet<IResource>();
 			// ensures that resources which match the predicate's range are
 			// added in front of the result list
 			for (IReference p : predicates) {
 				if (allProposals.size() >= limit) {
 					break;
 				}
-				List<IContentProposal> proposals = toProposals(
-						getRestrictedResources(subject, p,
-								contents.substring(0, position), limit),
+				List<IResource> resources = new ArrayList<IResource>();
+				for (IResource resource : getRestrictedResources(subject, p,
+						contents.substring(0, position), limit)) {
+					// globally filter duplicate proposals
+					if (allResources.add(resource)) {
+						resources.add(resource);
+					}
+				}
+				List<IContentProposal> proposals = toProposals(resources,
 						prefix, !ctor.matched);
 				Collections.sort(proposals, comparator);
 				allProposals.addAll(proposals);
