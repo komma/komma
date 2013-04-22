@@ -102,8 +102,9 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 		protected IReference[] addNull(boolean includeInferred,
 				IReference[] contexts) {
 			if (includeInferred) {
-				contexts = Arrays.copyOf(contexts, contexts.length + 1);
-				contexts[contexts.length - 1] = null;
+//				contexts = Arrays.copyOf(contexts, contexts.length + 1);
+//				contexts[contexts.length - 1] = null;
+				contexts = new IReference[0];
 			}
 			return contexts;
 		}
