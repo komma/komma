@@ -30,7 +30,6 @@ import net.enilink.komma.internal.sesame.result.SesameGraphResult;
 import net.enilink.komma.internal.sesame.result.SesameResult;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IReferenceable;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IStatementPattern;
 import net.enilink.komma.core.ITransaction;
@@ -325,15 +324,13 @@ public class SesameRepositoryDataManager implements IDataManager {
 	}
 
 	protected Resource getResource(IReference reference) {
-		if (reference instanceof IReferenceable) {
-			reference = ((IReferenceable) reference).getReference();
+		Value value = valueConverter.toSesame(reference);
+		if (reference != null && !(value instanceof Resource)) {
+			throw new KommaException("Cannot convert object '" + reference
+					+ "' of type '" + reference.getClass().getName()
+					+ "' to Sesame resource.");
 		}
-		if (reference instanceof SesameReference) {
-			return ((SesameReference) reference).getSesameResource();
-		} else if (reference instanceof net.enilink.komma.core.URI) {
-			return repository.getValueFactory().createURI(reference.toString());
-		}
-		return null;
+		return (Resource) value;
 	}
 
 	protected URI[] toURI(IReference... references) {
@@ -413,7 +410,6 @@ public class SesameRepositoryDataManager implements IDataManager {
 				URI predicate = (URI) getResource(stmt.getPredicate());
 				Value object = valueConverter.toSesame((IValue) stmt
 						.getObject());
-
 				if (changeSupport.isEnabled(this)) {
 					for (IStatement existing : match(stmt.getSubject(),
 							stmt.getPredicate(), (IValue) stmt.getObject(),
