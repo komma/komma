@@ -423,7 +423,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			// allow to specify resources as full IRIs in the form
 			// <http://example.org#resource>
 			ParsingResult<Object> Iri = new BasicParseRunner<Object>(
-					parser.IRI_REF()).run((String) editorValue);
+					parser.IRI_REF_WSPACE()).run((String) editorValue);
 			if (Iri.matched) {
 				name[0] = toURI(((IObject) subject).getModel(), Iri.resultValue);
 				return new SimpleCommand() {
