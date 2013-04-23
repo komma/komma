@@ -113,11 +113,23 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	public Rule IRI_REF() {
 		return Sequence(
 				LESS_NO_COMMENT(),
-				ZeroOrMore(
-						TestNot(FirstOf(LESS_NO_COMMENT(), Ch('>'), Ch('"'),
-								Ch('{'), Ch('}'), Ch('|'), Ch('^'), Ch('\\'),
-								Ch('`'), CharRange('\u0000', '\u0020'))), ANY),
+				ZeroOrMore(TestNot(FirstOf(IRI_REF_CHARS_WO_SPACE(), Ch(' '))),
+						ANY), push(new IriRef(match().trim())), '>');
+	}
+
+	/**
+	 * Rule that allows spaces in IRIs which are normally disallowed.
+	 */
+	public Rule IRI_REF_WSPACE() {
+		return Sequence(LESS_NO_COMMENT(),
+				ZeroOrMore(TestNot(IRI_REF_CHARS_WO_SPACE()), ANY),
 				push(new IriRef(match().trim())), '>');
+	}
+
+	public Rule IRI_REF_CHARS_WO_SPACE() {
+		return FirstOf(LESS_NO_COMMENT(), Ch('>'), Ch('"'), Ch('{'), Ch('}'),
+				Ch('|'), Ch('^'), Ch('\\'), Ch('`'),
+				CharRange('\u0000', '\u0019'));
 	}
 
 	public Rule BLANK_NODE_LABEL() {
