@@ -51,7 +51,7 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 
 	@Provides
 	@Inject(optional = true)
-	Fqn provideBaseFqn(@Named("modifyContexts") Set<URI> modifyContexts) {
+	Fqn provideContextKey(@Named("modifyContexts") Set<URI> modifyContexts) {
 		if (modifyContexts != null) {
 			return Fqn.fromElements(modifyContexts.toArray());
 		}
@@ -61,33 +61,34 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 	@Singleton
 	@Provides
 	IPropertyCache providePropertyCache(
-			final TreeCache<Object, Object> treeCache, final Fqn baseFqn) {
+			final TreeCache<Object, Object> treeCache, final Fqn contextKey) {
 		return new IPropertyCache() {
 			@SuppressWarnings("serial")
 			class IteratorList extends ArrayList<Object> {
 			};
 
+			Fqn fqnFor(Object entity, Object property) {
+				return Fqn.fromElements(
+						((IReferenceable) entity).getReference(), "properties",
+						contextKey, property);
+			}
+
 			@Override
 			public Object put(Object entity, Object property,
 					Object[] parameters, Object value) {
-				Fqn fqn = Fqn.fromRelativeElements(baseFqn,
-						((IReferenceable) entity).getReference(), "properties",
-						property);
+				Fqn fqn = fqnFor(entity, property);
 				boolean isIterator = value instanceof Iterator<?>;
 				if (isIterator) {
 					// usually an iterator cannot be cached
 					// -> cache a special list instead and return an
 					// iterator for this list
-
 					IteratorList itValues = new IteratorList();
 					while (((Iterator<?>) value).hasNext()) {
 						itValues.add(((Iterator<?>) value).next());
 					}
 					value = itValues;
 				}
-
 				treeCache.put(fqn, Arrays.asList(parameters), value);
-
 				if (isIterator) {
 					return WrappedIterator.create(((List<?>) value).iterator());
 				}
@@ -97,13 +98,9 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 			@Override
 			public Object get(Object entity, Object property,
 					Object[] parameters) {
-				Fqn fqn = Fqn.fromRelativeElements(baseFqn,
-						((IReferenceable) entity).getReference(), "properties",
-						property);
+				Fqn fqn = fqnFor(entity, property);
 				Object value = treeCache.get(fqn, Arrays.asList(parameters));
-
 				boolean isIterator = value instanceof IteratorList;
-
 				if (isIterator) {
 					return WrappedIterator.create(((List<?>) value).iterator());
 				}

@@ -28,7 +28,7 @@ import net.enilink.komma.core.URI;
 public class CachingEntityManager extends DecoratingEntityManager {
 
 	@Inject
-	Fqn baseFqn;
+	Fqn contextKey;
 
 	@Inject
 	TreeCache<Object, Object> cache;
@@ -41,11 +41,14 @@ public class CachingEntityManager extends DecoratingEntityManager {
 		super(decorators);
 	}
 
+	protected Fqn fqnFor(IReference resource) {
+		return Fqn.fromElements(resource);
+	}
+
 	public IEntity createBean(IReference resource, Collection<URI> types,
 			Collection<Class<?>> concepts, boolean restrictTypes,
 			boolean initialize, IGraph graph) {
-		Object element = cache.get(Fqn.fromRelativeElements(baseFqn, resource),
-				"");
+		Object element = cache.get(fqnFor(resource), contextKey);
 		if (element != null) {
 			boolean hasValidTypes = true;
 			if (concepts != null && !concepts.isEmpty()) {
@@ -68,7 +71,7 @@ public class CachingEntityManager extends DecoratingEntityManager {
 		// do not cache entities created during transactions or with restricted
 		// types
 		if (!(restrictTypes || getTransaction().isActive())) {
-			cache.put(Fqn.fromRelativeElements(baseFqn, resource), "", entity);
+			cache.put(fqnFor(resource), contextKey, entity);
 		}
 		return entity;
 	}
@@ -83,7 +86,6 @@ public class CachingEntityManager extends DecoratingEntityManager {
 	@Override
 	public void refresh(Object entity) {
 		super.refresh(entity);
-		cache.removeNode(Fqn
-				.fromRelativeElements(baseFqn, entity, "properties"));
+		cache.removeNode(Fqn.fromElements(entity, "properties"));
 	}
 }

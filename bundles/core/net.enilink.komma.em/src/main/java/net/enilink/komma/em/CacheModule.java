@@ -24,6 +24,7 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
 import org.infinispan.notifications.cachemanagerlistener.event.Event;
 import org.infinispan.tree.Fqn;
+import org.infinispan.tree.Node;
 import org.infinispan.tree.TreeCache;
 import org.infinispan.tree.TreeCacheFactory;
 
@@ -154,54 +155,58 @@ public class CacheModule extends AbstractModule {
 		final TreeCache<Object, Object> entityCache = new TreeCacheFactory()
 				.createTreeCache(cache);
 		IDataChangeListener refreshListener = new IDataChangeListener() {
+			boolean refresh(Object entity) {
+				Node<Object, Object> node = entityCache.getNode(Fqn
+						.fromElements(entity));
+				if (node != null) {
+					// iterate over all contexts and refresh each entity
+					for (Object contextKey : node.getKeys()) {
+						Object entityInCtx = node.get(contextKey);
+						if (entityInCtx instanceof IEntity) {
+							((IEntity) entityInCtx).refresh();
+							return true;
+						}
+					}
+				}
+				return false;
+			}
+
 			@Override
 			public void dataChanged(List<IDataChange> changes) {
 				for (IDataChange change : changes) {
 					if (change instanceof IStatementChange) {
 						IStatementChange stmtChange = (IStatementChange) change;
 
-						Fqn baseFqn = stmtChange.getContext() != null ? Fqn
-								.fromElements(stmtChange.getContext()) : Fqn
-								.root();
-
 						// refresh existing subjects and objects
-						Object subject = entityCache.get(
-								Fqn.fromRelativeElements(baseFqn,
-										stmtChange.getSubject()), "");
-						if (subject instanceof IEntity) {
-							((IEntity) subject).refresh();
-						}
-						Object object = entityCache.get(
-								Fqn.fromRelativeElements(baseFqn,
-										stmtChange.getObject()), "");
-						if (object instanceof IEntity) {
-							((IEntity) object).refresh();
-						}
+						boolean subjectRefreshed = refresh(stmtChange
+								.getSubject());
+						refresh(stmtChange.getObject());
 
-						// clear model cache completely if owl:imports has
+						// clear cache completely if owl:imports has
 						// changed
+						// TODO find a better approach instead of clearing the
+						// whole cache
 						if (stmtChange.getContext() != null
 								&& OWL.PROPERTY_IMPORTS.equals(stmtChange
 										.getPredicate())) {
-							entityCache.removeNode(baseFqn);
+							entityCache.removeNode(Fqn.root());
 							continue;
 						}
 
 						// do only remove "properties" node from cache to ensure
 						// that the above refresh logic keeps working
-						entityCache
-								.removeNode(Fqn.fromRelativeElements(baseFqn,
-										stmtChange.getSubject(), "properties"));
-						entityCache.removeNode(Fqn.fromRelativeElements(
-								baseFqn, stmtChange.getObject(), "properties"));
+						entityCache.removeNode(Fqn.fromElements(
+								stmtChange.getSubject(), "properties"));
+						entityCache.removeNode(Fqn.fromElements(
+								stmtChange.getObject(), "properties"));
 
 						// remove entity completely from cache if its type has
 						// been changed
-						if (subject != null
+						if (subjectRefreshed
 								&& RDF.PROPERTY_TYPE.equals(stmtChange
 										.getPredicate())) {
-							entityCache.removeNode(Fqn.fromRelativeElements(
-									baseFqn, stmtChange.getSubject()));
+							entityCache.removeNode(Fqn.fromElements(stmtChange
+									.getSubject()));
 						}
 					}
 				}
