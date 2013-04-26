@@ -732,7 +732,7 @@ public class OntologyConverter implements IApplication {
 
 						KommaModule extraModule = new KommaModule(cl);
 						RoleClassLoader rcl = new RoleClassLoader(extraModule);
-						rcl.load(Collections.<URL> emptySet());
+						rcl.load();
 						for (Association concept : extraModule.getConcepts()) {
 							roleMapperWithExtraConcepts.addConcept(
 									concept.getJavaClass(),
