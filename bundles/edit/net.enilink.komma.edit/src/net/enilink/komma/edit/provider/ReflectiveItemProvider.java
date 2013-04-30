@@ -41,8 +41,8 @@ import net.enilink.komma.core.URI;
  */
 public class ReflectiveItemProvider extends ItemProviderAdapter implements
 		IEditingDomainItemProvider, IStructuredItemContentProvider,
-		ITreeItemContentProvider, IItemFontProvider, IItemLabelProvider,
-		IItemPropertySource, ISearchableItemProvider {
+		ITreeItemContentProvider, IItemColorProvider, IItemFontProvider,
+		IItemLabelProvider, IItemPropertySource, ISearchableItemProvider {
 
 	protected IResourceLocator resourceLocator;
 	protected Collection<IClass> supportedTypes;
@@ -155,13 +155,24 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 	}
 
 	@Override
+	public Object getForeground(Object object) {
+		if (object instanceof IObject) {
+			URI uri = ((IObject) object).getReference().getURI();
+			if (uri.namespace().trimFragment()
+					.equals(((IObject) object).getModel().getURI())) {
+				return super.getForeground(object);
+			}
+			return IItemColorProvider.GRAYED_OUT_COLOR;
+		}
+		return super.getForeground(object);
+	}
+
+	@Override
 	public Object getFont(Object object) {
 		if (object instanceof IObject) {
 			URI uri = ((IObject) object).getReference().getURI();
-			if (uri.namespace()
-					.trimFragment()
-					.equals(((IObject) object).getModel().getOntology()
-							.getURI())) {
+			if (uri.namespace().trimFragment()
+					.equals(((IObject) object).getModel().getURI())) {
 				return IItemFontProvider.BOLD_FONT;
 			}
 		}

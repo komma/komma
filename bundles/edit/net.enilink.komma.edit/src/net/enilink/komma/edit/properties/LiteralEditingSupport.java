@@ -1,7 +1,9 @@
 package net.enilink.komma.edit.properties;
 
+import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.IdentityCommand;
+import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IReference;
@@ -41,6 +43,16 @@ public class LiteralEditingSupport implements IPropertyEditingSupport {
 			if (oldValue instanceof ILiteral) {
 				literalType = ((ILiteral) oldValue).getDatatype();
 				literalLanguage = ((ILiteral) oldValue).getLanguage();
+			} else {
+				for (IReference range : subject.getEntityManager()
+						.find(property, IProperty.class)
+						.getNamedRanges(subject, false)) {
+					literalType = range.getURI();
+					break;
+				}
+			}
+			if (RDFS.TYPE_LITERAL.equals(literalType)) {
+				literalType = null;
 			}
 			newLiteral = subject.getEntityManager().createLiteral(
 					(String) editorValue, literalType, literalLanguage);
