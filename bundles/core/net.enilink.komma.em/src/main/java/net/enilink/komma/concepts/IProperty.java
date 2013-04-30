@@ -15,6 +15,7 @@ import net.enilink.composition.cache.annotations.Cacheable;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.rdf.Property;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 
 @Iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property")
@@ -35,7 +36,7 @@ public interface IProperty extends Property, IResource {
 
 	IExtendedIterator<? extends IClass> getRanges(boolean direct);
 
-	IExtendedIterator<? extends IClass> getNamedRanges(IResource subject,
+	IExtendedIterator<? extends IClass> getNamedRanges(IEntity subject,
 			boolean direct);
 
 	@Cacheable(key = "urn:komma:directSubProperty")

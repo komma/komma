@@ -23,6 +23,7 @@ import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.FunctionalProperty;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.util.KommaUtil;
@@ -203,7 +204,6 @@ public abstract class PropertySupport extends BehaviorBase implements
 						+ "ASK { ?o a ?c { ?p rdfs:range ?c }" //
 						+ " UNION { ?c owl:onProperty ?p { ?restriction owl:allValuesFrom ?c } UNION { ?restriction owl:someValuesFrom ?c }}" //
 						+ "}";
-
 				return subject.getEntityManager().createQuery(query)
 						.setParameter("o", object).setParameter("p", this)
 						.getBooleanResult()
@@ -280,8 +280,9 @@ public abstract class PropertySupport extends BehaviorBase implements
 	}
 
 	@Override
-	public IExtendedIterator<? extends IClass> getNamedRanges(
-			IResource subject, boolean direct) {
+	public IExtendedIterator<? extends IClass> getNamedRanges(IEntity subject,
+			boolean direct) {
+		IExtendedIterator<? extends IClass> it = null;
 		// query can be optimized if OWL-inferencing is supported
 		if (getEntityManager().getInferencing().doesOWL()) {
 			String var = direct ? "r" : "resultR";
@@ -306,21 +307,24 @@ public abstract class PropertySupport extends BehaviorBase implements
 					+ "		?" + var + " komma:isAbstract ?abstract" //
 					+ "	}" //
 					+ "}";
-			return subject.getEntityManager().createQuery(query)
+			it = subject.getEntityManager().createQuery(query)
 					.setParameter("o", subject).setParameter("p", this)
 					.evaluate(IClass.class);
+			if (it.hasNext()) {
+				return it;
+			}
 		}
-
+		if (it != null) {
+			it.close();
+		}
 		String query = PREFIX
 				+ "SELECT DISTINCT ?r WHERE {"
 				+ "?o a ?c . ?c rdfs:subClassOf ?restriction . ?restriction owl:onProperty ?p . "
-				+ "{{?restriction owl:allValuesFrom ?r} UNION {?restriction owl:someValuesFrom ?r} OPTIONAL {?r owl:intersectionOf ?x} FILTER (!bound(?x))}"
+				+ "{{ ?restriction owl:allValuesFrom ?r } UNION { ?restriction owl:someValuesFrom ?r } FILTER NOT EXISTS { ?r owl:intersectionOf ?x } }"
 				+ "}";
-
-		IExtendedIterator<? extends IClass> it = subject.getEntityManager()
-				.createQuery(query).setParameter("o", subject)
-				.setParameter("p", this).evaluate(IClass.class);
-
+		it = subject.getEntityManager().createQuery(query)
+				.setParameter("o", subject).setParameter("p", this)
+				.evaluate(IClass.class);
 		if (it.hasNext()) {
 			Set<IClass> namedRangeClasses = new HashSet<IClass>();
 
@@ -353,9 +357,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 			}
 			return WrappedIterator.create(namedRangeClasses.iterator());
 		}
-
 		it.close();
-
 		return getRanges(direct).filterDrop(new Filter<IClass>() {
 			@Override
 			public boolean accept(IClass c) {
