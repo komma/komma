@@ -99,7 +99,7 @@ public class LiteralConverter implements Cloneable {
 
 	private ConcurrentMap<URI, Class<?>> javaClasses = new ConcurrentHashMap<URI, Class<?>>();
 	@Inject
-	private ILiteralFactory literalFactory;;
+	private ILiteralFactory literalFactory;
 	private final Logger logger = LoggerFactory
 			.getLogger(LiteralConverter.class);
 	private ConcurrentMap<Class<?>, URI> rdfTypes = new ConcurrentHashMap<Class<?>, URI>();
@@ -219,10 +219,6 @@ public class LiteralConverter implements Cloneable {
 		return rdfTypes.containsKey(type) || null != findConverter(type);
 	}
 
-	public boolean isRecordedeType(URI datatype) {
-		return findClass(datatype) != null;
-	}
-
 	private void loadDatatypes(ClassLoader cl, String properties)
 			throws IOException, ClassNotFoundException {
 		if (cl == null) {
@@ -279,7 +275,6 @@ public class LiteralConverter implements Cloneable {
 
 	public void registerConverter(String javaClassName, IConverter<?> converter) {
 		injector.injectMembers(converter);
-
 		converters.put(javaClassName, converter);
 	}
 
@@ -294,7 +289,6 @@ public class LiteralConverter implements Cloneable {
 					}
 
 					@Provides
-					@SuppressWarnings("unused")
 					protected DatatypeFactory provideDatatypeFactory()
 							throws DatatypeConfigurationException {
 
