@@ -25,7 +25,6 @@ public class OtherPropertiesPart extends AbstractPropertiesPart {
 	@Override
 	public void refresh() {
 		super.refresh();
-
 		if (model != null) {
 			IQuery<?> query = model
 					.getOntology()

@@ -18,20 +18,15 @@ public class DatatypePropertiesPart extends AbstractPropertiesPart {
 	protected String getName() {
 		return "DatatypeProperties";
 	}
-	
-	
 
 	@Override
 	public void refresh() {
 		super.refresh();
-		
 		if (model != null) {
 			treeViewer.setInput(model.getOntology().getRootDatatypeProperties()
 					.toList().toArray());
 		}
 	}
-
-
 
 	@Override
 	protected URI getPropertyType() {

@@ -22,7 +22,6 @@ public class ObjectPropertiesPart extends AbstractPropertiesPart {
 	@Override
 	public void refresh() {
 		super.refresh();
-		
 		if (model != null) {
 			treeViewer.setInput(model.getOntology().getRootObjectProperties()
 					.toList().toArray());

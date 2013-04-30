@@ -236,7 +236,7 @@ public class ClassesPart extends AbstractEditingDomainPart {
 				// .setContentProvider(new AdapterFactoryContentProvider(
 				// getAdapterFactory()));
 				treeViewer
-						.setLabelProvider(new AdapterFactoryLabelProvider.FontProvider(
+						.setLabelProvider(new AdapterFactoryLabelProvider.ColorProvider(
 								getAdapterFactory(), treeViewer));
 			}
 			createContextMenuFor(treeViewer);
