@@ -71,8 +71,7 @@ public class AdapterFactoryLabelProvider implements ILabelProvider,
 	 * provides for fonts.
 	 */
 	public static class FontProvider extends AdapterFactoryLabelProvider
-			implements IColorProvider, IFontProvider, ITableColorProvider,
-			ITableFontProvider {
+			implements IFontProvider, ITableFontProvider {
 		/**
 		 * Construct an instance that wraps the given factory and specifies the
 		 * given default font.
@@ -108,8 +107,7 @@ public class AdapterFactoryLabelProvider implements ILabelProvider,
 	 * provides for colors.
 	 */
 	public static class ColorProvider extends AdapterFactoryLabelProvider
-			implements IColorProvider, IFontProvider, ITableColorProvider,
-			ITableFontProvider {
+			implements IColorProvider, ITableColorProvider {
 		/**
 		 * Construct an instance that wraps the given factory and specifies the
 		 * given default colors.
@@ -200,8 +198,8 @@ public class AdapterFactoryLabelProvider implements ILabelProvider,
 
 	/**
 	 * This keep track of the one factory we are using. Use a
-	 * {@link net.enilink.komma.edit.provider.ComposedAdapterFactory} if adapters
-	 * from more the one factory are involved in the model.
+	 * {@link net.enilink.komma.edit.provider.ComposedAdapterFactory} if
+	 * adapters from more the one factory are involved in the model.
 	 */
 	protected IAdapterFactory adapterFactory;
 
