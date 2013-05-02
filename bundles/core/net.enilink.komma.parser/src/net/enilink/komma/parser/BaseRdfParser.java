@@ -255,24 +255,45 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	public Rule PN_CHARS() {
-		return FirstOf('-', DIGIT(), PN_CHARS_U(), Ch('\u00B7'),
+		return FirstOf(PN_CHARS_U(), '-', DIGIT(), Ch('\u00B7'),
 				CharRange('\u0300', '\u036F'), CharRange('\u203F', '\u2040'));
 	}
 
 	public Rule PN_PREFIX() {
-		return Sequence(
-				PN_CHARS_BASE(),
-				Optional(ZeroOrMore(FirstOf(PN_CHARS(),
-						Sequence('.', PN_CHARS())))));
+		return Sequence(PN_CHARS_BASE(),
+				ZeroOrMore(FirstOf(PN_CHARS(), Sequence('.', PN_CHARS()))));
+	}
+
+	public Rule PN_CHARS_SUFFIX() {
+		return FirstOf(PN_CHARS(), ':', PLX());
 	}
 
 	public Rule PN_LOCAL() {
 		return Sequence(
 				Sequence(
-						FirstOf(PN_CHARS_U(), DIGIT()),
-						Optional(ZeroOrMore(FirstOf(PN_CHARS(),
-								Sequence('.', PN_CHARS()))))), push(match()),
-				WS());
+						FirstOf(PN_CHARS_U(), ':', DIGIT(), PLX()),
+						ZeroOrMore(FirstOf(PN_CHARS_SUFFIX(),
+								Sequence('.', PN_CHARS_SUFFIX())))),
+				push(match()), WS());
+	}
+
+	public Rule PLX() {
+		return FirstOf(PERCENT(), PN_LOCAL_ESC());
+	}
+
+	public Rule PERCENT() {
+		return Sequence('%', HEX(), HEX());
+	}
+
+	public Rule HEX() {
+		return FirstOf(DIGIT(), CharRange('A', 'F'), CharRange('a', 'f'));
+	}
+
+	public Rule PN_LOCAL_ESC() {
+		return Sequence(
+				'\\',
+				FirstOf('_', '~', '.', '-', '!', '$', '&', "'", '(', ')', '*',
+						'+', ',', ';', '=', '/', '?', '#', '@', '%'));
 	}
 
 	public Rule PN_CHARS_BASE() {
