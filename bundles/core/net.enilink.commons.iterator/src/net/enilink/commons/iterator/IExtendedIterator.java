@@ -31,16 +31,16 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * an ExtendedIterator is a ClosableIterator on which other operations are defined for
- * convenience in iterator composition: composition, filtering in, filtering
- * out, and element mapping. <br>
+ * An ExtendedIterator is a ClosableIterator on which other operations are
+ * defined for convenience in iterator composition: composition, filtering in,
+ * filtering out, and element mapping.
+ * 
  * NOTE that the result of each of these operations consumes the base
- * iterator(s); they do not make independent copies. <br>
+ * iterator(s); they do not make independent copies.
+ * 
  * The canonical implementation of ExtendedIterator is NiceIterator, which also
  * defines static methods for these operations that will work on any
- * ClosableIterators. <br>
- * 
- * @author kers
+ * ClosableIterators.
  */
 
 public interface IExtendedIterator<T> extends IClosableIterator<T>, Iterable<T> {
@@ -50,38 +50,38 @@ public interface IExtendedIterator<T> extends IClosableIterator<T>, Iterable<T> 
 	 * and then all the elements of the other iterator. Does not copy either
 	 * iterator; they are consumed as the result iterator is consumed.
 	 */
-	public IExtendedIterator<T> andThen(Iterator<? extends T> other);
+	IExtendedIterator<T> andThen(Iterator<? extends T> other);
 
 	/**
 	 * return a new iterator containing only the elements of _this_ which pass
 	 * the filter _f_. The order of the elements is preserved. Does not copy
 	 * _this_, which is consumed as the result is consumed.
 	 */
-	public IExtendedIterator<T> filterKeep(Filter<? super T> f);
+	IExtendedIterator<T> filterKeep(Filter<? super T> f);
 
 	/**
 	 * return a new iterator containing only the elements of _this_ which are
 	 * rejected by the filter _f_. The order of the elements is preserved. Does
 	 * not copy _this_, which is consumed as the result is consumed.
 	 */
-	public IExtendedIterator<T> filterDrop(Filter<? super T> f);
+	IExtendedIterator<T> filterDrop(Filter<? super T> f);
 
 	/**
 	 * return a new iterator where each element is the result of applying _map1_
 	 * to the corresponding element of _this_. _this_ is not copied; it is
 	 * consumed as the result is consumed.
 	 */
-	public <B> IExtendedIterator<B> mapWith(IMap<? super T, ? extends B> map);
+	<B> IExtendedIterator<B> mapWith(IMap<? super T, ? extends B> map);
 
 	/**
 	 * Answer a list of the [remaining] elements of this iterator, in order,
 	 * consuming this iterator.
 	 */
-	public List<T> toList();
+	List<T> toList();
 
 	/**
 	 * Answer a set of the [remaining] elements of this iterator, in order,
 	 * consuming this iterator.
 	 */
-	public Set<T> toSet();
+	Set<T> toSet();
 }
