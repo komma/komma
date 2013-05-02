@@ -26,7 +26,7 @@ import java.util.Stack;
 
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
-import org.parboiled.common.StringUtils;
+import org.parboiled.errors.ErrorUtils;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
@@ -125,8 +125,8 @@ public class SparqlBuilder {
 				.run(sparql);
 
 		if (result.hasErrors()) {
-			throw new IllegalArgumentException(StringUtils.join(
-					result.parseErrors, "---\n"));
+			throw new IllegalArgumentException(
+					ErrorUtils.printParseErrors(result.parseErrors));
 		}
 
 		return result.resultValue;
