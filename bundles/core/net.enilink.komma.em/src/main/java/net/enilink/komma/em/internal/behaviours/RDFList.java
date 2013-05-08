@@ -210,19 +210,27 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 	@Override
 	public ListIterator<Object> listIterator(final int index) {
 		final List<Item> cacheLocal = getCache(); // for thread-safety
+		final boolean cached = cacheLocal != null;
 		return new ListIterator<Object>() {
 			Item next;
 			Item item;
 
-			private boolean cached = cacheLocal != null;
-			private int nextIndex = index;
+			private int nextIndex = cached ? index : 0;
 
 			private ArrayList<Item> items = cached ? new ArrayList<Item>(
 					cacheLocal) : new ArrayList<Item>();
 
 			{
-				for (int i = 0; i < index; i++) {
-					next();
+				if (cached) {
+					if (index - 1 >= 0) {
+						item = items.get(index - 1);
+					}
+				} else {
+					// retrieve next element step by step until index is
+					// achieved
+					for (int i = 0; i < index; i++) {
+						next();
+					}
 				}
 			}
 
@@ -243,27 +251,31 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 						 * addStatement(list, RDF.REST, RDF.NIL);
 						 */
 					}
-					Item thisItem = getItem(getBehaviourDelegate());
-					if (thisItem.first == null) {
-						// size == 0
-						IValue oValue = getEntityManager().toValue(o);
-						item = new Item(getBehaviourDelegate(), oValue, RDF.NIL);
-						addStatement(item.self, RDF.PROPERTY_FIRST, oValue);
-						addStatement(item.self, RDF.PROPERTY_REST, RDF.NIL);
-					} else if (item == null) {
-						// index = 0
-						IReference newList = getEntityManager().create();
-						addStatement(newList, RDF.PROPERTY_FIRST,
-								thisItem.first);
-						addStatement(newList, RDF.PROPERTY_REST, thisItem.rest);
-						removeStatements(getBehaviourDelegate(),
-								RDF.PROPERTY_FIRST, thisItem.first);
-						removeStatements(getBehaviourDelegate(),
-								RDF.PROPERTY_REST, thisItem.rest);
-						addStatement(getBehaviourDelegate(),
-								RDF.PROPERTY_FIRST, o);
-						addStatement(getBehaviourDelegate(), RDF.PROPERTY_REST,
-								newList);
+					if (item == null) {
+						Item thisItem = getItem(getBehaviourDelegate());
+						if (thisItem.first == null) {
+							// size == 0
+							IValue oValue = getEntityManager().toValue(o);
+							item = new Item(getBehaviourDelegate(), oValue,
+									RDF.NIL);
+							addStatement(item.self, RDF.PROPERTY_FIRST, oValue);
+							addStatement(item.self, RDF.PROPERTY_REST, RDF.NIL);
+						} else {
+							// index = 0
+							IReference newList = getEntityManager().create();
+							addStatement(newList, RDF.PROPERTY_FIRST,
+									thisItem.first);
+							addStatement(newList, RDF.PROPERTY_REST,
+									thisItem.rest);
+							removeStatements(getBehaviourDelegate(),
+									RDF.PROPERTY_FIRST, thisItem.first);
+							removeStatements(getBehaviourDelegate(),
+									RDF.PROPERTY_REST, thisItem.rest);
+							addStatement(getBehaviourDelegate(),
+									RDF.PROPERTY_FIRST, o);
+							addStatement(getBehaviourDelegate(),
+									RDF.PROPERTY_REST, newList);
+						}
 					} else if (!item.self.equals(RDF.NIL)) {
 						IReference newList = getEntityManager().create();
 						removeStatements(item.self, RDF.PROPERTY_REST,
