@@ -77,7 +77,7 @@ public interface IResource extends Resource {
 
 	IExtendedIterator<IClass> getNamedClasses();
 
-	@Cacheable(key = "urn:komma:directNamedClasses")
+	@Cacheable(key = "komma:directNamedClasses")
 	IExtendedIterator<IClass> getDirectNamedClasses();
 
 	IExtendedIterator<IClass> getClasses();
@@ -85,7 +85,7 @@ public interface IResource extends Resource {
 	@Cacheable
 	IExtendedIterator<IClass> getClasses(boolean includeInferred);
 
-	@Cacheable(key = "urn:komma:directClasses")
+	@Cacheable(key = "komma:directClasses")
 	IExtendedIterator<IClass> getDirectClasses();
 
 	IExtendedIterator<IValue> getPropertyValues(IReference property,

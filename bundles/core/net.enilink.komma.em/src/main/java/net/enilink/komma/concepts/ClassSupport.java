@@ -114,12 +114,12 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 
 	public static final IResultDescriptor<?> HAS_NAMED_SUBCLASSES_DESC() {
 		return new ResultDescriptor<Object>(HAS_SUBCLASSES(true),
-				"urn:komma:hasNamedSubClasses", "subClass", "superClass");
+				"komma:hasNamedSubClasses", "subClass", "superClass");
 	}
 
 	public static final IResultDescriptor<?> DIRECT_NAMED_SUPERCLASSES_DESC() {
 		return new ResultDescriptor<Object>(SELECT_DIRECT_SUPERCLASSES(true),
-				"urn:komma:directNamedSuperClasses", "superClass", "subClass");
+				"komma:directNamedSuperClasses", "superClass", "subClass");
 	}
 
 	public Collection<IResource> getInstances() {

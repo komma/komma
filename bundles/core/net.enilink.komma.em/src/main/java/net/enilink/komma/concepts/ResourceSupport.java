@@ -191,13 +191,13 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	public static final IResultDescriptor<IClass> DIRECT_CLASSES_DESC() {
 		return new ResultDescriptor<IClass>(SELECT_DIRECT_CLASSES(false),
-				"urn:komma:directClasses", "class", "resource")
+				"komma:directClasses", "class", "resource")
 				.bindResultType(IClass.class);
 	}
 
 	public static final IResultDescriptor<IClass> DIRECT_NAMED_CLASSES_DESC() {
 		return new ResultDescriptor<IClass>(SELECT_DIRECT_CLASSES(true),
-				"urn:komma:directNamedClasses", "class", "resource")
+				"komma:directNamedClasses", "class", "resource")
 				.bindResultType(IClass.class);
 	}
 
