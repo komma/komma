@@ -56,7 +56,7 @@ import net.enilink.komma.parser.sparql.tree.visitor.TreeWalker;
 import net.enilink.komma.parser.sparql.tree.visitor.Visitable;
 
 public class SparqlBuilder {
-	private static final IriRef RESULT_NODE = new IriRef("urn:komma:Result");
+	private static final IriRef RESULT_NODE = new IriRef("komma:Result");
 	private static final PropertyPattern PATTERN_TYPE_RESULT_NODE = new PropertyPattern(
 			new IriRef(SparqlParser.RDF_TYPE), RESULT_NODE);
 

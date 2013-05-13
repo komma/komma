@@ -65,9 +65,9 @@ public class SparqlBuilderTest {
 	@Test
 	public void test() throws Exception {
 		System.out.println(new SparqlBuilder(SELECT_ROOT_CLASSES(true)) //
-				.optional("urn:komma:hasNamedSubClasses", "subClass",
+				.optional("komma:hasNamedSubClasses", "subClass",
 						"superClass", HAS_SUBCLASSES(true))//
-				.optional("urn:komma:directNamedClasses", "class", "resource",
+				.optional("komma:directNamedClasses", "class", "resource",
 						SELECT_DIRECT_CLASSES(true)).toString());
 	}
 }
