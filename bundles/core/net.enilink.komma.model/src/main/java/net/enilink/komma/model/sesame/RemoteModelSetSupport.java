@@ -286,7 +286,7 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 
 	@Override
 	public URI getDefaultGraph() {
-		return URIImpl.createURI("urn:komma:default");
+		return URIImpl.createURI("komma:default");
 	}
 
 	protected boolean skipRdfsOnImport() {
