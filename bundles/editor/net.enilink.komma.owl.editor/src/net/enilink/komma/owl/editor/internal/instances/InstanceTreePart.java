@@ -20,7 +20,7 @@ import net.enilink.komma.util.ISparqlConstants;
 public class InstanceTreePart extends InstancesPart {
 	static String QUERY_INSTANCES = ISparqlConstants.PREFIX
 	// +
-	// "CONSTRUCT {?r a <urn:komma:Result> . ?r a ?t} WHERE {?r a ?c FILTER NOT EXISTS {[a ?c; komma:contains ?r]} OPTIONAL {?r a ?t FILTER isIRI(?t)}}";
+	// "CONSTRUCT {?r a <komma:Result> . ?r a ?t} WHERE {?r a ?c FILTER NOT EXISTS {[a ?c; komma:contains ?r]} OPTIONAL {?r a ?t FILTER isIRI(?t)}}";
 			+ "SELECT DISTINCT ?r WHERE {?r a ?c FILTER NOT EXISTS {[ a ?c; komma:contains ?r ]}}";
 
 	class ContentProvider extends LazyAdapterFactoryContentProvider implements
