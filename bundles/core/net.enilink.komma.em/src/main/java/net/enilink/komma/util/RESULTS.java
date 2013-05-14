@@ -14,5 +14,5 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 
 public interface RESULTS {
-	public static final URI TYPE_RESULT = URIImpl.createURI("urn:komma:Result");
+	public static final URI TYPE_RESULT = URIImpl.createURI("komma:Result");
 }

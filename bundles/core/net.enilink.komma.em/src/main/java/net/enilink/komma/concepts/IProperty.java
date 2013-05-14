@@ -39,16 +39,16 @@ public interface IProperty extends Property, IResource {
 	IExtendedIterator<? extends IClass> getNamedRanges(IEntity subject,
 			boolean direct);
 
-	@Cacheable(key = "urn:komma:directSubProperty")
+	@Cacheable(key = "komma:directSubProperty")
 	IExtendedIterator<IProperty> getDirectSubProperties();
 
-	@Cacheable(key = "urn:komma:directSuperProperty")
+	@Cacheable(key = "komma:directSuperProperty")
 	IExtendedIterator<IProperty> getDirectSuperProperties();
 
-	@Cacheable(key = "urn:komma:superProperty")
+	@Cacheable(key = "komma:superProperty")
 	IExtendedIterator<IProperty> getSuperProperties();
 
-	@Cacheable(key = "urn:komma:subProperty")
+	@Cacheable(key = "komma:subProperty")
 	IExtendedIterator<IProperty> getSubProperties();
 
 	boolean hasListRange();

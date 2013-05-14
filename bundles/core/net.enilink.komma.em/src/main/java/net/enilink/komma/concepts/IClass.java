@@ -42,13 +42,13 @@ public interface IClass extends net.enilink.vocab.owl.Class, IResource {
 	@Cacheable
 	IExtendedIterator<IClass> getNamedSuperClasses();
 
-	@Cacheable(key = "urn:komma:directNamedSuperClasses")
+	@Cacheable(key = "komma:directNamedSuperClasses")
 	IExtendedIterator<IClass> getDirectNamedSuperClasses();
 
 	IExtendedIterator<IClass> getSuperClasses(boolean direct,
 			boolean includeInferred);
 
-	@Cacheable(key = "urn:komma:hasNamedSubClasses")
+	@Cacheable(key = "komma:hasNamedSubClasses")
 	Boolean hasNamedSubClasses();
 
 	boolean hasDeclaredProperties(boolean includeInferred);
