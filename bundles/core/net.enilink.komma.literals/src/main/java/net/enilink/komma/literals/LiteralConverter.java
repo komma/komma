@@ -137,12 +137,18 @@ public class LiteralConverter implements Cloneable {
 		return converter.serialize(object);
 	}
 
-	public Object createObject(String label, URI datatype) {
+	public Object createObject(ILiteral literal) {
+		URI datatype = literal.getDatatype();
 		if (datatype == null) {
-			return label;
+			return literal.getLabel();
 		}
 		IConverter<?> converter = findConverter(datatype);
-		return converter.deserialize(label);
+		try {
+			return converter.deserialize(literal.getLabel());
+		} catch (Exception e) {
+			logger.warn("Conversion of literal " + literal + " failed.", e);
+			return literal;
+		}
 	}
 
 	public Class<?> findClass(URI datatype) {
