@@ -1,10 +1,15 @@
 package net.enilink.komma.edit.properties;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.IdentityCommand;
+import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.concepts.IProperty;
+import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IReference;
@@ -58,11 +63,20 @@ public class LiteralEditingSupport implements IPropertyEditingSupport {
 			}
 			newLiteral = subject.getEntityManager().createLiteral(
 					(String) editorValue, literalType, literalLanguage);
+			if (literalType != null) {
+				// try to convert literal to given type
+				Object result = subject.getEntityManager().toInstance(
+						newLiteral);
+				if (result instanceof ILiteral) {
+					return new UnexecutableCommand(new Status(IStatus.ERROR,
+							KommaEditPlugin.PLUGIN_ID,
+							"Invalid literal value for type " + literalType));
+				}
+			}
 		}
 		if (!newLiteral.equals(oldValue)) {
 			return new IdentityCommand(newLiteral);
 		}
 		return null;
 	}
-
 }
