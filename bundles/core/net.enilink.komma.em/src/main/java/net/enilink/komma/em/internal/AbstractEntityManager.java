@@ -1112,8 +1112,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			instance = createLiteral(literal.getLabel(), literal.getDatatype(),
 					literal.getLanguage());
 		} else {
-			instance = literalConverter.createObject(literal.getLabel(),
-					literal.getDatatype());
+			instance = literalConverter.createObject(literal);
 			if (type != null) {
 				if (instance == null) {
 					if (type.isPrimitive()) {
