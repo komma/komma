@@ -218,6 +218,8 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 						Primary(),
 						Optional(push(LIST_BEGIN), OneOrMore("and", Primary()),
 								push(new BNode()), //
+								actions.createStmt(peek(), RDF.PROPERTY_TYPE,
+										OWL.TYPE_CLASS), //
 								actions.createStmt(
 										peek(),
 										OWL.PROPERTY_INTERSECTIONOF,
@@ -390,6 +392,8 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 				Conjunction(),
 				Optional(push(LIST_BEGIN), OneOrMore("or", Conjunction()),
 						push(new BNode()), //
+						actions.createStmt(peek(), RDF.PROPERTY_TYPE,
+								OWL.TYPE_CLASS), //
 						actions.createStmt(peek(), OWL.PROPERTY_UNIONOF,
 								createRdfList(popList(1, GraphNode.class, 1)))));
 	}
@@ -649,8 +653,10 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 				Optional("not", isComplement = true),
 				FirstOf(Restriction(), Atomic()),
 				// create complement class
-				FirstOf(isComplement
-						&& push(new BNode())
+				FirstOf(isComplement //
+						&& push(new BNode()) //
+						&& actions.createStmt(peek(), RDF.PROPERTY_TYPE,
+								OWL.TYPE_CLASS) //
 						&& actions.createStmt(peek(),
 								OWL.PROPERTY_COMPLEMENTOF, pop(1)), true));
 	}

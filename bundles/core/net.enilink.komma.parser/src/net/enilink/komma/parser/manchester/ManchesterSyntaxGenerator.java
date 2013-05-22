@@ -70,7 +70,7 @@ public class ManchesterSyntaxGenerator {
 	private ManchesterSyntaxGenerator clazz(Class clazz, int prio) {
 		if (clazz.getURI() == null) {
 			if (clazz instanceof Restriction) {
-				return restriction((Restriction) clazz);
+				return restriction((Restriction) clazz, prio);
 			} else if (clazz instanceof Datatype
 					&& ((Datatype) clazz).getOwlOnDatatype() != null) {
 				append(toString(((Datatype) clazz).getOwlOnDatatype()));
@@ -161,11 +161,19 @@ public class ManchesterSyntaxGenerator {
 		return this;
 	}
 
-	public ManchesterSyntaxGenerator restriction(Restriction restriction) {
+	public ManchesterSyntaxGenerator restriction(Restriction restriction,
+			int prio) {
 		if (restriction.getURI() == null) {
+			int operatorPrio = 4;
 			if (restriction.getOwlOnProperty() != null) {
+				if (prio >= operatorPrio) {
+					append("(");
+				}
 				value(restriction.getOwlOnProperty());
 			} else if (restriction.getOwlOnProperties() != null) {
+				if (prio >= operatorPrio) {
+					append("(");
+				}
 				// TODO How is this correctly represented as manchester syntax?
 				list(restriction.getOwlOnProperties());
 			} else {
@@ -178,10 +186,10 @@ public class ManchesterSyntaxGenerator {
 
 			if (restriction.getOwlAllValuesFrom() != null) {
 				append("only").append(" ");
-				clazz(restriction.getOwlAllValuesFrom(), 4);
+				clazz(restriction.getOwlAllValuesFrom(), operatorPrio);
 			} else if (restriction.getOwlSomeValuesFrom() != null) {
 				append("some").append(" ");
-				clazz(restriction.getOwlSomeValuesFrom(), 4);
+				clazz(restriction.getOwlSomeValuesFrom(), operatorPrio);
 			} else if (restriction.getOwlMaxCardinality() != null) {
 				append("max").append(" ");
 				append(restriction.getOwlMaxCardinality());
@@ -207,7 +215,9 @@ public class ManchesterSyntaxGenerator {
 				append("value").append(" ");
 				value(restriction.getOwlHasValue());
 			}
-
+			if (prio >= operatorPrio) {
+				append(")");
+			}
 			return this;
 		}
 		return value(restriction);
