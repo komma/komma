@@ -189,7 +189,7 @@ public class CacheModule extends AbstractModule {
 						if (stmtChange.getContext() != null
 								&& OWL.PROPERTY_IMPORTS.equals(stmtChange
 										.getPredicate())) {
-							entityCache.removeNode(Fqn.root());
+							entityCache.getRoot().removeChildren();
 							continue;
 						}
 
