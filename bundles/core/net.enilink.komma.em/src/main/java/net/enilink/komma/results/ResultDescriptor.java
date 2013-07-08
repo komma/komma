@@ -53,7 +53,8 @@ public class ResultDescriptor<R> extends QueryBase<IResultDescriptor<R>>
 	@Override
 	public <T> IResultDescriptor<T> bindResultType(Class<T> resultType,
 			Class<?>... resultTypes) {
-		return super.doBindResultType(resultType, resultTypes);
+		return super.<IResultDescriptor<T>> doBindResultType(resultType,
+				resultTypes);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -141,7 +142,8 @@ public class ResultDescriptor<R> extends QueryBase<IResultDescriptor<R>>
 	@Override
 	public <T> IResultDescriptor<T> restrictResultType(Class<T> resultType,
 			Class<?>... resultTypes) {
-		return super.doRestrictResultType(resultType, resultTypes);
+		return super.<IResultDescriptor<T>> doRestrictResultType(resultType,
+				resultTypes);
 	}
 
 	@Override

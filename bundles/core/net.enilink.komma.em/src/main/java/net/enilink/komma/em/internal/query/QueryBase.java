@@ -24,8 +24,8 @@ public abstract class QueryBase<Q extends IQueryBase<Q>> implements
 	protected Map<String, ResultInfo> resultInfos;
 
 	@SuppressWarnings("unchecked")
-	protected <T, NQ extends IQueryBase<NQ>> NQ doBindResultType(
-			Class<T> resultType, Class<?>... resultTypes) {
+	protected <NQ extends IQueryBase<NQ>> NQ doBindResultType(
+			Class<?> resultType, Class<?>... resultTypes) {
 		ResultInfo resultInfo = new ResultInfo(false, new ArrayList<Class<?>>(
 				1 + resultTypes.length));
 		resultInfo.types.add(resultType);
@@ -33,7 +33,6 @@ public abstract class QueryBase<Q extends IQueryBase<Q>> implements
 			resultInfo.types.add(type);
 		}
 		ensureResultInfos().put(null, resultInfo);
-
 		return (NQ) this;
 	}
 
@@ -64,17 +63,15 @@ public abstract class QueryBase<Q extends IQueryBase<Q>> implements
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <T, NQ extends IQueryBase<NQ>> NQ doRestrictResultType(
-			Class<T> resultType, Class<?>... resultTypes) {
+	protected <NQ extends IQueryBase<NQ>> NQ doRestrictResultType(
+			Class<?> resultType, Class<?>... resultTypes) {
 		ResultInfo resultInfo = new ResultInfo(true, new ArrayList<Class<?>>(
 				1 + resultTypes.length));
 		resultInfo.types.add(resultType);
 		for (Class<?> type : resultTypes) {
 			resultInfo.types.add(type);
 		}
-
 		ensureResultInfos().put(null, resultInfo);
-
 		return (NQ) this;
 	}
 

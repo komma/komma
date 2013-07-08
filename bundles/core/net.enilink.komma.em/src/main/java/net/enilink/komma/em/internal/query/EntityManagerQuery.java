@@ -343,12 +343,12 @@ public class EntityManagerQuery<R> extends QueryBase<IQuery<R>> implements
 	@Override
 	public <T> IQuery<T> bindResultType(Class<T> resultType,
 			Class<?>... resultTypes) {
-		return super.doBindResultType(resultType, resultTypes);
+		return super.<IQuery<T>> doBindResultType(resultType, resultTypes);
 	}
 
 	@Override
 	public <T> IQuery<T> restrictResultType(Class<T> resultType,
 			Class<?>... resultTypes) {
-		return super.doRestrictResultType(resultType, resultTypes);
+		return super.<IQuery<T>> doRestrictResultType(resultType, resultTypes);
 	}
 }
