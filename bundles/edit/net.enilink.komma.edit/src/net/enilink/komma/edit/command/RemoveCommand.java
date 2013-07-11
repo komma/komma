@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.core.commands.ExecutionException;
@@ -293,13 +292,21 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 		}
 		try {
 			if (ownerList != null) {
+				if (ownerList instanceof List<?>) {
+					// if ownerList is an ordered list then
+					// determine positions of the elements to remove
+					indices = new int[collection.size()];
+					int i = 0;
+					for (Object obj : collection) {
+						indices[i++] = ((List<?>) ownerList).indexOf(obj);
+					}
+				}
 				ownerList.removeAll(collection);
 			} else {
 				owner.removeProperty(property, collection.iterator().next());
 			}
 
 			// We'd like the owner selected after this remove completes.
-			//
 			affectedObjects = owner == null ? Collections.EMPTY_SET
 					: Collections.singleton(owner);
 
@@ -314,116 +321,6 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 		}
 
 		return CommandResult.newOKCommandResult(collection);
-	}
-
-	/**
-	 * Returns whether the given collection contains the given target object
-	 * itself (according to ==, not .equals()).
-	 */
-	protected boolean containsExact(Collection<?> collection, Object target) {
-		for (Object object : collection) {
-			if (object == target)
-				return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Returns whether the given int array contains the given target value.
-	 */
-	protected boolean contains(int[] values, int target) {
-		for (int i = 0, len = values.length; i < len; i++) {
-			if (values[i] == target)
-				return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Removes the first occurrence of the given target object, itself, from the
-	 * collection.
-	 */
-	protected boolean removeExact(Collection<?> collection, Object target) {
-		for (Iterator<?> i = collection.iterator(); i.hasNext();) {
-			if (i.next() == target) {
-				i.remove();
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Merges two sets of object lists and index arrays, such that both are
-	 * ordered by increasing indices. The results are stored as the
-	 * {@link #collection} and {@link #indices}. The two input sets must already
-	 * be in increasing index order, with the corresponding object-index pairs
-	 * in the same positions.
-	 */
-	protected void merge(List<Object> objects1, int[] indices1,
-			List<Object> objects2, int[] indices2) {
-		// If either list is empty, the result is simply the other.
-		//
-		if (objects2.isEmpty()) {
-			collection = objects1;
-			indices = indices1;
-			return;
-		}
-
-		if (objects1.isEmpty()) {
-			collection = objects2;
-			indices = indices2;
-			return;
-		}
-
-		// Allocate list and array for objects and indices.
-		//
-		int size = objects1.size() + objects2.size();
-		collection = new ArrayList<Object>(size);
-		indices = new int[size];
-
-		// Index counters into indices1, indices2, and indices.
-		//
-		int i1 = 0;
-		int i2 = 0;
-		int i = 0;
-
-		// Object iterators.
-		//
-		Iterator<Object> iter1 = objects1.iterator();
-		Iterator<Object> iter2 = objects2.iterator();
-
-		Object o1 = iter1.hasNext() ? iter1.next() : null;
-		Object o2 = iter2.hasNext() ? iter2.next() : null;
-
-		// Repeatedly select the lower index and corresponding object, and
-		// advance past the selected pair.
-		//
-		while (o1 != null && o2 != null) {
-			if (indices1[i1] < indices2[i2]) {
-				indices[i++] = indices1[i1++];
-				collection.add(o1);
-				o1 = iter1.hasNext() ? iter1.next() : null;
-			} else {
-				indices[i++] = indices2[i2++];
-				collection.add(o2);
-				o2 = iter2.hasNext() ? iter2.next() : null;
-			}
-		}
-
-		// Add any remaining object-index pairs from either set.
-		//
-		while (o1 != null) {
-			indices[i++] = indices1[i1++];
-			collection.add(o1);
-			o1 = iter1.hasNext() ? iter1.next() : null;
-		}
-
-		while (o2 != null) {
-			indices[i++] = indices2[i2++];
-			collection.add(o2);
-			o2 = iter2.hasNext() ? iter2.next() : null;
-		}
 	}
 
 	@Override

@@ -15,6 +15,7 @@ import net.enilink.komma.common.command.ICompositeCommand;
 import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.concepts.IResource;
+import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.properties.IPropertyEditingSupport.ProposalSupport;
@@ -210,15 +211,22 @@ public abstract class PropertyEditingHelper {
 						// statement
 						// and therefore must not be removed
 						Object obj = stmt.getObject();
-						IStatus status = obj == null
+						IStatus status;
+						int index = CommandParameter.NO_INDEX;
+						if (obj == null
 								|| NULL_URI.equals(obj)
 								|| (obj instanceof ILiteral && ((ILiteral) obj)
-										.getLabel().isEmpty()) ? Status.OK_STATUS
-								: addAndExecute(PropertyUtil.getRemoveCommand(
-										getEditingDomain(),
-										(IResource) stmt.getSubject(),
-										predicate, stmt.getObject()),
-										progressMonitor, info);
+										.getLabel().isEmpty())) {
+							status = Status.OK_STATUS;
+						} else {
+							ICommand removeCmd = PropertyUtil.getRemoveCommand(
+									getEditingDomain(),
+									(IResource) stmt.getSubject(), predicate,
+									stmt.getObject());
+							status = addAndExecute(removeCmd, progressMonitor,
+									info);
+							index = PropertyUtil.getRemovedIndex(removeCmd);
+						}
 						Object returnValue = null;
 						if (status.isOK()
 								&& !result.getReturnValues().isEmpty()) {
@@ -226,8 +234,7 @@ public abstract class PropertyEditingHelper {
 									.next();
 							status = addAndExecute(PropertyUtil.getAddCommand(
 									getEditingDomain(), subject, predicate,
-									returnValue), progressMonitor, info);
-
+									returnValue, index), progressMonitor, info);
 						}
 						if (status.isOK()) {
 							transaction.commit();
