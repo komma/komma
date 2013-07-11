@@ -69,7 +69,8 @@ public class EditPropertyWizard extends Wizard {
 					context.objectLanguage);
 		}
 		ICommand command = PropertyUtil.getAddCommand(editingDomain,
-				context.subject, context.predicate, object);
+				context.subject, context.predicate, object,
+				PropertyUtil.getRemovedIndex(removeCommand));
 		if (removeCommand != null) {
 			command = removeCommand.compose(command);
 		}
