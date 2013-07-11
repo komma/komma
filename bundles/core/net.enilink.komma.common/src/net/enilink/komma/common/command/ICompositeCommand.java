@@ -30,7 +30,8 @@ import org.eclipse.core.commands.operations.IUndoableOperation;
  * 
  * @author ldamus
  */
-public interface ICompositeCommand extends ICommand {
+public interface ICompositeCommand extends ICommand,
+		Iterable<IUndoableOperation> {
 
 	/**
 	 * <p>

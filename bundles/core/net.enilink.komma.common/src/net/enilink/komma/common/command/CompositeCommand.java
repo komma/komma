@@ -148,7 +148,7 @@ public class CompositeCommand extends AbstractCommand implements
 	}
 
 	/**
-	 * Appends a command onto a (possibly) existing composeite of commands.
+	 * Appends a command onto a (possibly) existing composite of commands.
 	 * 
 	 * @param command
 	 *            an existing command, which may be a composite, a single
