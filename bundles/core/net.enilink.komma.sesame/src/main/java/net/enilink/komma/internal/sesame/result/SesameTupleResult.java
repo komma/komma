@@ -3,6 +3,7 @@ package net.enilink.komma.internal.sesame.result;
 import java.util.List;
 
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 
 import com.google.inject.Inject;
@@ -40,7 +41,11 @@ public class SesameTupleResult extends
 
 	@Override
 	public List<String> getBindingNames() {
-		return result.getBindingNames();
+		try {
+			return result.getBindingNames();
+		} catch (QueryEvaluationException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Inject
