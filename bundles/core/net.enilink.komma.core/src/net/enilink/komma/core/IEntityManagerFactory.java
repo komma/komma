@@ -77,7 +77,7 @@ public interface IEntityManagerFactory {
 	 * 
 	 * @return A new {@link IEntityManagerFactory}.
 	 */
-	IEntityManagerFactory createChildFactory(Locale locale,
+	IEntityManagerFactory createChildFactory(IProvider<Locale> locale,
 			KommaModule... modules);
 
 	/**
@@ -99,7 +99,7 @@ public interface IEntityManagerFactory {
 	 * @return A new {@link IEntityManagerFactory}.
 	 */
 	IEntityManagerFactory createChildFactory(IEntityManager sharedManager,
-			Locale locale, KommaModule... modules);
+			IProvider<Locale> locale, KommaModule... modules);
 
 	/**
 	 * Returns an {@link IEntityManager} instance that is open within the
@@ -108,7 +108,7 @@ public interface IEntityManagerFactory {
 	 * @return An {@link IEntityManager}.
 	 */
 	IEntityManager get();
-	
+
 	/**
 	 * Return the SPARQL dialect that is specific for the underlying store.
 	 * 
