@@ -12,6 +12,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -25,6 +27,8 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.WriterConfig;
 
 /**
  * An implementation of the RDFWriter interface that writes RDF documents in
@@ -47,6 +51,8 @@ public class RDFXMLWriter implements RDFWriter {
 	protected boolean headerWritten;
 
 	protected Resource lastWrittenSubject;
+
+	private WriterConfig config;
 
 	/*--------------*
 	 * Constructors *
@@ -463,5 +469,20 @@ public class RDFXMLWriter implements RDFWriter {
 		throws IOException
 	{
 		writer.write("\n");
+	}
+
+	@Override
+	public Collection<RioSetting<?>> getSupportedSettings() {
+		return new ArrayList<RioSetting<?>>();
+	}
+
+	@Override
+	public WriterConfig getWriterConfig() {
+		return this.config; 
+	}
+
+	@Override
+	public void setWriterConfig(WriterConfig config) {
+		this.config = config;
 	}
 }
