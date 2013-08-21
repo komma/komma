@@ -63,6 +63,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
 import net.enilink.commons.iterator.ConvertingIterator;
@@ -124,7 +125,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	private LiteralConverter literalConverter;
 
 	@Inject
-	private Locale locale;
+	private Provider<Locale> locale;
 
 	private RoleMapper<URI> mapper;
 
@@ -574,7 +575,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	public Locale getLocale() {
-		return locale;
+		return locale.get();
 	}
 
 	@Override

@@ -2,7 +2,6 @@ package net.enilink.komma.em;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -42,11 +41,9 @@ public class ManagerCompositionModule extends AbstractModule {
 	private static Map<ClassLoader, WeakReference<ClassDefiner>> definers = new WeakHashMap<ClassLoader, WeakReference<ClassDefiner>>();
 
 	private KommaModule module;
-	private Locale locale;
 
-	public ManagerCompositionModule(KommaModule module, Locale locale) {
+	public ManagerCompositionModule(KommaModule module) {
 		this.module = module;
-		this.locale = locale == null ? Locale.getDefault() : locale;
 	}
 
 	@Override
@@ -102,8 +99,6 @@ public class ManagerCompositionModule extends AbstractModule {
 				// do not bind the class definer here
 			}
 		});
-
-		bind(Locale.class).toInstance(locale);
 
 		bind(new Key<ObjectFactory<URI>>() {
 		}).to(new TypeLiteral<DefaultObjectFactory<URI>>() {

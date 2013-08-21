@@ -44,6 +44,7 @@ import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.core.IDialect;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.core.IProvider;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.SparqlStandardDialect;
@@ -69,7 +70,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 	private IEntityManagerFactory parent = null;
 
-	Locale locale;
+	IProvider<Locale> locale;
 
 	Injector managerInjector;
 
@@ -84,7 +85,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 	private IEntityManager sharedManager;
 
-	public EntityManagerFactory(KommaModule module, Locale locale,
+	EntityManagerFactory(KommaModule module, IProvider<Locale> locale,
 			Module managerModule) {
 		this.module = module;
 		this.locale = locale;
@@ -121,7 +122,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 	}
 
 	@Override
-	public IEntityManagerFactory createChildFactory(Locale locale,
+	public IEntityManagerFactory createChildFactory(IProvider<Locale> locale,
 			KommaModule... modules) {
 		KommaModule childModule = new KommaModule(module.getClassLoader());
 		childModule.includeModule(module);
@@ -133,7 +134,8 @@ class EntityManagerFactory implements IEntityManagerFactory {
 		}
 
 		EntityManagerFactory childFactory = new EntityManagerFactory(
-				childModule, locale, managerModule);
+				childModule, locale == null ? this.locale : locale,
+				managerModule);
 		childFactory.parent = this;
 		injector.injectMembers(childFactory);
 
@@ -142,7 +144,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 	@Override
 	public IEntityManagerFactory createChildFactory(
-			final IEntityManager sharedManager, Locale locale,
+			final IEntityManager sharedManager, IProvider<Locale> locale,
 			KommaModule... modules) {
 		KommaModule childModule = new KommaModule(module.getClassLoader());
 		childModule.includeModule(module);
@@ -154,7 +156,8 @@ class EntityManagerFactory implements IEntityManagerFactory {
 		}
 
 		EntityManagerFactory childFactory = new EntityManagerFactory(
-				childModule, locale, managerModule);
+				childModule, locale == null ? this.locale : locale,
+				managerModule);
 		childFactory.parent = this;
 		childFactory.sharedManager = sharedManager != null ? sharedManager
 				: this.sharedManager;
@@ -170,7 +173,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 		}
 		return getManagerInjector().getInstance(IEntityManager.class);
 	}
-	
+
 	@Override
 	public IDialect getDialect() {
 		if (dmFactory != null) {
@@ -187,8 +190,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 	public synchronized Injector getManagerInjector() {
 		if (managerInjector == null) {
 			managerInjector = injector.createChildInjector(
-					new ManagerCompositionModule(module, locale),
-					new AbstractModule() {
+					new ManagerCompositionModule(module), new AbstractModule() {
 						@Override
 						protected void configure() {
 							bind(IEntityManagerFactory.class).annotatedWith(
@@ -208,6 +210,16 @@ class EntityManagerFactory implements IEntityManagerFactory {
 							bind(new TypeLiteral<Set<URI>>() {
 							}).annotatedWith(Names.named("modifyContexts"))
 									.toInstance(module.getWritableGraphs());
+
+							bind(Locale.class).toProvider(
+									new Provider<Locale>() {
+										@Override
+										public Locale get() {
+											return locale == null ? Locale
+													.getDefault() : locale
+													.get();
+										}
+									});
 						}
 					}, managerModule);
 		}

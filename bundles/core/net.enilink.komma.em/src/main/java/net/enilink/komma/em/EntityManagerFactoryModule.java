@@ -24,21 +24,23 @@ import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.dm.change.IDataChangeTracker;
 import net.enilink.komma.core.IEntityDecorator;
 import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.core.IProvider;
 import net.enilink.komma.core.KommaModule;
 
 public class EntityManagerFactoryModule extends AbstractModule {
-	Locale locale;
+	IProvider<Locale> locale;
 
 	Module managerModule;
 
 	KommaModule module;
 
-	public EntityManagerFactoryModule(KommaModule module, Locale locale) {
+	public EntityManagerFactoryModule(KommaModule module,
+			IProvider<Locale> locale) {
 		this(module, locale, null);
 	}
 
-	public EntityManagerFactoryModule(KommaModule module, Locale locale,
-			Module managerModule) {
+	public EntityManagerFactoryModule(KommaModule module,
+			IProvider<Locale> locale, Module managerModule) {
 		this.module = module;
 		this.locale = locale;
 		this.managerModule = managerModule;
