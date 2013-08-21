@@ -5,6 +5,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.eclipse.core.runtime.Platform;
@@ -30,6 +31,7 @@ import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.em.EagerCachingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
 import net.enilink.komma.em.ThreadLocalDataManager;
+import net.enilink.komma.core.IProvider;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
@@ -87,7 +89,7 @@ public class ModelSetModule extends AbstractModule {
 					}
 				},
 				new SesameModule(),
-				new EntityManagerFactoryModule(module, null,
+				new EntityManagerFactoryModule(module, getLocaleProvider(),
 						new EagerCachingEntityManagerModule() {
 							@Override
 							protected Class<? extends PropertySetFactory> getPropertySetFactoryClass() {
@@ -98,6 +100,10 @@ public class ModelSetModule extends AbstractModule {
 							}
 						})).getInstance(ModelSetFactory.class);
 		return factory;
+	}
+
+	protected IProvider<Locale> getLocaleProvider() {
+		return null;
 	}
 
 	protected Class<? extends PropertySetFactory> getPropertySetFactoryClass() {

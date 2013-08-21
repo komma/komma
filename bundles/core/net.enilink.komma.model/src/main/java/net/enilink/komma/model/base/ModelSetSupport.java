@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -34,6 +35,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import net.enilink.commons.extensions.RegistryFactoryHelper;
@@ -71,6 +73,7 @@ import net.enilink.komma.model.concepts.ModelSet;
 import net.enilink.komma.core.EntityVar;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.core.IProvider;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaException;
@@ -164,6 +167,9 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	@Inject
 	private Injector injector;
 
+	@Inject
+	private Provider<Locale> locale;
+
 	protected State state() {
 		synchronized (state) {
 			State s = state.get();
@@ -218,8 +224,13 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 						Singleton.class);
 			}
 		});
-		modules.add(new EntityManagerFactoryModule(getModule(), null,
-				new CachingEntityManagerModule() {
+		modules.add(new EntityManagerFactoryModule(getModule(),
+				new IProvider<Locale>() {
+					@Override
+					public Locale get() {
+						return locale.get();
+					}
+				}, new CachingEntityManagerModule() {
 					@Override
 					protected Class<? extends PropertySetFactory> getPropertySetFactoryClass() {
 						Class<? extends PropertySetFactory> factoryClass = getBehaviourDelegate()
