@@ -158,8 +158,9 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 	public Object getForeground(Object object) {
 		if (object instanceof IObject) {
 			URI uri = ((IObject) object).getReference().getURI();
-			if (uri.namespace().trimFragment()
-					.equals(((IObject) object).getModel().getURI())) {
+			if (uri != null
+					&& uri.namespace().trimFragment()
+							.equals(((IObject) object).getModel().getURI())) {
 				return super.getForeground(object);
 			}
 			return IItemColorProvider.GRAYED_OUT_COLOR;
@@ -171,8 +172,9 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 	public Object getFont(Object object) {
 		if (object instanceof IObject) {
 			URI uri = ((IObject) object).getReference().getURI();
-			if (uri.namespace().trimFragment()
-					.equals(((IObject) object).getModel().getURI())) {
+			if (uri != null
+					&& uri.namespace().trimFragment()
+							.equals(((IObject) object).getModel().getURI())) {
 				return IItemFontProvider.BOLD_FONT;
 			}
 		}
