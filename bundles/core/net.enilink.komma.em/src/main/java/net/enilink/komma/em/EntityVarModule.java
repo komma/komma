@@ -1,8 +1,8 @@
 package net.enilink.komma.em;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.enilink.composition.traits.Behaviour;
 
@@ -191,7 +191,7 @@ public class EntityVarModule extends AbstractModule {
 		}).toProvider(new Provider<Map<EntityVarKey, EntityVar<Object>>>() {
 			@Override
 			public Map<EntityVarKey, EntityVar<Object>> get() {
-				return new HashMap<EntityVarKey, EntityVar<Object>>();
+				return new ConcurrentHashMap<EntityVarKey, EntityVar<Object>>();
 			}
 		}).in(Singleton.class);
 		EntityVarTypeListener varTypeListener = new EntityVarTypeListener();
