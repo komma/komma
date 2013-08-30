@@ -3,7 +3,6 @@ package net.enilink.komma.model.sesame;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;

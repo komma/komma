@@ -129,7 +129,6 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 			protected void configure() {
 			}
 
-			@SuppressWarnings("unused")
 			@Singleton
 			@Provides
 			protected Repository provideRepository() {

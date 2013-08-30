@@ -333,14 +333,8 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	@Override
 	public void dispose() {
 		if (state.get() != null) {
-			removeAndUnloadAllModels();
 			getUnitOfWork().end();
-
 			getEntityManagerFactory().close();
-
-			// done by getUnitOfWork().end();
-			// getEntityManager().close();
-
 			try {
 				metaDataManagerFactory.close();
 			} catch (Exception e) {
@@ -660,27 +654,6 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	public void init(Injector injector) {
 		state().injector = injector;
 		setDataChangeTracker(injector.getInstance(IDataChangeTracker.class));
-	}
-
-	protected void removeAndUnloadAllModels() {
-		if (state.get() == null || getModels().isEmpty()) {
-			return;
-		}
-		List<IModel> models = new ArrayList<IModel>(getModels());
-		getModels().clear();
-		boolean caughtException = false;
-		for (IModel model : models) {
-			try {
-				model.unload();
-			} catch (RuntimeException ex) {
-				log.error("Error while unloading model", ex);
-				caughtException = true;
-			}
-		}
-		if (caughtException) {
-			throw new RuntimeException(
-					"Exception(s) unloading resources - check log files"); //$NON-NLS-1$
-		}
 	}
 
 	@Override
