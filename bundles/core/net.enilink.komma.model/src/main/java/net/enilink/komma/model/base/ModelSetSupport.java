@@ -68,7 +68,6 @@ import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.ModelCore;
-import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.model.concepts.ModelSet;
 import net.enilink.komma.core.EntityVar;
 import net.enilink.komma.core.IEntityManager;
@@ -267,11 +266,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		if (modelFactory != null) {
 			IModel result = modelFactory.createModel(getBehaviourDelegate(),
 					uri);
-
-			((Model) result)
-					.setModelModelSet((ModelSet) getBehaviourDelegate());
 			getModels().add(result);
-
 			return result;
 		} else {
 			return null;

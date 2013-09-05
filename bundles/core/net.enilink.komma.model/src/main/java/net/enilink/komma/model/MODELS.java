@@ -35,9 +35,6 @@ public interface MODELS {
 	public static final URI PROPERTY_WARNING = NAMESPACE_URI
 			.appendFragment("warning");
 
-	public static final URI PROPERTY_MODELSET = NAMESPACE_URI
-			.appendFragment("modelSet");
-	
 	public static final URI PROPERTY_METADATACONTEXT = NAMESPACE_URI
 			.appendFragment("metaDataContext");
 

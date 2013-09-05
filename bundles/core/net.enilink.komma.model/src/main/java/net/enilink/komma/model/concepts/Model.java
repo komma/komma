@@ -95,14 +95,4 @@ public interface Model extends IEntity {
 	 * @generated 
 	 */
 	void setModelWarnings(Set<? extends Diagnostic> warnings);
-	
-	/** 
-	 * Returns the model set to which this model belongs.
-	 */
-	@Iri("http://enilink.net/vocab/komma/models#modelSet")
-	ModelSet getModelModelSet();
-	/** 
-	 * Sets the model set to which this model belongs.
-	 */
-	void setModelModelSet(ModelSet modelSet);
 }

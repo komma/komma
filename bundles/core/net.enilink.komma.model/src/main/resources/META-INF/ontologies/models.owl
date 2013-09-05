@@ -119,16 +119,6 @@
     </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-        >1</owl:qualifiedCardinality>
-        <owl:onClass rdf:resource="#ModelSet"/>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="modelSet"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
         <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
         >1</owl:cardinality>
         <owl:onProperty>
@@ -159,11 +149,6 @@
   <owl:ObjectProperty rdf:about="#model">
     <rdfs:domain rdf:resource="#ModelSet"/>
     <rdfs:range rdf:resource="#Model"/>
-  </owl:ObjectProperty>
-  <owl:ObjectProperty rdf:about="#modelSet">
-    <owl:inverseOf rdf:resource="#model"/>
-    <rdfs:range rdf:resource="#ModelSet"/>
-    <rdfs:domain rdf:resource="#Model"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:about="#containsModelSet">
     <rdfs:subPropertyOf rdf:resource="http://enilink.net/vocab/komma#contains"/>

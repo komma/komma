@@ -106,6 +106,8 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	@Inject
 	private Injector injector;
 
+	private volatile IModelSet.Internal modelSet;
+
 	protected State state() {
 		synchronized (state) {
 			State s = state.get();
@@ -246,7 +248,15 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	 */
 	@Override
 	public IModelSet.Internal getModelSet() {
-		return (IModelSet.Internal) getModelModelSet();
+		IModelSet.Internal modelSet = this.modelSet;
+		if (modelSet == null) {
+			this.modelSet = modelSet = (IModelSet.Internal) getEntityManager()
+					.createQuery(
+							"SELECT DISTINCT ?ms WHERE { ?ms <http://enilink.net/vocab/komma/models#model> ?m }")
+					.setParameter("m", getBehaviourDelegate())
+					.getSingleResult(IModelSet.class);
+		}
+		return modelSet;
 	}
 
 	@Override
