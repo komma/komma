@@ -463,12 +463,28 @@ public class KommaModule {
 	 * @return this
 	 */
 	public KommaModule includeModule(KommaModule module) {
+		return includeModule(module, true);
+	}
+
+	/**
+	 * Include the information from the given module in this module, but allow
+	 * for the graphs (read/write) to be ignored upon request.
+	 * 
+	 * @param module
+	 *            to be included
+	 * @param includeGraphs
+	 *            flag to indicate wether to include the graphs
+	 * @return this
+	 */
+	public KommaModule includeModule(KommaModule module, boolean includeGraphs) {
 		annotations.putAll(module.annotations);
 		datatypes.addAll(module.datatypes);
 		concepts.addAll(module.concepts);
 		behaviours.addAll(module.behaviours);
-		readableGraphs.addAll(module.writableGraphs);
-		readableGraphs.addAll(module.readableGraphs);
+		if (includeGraphs) {
+			readableGraphs.addAll(module.writableGraphs);
+			readableGraphs.addAll(module.readableGraphs);
+		}
 		if (!cl.equals(module.cl)) {
 			cl.addAlternative(module.cl);
 		}
