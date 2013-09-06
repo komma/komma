@@ -73,7 +73,10 @@ import net.enilink.komma.util.LinearExtension;
 public abstract class RDFList extends AbstractSequentialList<Object> implements
 		java.util.List<Object>, Refreshable, Mergeable, Initializable, IEntity,
 		Behaviour<IEntity> {
-	private static final boolean INIT_CACHE_WITH_PROPERTY_PATH = true;
+	// use system property "net.enilink.usePropertyPaths=false" to disable
+	private static final boolean INIT_CACHE_WITH_PROPERTY_PATH = !"false"
+			.equalsIgnoreCase(System
+					.getProperty("net.enilink.usePropertyPaths"));
 	private static final Item NIL_ITEM = new Item(RDF.NIL, null, null);
 
 	private static class Item {
