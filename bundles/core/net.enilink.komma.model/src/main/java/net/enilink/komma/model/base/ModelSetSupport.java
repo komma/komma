@@ -454,7 +454,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		List<?> result = getMetaDataManager()
 				.createQuery(
 						"SELECT DISTINCT ?m WHERE { ?ms <http://enilink.net/vocab/komma/models#model> ?m }")
-				.setParameter("m", uri).evaluate().toList();
+				.setParameter("m", uri).evaluate(IModel.class).toList();
 		if (!result.isEmpty()) {
 			IModel model = (IModel) result.get(0);
 			if (loadOnDemand && !model.isLoaded()) {
@@ -622,8 +622,8 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		URI metaDataContext = getMetaDataContext();
 		if (metaDataContext != null) {
 			KommaModule module = new KommaModule();
-			// reuse module with model concepts and behaviours
-			module.includeModule(getEntityManager().getFactory().getModule());
+			// reuse module with model concepts and behaviours, but ignore its graphs
+			module.includeModule(getEntityManager().getFactory().getModule(), false);
 			module.addWritableGraph(metaDataContext);
 			module.addReadableGraph(metaDataContext);
 			IEntityManager newMetaDataManager = modelSetInjector
