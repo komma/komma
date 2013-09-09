@@ -348,16 +348,46 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		Label notInstanceOf = gen.newLabel();
 		gen.ifZCmp(IFEQ, notInstanceOf);
 
+		// access property value with corresponding interface method
 		for (PropertyDescriptor pd : propertyMapper.findProperties(node
 				.getParentClass())) {
 			gen.loadArg(0);
 			gen.checkCast(Type.getType(pd.getReadMethod().getDeclaringClass()));
 			gen.invoke(pd.getReadMethod());
-
 			mergeProperty(pd, gen);
 		}
 
+		Label end = gen.newLabel();
+		gen.goTo(end);
 		gen.mark(notInstanceOf);
+
+		// access property set with "getPropertySet" method
+		Method getPropertySet = PropertySetOwner.class.getMethod(
+				"getPropertySet", String.class);
+		for (PropertyDescriptor pd : propertyMapper.findProperties(node
+				.getParentClass())) {
+			// load other property set
+			gen.loadArg(0);
+			gen.push(propertyMapper.findPredicate(pd));
+			gen.invoke(getPropertySet);
+			gen.dup();
+			Label isNull = gen.newLabel();
+			gen.ifNull(isNull);
+			// load own property set
+			loadPropertySet(pd, gen);
+			gen.swap();
+			// copy values
+			gen.invoke(Methods.PROPERTYSET_GET_ALL);
+			gen.invoke(Methods.PROPERTYSET_ADD_ALL);
+			gen.pop();
+			Label endLoop = gen.newLabel();
+			gen.goTo(endLoop);
+			gen.mark(isNull);
+			gen.pop();
+			gen.mark(endLoop);
+		}
+
+		gen.mark(end);
 		gen.returnValue();
 		gen.endMethod();
 	}
