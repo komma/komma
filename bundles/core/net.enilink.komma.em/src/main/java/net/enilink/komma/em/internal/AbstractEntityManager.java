@@ -72,6 +72,7 @@ import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
+import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.em.internal.behaviours.IEntityManagerAware;
 import net.enilink.komma.em.internal.query.EntityManagerQuery;
@@ -836,9 +837,20 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			}
 			try {
 				Class<?> proxy = bean.getClass();
-				List<URI> types = getTypes(proxy, new ArrayList<URI>());
-				for (URI type : types) {
-					getTypeManager().addType(resource, type);
+				Set<URI> types = new HashSet<URI>();
+				if (bean instanceof IResource) {
+					// this is already a mapped RDF resource
+					for (IReference type : ((IResource) bean).getRdfTypes()) {
+						if (type.getURI() != null) {
+							types.add(type.getURI());
+						}
+					}
+				} else {
+					// this is a detached object
+					types = getTypes(proxy, types);
+					for (URI type : types) {
+						getTypeManager().addType(resource, type);
+					}
 				}
 				Object result = createBean(resource, types, null, false, true,
 						null);
@@ -850,8 +862,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				}
 
 				return (T) result;
-			} catch (Exception e) {
-				throw new KommaException(e);
+			} catch (Throwable t) {
+				throw new KommaException(t);
 			} finally {
 				if (!isActive && getTransaction().isActive()) {
 					getTransaction().rollback();
