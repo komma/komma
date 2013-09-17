@@ -361,6 +361,11 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.goTo(end);
 		gen.mark(notInstanceOf);
 
+		// test if other object is a PropertySetOwner
+		gen.loadArg(0);
+		gen.instanceOf(Type.getType(PropertySetOwner.class));
+		gen.ifZCmp(IFEQ, end);
+
 		// access property set with "getPropertySet" method
 		Method getPropertySet = PropertySetOwner.class.getMethod(
 				"getPropertySet", String.class);
