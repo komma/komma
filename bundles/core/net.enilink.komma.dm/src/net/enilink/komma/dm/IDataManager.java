@@ -165,7 +165,13 @@ public interface IDataManager {
 	/**
 	 * Returns a new data manager specific blank node reference.
 	 */
-	IReference newBlankNode();
+	IReference blankNode();
+
+	/**
+	 * Returns a data manager specific blank node reference with the given
+	 * <code>id</code>.
+	 */
+	IReference blankNode(String id);
 
 	/**
 	 * Remove statements from this data manager
