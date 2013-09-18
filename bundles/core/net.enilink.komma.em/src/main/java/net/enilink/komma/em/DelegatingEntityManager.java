@@ -119,6 +119,16 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
+	public IReference createReference() {
+		return getDelegate().createReference();
+	}
+
+	@Override
+	public IReference createReference(String id) {
+		return getDelegate().createReference(id);
+	}
+
+	@Override
 	public <T> T designateEntity(Object entity, Class<T> concept,
 			Class<?>... concepts) {
 		return getDelegate().designateEntity(entity, concept, concepts);

@@ -98,8 +98,13 @@ public abstract class DelegatingDataManager implements IDataManager {
 	}
 
 	@Override
-	public IReference newBlankNode() {
-		return getDelegate().newBlankNode();
+	public IReference blankNode() {
+		return getDelegate().blankNode();
+	}
+
+	@Override
+	public IReference blankNode(String id) {
+		return getDelegate().blankNode(id);
 	}
 
 	@Override

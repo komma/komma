@@ -35,7 +35,7 @@ public class ResourceManager {
 
 	public IReference createResource(URI uri) {
 		if (uri == null) {
-			return dm.newBlankNode();
+			return dm.blankNode();
 		}
 		return uri;
 	}

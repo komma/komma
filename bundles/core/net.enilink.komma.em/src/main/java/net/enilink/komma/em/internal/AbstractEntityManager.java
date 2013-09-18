@@ -459,6 +459,16 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@Override
+	public IReference createReference() {
+		return dm.blankNode();
+	}
+
+	@Override
+	public IReference createReference(String id) {
+		return dm.blankNode(id);
+	}
+
+	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T designateEntity(Object entity, Class<T> concept,
 			Class<?>... concepts) {
