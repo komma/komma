@@ -185,6 +185,22 @@ public interface IEntityManager {
 	IQuery<?> createQuery(String query, String baseURI, boolean includeInferred);
 
 	/**
+	 * Creates a new anonymous reference.
+	 * 
+	 * @return A new anonymous reference object.
+	 */
+	IReference createReference();
+
+	/**
+	 * Creates a new anonymous reference with the given <code>id</code>.
+	 * 
+	 * @param id
+	 *            the id of the new reference or <code>null</code>
+	 * @return A new reference object.
+	 */
+	IReference createReference(String id);
+
+	/**
 	 * Assigns <code>concept</code> to the given entity and return a new object
 	 * reference that implements the given <code>concept</code>.
 	 * 
