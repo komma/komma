@@ -393,9 +393,21 @@ public class SesameRepositoryDataManager implements IDataManager {
 	}
 
 	@Override
-	public IReference newBlankNode() {
+	public IReference blankNode() {
 		return new SesameReference(getConnection().getValueFactory()
 				.createBNode());
+	}
+
+	@Override
+	public IReference blankNode(String id) {
+		if (id == null) {
+			return blankNode();
+		}
+		if (id.startsWith("_:")) {
+			id = id.substring(2);
+		}
+		return new SesameReference(getConnection().getValueFactory()
+				.createBNode(id));
 	}
 
 	@Override
