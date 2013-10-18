@@ -1,17 +1,21 @@
 package net.enilink.komma.sesame;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.BNodeImpl;
 import org.openrdf.model.impl.StatementImpl;
 
 import com.google.inject.Inject;
 
 import net.enilink.komma.internal.sesame.SesameLiteral;
 import net.enilink.komma.internal.sesame.SesameReference;
+import net.enilink.komma.core.BlankNode;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IReferenceable;
@@ -22,6 +26,7 @@ import net.enilink.komma.core.URI;
 
 public class SesameValueConverter {
 	protected ValueFactory valueFactory;
+	protected Map<String, BNode> bnodeMap = new HashMap<>();
 
 	@Inject
 	public SesameValueConverter(ValueFactory valueFactory) {
@@ -53,7 +58,16 @@ public class SesameValueConverter {
 		}
 		if (value instanceof IReference) {
 			if (value instanceof SesameReference) {
-				return ((SesameReference) value).getSesameResource();
+				Resource resource = ((SesameReference) value)
+						.getSesameResource();
+				if (resource instanceof BNode
+						&& ((BNode) resource).getID().startsWith("new-")) {
+					// enforce that newly created Sesame blank nodes are also
+					// correctly converted
+					value = new BlankNode(value.toString());
+				} else {
+					return resource;
+				}
 			}
 			URI uri = ((IReference) value).getURI();
 			if (uri != null) {
@@ -61,7 +75,20 @@ public class SesameValueConverter {
 			} else {
 				String valueAsString = ((IReference) value).toString();
 				if (valueAsString.startsWith("_:")) {
-					return new BNodeImpl(valueAsString.substring(2));
+					String id = valueAsString.substring(2);
+					if (id.startsWith("new-")) {
+						// convert newly created blank nodes with magic prefix
+						// "new-"
+						synchronized (SesameValueConverter.this) {
+							BNode bnode = bnodeMap.get(id);
+							if (bnode == null) {
+								bnode = valueFactory.createBNode();
+								bnodeMap.put(id, bnode);
+							}
+							return bnode;
+						}
+					}
+					return valueFactory.createBNode(id);
 				}
 				throw new KommaException(
 						"Cannot convert blank node with nominal value '"
@@ -75,8 +102,7 @@ public class SesameValueConverter {
 			ILiteral literal = (ILiteral) value;
 			String language = literal.getLanguage();
 			if (language != null) {
-				return valueFactory.createLiteral(literal.getLabel(),
-						language);
+				return valueFactory.createLiteral(literal.getLabel(), language);
 			} else {
 				return valueFactory
 						.createLiteral(literal.getLabel(),
