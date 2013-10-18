@@ -10,8 +10,6 @@
  *******************************************************************************/
 package net.enilink.komma.core;
 
-import java.util.UUID;
-
 /**
  * This class represents a generic blank node.
  * 
@@ -19,10 +17,38 @@ import java.util.UUID;
  * 
  */
 public class BlankNode implements IReference {
+	/**
+	 * ID for bnode prefixes to prevent blank node clashes (unique per
+	 * classloaded instance of this class)
+	 */
+	private static long lastPrefixId = 0;
+	private static String idPrefix = nextIdPrefix();
+	private static int nextId;
+
+	private static synchronized String nextIdPrefix() {
+		lastPrefixId = Math.max(System.currentTimeMillis(), lastPrefixId + 1);
+		return Long.toString(lastPrefixId, 32) + "x";
+	}
+
+	public static String generateId() {
+		return generateId(null);
+	}
+
+	public static synchronized String generateId(String prefix) {
+		int id = nextId++;
+		String idStr = new StringBuilder("_:")
+				.append(prefix == null ? "komma-" : prefix).append(idPrefix)
+				.append(id).toString();
+		if (id == Integer.MAX_VALUE) {
+			idPrefix = nextIdPrefix();
+		}
+		return idStr;
+	}
+
 	private String id;
 
 	public BlankNode() {
-		this("_:komma-" + UUID.randomUUID().toString());
+		this(generateId());
 	}
 
 	public BlankNode(String id) {
