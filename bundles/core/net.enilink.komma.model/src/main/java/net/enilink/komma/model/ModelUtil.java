@@ -22,7 +22,9 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.content.IContentTypeManager;
+import org.openrdf.model.BNode;
 import org.openrdf.model.Statement;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
@@ -40,6 +42,7 @@ import net.enilink.vocab.rdfs.Resource;
 import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.model.sesame.RDFXMLPrettyWriter;
+import net.enilink.komma.core.BlankNode;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
@@ -205,7 +208,7 @@ public class ModelUtil {
 		return null;
 	}
 
-	private static RDFParser createParser(String mimeType, InputStream in) {
+	private static RDFFormat determineFormat(String mimeType, InputStream in) {
 		RDFFormat format = RDFFormat.RDFXML;
 		if (mimeType != null) {
 			format = RDFFormat.forMIMEType(mimeType, format);
@@ -264,7 +267,7 @@ public class ModelUtil {
 				throw new KommaException("Detection of RDF format failed.");
 			}
 		}
-		return Rio.createParser(format);
+		return format;
 	}
 
 	public static String findOntology(InputStream in, String baseURI,
@@ -273,7 +276,7 @@ public class ModelUtil {
 			in = new BufferedInputStream(in);
 		}
 		final org.openrdf.model.URI[] ontology = { null };
-		RDFParser parser = createParser(mimeType, in);
+		RDFParser parser = Rio.createParser(determineFormat(mimeType, in));
 		parser.setRDFHandler(new RDFHandler() {
 			@Override
 			public void startRDF() throws RDFHandlerException {
@@ -391,10 +394,17 @@ public class ModelUtil {
 		if (mimeType == null && !in.markSupported()) {
 			in = new BufferedInputStream(in);
 		}
+		ValueFactory valueFactory = new ValueFactoryImpl() {
+			@Override
+			public synchronized BNode createBNode() {
+				return createBNode(BlankNode.generateId("new-").substring(2));
+			}
+		};
 		final SesameValueConverter valueConverter = new SesameValueConverter(
-				new ValueFactoryImpl());
+				valueFactory);
 		final boolean handleNamespaces = dataVisitor instanceof IDataAndNamespacesVisitor<?>;
-		RDFParser parser = createParser(mimeType, in);
+		RDFParser parser = Rio.createParser(determineFormat(mimeType, in),
+				valueFactory);
 		parser.setPreserveBNodeIDs(preserveBNodeIDs);
 		parser.setRDFHandler(new RDFHandler() {
 			@Override
