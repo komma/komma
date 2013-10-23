@@ -57,9 +57,9 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 			}
 			IDialect dialect = em.getFactory().getDialect();
 			QueryFragment searchS = dialect.fullTextSearch(Arrays.asList("s"),
-					IDialect.CASE_INSENSITIVE | IDialect.ALL, pattern);
+					IDialect.ALL, pattern);
 			QueryFragment searchL = dialect.fullTextSearch(Arrays.asList("l"),
-					IDialect.CASE_INSENSITIVE, pattern);
+					IDialect.DEFAULT, pattern);
 
 			boolean isFilter = Pattern
 					.compile("^\\s*filter", Pattern.CASE_INSENSITIVE)
