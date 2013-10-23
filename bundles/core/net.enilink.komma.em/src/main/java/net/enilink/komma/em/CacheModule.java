@@ -158,17 +158,18 @@ public class CacheModule extends AbstractModule {
 			boolean refresh(Object entity) {
 				Node<Object, Object> node = entityCache.getNode(Fqn
 						.fromElements(entity));
+				boolean refreshed = false;
 				if (node != null) {
 					// iterate over all contexts and refresh each entity
 					for (Object contextKey : node.getKeys()) {
 						Object entityInCtx = node.get(contextKey);
 						if (entityInCtx instanceof IEntity) {
 							((IEntity) entityInCtx).refresh();
-							return true;
+							refreshed = true;
 						}
 					}
 				}
-				return false;
+				return refreshed;
 			}
 
 			@Override
