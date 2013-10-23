@@ -669,7 +669,7 @@ public class ItemProviderAdapter extends
 	 */
 	protected List<IItemPropertyDescriptor> itemPropertyDescriptors;
 
-	protected Map<IReference, IEntity> targets;
+	protected volatile Map<IReference, IEntity> targets;
 
 	/**
 	 * This holds children wrappers that are {@link #wrap created} by this item
@@ -697,8 +697,12 @@ public class ItemProviderAdapter extends
 		}
 
 		if (targets == null) {
-			targets = Collections
-					.synchronizedMap(new WeakHashMap<IReference, IEntity>());
+			synchronized (this) {
+				if (targets == null) {
+					targets = Collections
+							.synchronizedMap(new WeakHashMap<IReference, IEntity>());
+				}
+			}
 		}
 		targets.put(((IEntity) target).getReference(), (IEntity) target);
 

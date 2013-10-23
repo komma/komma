@@ -20,10 +20,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -58,7 +59,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 			/**
 			 * A simple registry implementation that supports delegation.
 			 */
-			class Impl extends HashMap<Collection<?>, Object> implements
+			class Impl extends ConcurrentHashMap<Collection<?>, Object> implements
 					IRegistry {
 				private static final long serialVersionUID = 1L;
 
@@ -127,7 +128,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 	 * {@link net.enilink.komma.IAdapterFactory.common.notify.AdapterFactory}
 	 * delegates.
 	 */
-	protected List<IAdapterFactory> adapterFactories = new ArrayList<IAdapterFactory>();
+	protected List<IAdapterFactory> adapterFactories = new CopyOnWriteArrayList<IAdapterFactory>();
 
 	/**
 	 * This is used to demand create adapter factories from a registry.
@@ -150,17 +151,17 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 	public ComposedAdapterFactory(
 			Collection<? extends IAdapterFactory> adapterFactories) {
 		for (IAdapterFactory adapterFactory : adapterFactories) {
-			addAdapterFactory(adapterFactory);
+			appendAdapterFactory(adapterFactory);
 		}
 	}
 
 	public ComposedAdapterFactory(IAdapterFactory adapterFactory) {
-		addAdapterFactory(adapterFactory);
+		appendAdapterFactory(adapterFactory);
 	}
 
 	public ComposedAdapterFactory(IAdapterFactory[] adapterFactories) {
 		for (int i = 0; i < adapterFactories.length; ++i) {
-			addAdapterFactory(adapterFactories[i]);
+			appendAdapterFactory(adapterFactories[i]);
 		}
 	}
 
@@ -288,12 +289,16 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 		return result;
 	}
 
-	public void addAdapterFactory(IAdapterFactory adapterFactory) {
-		if (!adapterFactories.contains(adapterFactory)) {
-			adapterFactories.add(adapterFactory);
-			if (adapterFactory instanceof IComposeableAdapterFactory) {
-				((IComposeableAdapterFactory) adapterFactory)
-						.setParentAdapterFactory(this);
+	public void appendAdapterFactory(IAdapterFactory adapterFactory) {
+		synchronized (adapterFactories) {
+			// synchronize to ensure that insertion in combination with contains
+			// is only executed once
+			if (!adapterFactories.contains(adapterFactory)) {
+				adapterFactories.add(adapterFactory);
+				if (adapterFactory instanceof IComposeableAdapterFactory) {
+					((IComposeableAdapterFactory) adapterFactory)
+							.setParentAdapterFactory(this);
+				}
 			}
 		}
 	}
@@ -348,7 +353,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 				if (null != injector) {
 					injector.injectMembers(result);
 				}
-				addAdapterFactory(result);
+				appendAdapterFactory(result);
 			}
 		}
 
@@ -363,12 +368,16 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 				.getRootAdapterFactory();
 	}
 
-	public void insertAdapterFactory(IAdapterFactory adapterFactory) {
-		if (!adapterFactories.contains(adapterFactory)) {
-			adapterFactories.add(0, adapterFactory);
-			if (adapterFactory instanceof IComposeableAdapterFactory) {
-				((IComposeableAdapterFactory) adapterFactory)
-						.setParentAdapterFactory(this);
+	public void prependAdapterFactory(IAdapterFactory adapterFactory) {
+		synchronized (adapterFactories) {
+			// synchronize to ensure that insertion in combination with contains
+			// is only executed once
+			if (!adapterFactories.contains(adapterFactory)) {
+				adapterFactories.add(0, adapterFactory);
+				if (adapterFactory instanceof IComposeableAdapterFactory) {
+					((IComposeableAdapterFactory) adapterFactory)
+							.setParentAdapterFactory(this);
+				}
 			}
 		}
 	}

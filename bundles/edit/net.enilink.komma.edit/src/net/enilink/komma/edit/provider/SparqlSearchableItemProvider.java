@@ -1,6 +1,7 @@
 package net.enilink.komma.edit.provider;
 
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
@@ -60,17 +61,25 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 			QueryFragment searchL = dialect.fullTextSearch(Arrays.asList("l"),
 					IDialect.CASE_INSENSITIVE, pattern);
 
+			boolean isFilter = Pattern
+					.compile("^\\s*filter", Pattern.CASE_INSENSITIVE)
+					.matcher(searchS.toString()).find();
 			String queryStr = ISparqlConstants.PREFIX
 					+ "SELECT DISTINCT ?s WHERE {" //
-					+ findPatterns //
+					// if FTS is implemented with regex filter then
+					// add patterns first
+					+ (isFilter ? findPatterns : "") //
 					+ "{" //
-					+ " ?s rdfs:label ?l . " //
+					+ " ?s rdfs:label ?l . "
 					+ searchL //
 					+ " FILTER regex(str(?l), ?labelPattern, \"i\")" //
 					+ "} UNION {" //
-					+ " ?s ?p ?o . " + searchS
+					+ (isFilter ? " ?s [] [] . " : "") + searchS
 					+ " FILTER regex(str(?s), ?uriPattern, \"i\")" //
-					+ "}" //
+					+ "} " //
+					// if FTS is natively implemented then add
+					// patterns last
+					+ (isFilter ? "" : findPatterns) //
 					+ "}";
 
 			if (limit > 0) {
