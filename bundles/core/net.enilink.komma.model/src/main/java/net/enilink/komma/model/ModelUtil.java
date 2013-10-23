@@ -72,6 +72,13 @@ public class ModelUtil {
 	 * Compute a label for the given element.
 	 */
 	public static String getLabel(Object element) {
+		return getLabel(element, false);
+	}
+
+	/**
+	 * Compute a label for the given element.
+	 */
+	public static String getLabel(Object element, boolean useLabelForVocab) {
 		StringBuilder text = new StringBuilder();
 		if (element instanceof IStatement) {
 			element = ((IStatement) element).getObject();
@@ -80,8 +87,10 @@ public class ModelUtil {
 			Resource resource = (Resource) element;
 
 			String label = null;
-			if (!(resource instanceof Class || resource instanceof Property || resource instanceof IObject
-					&& ((IObject) resource).isOntLanguageTerm())) {
+			if (useLabelForVocab
+					|| !(resource instanceof Class
+							|| resource instanceof Property || resource instanceof IObject
+							&& ((IObject) resource).isOntLanguageTerm())) {
 				label = resource.getRdfsLabel();
 			}
 			if (label != null) {
