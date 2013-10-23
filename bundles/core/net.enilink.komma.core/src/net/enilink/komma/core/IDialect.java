@@ -7,17 +7,15 @@ import java.util.Collection;
  * stores.
  */
 public interface IDialect {
-	final static int NONE = 0;
+	final static int DEFAULT = 0;
 
-	final static int ANY = 1;
-	final static int ALL = ANY << 1;
-	final static int CASE_INSENSITIVE = ANY << 1;
+	final static int ALL = 1;
+	final static int CASE_SENSITIVE = ALL << 1;
 
 	/**
 	 * Creates a query fragment to execute a full-text search on binding
 	 * <code>bindingNames</code> with the given <code>patterns</code>. Possible
-	 * flags are {@link IDialect#ANY}, {@link IDialect#ALL} and
-	 * {@link IDialect#CASE_INSENSITIVE}.
+	 * flags are {@link IDialect#ALL} and {@link IDialect#CASE_SENSITIVE}.
 	 * 
 	 * @param bindingNames
 	 *            The names of the bindings which should be matched by full-text

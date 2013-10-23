@@ -48,7 +48,7 @@ public class SparqlStandardDialect implements IDialect {
 		patterns = filterEmpty(patterns);
 		if (patterns.length > 0) {
 			LinkedHashBindings<Object> bindings = new LinkedHashBindings<Object>();
-			if ((flags & ANY) != 0) {
+			if ((flags & ALL) == 0) {
 				StringBuilder regex = new StringBuilder();
 				for (int i = 0; i < patterns.length; i++) {
 					String pattern = patterns[i];
