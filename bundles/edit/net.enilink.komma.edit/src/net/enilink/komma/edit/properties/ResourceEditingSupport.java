@@ -208,13 +208,13 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			IReference predicate, String pattern, int limit) {
 		Set<IResource> resources = new LinkedHashSet<IResource>(limit);
 		pattern = pattern.trim();
-		if (subject instanceof IObject && pattern != null
-				&& !pattern.contains(":")) {
-			// find resources within the default namespace first
-			URI uri = ((IObject) subject).getModel().getURI();
-			String uriNamespace = uri.appendLocalPart("").toString();
+		if (subject instanceof IObject && !pattern.contains(":")) {
+			// find resources within the current model first
+			URI graph = ((IObject) subject).getModel().getURI();
+			String graphNamespace = graph.appendLocalPart("").toString();
 			resources.addAll(retrieve(subject, predicate, pattern,
-					toUriRegex(pattern), uriNamespace, limit));
+					toUriRegex(pattern), graphNamespace, ((IObject) subject)
+							.getModel().getURI(), limit));
 		}
 		if (resources.size() < limit) {
 			// additionally, if limit not exceeded, find resources from other
@@ -237,7 +237,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				uriPattern = toUriRegex(pattern);
 			}
 			Iterator<IResource> fallback = retrieve(subject, predicate,
-					pattern, uriPattern, uriNamespace, limit).iterator();
+					pattern, uriPattern, uriNamespace, null, limit).iterator();
 			while (fallback.hasNext() && resources.size() < limit) {
 				resources.add(fallback.next());
 			}
@@ -255,7 +255,8 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 	}
 
 	protected List<IResource> retrieve(IEntity subject, IReference predicate,
-			String pattern, String uriPattern, String namespace, int limit) {
+			String pattern, String uriPattern, String namespace, URI graph,
+			int limit) {
 		StringBuilder sparql = new StringBuilder(ISparqlConstants.PREFIX
 				+ "SELECT DISTINCT ?s WHERE { ");
 
@@ -279,6 +280,10 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		QueryFragment searchL = dialect.fullTextSearch(Arrays.asList("l"),
 				IDialect.DEFAULT, pattern);
 
+		if (graph != null) {
+			sparql.append(" graph ?graph {\n");
+		}
+
 		sparql.append("{ ?s ?p ?o . " + searchS);
 		sparql.append(" FILTER regex(str(?s), ?uriPattern)");
 		sparql.append(" }");
@@ -288,6 +293,9 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		sparql.append(" }");
 		if (namespace != null) {
 			sparql.append(" FILTER regex(str(?s), ?namespace)");
+		}
+		if (graph != null) {
+			sparql.append("\n}");
 		}
 		sparql.append(" } LIMIT " + limit);
 
@@ -299,6 +307,9 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		query.setParameter("uriPattern", uriPattern);
 		if (namespace != null) {
 			query.setParameter("namespace", "^" + namespace);
+		}
+		if (graph != null) {
+			query.setParameter("graph", graph);
 		}
 		if (!editPredicate) {
 			query.setParameter("subject", subject);
