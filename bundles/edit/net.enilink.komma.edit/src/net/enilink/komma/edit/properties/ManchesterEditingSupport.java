@@ -94,7 +94,9 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 			int insertPos = index - prefix.length();
 
 			List<IContentProposal> proposals = new ArrayList<IContentProposal>();
-			for (IEntity resource : getAnyResources(subject, null, prefix, 20)) {
+			ProposalOptions options = ProposalOptions.create(subject, prefix,
+					20);
+			for (IEntity resource : getAnyResources(options)) {
 				String label = getLabel(resource);
 				String origText = text.substring(insertPos, index);
 				// insert proposal text
@@ -183,7 +185,7 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 
 	@Override
 	public ProposalSupport getProposalSupport(final IEntity subject,
-			IReference property, Object value) {
+			final IReference property, Object value) {
 		final IItemLabelProvider resourceLabelProvider = super
 				.getProposalSupport(subject, property, value)
 				.getLabelProvider();

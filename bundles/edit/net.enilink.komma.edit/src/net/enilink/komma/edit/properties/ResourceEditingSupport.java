@@ -118,6 +118,8 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			}
 			predicates.add(null);
 			Set<IResource> allResources = new HashSet<IResource>();
+			ProposalOptions options = ProposalOptions.create(subject,
+					contents.substring(0, position), limit);
 			// ensures that resources which match the predicate's range are
 			// added in front of the result list
 			for (IReference p : predicates) {
@@ -125,8 +127,8 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 					break;
 				}
 				List<IResource> resources = new ArrayList<IResource>();
-				for (IResource resource : getRestrictedResources(subject, p,
-						contents.substring(0, position), limit)) {
+				for (IResource resource : getRestrictedResources(options
+						.forPredicate(p))) {
 					// globally filter duplicate proposals
 					if (allResources.add(resource)) {
 						resources.add(resource);
@@ -153,6 +155,50 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				}
 			}
 			return proposals;
+		}
+	}
+
+	public static class ProposalOptions implements Cloneable {
+		IEntity subject;
+		IReference predicate;
+		IReference type;
+		String pattern;
+		int limit;
+
+		ProposalOptions(IEntity subject, String pattern, int limit) {
+			this.subject = subject;
+			this.pattern = pattern.trim();
+			this.limit = limit;
+		}
+
+		public static ProposalOptions create(IEntity subject, String pattern,
+				int limit) {
+			return new ProposalOptions(subject, pattern, limit);
+		}
+
+		public ProposalOptions forPredicate(IReference predicate) {
+			ProposalOptions result = clone();
+			result.predicate = predicate;
+			return result;
+		}
+
+		public ProposalOptions ofType(IReference type) {
+			ProposalOptions result = clone();
+			result.type = type;
+			return result;
+		}
+
+		public ProposalOptions anyType() {
+			return clone().ofType(null).forPredicate(null);
+		}
+
+		@Override
+		public ProposalOptions clone() {
+			try {
+				return (ProposalOptions) super.clone();
+			} catch (CloneNotSupportedException e) {
+				throw new AssertionError(e);
+			}
 		}
 	}
 
@@ -185,38 +231,39 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		return "[#/:]" + pattern + "[^#/]*$";
 	}
 
-	protected Iterable<IResource> getAnyResources(IEntity subject,
-			IReference predicate, String pattern, int limit) {
-		Set<IResource> resources = new LinkedHashSet<IResource>(limit);
-		Iterator<IResource> restricted = getRestrictedResources(subject,
-				predicate, pattern, limit).iterator();
-		while (restricted.hasNext() && resources.size() < limit) {
+	protected Iterable<IResource> getAnyResources(ProposalOptions options) {
+		Set<IResource> resources = new LinkedHashSet<IResource>(options.limit);
+		Iterator<IResource> restricted = getRestrictedResources(options)
+				.iterator();
+		while (restricted.hasNext() && resources.size() < options.limit) {
 			resources.add(restricted.next());
 		}
-		if (predicate != null && resources.size() < limit) {
+		if (options.predicate != null && resources.size() < options.limit) {
 			// find resource without consideration of ranges
-			Iterator<IResource> fallback = getRestrictedResources(subject,
-					null, pattern, limit).iterator();
-			while (fallback.hasNext() && resources.size() < limit) {
+			Iterator<IResource> fallback = getRestrictedResources(
+					options.anyType()).iterator();
+			while (fallback.hasNext() && resources.size() < options.limit) {
 				resources.add(fallback.next());
 			}
 		}
 		return resources;
 	}
 
-	protected Iterable<IResource> getRestrictedResources(IEntity subject,
-			IReference predicate, String pattern, int limit) {
-		Set<IResource> resources = new LinkedHashSet<IResource>(limit);
-		pattern = pattern.trim();
+	protected Iterable<IResource> getRestrictedResources(ProposalOptions options) {
+		Set<IResource> resources = new LinkedHashSet<IResource>(options.limit);
+		IEntity subject = options.subject;
+		String pattern = options.pattern;
+		IReference predicate = options.predicate;
+		IReference type = options.type;
 		if (subject instanceof IObject && !pattern.contains(":")) {
 			// find resources within the current model first
 			URI graph = ((IObject) subject).getModel().getURI();
 			String graphNamespace = graph.appendLocalPart("").toString();
-			resources.addAll(retrieve(subject, predicate, pattern,
+			resources.addAll(retrieve(subject, predicate, type, pattern,
 					toUriRegex(pattern), graphNamespace, ((IObject) subject)
-							.getModel().getURI(), limit));
+							.getModel().getURI(), options.limit));
 		}
-		if (resources.size() < limit) {
+		if (resources.size() < options.limit) {
 			// additionally, if limit not exceeded, find resources from other
 			// namespaces
 			String uriPattern = pattern;
@@ -236,9 +283,10 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				}
 				uriPattern = toUriRegex(pattern);
 			}
-			Iterator<IResource> fallback = retrieve(subject, predicate,
-					pattern, uriPattern, uriNamespace, null, limit).iterator();
-			while (fallback.hasNext() && resources.size() < limit) {
+			Iterator<IResource> fallback = retrieve(subject, predicate, type,
+					pattern, uriPattern, uriNamespace, null, options.limit)
+					.iterator();
+			while (fallback.hasNext() && resources.size() < options.limit) {
 				resources.add(fallback.next());
 			}
 		}
@@ -255,8 +303,8 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 	}
 
 	protected List<IResource> retrieve(IEntity subject, IReference predicate,
-			String pattern, String uriPattern, String namespace, URI graph,
-			int limit) {
+			IReference type, String pattern, String uriPattern,
+			String namespace, URI graph, int limit) {
 		StringBuilder sparql = new StringBuilder(ISparqlConstants.PREFIX
 				+ "SELECT DISTINCT ?s WHERE { ");
 
@@ -270,7 +318,10 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				sparql.append("{ ?subject a [rdfs:subClassOf ?r] . ?r owl:onProperty ?property { ?r owl:allValuesFrom ?sType } UNION { ?r owl:someValuesFrom ?sType }}");
 				sparql.append(" ?s a ?sType ");
 				// allow to edit properties without range information
-				sparql.append("} UNION { FILTER (NOT EXISTS { ?property rdfs:range ?sType } && NOT EXISTS { ?subject a [rdfs:subClassOf ?r] . ?r owl:onProperty ?property }) }");
+				sparql.append("} UNION { FILTER (NOT EXISTS { ?property rdfs:range ?sType } && NOT EXISTS { ?subject a [rdfs:subClassOf ?r] . ?r owl:onProperty ?property }) } ");
+			}
+			if (type != null) {
+				sparql.append("?s a ?sType .");
 			}
 		}
 
@@ -314,6 +365,9 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		if (!editPredicate) {
 			query.setParameter("subject", subject);
 			query.setParameter("property", predicate);
+			if (type != null) {
+				query.setParameter("sType", type);
+			}
 		}
 		return query.evaluate(IResource.class).toList();
 	}
@@ -447,9 +501,10 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				};
 			}
 		}
-		Iterator<IResource> resources = getAnyResources(subject,
-				createNew ? null : property, (String) editorValue + "$", 1)
-				.iterator();
+		ProposalOptions options = ProposalOptions.create(subject,
+				(String) editorValue + "$", 1);
+		Iterator<IResource> resources = getAnyResources(
+				options.forPredicate(createNew ? null : property)).iterator();
 		if (resources.hasNext()) {
 			final IEntity resource = resources.next();
 			if (createNew
