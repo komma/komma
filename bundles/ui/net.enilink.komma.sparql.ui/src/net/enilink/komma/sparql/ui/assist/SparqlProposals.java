@@ -10,27 +10,22 @@
  *******************************************************************************/
 package net.enilink.komma.sparql.ui.assist;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.parboiled.support.ParsingResult;
 
-import net.enilink.komma.KommaCore;
 import net.enilink.komma.edit.assist.ContentProposal;
 import net.enilink.komma.edit.assist.IContentProposal;
-import net.enilink.komma.edit.assist.ISemanticProposal;
-import net.enilink.komma.edit.assist.ISemanticProposalProvider;
+import net.enilink.komma.edit.assist.ReflectiveSemanticProposals;
 import net.enilink.komma.parser.sparql.tree.Variable;
 import net.enilink.komma.parser.sparql.tree.visitor.TreeWalker;
 import net.enilink.komma.parser.sparql.tree.visitor.Visitable;
 
-public class SparqlProposals implements ISemanticProposalProvider {
+public class SparqlProposals extends ReflectiveSemanticProposals {
 	static class VarCollector extends TreeWalker<Object> {
 		private Set<String> queryVarNames = new HashSet<String>();
 
@@ -45,47 +40,6 @@ public class SparqlProposals implements ISemanticProposalProvider {
 
 			return variable.getPropertyList().accept(this, value);
 		}
-	}
-
-	class Proposal implements ISemanticProposal {
-		Method m;
-
-		public Proposal(Method m) {
-			this.m = m;
-		}
-
-		@Override
-		public IContentProposal[] compute(ParsingResult<?> result, int index,
-				String prefix) {
-			try {
-				return (IContentProposal[]) m.invoke(SparqlProposals.this,
-						result, index, prefix);
-			} catch (Exception e) {
-				KommaCore.log(e);
-			}
-			return null;
-		}
-	}
-
-	Map<String, Proposal> proposals = new HashMap<String, Proposal>();
-
-	public SparqlProposals() {
-		for (Method m : getClass().getMethods()) {
-			if (IContentProposal[].class.equals(m.getReturnType())) {
-				Class<?>[] paramTypes = m.getParameterTypes();
-				if (paramTypes.length == 3
-						&& ParsingResult.class.equals(paramTypes[0])
-						&& int.class.equals(paramTypes[1])
-						&& String.class.equals(paramTypes[2])) {
-					proposals.put(m.getName(), new Proposal(m));
-				}
-			}
-		}
-	}
-
-	@Override
-	public ISemanticProposal getProposal(String rule) {
-		return proposals.get(rule);
 	}
 
 	public IContentProposal[] Var(ParsingResult<?> result, int index,
