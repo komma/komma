@@ -1,9 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Sesame 3 Plugin
+Bundle-Name: Sesame Plugin
 Bundle-SymbolicName: net.enilink.komma.sesame
 Bundle-Version: 1.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: net.enilink.komma.core,
  net.enilink.komma.dm,
  net.enilink.komma.literals,
