@@ -59,6 +59,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			IResourceProposal {
 		IEntity resource;
 		boolean useAsValue;
+		boolean perfectMatch;
 
 		public ResourceProposal(String content, int cursorPosition,
 				IEntity resource) {
@@ -71,6 +72,15 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		@Override
 		public IEntity getResource() {
 			return resource;
+		}
+
+		public ResourceProposal setPerfectMatch(boolean perfectMatch) {
+			this.perfectMatch = perfectMatch;
+			return this;
+		}
+
+		public boolean isPerfectMatch() {
+			return perfectMatch;
 		}
 
 		public ResourceProposal setUseAsValue(boolean useAsValue) {
@@ -135,7 +145,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 					}
 				}
 				List<IContentProposal> proposals = toProposals(resources,
-						prefix, !ctor.matched);
+						prefix, !ctor.matched, p != null);
 				Collections.sort(proposals, comparator);
 				allProposals.addAll(proposals);
 			}
@@ -144,14 +154,16 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		}
 
 		protected List<IContentProposal> toProposals(
-				Iterable<IResource> resources, String prefix, boolean useAsValue) {
+				Iterable<IResource> resources, String prefix,
+				boolean useAsValue, boolean matchesRange) {
 			List<IContentProposal> proposals = new ArrayList<IContentProposal>();
 			for (IEntity resource : resources) {
 				String content = getLabel(resource);
 				if (content.length() > 0) {
 					content = prefix + content;
 					proposals.add(new ResourceProposal(content, content
-							.length(), resource).setUseAsValue(useAsValue));
+							.length(), resource).setUseAsValue(useAsValue)
+							.setPerfectMatch(matchesRange));
 				}
 			}
 			return proposals;

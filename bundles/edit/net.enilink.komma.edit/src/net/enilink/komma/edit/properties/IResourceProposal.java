@@ -23,4 +23,13 @@ public interface IResourceProposal extends IContentProposal {
 	 *         else <code>false</code>.
 	 */
 	boolean getUseAsValue();
+
+	/**
+	 * Indicates that the corresponding resource is a perfect match for the
+	 * related proposal query (e.g. the resource matches some property range).
+	 * 
+	 * @return <code>true</code> if the resource is a perfect match, else
+	 *         <code>false</code>.
+	 */
+	boolean isPerfectMatch();
 }

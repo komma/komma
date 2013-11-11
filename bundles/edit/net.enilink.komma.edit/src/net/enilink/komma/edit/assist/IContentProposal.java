@@ -19,8 +19,6 @@ package net.enilink.komma.edit.assist;
  * zero-based index position within the contents where the cursor should be
  * placed after a proposal is accepted.
  * 
- * @since 3.2
- * 
  * @see ContentProposal
  */
 public interface IContentProposal {
