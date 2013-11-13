@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.results.ResultDescriptor;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
@@ -30,26 +31,32 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	private static Logger log = LoggerFactory.getLogger(ClassSupport.class);
 
 	private final String SELECT_DIRECT_SUBCLASSES(boolean named) {
-		return PREFIX
-				+ "SELECT ?subClass WHERE { "
-				// support stores that don't draw the inference
-				// (someClass rdfs:subClassOf owl:Thing)
-				+ ((OWL.TYPE_THING.equals(this)) ? "{ ?subClass a owl:Class . "
-						+ "MINUS { ?subClass rdfs:subClassOf ?someSuperClass "
-						+ "FILTER (isIRI(?someSuperClass) && ?someSuperClass != ?subClass && ?someSuperClass != owl:Thing && ?someSuperClass != rdfs:Resource) } }"
-						: "?subClass rdfs:subClassOf ?superClass . " //
-				)
-				// + "?subClass rdfs:subClassOf ?superClass . "
-				+ "FILTER NOT EXISTS {"
-				+ "?subClass rdfs:subClassOf ?otherSuperClass . "
-				+ "?otherSuperClass rdfs:subClassOf ?superClass  . " //
-				+ "FILTER ("
-				+ (named ? "isIRI(?otherSuperClass) && " : "")
-				+ "?subClass != ?otherSuperClass && ?superClass != ?otherSuperClass)"
-				+ "}" //
-				+ " FILTER (" + (named ? "isIRI(?subClass) && " : "")
-				+ "?subClass != ?superClass && ?subClass != owl:Nothing)" + "}"
-				+ "ORDER BY ?subClass";
+		StringBuilder sb = new StringBuilder(PREFIX);
+		sb.append("SELECT ?subClass WHERE { ");
+		// support stores that don't draw the inferences
+		// (someClass rdfs:subClassOf rdfs:Resource) and (someClass
+		// rdfs:subClassOf owl:Thing)
+		if (RDFS.TYPE_RESOURCE.equals(this) || OWL.TYPE_THING.equals(this)) {
+			sb.append("{ ?subClass a ")
+					.append(RDFS.TYPE_RESOURCE.equals(this) ? "rdfs:Class"
+							: "owl:Class").append(" . ");
+			sb.append("MINUS { ?subClass rdfs:subClassOf ?someSuperClass ")
+					.append("FILTER (isIRI(?someSuperClass) && ?someSuperClass != ?subClass && ?someSuperClass != owl:Thing && ?someSuperClass != rdfs:Resource) } }");
+			sb.append(" UNION { ?subClass rdfs:subClassOf ?superClass }");
+		} else {
+			sb.append("?subClass rdfs:subClassOf ?superClass . ");
+		}
+		sb.append("FILTER NOT EXISTS {")
+				.append("?subClass rdfs:subClassOf ?otherSuperClass . ")
+				.append("?otherSuperClass rdfs:subClassOf ?superClass  . ")
+				.append("FILTER (")
+				.append(named ? "isIRI(?otherSuperClass) && " : "")
+				.append("?subClass != ?otherSuperClass && ?superClass != ?otherSuperClass)")
+				.append("}")
+				.append(" FILTER (" + (named ? "isIRI(?subClass) && " : ""))
+				.append("?subClass != ?superClass && ?subClass != owl:Nothing)"
+						+ "}").append("ORDER BY ?subClass");
+		return sb.toString();
 	};
 
 	private final String SELECT_SUBCLASSES(boolean named) {
