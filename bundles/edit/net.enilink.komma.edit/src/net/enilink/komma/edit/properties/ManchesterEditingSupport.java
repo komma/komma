@@ -72,8 +72,14 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 			if (model == null) {
 				return false;
 			}
-			return model.getManager().find(
-					(IReference) toValue(model, property, bNodes)) instanceof DatatypeProperty;
+			try {
+				IReference propertyRef = (IReference) toValue(model, property,
+						bNodes);
+				return model.getManager().find(propertyRef) instanceof DatatypeProperty;
+			} catch (IllegalArgumentException iae) {
+				// ignore, thrown if property uses an unknown prefix
+			}
+			return false;
 		}
 	}
 

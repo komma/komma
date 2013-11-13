@@ -290,8 +290,8 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 							prefix);
 					if (namespaceUri != null) {
 						uriNamespace = namespaceUri.toString();
+						pattern = pattern.substring(colonIndex + 1);
 					}
-					pattern = pattern.substring(colonIndex + 1);
 				}
 				uriPattern = toUriRegex(pattern);
 			}
@@ -464,7 +464,8 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			if (ns != null) {
 				return ns.appendLocalPart(localPart);
 			}
-			throw new IllegalArgumentException("Unknown prefix");
+			throw new IllegalArgumentException("Unknown prefix for QName "
+					+ value);
 		} else if (value != null) {
 			return model.getURI().appendLocalPart(value.toString());
 		}
