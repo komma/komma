@@ -228,7 +228,9 @@ public class ModelUtil {
 				Reader r = new InputStreamReader(in, "UTF-8");
 				while (r.ready()) {
 					int ch = r.read();
-					if (!Character.isWhitespace(ch)) {
+					if (!Character.isWhitespace(ch) &&
+					// not the BOM character
+							ch != 0xFEFF) {
 						if (ch == '<') {
 							if (r.ready() && (ch = r.read()) == '?') {
 								// <?xml ...>
