@@ -32,7 +32,7 @@ public class Namespace implements INamespace {
 	public URI getURI() {
 		return uri;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -62,5 +62,11 @@ public class Namespace implements INamespace {
 		} else if (!uri.equals(other.uri))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return new StringBuilder("(").append(prefix).append(" -> ").append(uri)
+				.toString();
 	}
 }
