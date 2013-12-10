@@ -458,7 +458,7 @@ public class ModelUtil {
 		try {
 			parser.parse(in, baseURI);
 		} catch (RDFParseException e) {
-			throw new KommaException("Invalid RDF data", e);
+			throw new KommaException("Invalid RDF data:\n" + e.getMessage(), e);
 		} catch (RDFHandlerException e) {
 			throw new KommaException("Loading RDF failed", e);
 		} catch (IOException e) {

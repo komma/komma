@@ -26,6 +26,7 @@ import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.Namespace;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
 import net.enilink.komma.util.ISparqlConstants;
@@ -213,13 +214,16 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 		try {
 			// only include possibly used namespaces
 			Set<URI> readableGraphs = getModule().getReadableGraphs();
-			for (INamespace namespace : dm.getNamespaces()) {
+			for (INamespace namespace : getManager().getNamespaces()) {
 				if (KommaUtil.isW3cNamespace(namespace.getURI())
 						|| readableGraphs.contains(namespace.getURI()
 								.trimFragment())) {
 					dataVisitor.visitNamespace(namespace);
 				}
 			}
+			// use empty prefix for namespace of this model
+			dataVisitor.visitNamespace(new Namespace("", getURI()
+					.appendLocalPart("").toString()));
 
 			// expand blank nodes below IRIs up to expandDepth
 			// TODO also expand blank nodes below other blank nodes
