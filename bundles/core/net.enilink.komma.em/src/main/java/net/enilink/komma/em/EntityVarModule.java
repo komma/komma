@@ -10,9 +10,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.MembersInjector;
-import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
-import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.spi.TypeEncounter;
@@ -116,33 +114,34 @@ public class EntityVarModule extends AbstractModule {
 			if (referenceable instanceof IReferenceable) {
 				IReference reference = ((IReferenceable) referenceable)
 						.getReference();
-
 				final EntityVarKey key = new EntityVarKey(field, reference);
-				EntityVar<Object> var;
-				synchronized (varMap) {
-					var = varMap.get(key);
-					if (var == null) {
-						var = new EntityVarImpl<Object>() {
-							boolean isValid = true;
+				EntityVar<Object> var = varMap.get(key);
+				if (var == null) {
+					synchronized (field.getDeclaringClass()) {
+						var = varMap.get(key);
+						if (var == null) {
+							var = new EntityVarImpl<Object>() {
+								boolean isValid = true;
 
-							public void remove() {
-								super.remove();
-								varMap.remove(key);
-								isValid = false;
-							}
-
-							@Override
-							public void set(Object value) {
-								if (!isValid && value != null) {
-									// reinsert variable into map if it was
-									// previously removed
-									varMap.put(key, this);
-									isValid = true;
+								public void remove() {
+									super.remove();
+									varMap.remove(key);
+									isValid = false;
 								}
-								super.set(value);
-							}
-						};
-						varMap.put(key, var);
+
+								@Override
+								public void set(Object value) {
+									if (!isValid && value != null) {
+										// reinsert variable into map if it was
+										// previously removed
+										varMap.put(key, this);
+										isValid = true;
+									}
+									super.set(value);
+								}
+							};
+							varMap.put(key, var);
+						}
 					}
 				}
 
@@ -188,12 +187,7 @@ public class EntityVarModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		bind(new TypeLiteral<Map<EntityVarKey, EntityVar<Object>>>() {
-		}).toProvider(new Provider<Map<EntityVarKey, EntityVar<Object>>>() {
-			@Override
-			public Map<EntityVarKey, EntityVar<Object>> get() {
-				return new ConcurrentHashMap<EntityVarKey, EntityVar<Object>>();
-			}
-		}).in(Singleton.class);
+		}).toInstance(new ConcurrentHashMap<EntityVarKey, EntityVar<Object>>());
 		EntityVarTypeListener varTypeListener = new EntityVarTypeListener();
 		requestInjection(varTypeListener);
 		bindListener(Matchers.any(), varTypeListener);

@@ -450,7 +450,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	public IQuery<?> createQuery(String query, String baseURI,
 			boolean includeInferred) {
-		log.trace("Query: {}", query);
+		log.debug("Query: {}", query);
 
 		IQuery<?> result = new EntityManagerQuery<Object>(this, dm.createQuery(
 				query, baseURI, includeInferred, readContexts));
@@ -1120,10 +1120,10 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			}
 			IEntity bean = createBean((IReference) value, types, null, false,
 					true, graph);
-			if (log.isDebugEnabled()) {
+			if (log.isTraceEnabled()) {
 				if (!createQuery("ASK {?s ?p ?o}").setParameter("s",
 						(IReference) value).getBooleanResult()) {
-					log.debug("Warning: Unknown entity: " + value);
+					log.trace("Warning: Unknown entity: " + value);
 				}
 			}
 			return bean;
