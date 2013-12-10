@@ -1,4 +1,4 @@
-package net.enilink.komma.owl.editor.internal.classes;
+package net.enilink.komma.owl.editor.classes;
 
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainView;
 

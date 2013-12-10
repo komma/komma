@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.owl.editor.internal.ontology;
+package net.enilink.komma.owl.editor.ontology;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;

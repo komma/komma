@@ -1,4 +1,4 @@
-package net.enilink.komma.owl.editor.internal.properties;
+package net.enilink.komma.owl.editor.classes;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -19,16 +19,16 @@ import net.enilink.komma.owl.editor.internal.KommaFormPage;
  * @author Ken Wenzel
  * 
  */
-public class ObjectPropertiesPage extends KommaFormPage {
-	protected ObjectPropertiesPart part;
+public class ClassesPage extends KommaFormPage {
+	protected ClassesPart classesPart;
 
-	public ObjectPropertiesPage(FormEditor editor) {
-		super(editor, "objectProperties", "ObjectProperties");
+	public ClassesPage(FormEditor editor) {
+		super(editor, "classes", "Classes");
 	}
 
 	protected void createFormContent(IManagedForm managedForm) {
 		ScrolledForm form = managedForm.getForm();
-		form.setText("ObjectProperties");
+		form.setText("Classes");
 
 		EditorForm editorForm = getEditorForm();
 		managedForm.addPart(new FormPart(editorForm));
@@ -40,10 +40,10 @@ public class ObjectPropertiesPage extends KommaFormPage {
 				body);
 		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		part = new ObjectPropertiesPart();
-		part.initialize(editorForm);
-		part.createContents(composite);
-		part.setInput(getEditor().getAdapter(IModel.class));
-		part.refresh();
+		classesPart = new ClassesPart();
+		classesPart.initialize(editorForm);
+		classesPart.createContents(composite);
+		classesPart.setInput(getEditor().getAdapter(IModel.class));
+		classesPart.refresh();
 	}
 }

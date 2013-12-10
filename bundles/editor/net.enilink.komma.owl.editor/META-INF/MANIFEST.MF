@@ -20,8 +20,8 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Activator: net.enilink.komma.owl.editor.OWLEditorPlugin$Implementation
 Export-Package: net.enilink.komma.owl.editor,
+ net.enilink.komma.owl.editor.classes,
+ net.enilink.komma.owl.editor.instances,
  net.enilink.komma.owl.editor.internal;x-friends:="net.enilink.komma.owl.editor.rcp",
- net.enilink.komma.owl.editor.internal.classes;x-friends:="net.enilink.komma.owl.editor.rcp",
- net.enilink.komma.owl.editor.internal.instances;x-friends:="net.enilink.komma.owl.editor.rcp",
- net.enilink.komma.owl.editor.internal.ontology;x-friends:="net.enilink.komma.owl.editor.rcp",
- net.enilink.komma.owl.editor.internal.properties;x-friends:="net.enilink.komma.owl.editor.rcp"
+ net.enilink.komma.owl.editor.ontology,
+ net.enilink.komma.owl.editor.properties

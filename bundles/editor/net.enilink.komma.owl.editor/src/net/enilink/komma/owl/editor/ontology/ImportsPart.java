@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.owl.editor.internal.ontology;
+package net.enilink.komma.owl.editor.ontology;
 
 import java.util.ArrayList;
 import java.util.Collection;

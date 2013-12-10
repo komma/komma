@@ -1,7 +1,8 @@
-package net.enilink.komma.owl.editor.internal.ontology;
+package net.enilink.komma.owl.editor.properties;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -18,32 +19,31 @@ import net.enilink.komma.owl.editor.internal.KommaFormPage;
  * @author Ken Wenzel
  * 
  */
-public class OntologyPage extends KommaFormPage {
-	protected OntologyPart ontologyPart;
+public class OtherPropertiesPage extends KommaFormPage {
+	protected OtherPropertiesPart part;
 
-	public OntologyPage(FormEditor editor) {
-		super(editor, "ontology", "Ontology");
+	public OtherPropertiesPage(FormEditor editor) {
+		super(editor, "other Properties", "other Properties");
 	}
 
 	protected void createFormContent(IManagedForm managedForm) {
 		ScrolledForm form = managedForm.getForm();
-		form.setText("Ontology");
+		form.setText("other Properties");
 
 		EditorForm editorForm = getEditorForm();
 		managedForm.addPart(new FormPart(editorForm));
 
 		Composite body = form.getBody();
-		FillLayout fillLayout = new FillLayout(SWT.VERTICAL);
-		fillLayout.marginHeight = fillLayout.marginWidth = 5;
-		body.setLayout(fillLayout);
+		body.setLayout(new GridLayout(1, false));
 
 		Composite composite = editorForm.getWidgetFactory().createComposite(
 				body);
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		ontologyPart = new OntologyPart();
-		ontologyPart.initialize(editorForm);
-		ontologyPart.createContents(composite);
-		ontologyPart.setInput(getEditor().getAdapter(IModel.class));
-		ontologyPart.refresh();
+		part = new OtherPropertiesPart();
+		part.initialize(editorForm);
+		part.createContents(composite);
+		part.setInput(getEditor().getAdapter(IModel.class));
+		part.refresh();
 	}
 }

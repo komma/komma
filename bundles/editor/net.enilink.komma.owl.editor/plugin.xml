@@ -21,59 +21,59 @@
    </category>
    <view
          category="net.enilink.komma.owl.editor"
-         class="net.enilink.komma.owl.editor.internal.classes.ClassesView"
+         class="net.enilink.komma.owl.editor.classes.ClassesView"
          icon="icons/full/obj16/Class.png"
          id="net.enilink.komma.owl.editor.views.ClassesView"
          name="Classes">
    </view>
    <view
          category="net.enilink.komma.owl.editor"
-         class="net.enilink.komma.owl.editor.internal.instances.InstancesView"
+         class="net.enilink.komma.owl.editor.instances.InstancesView"
          id="net.enilink.komma.owl.editor.views.InstancesView"
          name="Instances">
    </view>
    <view
          category="net.enilink.komma.owl.editor"
-         class="net.enilink.komma.owl.editor.internal.ontology.ImportsView"
+         class="net.enilink.komma.owl.editor.ontology.ImportsView"
          id="net.enilink.komma.owl.editor.views.ImportsView"
          name="Imports">
    </view>
    <view
          category="net.enilink.komma.owl.editor"
-         class="net.enilink.komma.owl.editor.internal.ontology.NamespacesView"
+         class="net.enilink.komma.owl.editor.ontology.NamespacesView"
          icon="icons/full/obj16/Namespace.png"
          id="net.enilink.komma.owl.editor.views.NamespacesView"
          name="Namespaces">
    </view>
    <view
          category="net.enilink.komma.owl.editor"
-         class="net.enilink.komma.owl.editor.internal.properties.OtherPropertiesView"
+         class="net.enilink.komma.owl.editor.properties.OtherPropertiesView"
          icon="icons/full/obj16/Property.png"
          id="net.enilink.komma.owl.editor.views.OtherPropertiesView"
          name="Other Properties">
    </view>
    <view
          category="net.enilink.komma.owl.editor"
-         class="net.enilink.komma.owl.editor.internal.properties.ObjectPropertiesView"
+         class="net.enilink.komma.owl.editor.properties.ObjectPropertiesView"
          icon="icons/full/obj16/ObjectProperty.png"
          id="net.enilink.komma.owl.editor.views.ObjectPropertiesView"
          name="Object Properties">
    </view>
    <view
          category="net.enilink.komma.owl.editor"
-         class="net.enilink.komma.owl.editor.internal.properties.DatatypePropertiesView"
+         class="net.enilink.komma.owl.editor.properties.DatatypePropertiesView"
          icon="icons/full/obj16/DatatypeProperty.png"
          id="net.enilink.komma.owl.editor.views.DatatypePropertiesView"
          name="Datatype Properties">
    </view>
    <view
-         class="net.enilink.komma.owl.editor.internal.instances.InstanceTreeView"
+         class="net.enilink.komma.owl.editor.instances.InstanceTreeView"
          id="net.enilink.komma.owl.editor.views.InstanceTreeView"
          name="Instance Tree"
          restorable="true">
    </view>
    <view
-         class="net.enilink.komma.owl.editor.internal.instances.InstanceTableView"
+         class="net.enilink.komma.owl.editor.instances.InstanceTableView"
          id="net.enilink.komma.owl.editor.views.InstanceTableView"
          name="Instance Table"
          restorable="true">
