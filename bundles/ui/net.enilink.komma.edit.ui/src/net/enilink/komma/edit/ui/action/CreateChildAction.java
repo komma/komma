@@ -27,6 +27,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 
 import net.enilink.vocab.owl.OWL;
@@ -100,7 +101,8 @@ public class CreateChildAction extends StaticSelectionCommandAction {
 								.asList(types));
 					}
 					if (showNamePage()) {
-						((IChildDescriptor) descriptor).setName(getObjectName());
+						((IChildDescriptor) descriptor)
+								.setName(getObjectName());
 					}
 					return true;
 				}
@@ -111,8 +113,8 @@ public class CreateChildAction extends StaticSelectionCommandAction {
 				}
 			};
 
-			WizardDialog wizardDialog = new WizardDialog(getWorkbenchPart()
-					.getSite().getShell(), newWizard);
+			WizardDialog wizardDialog = new WizardDialog(Display.getCurrent()
+					.getActiveShell(), newWizard);
 			if (wizardDialog.open() != Window.OK) {
 				return CommandResult.newCancelledCommandResult();
 			}

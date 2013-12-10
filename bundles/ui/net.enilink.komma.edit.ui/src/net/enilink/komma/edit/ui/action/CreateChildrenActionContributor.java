@@ -71,11 +71,12 @@ public class CreateChildrenActionContributor {
 	 * <code>descriptors</code>, and returns the collection of these actions.
 	 */
 	protected Collection<IAction> generateCreateChildActions(
-			IWorkbenchPart part, Collection<?> descriptors, ISelection selection) {
+			IWorkbenchPart part, IEditingDomain domain,
+			Collection<?> descriptors, ISelection selection) {
 		Collection<IAction> actions = new ArrayList<IAction>();
 		if (descriptors != null) {
 			for (Object descriptor : descriptors) {
-				CreateChildAction action = new CreateChildAction(part,
+				CreateChildAction action = new CreateChildAction(part, domain,
 						selection, descriptor);
 				action.init();
 				actions.add(action);
@@ -89,12 +90,13 @@ public class CreateChildrenActionContributor {
 	 * <code>descriptors</code>, and returns the collection of these actions.
 	 */
 	protected Collection<IAction> generateCreateSiblingActions(
-			IWorkbenchPart part, Collection<?> descriptors, ISelection selection) {
+			IWorkbenchPart part, IEditingDomain domain,
+			Collection<?> descriptors, ISelection selection) {
 		Collection<IAction> actions = new ArrayList<IAction>();
 		if (descriptors != null) {
 			for (Object descriptor : descriptors) {
 				CreateSiblingAction action = new CreateSiblingAction(part,
-						selection, descriptor);
+						domain, selection, descriptor);
 				action.init();
 				actions.add(action);
 			}
@@ -151,8 +153,8 @@ public class CreateChildrenActionContributor {
 				@Override
 				protected Collection<IAction> generateActions(
 						Collection<Object> descriptors) {
-					return generateCreateChildActions(part, descriptors,
-							selection);
+					return generateCreateChildActions(part, domain,
+							descriptors, selection);
 				}
 
 				protected IStatus run(IProgressMonitor monitor) {
@@ -196,8 +198,8 @@ public class CreateChildrenActionContributor {
 				@Override
 				protected Collection<IAction> generateActions(
 						Collection<Object> descriptors) {
-					return generateCreateSiblingActions(part, descriptors,
-							selection);
+					return generateCreateSiblingActions(part, domain,
+							descriptors, selection);
 				}
 
 				protected IStatus run(IProgressMonitor monitor) {

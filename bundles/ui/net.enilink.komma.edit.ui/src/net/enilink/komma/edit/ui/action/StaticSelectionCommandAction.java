@@ -89,7 +89,6 @@ public abstract class StaticSelectionCommandAction extends
 			IEditingDomain editingDomain, ISelection selection) {
 		super(workbenchPart, selection);
 		this.editingDomain = editingDomain;
-		init();
 	}
 
 	/**

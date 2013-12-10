@@ -113,29 +113,26 @@ public abstract class AbstractActionHandler extends Action implements
 	 *            The workbench part to which this action handler applies.
 	 */
 	protected AbstractActionHandler(IWorkbenchPart workbenchPart) {
-		super();
-
-		assert null != workbenchPart : "null workbenchPart"; //$NON-NLS-1$
-
 		setWorkbenchPart(workbenchPart);
+		if (workbenchPart != null) {
+			this.workbenchPage = workbenchPart.getSite().getPage();
 
-		this.workbenchPage = workbenchPart.getSite().getPage();
+			// This is needed for backward compatibility in case the creator
+			// of the action (using this constructor) did not dispose of it
+			this.partListener = new PartListenerAdapter() {
 
-		// This is needed for backward compatibility in case the creator
-		// of the action (using this constructor) did not dispose of it
-		this.partListener = new PartListenerAdapter() {
-
-			/**
-			 * when the part closes, remove the listener to the workbench page
-			 * and remove all listeners.
-			 */
-			public void partClosed(IWorkbenchPart part) {
-				if (getWorkbenchPart() == part) {
-					dispose();
+				/**
+				 * when the part closes, remove the listener to the workbench
+				 * page and remove all listeners.
+				 */
+				public void partClosed(IWorkbenchPart part) {
+					if (getWorkbenchPart() == part) {
+						dispose();
+					}
 				}
-			}
-		};
-		workbenchPage.addPartListener(partListener);
+			};
+			workbenchPage.addPartListener(partListener);
+		}
 	}
 
 	/**
@@ -148,33 +145,31 @@ public abstract class AbstractActionHandler extends Action implements
 	protected AbstractActionHandler(final IWorkbenchPage workbenchPage) {
 		super();
 
-		assert null != workbenchPage : "null workbenchPage"; //$NON-NLS-1$
-
 		this.workbenchPage = workbenchPage;
-
-		this.partListener = new PartListenerAdapter() {
-
-			/**
-			 * Listens to part activation and updates the active workbench
-			 */
-			public void partActivated(IWorkbenchPart part) {
-				setWorkbenchPart(part);
-				if (part != null && contributedToPart(part))
-					refresh();
-			}
-
-			/**
-			 * Listens to part deactivation and disables the action Could be
-			 * improved to only consider toolbar actions
-			 */
-			public void partDeactivated(IWorkbenchPart part) {
-				if (part != null && contributedToPart(part)) {
-					setEnabled(false);
+		if (workbenchPage != null) {
+			this.partListener = new PartListenerAdapter() {
+				/**
+				 * Listens to part activation and updates the active workbench
+				 */
+				public void partActivated(IWorkbenchPart part) {
+					setWorkbenchPart(part);
+					if (part != null && contributedToPart(part))
+						refresh();
 				}
-			}
 
-		};
-		workbenchPage.addPartListener(partListener);
+				/**
+				 * Listens to part deactivation and disables the action Could be
+				 * improved to only consider toolbar actions
+				 */
+				public void partDeactivated(IWorkbenchPart part) {
+					if (part != null && contributedToPart(part)) {
+						setEnabled(false);
+					}
+				}
+
+			};
+			workbenchPage.addPartListener(partListener);
+		}
 	}
 
 	/**
@@ -186,8 +181,9 @@ public abstract class AbstractActionHandler extends Action implements
 	protected AbstractActionHandler(IWorkbenchPart workbenchPart,
 			ISelection selection) {
 		setWorkbenchPart(workbenchPart);
-
-		this.workbenchPage = workbenchPart.getSite().getPage();
+		if (workbenchPart != null) {
+			this.workbenchPage = workbenchPart.getSite().getPage();
+		}
 		this.selection = selection;
 	}
 
@@ -201,11 +197,10 @@ public abstract class AbstractActionHandler extends Action implements
 	 */
 	public void init() {
 		setDisposed(false);
-
-		if (getWorkbenchPart() == null)
+		if (getWorkbenchPart() == null && getWorkbenchPage() != null) {
 			setWorkbenchPart(getWorkbenchPage().getActivePart());
-		if (getWorkbenchPart() != null)
-			refresh();
+		}
+		refresh();
 	}
 
 	/**
@@ -216,7 +211,6 @@ public abstract class AbstractActionHandler extends Action implements
 	 */
 	public void dispose() {
 		setWorkbenchPart(null);
-
 		if (partListener != null && workbenchPage != null) {
 			workbenchPage.removePartListener(partListener);
 			workbenchPage = null;
