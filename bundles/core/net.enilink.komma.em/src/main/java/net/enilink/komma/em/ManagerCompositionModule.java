@@ -29,10 +29,9 @@ import net.enilink.komma.em.internal.ByteArrayConverter;
 import net.enilink.komma.em.internal.behaviours.EntitySupport;
 import net.enilink.komma.literals.IConverter;
 import net.enilink.komma.literals.LiteralConverter;
-import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.Literal;
+import net.enilink.komma.core.LiteralFactory;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 
@@ -159,26 +158,7 @@ public class ManagerCompositionModule extends AbstractModule {
 	@Provides
 	@Singleton
 	protected ILiteralFactory provideLiteralFactory() {
-		return new ILiteralFactory() {
-			@Override
-			public ILiteral createLiteral(Object value, String label,
-					net.enilink.komma.core.URI datatype,
-					String language) {
-				if (datatype != null) {
-					// let datatype take precedence if set, cannot set both
-					return new Literal(value, datatype);
-				} else {
-					return new Literal(value, language);
-				}
-			}
-
-			@Override
-			public ILiteral createLiteral(String label,
-					net.enilink.komma.core.URI datatype,
-					String language) {
-				return createLiteral(label, label, datatype, language);
-			}
-		};
+		return new LiteralFactory();
 	}
 
 	@Provides
