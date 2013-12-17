@@ -96,7 +96,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 		this.adapterFactory = adapterFactory;
 
 		if (adapterFactory instanceof INotifier) {
-			((INotifier) adapterFactory).addListener(this);
+			((INotifier<IViewerNotification>) adapterFactory).addListener(this);
 		}
 	}
 
@@ -108,11 +108,12 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 	@SuppressWarnings("unchecked")
 	public void setAdapterFactory(IAdapterFactory adapterFactory) {
 		if (this.adapterFactory instanceof INotifier) {
-			((INotifier) this.adapterFactory).removeListener(this);
+			((INotifier<IViewerNotification>) this.adapterFactory)
+					.removeListener(this);
 		}
 
 		if (adapterFactory instanceof INotifier) {
-			((INotifier) adapterFactory).addListener(this);
+			((INotifier<IViewerNotification>) adapterFactory).addListener(this);
 		}
 
 		this.adapterFactory = adapterFactory;
@@ -195,12 +196,10 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 	 */
 	public Object getParent(Object object) {
 		// Get the adapter from the factory.
-		//
 		ITreeItemContentProvider treeItemContentProvider = (ITreeItemContentProvider) adapterFactory
 				.adapt(object, ITreeItemContentProviderClass);
 
 		// Either delegate the call or return nothing.
-		//
 		return treeItemContentProvider != null ? treeItemContentProvider
 				.getParent(object) : null;
 	}
@@ -212,7 +211,8 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 	@SuppressWarnings("unchecked")
 	public void dispose() {
 		if (adapterFactory instanceof INotifier) {
-			((INotifier) adapterFactory).removeListener(this);
+			((INotifier<IViewerNotification>) adapterFactory)
+					.removeListener(this);
 		}
 		viewer = null;
 	}
@@ -430,7 +430,8 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 						Object oldElement = widget.getData();
 						// ensure that old and new element are contained within
 						// the same model or in no model at all
-						if (element instanceof IModelAware
+						if (oldElement == null
+								|| element instanceof IModelAware
 								&& oldElement instanceof IModelAware
 								&& ((IModelAware) element).getModel().equals(
 										((IModelAware) oldElement).getModel())
