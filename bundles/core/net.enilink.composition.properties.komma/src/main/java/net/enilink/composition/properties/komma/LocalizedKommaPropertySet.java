@@ -31,13 +31,13 @@ package net.enilink.composition.properties.komma;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import net.enilink.composition.properties.exceptions.PropertyException;
 
@@ -127,7 +127,8 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 			throw new PropertyException(e);
 		}
 		if (cache == null) {
-			cache = new ConcurrentHashMap<String, List<ILiteral>>();
+			cache = Collections
+					.synchronizedMap(new HashMap<String, List<ILiteral>>());
 		}
 		cache.put(language, values);
 		return values;
