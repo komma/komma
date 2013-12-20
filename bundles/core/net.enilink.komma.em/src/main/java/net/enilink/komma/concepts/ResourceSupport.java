@@ -11,11 +11,11 @@
 package net.enilink.komma.concepts;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
@@ -228,18 +228,21 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	@Inject
 	private Injector injector;
 
-	private ConcurrentHashMap<IReference, PropertyInfo> properties;
+	private Map<IReference, PropertyInfo> properties;
 
 	@Override
 	public void addProperty(IReference property, Object obj) {
 		getEntityManager().add(new Statement(this, property, obj));
 	}
 
-	private PropertyInfo ensurePropertyInfo(IReference property) {
-		PropertyInfo propertyInfo = getProperties().get(property);
+	private synchronized PropertyInfo ensurePropertyInfo(IReference property) {
+		if (properties == null) {
+			properties = new HashMap<IReference, PropertyInfo>();
+		}
+		PropertyInfo propertyInfo = properties.get(property);
 		if (propertyInfo == null) {
 			propertyInfo = new PropertyInfo(property);
-			getProperties().put(property, propertyInfo);
+			properties.put(property, propertyInfo);
 		}
 		return propertyInfo;
 	}
@@ -361,15 +364,11 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		return query.evaluate(IClass.class);
 	}
 
-	private synchronized Map<IReference, PropertyInfo> getProperties() {
+	private synchronized PropertyInfo getPropertyInfo(IReference property) {
 		if (properties == null) {
-			properties = new ConcurrentHashMap<IReference, PropertyInfo>();
+			return null;
 		}
-		return properties;
-	}
-
-	private PropertyInfo getPropertyInfo(IReference property) {
-		return getProperties().get(property);
+		return properties.get(property);
 	}
 
 	@Override
@@ -533,11 +532,9 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	@SuppressWarnings("unchecked")
 	public void set(IReference property, Object value) {
 		PropertyInfo propertyInfo = ensurePropertyInfo(property);
-		boolean functional = propertyInfo.isSingle();
-
 		if (value == null) {
 			propertyInfo.getPropertySet().getAll().clear();
-		} else if (!functional && value instanceof Collection<?>) {
+		} else if (value instanceof Collection<?> && !propertyInfo.isSingle()) {
 			if (value instanceof Set<?>) {
 				propertyInfo.getPropertySet().setAll((Set<Object>) value);
 			} else {
