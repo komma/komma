@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.concepts;
+package net.enilink.vocab.komma;
 
 import net.enilink.vocab.owl.Thing;
 import net.enilink.komma.core.IEntity;

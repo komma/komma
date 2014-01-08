@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.concepts;
+package net.enilink.vocab.komma;
 
 import net.enilink.composition.annotations.Iri;
 
@@ -16,7 +16,7 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 
 @Iri("http://enilink.net/vocab/komma#")
-public interface CONCEPTS {
+public interface KOMMA {
 	public static final String NAMESPACE = "http://enilink.net/vocab/komma#";
 	public static final URI NAMESPACE_URI = URIImpl.createURI(NAMESPACE);
 

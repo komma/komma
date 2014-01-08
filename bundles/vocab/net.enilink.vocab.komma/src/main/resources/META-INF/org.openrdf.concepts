@@ -1,8 +1,8 @@
-net.enilink.komma.concepts.KeyValueMap
-net.enilink.komma.concepts.KommaResource
-net.enilink.komma.concepts.LiteralKeyMap
-net.enilink.komma.concepts.LiteralKeyValueMap
-net.enilink.komma.concepts.LiteralValueMap
-net.enilink.komma.concepts.Map
-net.enilink.komma.concepts.MapEntry
-net.enilink.komma.concepts.Connection
+net.enilink.vocab.komma.KeyValueMap
+net.enilink.vocab.komma.KommaResource
+net.enilink.vocab.komma.LiteralKeyMap
+net.enilink.vocab.komma.LiteralKeyValueMap
+net.enilink.vocab.komma.LiteralValueMap
+net.enilink.vocab.komma.Map
+net.enilink.vocab.komma.MapEntry
+net.enilink.vocab.komma.Connection

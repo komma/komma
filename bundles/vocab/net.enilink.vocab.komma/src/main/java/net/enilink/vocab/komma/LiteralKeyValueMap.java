@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.concepts;
+package net.enilink.vocab.komma;
 
 import java.util.Map;
 import net.enilink.composition.annotations.Iri;
@@ -17,6 +17,6 @@ import net.enilink.composition.annotations.Iri;
  * 
  * @generated 
  */
-@Iri("http://enilink.net/vocab/komma#LiteralValueMap")
-public interface LiteralValueMap extends Map<Object, Object> {
+@Iri("http://enilink.net/vocab/komma#LiteralKeyValueMap")
+public interface LiteralKeyValueMap extends Map<Object, Object> {
 }

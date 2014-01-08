@@ -8,12 +8,15 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
+package net.enilink.vocab.komma;
+
+import java.util.Map;
+import net.enilink.composition.annotations.Iri;
+
 /** 
  * 
  * @generated 
  */
-@Iri("http://enilink.net/vocab/komma#")
-package net.enilink.komma.concepts;
-
-import net.enilink.composition.annotations.Iri;
-
+@Iri("http://enilink.net/vocab/komma#LiteralKeyMap")
+public interface LiteralKeyMap extends Map<Object, Object> {
+}
