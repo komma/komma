@@ -31,15 +31,13 @@ package net.enilink.komma.em.internal.behaviours;
 import java.util.AbstractList;
 import java.util.HashSet;
 
+import net.enilink.commons.iterator.ConvertingIterator;
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.annotations.Precedes;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.composition.traits.Behaviour;
-
-import net.enilink.commons.iterator.ConvertingIterator;
-import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.concepts.ResourceSupport;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
@@ -48,6 +46,7 @@ import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
+import net.enilink.vocab.rdf.RDF;
 
 /**
  * This behaviour provides a java.util.List interface for RDF containers.

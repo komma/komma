@@ -16,8 +16,8 @@ import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.cache.annotations.Cacheable;
-
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.vocab.komma.KOMMA;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
@@ -123,24 +123,24 @@ public interface IResource extends Resource {
 
 	/* support for containment and partial ordering */
 
-	@Iri(CONCEPTS.NAMESPACE + "containsTransitive")
+	@Iri(KOMMA.NAMESPACE + "containsTransitive")
 	Set<IResource> getAllContents();
 
 	IExtendedIterator<IProperty> getApplicableChildProperties();
 
 	IResource getContainer();
 
-	@Iri(CONCEPTS.NAMESPACE + "contains")
+	@Iri(KOMMA.NAMESPACE + "contains")
 	Set<IResource> getContents();
 
 	List<IResource> getOrderedContents();
 
 	void setOrderedContents();
 
-	@Iri(CONCEPTS.NAMESPACE + "precedes")
+	@Iri(KOMMA.NAMESPACE + "precedes")
 	Set<IResource> getPrecedes();
 
-	@Iri(CONCEPTS.NAMESPACE + "precedesTransitive")
+	@Iri(KOMMA.NAMESPACE + "precedesTransitive")
 	Set<IResource> getPrecedesTransitive();
 
 	void setContents(Set<IResource> contents);

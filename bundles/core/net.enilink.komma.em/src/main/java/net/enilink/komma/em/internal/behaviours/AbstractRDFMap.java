@@ -16,13 +16,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import net.enilink.commons.iterator.ConvertingIterator;
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.composition.traits.Behaviour;
-
-import net.enilink.commons.iterator.ConvertingIterator;
-import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.concepts.CONCEPTS;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;
@@ -30,6 +28,7 @@ import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
+import net.enilink.vocab.komma.KOMMA;
 
 public abstract class AbstractRDFMap extends
 		java.util.AbstractMap<Object, Object> implements
@@ -114,7 +113,7 @@ public abstract class AbstractRDFMap extends
 			elements = new Stack<Entry>();
 
 			IExtendedIterator<IValue> values = match(getBehaviourDelegate(),
-					CONCEPTS.PROPERTY_ENTRY, null);
+					KOMMA.PROPERTY_ENTRY, null);
 			while (values.hasNext()) {
 				elements.push(createMapEntry(values.next()));
 			}
@@ -148,9 +147,9 @@ public abstract class AbstractRDFMap extends
 
 	transient volatile int modCount;
 
-	final String SELECT_ENTRY_BY_KEY = "PREFIX komma:<" + CONCEPTS.NAMESPACE
+	final String SELECT_ENTRY_BY_KEY = "PREFIX komma:<" + KOMMA.NAMESPACE
 			+ "> " + "SELECT DISTINCT ?entry where {?resource komma:"
-			+ CONCEPTS.PROPERTY_ENTRY.localPart() + " ?entry "
+			+ KOMMA.PROPERTY_ENTRY.localPart() + " ?entry "
 			+ ". ?entry komma:" + getUri4Key().localPart() + " ?key}";
 
 	void addStatement(IReference subj, URI pred, Object obj) {
@@ -164,7 +163,7 @@ public abstract class AbstractRDFMap extends
 	@Override
 	public void clear() {
 		IExtendedIterator<IValue> values = match(getBehaviourDelegate(),
-				CONCEPTS.PROPERTY_ENTRY, null);
+				KOMMA.PROPERTY_ENTRY, null);
 		while (values.hasNext()) {
 			removeEntry((IReference) values.next());
 		}
@@ -285,10 +284,10 @@ public abstract class AbstractRDFMap extends
 		}
 
 		// anonym. Entry anlegen
-		IEntity mapEntry = manager.create(manager.find(CONCEPTS.TYPE_MAPENTRY));
+		IEntity mapEntry = manager.create(manager.find(KOMMA.TYPE_MAPENTRY));
 
 		// Entry zu Map zuordnen
-		addStatement(this, CONCEPTS.PROPERTY_ENTRY, mapEntry);
+		addStatement(this, KOMMA.PROPERTY_ENTRY, mapEntry);
 
 		// Key
 		addStatement(mapEntry, getUri4Key(), key);
@@ -319,7 +318,7 @@ public abstract class AbstractRDFMap extends
 	}
 
 	private void removeEntry(IReference entry) {
-		removeStatements(getBehaviourDelegate(), CONCEPTS.PROPERTY_ENTRY, entry);
+		removeStatements(getBehaviourDelegate(), KOMMA.PROPERTY_ENTRY, entry);
 		removeStatements(entry, getUri4Key(), null);
 		removeStatements(entry, getUri4Value(), null);
 		_size--;

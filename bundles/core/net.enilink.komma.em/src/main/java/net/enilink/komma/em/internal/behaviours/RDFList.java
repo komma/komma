@@ -41,14 +41,12 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import net.enilink.composition.annotations.Precedes;
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.composition.annotations.Iri;
+import net.enilink.composition.annotations.Precedes;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.composition.traits.Behaviour;
-
-import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.concepts.ResourceSupport;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IGraph;
@@ -62,6 +60,7 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.util.IPartialOrderProvider;
 import net.enilink.komma.util.ISparqlConstants;
 import net.enilink.komma.util.LinearExtension;
+import net.enilink.vocab.rdf.RDF;
 
 /**
  * Java instance for rdf:List as a familiar interface to manipulate this List.

@@ -10,13 +10,13 @@
  *******************************************************************************/
 package net.enilink.komma.util;
 
+import net.enilink.vocab.komma.KOMMA;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.komma.concepts.CONCEPTS;
 
 public interface ISparqlConstants {
 	public static final String PREFIX = "PREFIX rdf: <" + RDF.NAMESPACE
 			+ "> PREFIX rdfs: <" + RDFS.NAMESPACE + "> PREFIX owl: <"
-			+ OWL.NAMESPACE + "> PREFIX komma: <" + CONCEPTS.NAMESPACE + "> ";
+			+ OWL.NAMESPACE + "> PREFIX komma: <" + KOMMA.NAMESPACE + "> ";
 }

@@ -11,7 +11,6 @@
 package net.enilink.komma.em.internal.behaviours;
 
 import net.enilink.composition.traits.Behaviour;
-
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;

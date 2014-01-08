@@ -18,21 +18,12 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
-import org.osgi.framework.Bundle;
-
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.IMap;
 import net.enilink.commons.iterator.NiceIterator;
 import net.enilink.commons.iterator.UniqueExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.rdf.RDF;
-import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.vocab.xmlschema.XMLSCHEMA;
 import net.enilink.komma.KommaCore;
-import net.enilink.komma.concepts.CONCEPTS;
 import net.enilink.komma.concepts.ClassSupport;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IOntology;
@@ -48,13 +39,22 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
+import net.enilink.vocab.komma.KOMMA;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdf.RDF;
+import net.enilink.vocab.rdfs.RDFS;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.Bundle;
 
 public class KommaUtil implements ISparqlConstants {
 	public static KommaModule getCoreModule() {
 		KommaModule module = new KommaModule(KommaUtil.class.getClassLoader());
 		module.includeModule(new KommaModule(OWL.class.getClassLoader()));
 		module.includeModule(new KommaModule(RDFS.class.getClassLoader()));
-		module.includeModule(new KommaModule(CONCEPTS.class.getClassLoader()));
+		module.includeModule(new KommaModule(KOMMA.class.getClassLoader()));
 
 		RoleClassLoader roleClassLoader = new RoleClassLoader(module);
 

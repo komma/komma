@@ -11,19 +11,18 @@
 package net.enilink.komma.em.internal.behaviours;
 
 import net.enilink.composition.annotations.Iri;
-
-import net.enilink.komma.concepts.CONCEPTS;
 import net.enilink.komma.core.URI;
+import net.enilink.vocab.komma.KOMMA;
 
-@Iri(CONCEPTS.NAMESPACE + "KeyValueMap")
+@Iri(KOMMA.NAMESPACE + "KeyValueMap")
 public abstract class KeyValueMap extends AbstractRDFMap {
 	@Override
 	protected URI getUri4Key() {
-		return CONCEPTS.PROPERTY_KEY;
+		return KOMMA.PROPERTY_KEY;
 	}
 
 	@Override
 	protected URI getUri4Value() {
-		return CONCEPTS.PROPERTY_VALUE;
+		return KOMMA.PROPERTY_VALUE;
 	}
 }

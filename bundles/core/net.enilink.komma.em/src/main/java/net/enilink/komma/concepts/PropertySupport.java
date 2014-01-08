@@ -17,10 +17,10 @@ import java.util.Queue;
 import java.util.Set;
 
 import net.enilink.composition.traits.Behaviour;
-
 import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
+import net.enilink.vocab.komma.KOMMA;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.FunctionalProperty;
 import net.enilink.komma.core.IEntity;
@@ -112,7 +112,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 			return false;
 		}
 
-		if (CONCEPTS.PROPERTY_CONTAINS.equals(getURI())) {
+		if (KOMMA.PROPERTY_CONTAINS.equals(getURI())) {
 			return true;
 		}
 
@@ -171,7 +171,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 			return false;
 		}
 
-		if (CONCEPTS.PROPERTY_ORDEREDCONTAINS.equals(getURI())) {
+		if (KOMMA.PROPERTY_ORDEREDCONTAINS.equals(getURI())) {
 			return true;
 		}
 

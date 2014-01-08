@@ -35,7 +35,6 @@ import java.util.ListIterator;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.annotations.Precedes;
-
 import net.enilink.komma.concepts.ResourceSupport;
 
 /**

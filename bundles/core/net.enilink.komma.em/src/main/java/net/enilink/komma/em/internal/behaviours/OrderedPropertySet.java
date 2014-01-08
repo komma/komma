@@ -17,16 +17,15 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.RandomAccess;
 
-import net.enilink.composition.properties.komma.KommaPropertySet;
-import net.enilink.composition.properties.traits.Refreshable;
-
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
-import net.enilink.komma.concepts.CONCEPTS;
+import net.enilink.composition.properties.komma.KommaPropertySet;
+import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.util.IPartialOrderProvider;
 import net.enilink.komma.util.LinearExtension;
+import net.enilink.vocab.komma.KOMMA;
 
 public class OrderedPropertySet<E> extends KommaPropertySet<E> implements
 		List<E>, RandomAccess, Cloneable, Refreshable {
@@ -220,7 +219,7 @@ public class OrderedPropertySet<E> extends KommaPropertySet<E> implements
 	@SuppressWarnings("unchecked")
 	private Collection<E> getPrecedes(E element) {
 		return (Collection<E>) ((IResource) element)
-				.get(CONCEPTS.PROPERTY_PRECEDES);
+				.get(KOMMA.PROPERTY_PRECEDES);
 	}
 
 	@Override
