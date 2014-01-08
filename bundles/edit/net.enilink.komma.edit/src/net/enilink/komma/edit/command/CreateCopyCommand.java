@@ -23,21 +23,21 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
-import net.enilink.komma.concepts.CONCEPTS;
 import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.concepts.IResource;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.URI;
+import net.enilink.vocab.komma.KOMMA;
+
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * The create copy command is used to create an uninitialized object of the same
@@ -143,7 +143,7 @@ public class CreateCopyCommand extends AbstractOverrideableCommand implements
 	public Collection<?> doGetChildrenToCopy() {
 		// Create commands to create copies of the children.
 		Set<Object> result = new LinkedHashSet<Object>(owner.getPropertyValues(
-				CONCEPTS.PROPERTY_CONTAINS, true).toList());
+				KOMMA.PROPERTY_CONTAINS, true).toList());
 		return result;
 	}
 
