@@ -15,20 +15,20 @@ import static org.junit.Assert.assertEquals;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.google.inject.Guice;
-
-import net.enilink.komma.concepts.CONCEPTS;
+import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelSetFactory;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelCore;
 import net.enilink.komma.model.ModelSetModule;
-import net.enilink.komma.core.KommaModule;
+import net.enilink.vocab.komma.KOMMA;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.google.inject.Guice;
 
 public class ModelLoadTest {
 	IModelSet modelSet;
@@ -52,7 +52,7 @@ public class ModelLoadTest {
 
 	@Test
 	public void testModel() throws Exception {
-		IModel model = modelSet.createModel(CONCEPTS.NAMESPACE_URI
+		IModel model = modelSet.createModel(KOMMA.NAMESPACE_URI
 				.trimFragment());
 		model.load(Collections.emptyMap());
 
