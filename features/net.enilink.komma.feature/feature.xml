@@ -45,13 +45,6 @@
          unpack="false"/>
 
    <plugin
-         id="net.enilink.komma.generator"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="net.enilink.komma.core"
          download-size="0"
          install-size="0"
