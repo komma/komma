@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/net.enilink.komma.edit.feature_1.0.0.201103251547.jar" id="net.enilink.komma.edit.feature" version="1.0.0.201103251547">
+      <category name="semanticweb"/>
+   </feature>
+   <feature url="features/net.enilink.komma.editor.feature_1.0.0.201103251547.jar" id="net.enilink.komma.editor.feature" version="1.0.0.201103251547">
+      <category name="semanticweb"/>
+   </feature>
+   <feature url="features/net.enilink.komma.feature_1.0.0.201103251547.jar" id="net.enilink.komma.feature" version="1.0.0.201103251547">
+      <category name="semanticweb"/>
+   </feature>
+   <category-def name="semanticweb" label="Semantic Web"/>
+</site>
