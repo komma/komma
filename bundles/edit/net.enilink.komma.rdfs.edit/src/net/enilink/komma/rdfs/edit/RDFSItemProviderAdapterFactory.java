@@ -13,10 +13,10 @@ import java.util.Set;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.util.IResourceLocator;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.provider.ReflectiveItemProviderAdapterFactory;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.URI;
 
