@@ -17,7 +17,7 @@
       <rule
             pattern="http://enilink.net/vocab/komma"
             priority="30"
-            replacement="platform:/plugin/net.enilink.komma.concepts/META-INF/ontologies/komma">
+            replacement="platform:/plugin/net.enilink.vocab.komma/META-INF/ontologies/komma">
       </rule>
    </extension>
 

@@ -33,7 +33,7 @@
 			</actorProperties>
 			<properties>
 				<property key="bindings"
-					value="-bnet.enilink.komma.concepts=http://enilink.net/vocab/komma#" />
+					value="-bnet.enilink.vocab.komma=http://enilink.net/vocab/komma#" />
 				<property key="base.class" value="net.enilink.komma.core.IEntity" />
 			</properties>
 

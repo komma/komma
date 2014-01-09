@@ -10,7 +10,7 @@
         Fraunhofer IWU - initial API and implementation
  -->
 
-<project name="net.enilink.komma.concepts" default="" basedir="..">
+<project name="net.enilink.vocab.komma" default="" basedir="..">
 	<!-- imports build file defined in buckminster cspec -->
 	<import file="${sp:target.buildfile}" />
 </project>
