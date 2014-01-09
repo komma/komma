@@ -11,18 +11,17 @@ import java.util.Collection;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
-
 import net.enilink.vocab.owl.AnnotationProperty;
 import net.enilink.vocab.owl.Class;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.owl.ObjectProperty;
 import net.enilink.vocab.owl.Ontology;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.rdfs.edit.RDFSItemProviderAdapterFactory;
 import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
 
 /**
  * This is the factory that is used to provide the interfaces needed to support

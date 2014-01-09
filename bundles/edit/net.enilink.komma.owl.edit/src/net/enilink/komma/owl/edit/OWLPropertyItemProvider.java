@@ -13,7 +13,7 @@ package net.enilink.komma.owl.edit;
 import java.util.Collection;
 
 import net.enilink.komma.common.util.IResourceLocator;
-import net.enilink.komma.concepts.IClass;
+import net.enilink.komma.em.concepts.IClass;
 import net.enilink.komma.rdfs.edit.RDFSPropertyItemProvider;
 
 public class OWLPropertyItemProvider extends RDFSPropertyItemProvider {

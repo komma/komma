@@ -13,12 +13,12 @@ package net.enilink.komma.owl.edit;
 import java.util.Collection;
 
 import net.enilink.komma.common.util.IResourceLocator;
-import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.parser.manchester.ManchesterSyntaxGenerator;
 import net.enilink.komma.rdfs.edit.RDFSClassItemProvider;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.em.concepts.IClass;
 
 public class OWLClassItemProvider extends RDFSClassItemProvider {
 	public OWLClassItemProvider(OWLItemProviderAdapterFactory adapterFactory,
