@@ -11,7 +11,7 @@ Export-Package: net.enilink.komma.edit.ui.properties,
 Import-Package: com.google.inject,
  org.eclipse.core.commands
 Require-Bundle: org.eclipse.core.runtime,
- net.enilink.komma,
+ net.enilink.komma.em,
  net.enilink.komma.edit.ui,
  net.enilink.commons.ui,
  net.enilink.commons.util,
