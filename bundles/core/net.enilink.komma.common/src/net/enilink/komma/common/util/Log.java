@@ -10,23 +10,16 @@
  *******************************************************************************/
 package net.enilink.komma.common.util;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.eclipse.core.internal.runtime.InternalPlatform;
-import org.eclipse.core.runtime.ILog;
-import org.eclipse.core.runtime.ILogListener;
-import org.eclipse.core.runtime.ISafeRunnable;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Plugin;
-import org.eclipse.core.runtime.SafeRunner;
-import org.eclipse.core.runtime.Status;
-import org.osgi.framework.Bundle;
-
 import net.enilink.komma.common.CommonPlugin;
 import net.enilink.komma.common.internal.CommonDebugOptions;
 import net.enilink.komma.common.internal.CommonStatusCodes;
+
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.ILogListener;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.Status;
+import org.osgi.framework.Bundle;
 
 /**
  * A utility for logging errors, warnings, and information. Provides a simple

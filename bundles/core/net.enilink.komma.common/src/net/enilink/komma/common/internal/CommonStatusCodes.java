@@ -14,7 +14,7 @@ package net.enilink.komma.common.internal;
  * A list of status codes for this plug-in.
  * 
  * @author khussey
- *
+ * 
  */
 public final class CommonStatusCodes {
 
@@ -51,17 +51,17 @@ public final class CommonStatusCodes {
 	 * Status code indicating that an error occurred with a command.
 	 */
 	public static final int COMMAND_FAILURE = 4;
-	
+
 	/**
 	 * Status code indicating that an error occurred with a service.
 	 */
 	public static final int SERVICE_FAILURE = 5;
-	
+
 	/**
 	 * Status code indicating that an operation was cancelled.
 	 */
 	public static final int CANCELLED = 6;
-	
+
 	/**
 	 * Status code indicating that an operation was rolled back due to live
 	 * validation errors.
@@ -72,7 +72,7 @@ public final class CommonStatusCodes {
 	 * Encoding failure.
 	 */
 	public static final int ENCODING_FAILURE = 8;
-	
+
 	/**
 	 * Error status code indicating that the recovery of a failed execution also
 	 * failed.
@@ -90,5 +90,10 @@ public final class CommonStatusCodes {
 	 * failed.
 	 */
 	public static final int REDO_RECOVERY_FAILED = 22;
-	
+
+	/**
+	 * Error status code indicating that an unexpected error occurred.
+	 */
+	public static final int INTERNAL_ERROR = 10001;
+
 }

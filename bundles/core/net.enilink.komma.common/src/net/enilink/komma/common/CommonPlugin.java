@@ -23,12 +23,12 @@ import java.text.Collator;
 import java.util.Comparator;
 import java.util.Locale;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
-
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
 
 /**
  * The <b>Plugin</b> for the model EMF.Common library. EMF must run within an
@@ -43,7 +43,7 @@ import net.enilink.komma.core.URIImpl;
  */
 public final class CommonPlugin extends AbstractKommaPlugin {
 	public static final String PLUGIN_ID = "net.enilink.komma.common";
-	
+
 	/**
 	 * The singleton instance of the plugin.
 	 */
@@ -112,7 +112,7 @@ public final class CommonPlugin extends AbstractKommaPlugin {
 		}
 		COLLATOR_GET_INSTANCE_METHOD = collatorGetInstanceMethod;
 	}
-
+	
 	/**
 	 * Returns a string comparator appropriate for collating strings for the
 	 * {@link Locale#getDefault() current locale}.
@@ -212,7 +212,8 @@ public final class CommonPlugin extends AbstractKommaPlugin {
 			return uri;
 		}
 
-		protected static URIImpl fix(URL url, String fragment) throws IOException {
+		protected static URIImpl fix(URL url, String fragment)
+				throws IOException {
 			// Only file-scheme URIs will be re-encoded. If a URI was decoded in
 			// the workaround
 			// above, and Platform.resolve() didn't return a file-scheme URI,

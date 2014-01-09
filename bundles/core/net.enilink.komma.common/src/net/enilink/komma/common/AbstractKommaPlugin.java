@@ -28,11 +28,13 @@ import java.util.jar.Manifest;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.Bundle;
 
+import net.enilink.komma.common.internal.CommonStatusCodes;
 import net.enilink.komma.common.util.DelegatingResourceLocator;
 import net.enilink.komma.common.util.ILogger;
 import net.enilink.komma.common.util.IResourceLocator;
@@ -85,7 +87,7 @@ public abstract class AbstractKommaPlugin extends DelegatingResourceLocator
 		}
 		IS_RESOURCES_BUNDLE_AVAILABLE = result;
 	}
-	
+
 	protected IResourceLocator[] delegateResourceLocators;
 
 	public AbstractKommaPlugin(IResourceLocator[] delegateResourceLocators) {
@@ -186,8 +188,9 @@ public abstract class AbstractKommaPlugin extends DelegatingResourceLocator
 			} catch (MalformedURLException exception) {
 				throw new WrappedException(exception);
 			} catch (IOException exception) {
-				throw new MissingResourceException(CommonPlugin.INSTANCE
-						.getString("_UI_StringResourceNotFound_exception",
+				throw new MissingResourceException(
+						CommonPlugin.INSTANCE.getString(
+								"_UI_StringResourceNotFound_exception",
 								new Object[] { key }), getClass().getName(),
 						key);
 			}
@@ -355,6 +358,22 @@ public abstract class AbstractKommaPlugin extends DelegatingResourceLocator
 				}
 			}
 		}
+
+		public void logErrorMessage(String message) {
+			log(new Status(IStatus.ERROR, getBundle().getSymbolicName(),
+					CommonStatusCodes.INTERNAL_ERROR, message, null));
+		}
+
+		public void logErrorStatus(String message, IStatus status) {
+			if (status == null) {
+				logErrorMessage(message);
+				return;
+			}
+			MultiStatus multi = new MultiStatus(getBundle().getSymbolicName(),
+					CommonStatusCodes.INTERNAL_ERROR, message, null);
+			multi.add(status);
+			log(multi);
+		}
 	}
 
 	public static void main(String[] args) {
@@ -366,8 +385,7 @@ public abstract class AbstractKommaPlugin extends DelegatingResourceLocator
 			String className = theClass.getName();
 			int index = className.lastIndexOf(".");
 			URL classURL = theClass.getResource((index == -1 ? className
-					: className.substring(index + 1))
-					+ ".class");
+					: className.substring(index + 1)) + ".class");
 			URIImpl uri = URIImpl.createURI(classURL.toString());
 
 			// Trim off the segments corresponding to the package nesting.
