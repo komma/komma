@@ -7,7 +7,7 @@ import net.enilink.komma.common.util.IResourceLocator;
  * The activator class controls the plug-in life cycle
  */
 public class KommaEM extends AbstractKommaPlugin {
-	public static final String PLUGIN_ID = "net.enilink.komma";
+	public static final String PLUGIN_ID = "net.enilink.komma.em";
 
 	public static final KommaEM INSTANCE = new KommaEM();
 

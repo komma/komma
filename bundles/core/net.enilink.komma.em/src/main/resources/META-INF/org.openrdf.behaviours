@@ -6,4 +6,4 @@ net.enilink.komma.em.internal.behaviours.KeyValueMap
 net.enilink.komma.em.internal.behaviours.LiteralKeyValueMap
 net.enilink.komma.em.internal.behaviours.LiteralKeyMap
 net.enilink.komma.em.internal.behaviours.LiteralValueMap
-net.enilink.komma.concepts.OntologySupport 
+net.enilink.komma.em.concepts.OntologySupport 

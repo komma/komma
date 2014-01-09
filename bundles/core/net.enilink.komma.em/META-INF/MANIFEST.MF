@@ -33,7 +33,7 @@ Import-Package: com.google.inject;version="2.0.0",
  org.objectweb.asm;version="3.2.0",
  org.slf4j
 Require-Bundle: org.eclipse.core.runtime,
- net.enilink.commons.util,
+ net.enilink.commons.util;visibility:=reexport,
  net.enilink.commons.iterator;visibility:=reexport,
  net.enilink.komma.core;visibility:=reexport,
  net.enilink.komma.dm;visibility:=reexport,
