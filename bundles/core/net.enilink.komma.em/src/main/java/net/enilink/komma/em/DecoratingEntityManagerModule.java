@@ -22,8 +22,8 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 
 import net.enilink.komma.em.internal.DecoratingEntityManager;
+import net.enilink.komma.em.util.UnitOfWork;
 import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.util.UnitOfWork;
 
 public class DecoratingEntityManagerModule extends AbstractModule {
 	@Override

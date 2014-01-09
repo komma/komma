@@ -35,7 +35,7 @@ import java.util.ListIterator;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.annotations.Precedes;
-import net.enilink.komma.concepts.ResourceSupport;
+import net.enilink.komma.em.concepts.ResourceSupport;
 
 /**
  * This class exists to disable SesameContainer behaviour when creating an

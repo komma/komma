@@ -3,16 +3,15 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Knowledge Management Architecture
 Bundle-SymbolicName: net.enilink.komma;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: net.enilink.komma.KommaCore$Implementation
+Bundle-Activator: net.enilink.komma.em.KommaEM$Implementation
 Bundle-Localization: plugin
 Bundle-ActivationPolicy: lazy
-Export-Package: net.enilink.komma,
- net.enilink.komma.concepts,
- net.enilink.komma.em,
+Export-Package: net.enilink.komma.em,
+ net.enilink.komma.em.concepts,
  net.enilink.komma.em.internal.behaviours,
- net.enilink.komma.results,
- net.enilink.komma.tests,
- net.enilink.komma.util
+ net.enilink.komma.em.results,
+ net.enilink.komma.em.tests,
+ net.enilink.komma.em.util
 Import-Package: com.google.inject;version="2.0.0",
  com.google.inject.assistedinject;version="2.0.0",
  com.google.inject.binder;version="2.0.0",

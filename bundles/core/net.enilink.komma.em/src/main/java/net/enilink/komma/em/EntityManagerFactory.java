@@ -41,6 +41,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 
 import net.enilink.komma.dm.IDataManagerFactory;
+import net.enilink.komma.em.util.IClosable;
 import net.enilink.komma.core.IDialect;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
@@ -49,7 +50,6 @@ import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.SparqlStandardDialect;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.util.IClosable;
 
 /**
  * Creates {@link IEntityManager}s.

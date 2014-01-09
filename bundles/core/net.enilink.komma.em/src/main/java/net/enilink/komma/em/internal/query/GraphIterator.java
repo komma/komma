@@ -29,7 +29,7 @@
 package net.enilink.komma.em.internal.query;
 
 import net.enilink.commons.iterator.ConvertingIterator;
-import net.enilink.komma.concepts.IResource;
+import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.em.internal.IEntityManagerInternal;
 import net.enilink.komma.core.IGraphResult;
 import net.enilink.komma.core.IStatement;

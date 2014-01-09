@@ -38,7 +38,6 @@ import net.enilink.composition.annotations.Precedes;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.composition.traits.Behaviour;
-import net.enilink.komma.concepts.ResourceSupport;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
@@ -46,6 +45,7 @@ import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.em.concepts.ResourceSupport;
 import net.enilink.vocab.rdf.RDF;
 
 /**

@@ -36,12 +36,12 @@ import java.util.List;
 import net.enilink.commons.iterator.NiceIterator;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.em.internal.IEntityManagerInternal;
+import net.enilink.komma.em.util.RESULTS;
 import net.enilink.komma.core.IGraph;
 import net.enilink.komma.core.IGraphResult;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.ITupleResult;
 import net.enilink.komma.core.LinkedHashGraph;
-import net.enilink.komma.util.RESULTS;
 
 /**
  * Converts the repository result into an array of Objects.

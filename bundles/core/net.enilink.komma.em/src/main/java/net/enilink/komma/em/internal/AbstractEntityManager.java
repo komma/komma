@@ -49,6 +49,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections.map.ReferenceIdentityMap;
+
 import net.enilink.composition.ClassResolver;
 import net.enilink.composition.cache.annotations.Cacheable;
 import net.enilink.composition.mappers.RoleMapper;
@@ -58,6 +59,7 @@ import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.PropertySetOwner;
 import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.composition.traits.Behaviour;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,10 +74,11 @@ import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.em.internal.behaviours.IEntityManagerAware;
 import net.enilink.komma.em.internal.query.EntityManagerQuery;
+import net.enilink.komma.em.util.RESULTS;
 import net.enilink.komma.literals.LiteralConverter;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
@@ -99,7 +102,6 @@ import net.enilink.komma.core.StatementPattern;
 import net.enilink.komma.core.TransactionRequiredException;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.util.RESULTS;
 
 /**
  * Handles operations of {@link IEntityManager}.

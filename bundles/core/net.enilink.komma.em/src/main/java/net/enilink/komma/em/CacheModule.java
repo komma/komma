@@ -42,8 +42,8 @@ import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.dm.change.IDataChangeListener;
 import net.enilink.komma.dm.change.IDataChangeTracker;
 import net.enilink.komma.dm.change.IStatementChange;
+import net.enilink.komma.em.util.IClosable;
 import net.enilink.komma.core.IEntity;
-import net.enilink.komma.util.IClosable;
 
 public class CacheModule extends AbstractModule {
 	/**

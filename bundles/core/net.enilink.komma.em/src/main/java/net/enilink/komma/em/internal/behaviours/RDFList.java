@@ -42,12 +42,13 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.commons.util.IPartialOrderProvider;
+import net.enilink.commons.util.LinearExtension;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.annotations.Precedes;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.composition.traits.Behaviour;
-import net.enilink.komma.concepts.ResourceSupport;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IGraph;
 import net.enilink.komma.core.IReference;
@@ -57,9 +58,8 @@ import net.enilink.komma.core.Initializable;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.util.IPartialOrderProvider;
-import net.enilink.komma.util.ISparqlConstants;
-import net.enilink.komma.util.LinearExtension;
+import net.enilink.komma.em.concepts.ResourceSupport;
+import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.vocab.rdf.RDF;
 
 /**

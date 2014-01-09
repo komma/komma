@@ -14,8 +14,8 @@ import com.google.inject.Inject;
 
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
+import net.enilink.komma.em.util.UnitOfWork;
 import net.enilink.komma.core.KommaException;
-import net.enilink.komma.util.UnitOfWork;
 
 public class ThreadLocalDataManager extends DelegatingDataManager {
 	@Inject

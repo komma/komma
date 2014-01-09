@@ -19,12 +19,12 @@ import java.util.RandomAccess;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
+import net.enilink.commons.util.IPartialOrderProvider;
+import net.enilink.commons.util.LinearExtension;
 import net.enilink.composition.properties.komma.KommaPropertySet;
 import net.enilink.composition.properties.traits.Refreshable;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.util.IPartialOrderProvider;
-import net.enilink.komma.util.LinearExtension;
+import net.enilink.komma.em.concepts.IResource;
 import net.enilink.vocab.komma.KOMMA;
 
 public class OrderedPropertySet<E> extends KommaPropertySet<E> implements
