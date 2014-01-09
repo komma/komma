@@ -21,16 +21,16 @@ import org.eclipse.swt.widgets.TableColumn;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.common.adapter.IAdapterFactory;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.provider.ISearchableItemProvider;
 import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
+import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.util.ISparqlConstants;
 
 public class InstanceTablePart extends InstancesPart {
 	static final int LIMIT = 1000;

@@ -11,10 +11,10 @@
 package net.enilink.komma.owl.editor.properties;
 
 import net.enilink.vocab.owl.OWL;
-import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.util.ISparqlConstants;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.util.ISparqlConstants;
 
 public class OtherPropertiesPart extends AbstractPropertiesPart {
 	@Override

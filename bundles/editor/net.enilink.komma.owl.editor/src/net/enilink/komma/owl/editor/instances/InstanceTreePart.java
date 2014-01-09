@@ -10,12 +10,12 @@ import org.eclipse.swt.widgets.Tree;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.common.adapter.IAdapterFactory;
-import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.edit.provider.ISearchableItemProvider;
 import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
 import net.enilink.komma.edit.ui.provider.LazyAdapterFactoryContentProvider;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.komma.model.IObject;
-import net.enilink.komma.util.ISparqlConstants;
 
 public class InstanceTreePart extends InstancesPart {
 	static String QUERY_INSTANCES = ISparqlConstants.PREFIX

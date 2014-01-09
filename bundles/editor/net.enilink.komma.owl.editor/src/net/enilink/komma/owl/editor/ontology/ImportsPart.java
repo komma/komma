@@ -41,14 +41,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.dialogs.SelectionDialog;
-import net.enilink.composition.properties.Filterable;
 
+import net.enilink.composition.properties.Filterable;
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.vocab.owl.Ontology;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.SimpleCommand;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.ui.dialogs.FilteredList;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
@@ -57,10 +56,11 @@ import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 import net.enilink.komma.edit.ui.provider.reflective.ObjectComparator;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
+import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
-import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelDescription;
 import net.enilink.komma.model.base.IURIMapRule;
 import net.enilink.komma.model.base.SimpleURIMapRule;
@@ -111,7 +111,7 @@ public class ImportsPart extends AbstractEditingDomainPart {
 								event.getSelection());
 					}
 				});
-		modelDescriptions = ModelCore.getBaseModels();
+		modelDescriptions = ModelPlugin.getBaseModels();
 	}
 
 	public void createActions() {
