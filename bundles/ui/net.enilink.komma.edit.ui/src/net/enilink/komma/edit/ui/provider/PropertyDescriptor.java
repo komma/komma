@@ -47,17 +47,17 @@ import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.ui.celleditor.ExtendedComboBoxCellEditor;
 import net.enilink.komma.common.ui.celleditor.ExtendedDialogCellEditor;
 import net.enilink.komma.common.util.Diagnostic;
-import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.provider.IItemLabelProvider;
 import net.enilink.komma.edit.provider.IItemPropertyDescriptor;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.edit.ui.celleditor.PropertyEditorDialog;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.util.KommaUtil;
 import net.enilink.komma.model.IObject;
-import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.util.KommaUtil;
 
 /**
  * This is used to encapsulate an {@link IItemPropertyDescriptor} along with the
@@ -183,7 +183,7 @@ public class PropertyDescriptor implements IPropertyDescriptor {
 				}
 
 				if (convertedValue != null) {
-					Diagnostic diagnostic = ModelCore.getDefault()
+					Diagnostic diagnostic = ModelPlugin.getDefault()
 							.getDefaultValidator()
 							.validate(datatype, convertedValue);
 					if (diagnostic.getSeverity() == Diagnostic.OK) {

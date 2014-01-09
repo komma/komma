@@ -17,9 +17,9 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 
 import net.enilink.vocab.owl.OWL;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.em.concepts.IResource;
 
 public class ModelImportsContentProvider extends ModelContentProvider implements
 		IStructuredContentProvider {

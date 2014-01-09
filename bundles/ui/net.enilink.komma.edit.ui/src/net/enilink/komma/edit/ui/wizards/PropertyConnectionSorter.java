@@ -8,8 +8,8 @@ import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.DeprecatedProperty;
 import net.enilink.vocab.owl.FunctionalProperty;
 import net.enilink.vocab.owl.ObjectProperty;
-import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.em.concepts.IProperty;
 
 public class PropertyConnectionSorter extends ViewerSorter {
 	@Override

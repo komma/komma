@@ -53,14 +53,14 @@ import org.eclipse.ui.dialogs.PatternFilter;
 
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.ui.celleditor.ExtendedComboBoxCellEditor;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.provider.ItemProvider;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.util.KommaUtil;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
-import net.enilink.komma.util.KommaUtil;
 
 public class PropertyEditorDialog extends Dialog {
 	protected IAdapterFactory adapterFactory;

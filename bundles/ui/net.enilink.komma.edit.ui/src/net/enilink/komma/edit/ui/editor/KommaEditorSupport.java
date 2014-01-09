@@ -13,6 +13,52 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.common.command.BasicCommandStack;
+import net.enilink.komma.common.command.ICommand;
+import net.enilink.komma.common.command.ICommandStack;
+import net.enilink.komma.common.command.ICommandStackListener;
+import net.enilink.komma.common.notify.INotification;
+import net.enilink.komma.common.notify.INotificationListener;
+import net.enilink.komma.common.notify.NotificationFilter;
+import net.enilink.komma.common.ui.EclipseUtil;
+import net.enilink.komma.common.ui.MarkerHelper;
+import net.enilink.komma.common.util.BasicDiagnostic;
+import net.enilink.komma.common.util.Diagnostic;
+import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.edit.command.EditingDomainCommandStack;
+import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
+import net.enilink.komma.edit.domain.IEditingDomainProvider;
+import net.enilink.komma.edit.provider.AdapterFactoryItemDelegator;
+import net.enilink.komma.edit.provider.ComposedAdapterFactory;
+import net.enilink.komma.edit.provider.ReflectiveItemProviderAdapterFactory;
+import net.enilink.komma.edit.ui.KommaEditUIPlugin;
+import net.enilink.komma.edit.ui.action.EditingDomainActionBarContributor;
+import net.enilink.komma.edit.ui.dnd.EditingDomainViewerDropAdapter;
+import net.enilink.komma.edit.ui.dnd.LocalTransfer;
+import net.enilink.komma.edit.ui.dnd.ViewerDragAdapter;
+import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
+import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
+import net.enilink.komma.edit.ui.provider.UnwrappingSelectionProvider;
+import net.enilink.komma.edit.ui.util.EditUIMarkerHelper;
+import net.enilink.komma.edit.ui.util.EditUIUtil;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.IModelSetFactory;
+import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.IURIConverter;
+import net.enilink.komma.model.MODELS;
+import net.enilink.komma.model.ModelPlugin;
+import net.enilink.komma.model.ModelSetModule;
+import net.enilink.komma.model.ModelUtil;
+import net.enilink.komma.model.base.SimpleURIMapRule;
+import net.enilink.komma.model.event.IStatementNotification;
+import net.enilink.komma.model.validation.IValidator;
+
 import org.eclipse.core.commands.operations.DefaultOperationHistory;
 import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.resources.IFile;
@@ -67,53 +113,6 @@ import org.eclipse.ui.views.properties.PropertySheetPage;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-
-import net.enilink.komma.common.adapter.IAdapterFactory;
-import net.enilink.komma.common.command.BasicCommandStack;
-import net.enilink.komma.common.command.ICommand;
-import net.enilink.komma.common.command.ICommandStack;
-import net.enilink.komma.common.command.ICommandStackListener;
-import net.enilink.komma.common.notify.INotification;
-import net.enilink.komma.common.notify.INotificationListener;
-import net.enilink.komma.common.notify.NotificationFilter;
-import net.enilink.komma.common.ui.EclipseUtil;
-import net.enilink.komma.common.ui.MarkerHelper;
-import net.enilink.komma.common.util.BasicDiagnostic;
-import net.enilink.komma.common.util.Diagnostic;
-import net.enilink.komma.common.util.IResourceLocator;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.edit.KommaEditPlugin;
-import net.enilink.komma.edit.command.EditingDomainCommandStack;
-import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
-import net.enilink.komma.edit.provider.AdapterFactoryItemDelegator;
-import net.enilink.komma.edit.provider.ComposedAdapterFactory;
-import net.enilink.komma.edit.provider.ReflectiveItemProviderAdapterFactory;
-import net.enilink.komma.edit.ui.KommaEditUIPlugin;
-import net.enilink.komma.edit.ui.action.EditingDomainActionBarContributor;
-import net.enilink.komma.edit.ui.dnd.EditingDomainViewerDropAdapter;
-import net.enilink.komma.edit.ui.dnd.LocalTransfer;
-import net.enilink.komma.edit.ui.dnd.ViewerDragAdapter;
-import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
-import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
-import net.enilink.komma.edit.ui.provider.UnwrappingSelectionProvider;
-import net.enilink.komma.edit.ui.util.EditUIMarkerHelper;
-import net.enilink.komma.edit.ui.util.EditUIUtil;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.IModelSetFactory;
-import net.enilink.komma.model.IObject;
-import net.enilink.komma.model.IURIConverter;
-import net.enilink.komma.model.MODELS;
-import net.enilink.komma.model.ModelCore;
-import net.enilink.komma.model.ModelSetModule;
-import net.enilink.komma.model.ModelUtil;
-import net.enilink.komma.model.base.SimpleURIMapRule;
-import net.enilink.komma.model.event.IStatementNotification;
-import net.enilink.komma.model.validation.IValidator;
-import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
 
 /**
  * This is a base class for a multi-page model editor.
@@ -566,9 +565,8 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 				viewer);
 		editor.getSite()
 				.registerContextMenu(contextMenu, menuSelectionProvider);
-		editor.getSite().registerContextMenu(
-				"net.enilink.komma.edit.ui.menu", contextMenu,
-				menuSelectionProvider);
+		editor.getSite().registerContextMenu("net.enilink.komma.edit.ui.menu",
+				contextMenu, menuSelectionProvider);
 
 		int dndOperations = DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_LINK;
 		Transfer[] transfers = new Transfer[] { LocalTransfer.getInstance() };
@@ -655,7 +653,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 	}
 
 	protected IModelSet createModelSet() {
-		KommaModule module = ModelCore.createModelSetModule(getClass()
+		KommaModule module = ModelPlugin.createModelSetModule(getClass()
 				.getClassLoader());
 
 		IModelSetFactory factory = Guice.createInjector(
@@ -1143,7 +1141,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 				class DefaultItemProviderAdapterFactory extends
 						ReflectiveItemProviderAdapterFactory {
 					public DefaultItemProviderAdapterFactory() {
-						super(KommaEditPlugin.getPlugin());
+						super(KommaEditUIPlugin.getPlugin());
 					}
 
 					@Override

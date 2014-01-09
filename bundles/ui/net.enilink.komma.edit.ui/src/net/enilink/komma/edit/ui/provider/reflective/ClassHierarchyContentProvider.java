@@ -10,8 +10,8 @@
  *******************************************************************************/
 package net.enilink.komma.edit.ui.provider.reflective;
 
-import static net.enilink.komma.util.CollectionUtil.isEmpty;
-import static net.enilink.komma.util.CollectionUtil.safe;
+import static net.enilink.commons.util.CollectionUtil.isEmpty;
+import static net.enilink.commons.util.CollectionUtil.safe;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,10 +28,10 @@ import org.eclipse.jface.viewers.Viewer;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.Property;
 import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IProperty;
 
 public class ClassHierarchyContentProvider extends ModelContentProvider
 		implements ITreeContentProvider {

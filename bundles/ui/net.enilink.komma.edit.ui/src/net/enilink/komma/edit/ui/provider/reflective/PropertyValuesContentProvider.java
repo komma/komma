@@ -17,10 +17,10 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 
 import net.enilink.vocab.rdfs.Resource;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.em.concepts.IResource;
 
 public class PropertyValuesContentProvider extends ModelContentProvider
 		implements IStructuredContentProvider {

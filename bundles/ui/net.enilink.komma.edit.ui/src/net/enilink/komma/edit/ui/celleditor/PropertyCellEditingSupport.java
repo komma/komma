@@ -15,12 +15,12 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Tree;
 
 import net.enilink.komma.common.ui.celleditor.TextCellEditorWithContentProposal;
-import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.properties.IPropertyEditingSupport;
 import net.enilink.komma.edit.properties.IResourceProposal;
 import net.enilink.komma.edit.properties.PropertyEditingHelper;
 import net.enilink.komma.edit.ui.assist.JFaceContentProposal;
+import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.core.IStatement;
 
 /**

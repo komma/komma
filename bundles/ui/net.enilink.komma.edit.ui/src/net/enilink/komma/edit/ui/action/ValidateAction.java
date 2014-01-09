@@ -46,17 +46,17 @@ import net.enilink.komma.common.ui.dialogs.DiagnosticDialog;
 import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.DiagnosticChain;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.provider.IItemLabelProvider;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.edit.ui.util.EditUIMarkerHelper;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
-import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.validation.Diagnostician;
 import net.enilink.komma.model.validation.IValidator;
@@ -230,7 +230,7 @@ public class ValidateAction extends AbstractActionHandler {
 	protected Diagnostician createDiagnostician(
 			final IAdapterFactory adapterFactory,
 			final IProgressMonitor progressMonitor) {
-		return new Diagnostician(ModelCore.getDefault().getValidatorRegistry()) {
+		return new Diagnostician(ModelPlugin.getDefault().getValidatorRegistry()) {
 			@Override
 			public String getObjectLabel(IResource object) {
 				if (adapterFactory != null) {

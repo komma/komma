@@ -16,11 +16,11 @@ import org.eclipse.swt.widgets.Shell;
 
 import net.enilink.vocab.owl.OWL;
 import net.enilink.komma.common.adapter.IAdapterFactory;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.URI;
