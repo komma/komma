@@ -24,16 +24,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import net.enilink.commons.util.Pair;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationSupport;
 import net.enilink.komma.common.util.IResourceLocator;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.util.Pair;
+import net.enilink.komma.em.concepts.IResource;
 
 /**
  * This is the factory that is used to provide the interfaces needed to support

@@ -21,11 +21,11 @@ import java.util.MissingResourceException;
 
 import net.enilink.komma.common.util.DelegatingResourceLocator;
 import net.enilink.komma.common.util.IResourceLocator;
-import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.provider.IItemLabelProvider;
 import net.enilink.komma.edit.provider.ReflectiveItemProvider;
 import net.enilink.komma.edit.provider.ReflectiveItemProviderAdapterFactory;
+import net.enilink.komma.em.concepts.IClass;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.MODELS;

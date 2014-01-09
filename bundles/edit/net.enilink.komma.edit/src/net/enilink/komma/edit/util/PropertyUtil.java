@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.commons.util.Pair;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.owl.ObjectProperty;
@@ -18,8 +19,6 @@ import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.ICompositeCommand;
 import net.enilink.komma.common.command.SimpleCommand;
-import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.command.AddCommand;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.command.RemoveCommand;
@@ -29,11 +28,12 @@ import net.enilink.komma.edit.properties.IPropertyEditingSupport;
 import net.enilink.komma.edit.properties.LiteralEditingSupport;
 import net.enilink.komma.edit.properties.ManchesterEditingSupport;
 import net.enilink.komma.edit.properties.ResourceEditingSupport;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
-import net.enilink.komma.util.Pair;
 
 /**
  * Helper class for adding, removing and editing of property values.

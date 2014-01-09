@@ -11,7 +11,7 @@ import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.QueryFragment;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.util.ISparqlConstants;
+import net.enilink.komma.em.util.ISparqlConstants;
 
 public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 	protected IEntityManager getEntityManager(Object parent) {

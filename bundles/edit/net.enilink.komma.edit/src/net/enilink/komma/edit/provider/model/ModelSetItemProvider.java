@@ -23,12 +23,12 @@ import java.util.List;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.provider.IItemPropertyDescriptor;
 import net.enilink.komma.edit.provider.ReflectiveItemProvider;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.model.IModelSet;
 
 /**

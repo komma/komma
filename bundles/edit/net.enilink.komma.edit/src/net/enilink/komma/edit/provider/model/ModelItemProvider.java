@@ -34,8 +34,6 @@ import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.command.CreateChildCommand;
@@ -49,6 +47,9 @@ import net.enilink.komma.edit.provider.IStructuredItemContentProvider;
 import net.enilink.komma.edit.provider.ITreeItemContentProvider;
 import net.enilink.komma.edit.provider.ItemProvider;
 import net.enilink.komma.edit.provider.ItemProviderAdapter;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelAware;
 import net.enilink.komma.model.IObject;
@@ -56,7 +57,6 @@ import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.util.ISparqlConstants;
 
 /**
  * This is the item provider adapter for a {@link IModel} object.

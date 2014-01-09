@@ -26,18 +26,19 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-
-import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.NotificationSupport;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.edit.KommaEditPlugin;
+import net.enilink.komma.edit.provider.ComposedAdapterFactory.IDescriptor;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
+
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 
 /**
  * This provides support for composing several factories for different models
@@ -59,8 +60,8 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 			/**
 			 * A simple registry implementation that supports delegation.
 			 */
-			class Impl extends ConcurrentHashMap<Collection<?>, Object> implements
-					IRegistry {
+			class Impl extends ConcurrentHashMap<Collection<?>, Object>
+					implements IRegistry {
 				private static final long serialVersionUID = 1L;
 
 				/**
@@ -200,7 +201,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 			try {
 				namespace = name.namespace();
 			} catch (Exception e) {
-				KommaCore.log(e);
+				KommaEditPlugin.INSTANCE.log(e);
 				continue;
 			}
 			if (seenNamespaces.add(namespace)) {

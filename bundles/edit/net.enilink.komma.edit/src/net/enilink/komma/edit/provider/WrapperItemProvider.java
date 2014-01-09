@@ -35,8 +35,6 @@ import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.common.util.Log;
-import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.AbstractOverrideableCommand;
 import net.enilink.komma.edit.command.CommandParameter;
@@ -44,6 +42,8 @@ import net.enilink.komma.edit.command.CopyCommand;
 import net.enilink.komma.edit.command.DragAndDropCommand;
 import net.enilink.komma.edit.command.SetCommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.core.IReference;
 
 /**

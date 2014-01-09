@@ -24,13 +24,13 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 
+import net.enilink.commons.util.Pair;
 import net.enilink.komma.common.command.AbstractCommand;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.util.Pair;
 
 /**
  * This is a convenient base class for classes that implement

@@ -24,11 +24,12 @@ import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.common.command.SimpleCommand;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.assist.ContentProposal;
 import net.enilink.komma.edit.assist.IContentProposal;
 import net.enilink.komma.edit.assist.IContentProposalProvider;
 import net.enilink.komma.edit.provider.IItemLabelProvider;
+import net.enilink.komma.em.concepts.IResource;
+import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
@@ -42,7 +43,6 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.QueryFragment;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.util.ISparqlConstants;
 
 public class ResourceEditingSupport implements IPropertyEditingSupport {
 	static class ConstructorParser extends BaseRdfParser {

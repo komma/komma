@@ -53,19 +53,19 @@ import net.enilink.komma.edit.command.ReplaceCommand;
 import net.enilink.komma.edit.provider.IEditingDomainItemProvider;
 import net.enilink.komma.edit.provider.IWrapperItemProvider;
 import net.enilink.komma.edit.provider.ItemProviderAdapter;
+import net.enilink.komma.em.util.UnitOfWork;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelSetFactory;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.MODELS;
-import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.model.change.ChangeRecorder;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.util.UnitOfWork;
 
 /**
  * This class implements an editing domain by delegating to adapters that
@@ -479,7 +479,7 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 		if (clipboardModelSet == null) {
 			IModelSetFactory factory = Guice.createInjector(
 					Modules.override(
-							new ModelSetModule(ModelCore
+							new ModelSetModule(ModelPlugin
 									.createModelSetModule(getClass()
 											.getClassLoader()))).with(
 							new AbstractModule() {

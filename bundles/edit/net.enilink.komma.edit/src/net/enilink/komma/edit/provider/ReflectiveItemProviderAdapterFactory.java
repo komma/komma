@@ -19,9 +19,9 @@ package net.enilink.komma.edit.provider;
 import java.util.Collection;
 
 import net.enilink.komma.common.util.IResourceLocator;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IResource;
 
 /**
  * This is the factory that is used to provide the interfaces needed to support

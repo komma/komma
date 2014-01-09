@@ -4,9 +4,9 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.parboiled.support.ParsingResult;
+import net.enilink.komma.edit.KommaEditPlugin;
 
-import net.enilink.komma.KommaCore;
+import org.parboiled.support.ParsingResult;
 
 public abstract class ReflectiveSemanticProposals implements
 		ISemanticProposalProvider {
@@ -26,7 +26,7 @@ public abstract class ReflectiveSemanticProposals implements
 						.invoke(ReflectiveSemanticProposals.this, result,
 								index, prefix);
 			} catch (Exception e) {
-				KommaCore.log(e);
+				KommaEditPlugin.INSTANCE.log(e);
 			}
 			return null;
 		}
@@ -59,7 +59,7 @@ public abstract class ReflectiveSemanticProposals implements
 			return (IContentProposal[]) m.invoke(
 					ReflectiveSemanticProposals.this, result, index, prefix);
 		} catch (Exception e) {
-			KommaCore.log(e);
+			KommaEditPlugin.INSTANCE.log(e);
 		}
 		return null;
 	}

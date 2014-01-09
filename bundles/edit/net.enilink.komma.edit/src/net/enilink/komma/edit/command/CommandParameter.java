@@ -23,8 +23,8 @@ import java.util.List;
 
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.ObjectProperty;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.em.concepts.IResource;
 
 /**
  * This is a convenient common base class for all the command parameters need by

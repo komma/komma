@@ -24,7 +24,7 @@ import java.util.StringTokenizer;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 
-import net.enilink.commons.extensions.RegistryReader;
+import net.enilink.commons.util.extensions.RegistryReader;
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.util.IResourceLocator;
