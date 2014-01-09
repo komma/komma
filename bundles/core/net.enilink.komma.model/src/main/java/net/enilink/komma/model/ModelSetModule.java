@@ -8,8 +8,20 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Properties;
 
-import org.eclipse.core.runtime.Platform;
 import net.enilink.composition.properties.PropertySetFactory;
+import net.enilink.komma.core.IProvider;
+import net.enilink.komma.core.IUnitOfWork;
+import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.em.EagerCachingEntityManagerModule;
+import net.enilink.komma.em.EntityManagerFactoryModule;
+import net.enilink.komma.em.ThreadLocalDataManager;
+import net.enilink.komma.em.util.KommaUtil;
+import net.enilink.komma.em.util.UnitOfWork;
+import net.enilink.komma.sesame.SesameModule;
+
+import org.eclipse.core.runtime.Platform;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -25,19 +37,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-
-import net.enilink.komma.KommaCore;
-import net.enilink.komma.dm.IDataManager;
-import net.enilink.komma.em.EagerCachingEntityManagerModule;
-import net.enilink.komma.em.EntityManagerFactoryModule;
-import net.enilink.komma.em.ThreadLocalDataManager;
-import net.enilink.komma.core.IProvider;
-import net.enilink.komma.core.IUnitOfWork;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.sesame.SesameModule;
-import net.enilink.komma.util.KommaUtil;
-import net.enilink.komma.util.UnitOfWork;
 
 public class ModelSetModule extends AbstractModule {
 	private KommaModule parentModule;
@@ -122,7 +121,7 @@ public class ModelSetModule extends AbstractModule {
 			repository.initialize();
 
 			Collection<URL> conceptLibraries = KommaUtil.getConceptLibraries(
-					ModelCore.PLUGIN_ID).toList();
+					ModelPlugin.PLUGIN_ID).toList();
 			URLClassLoader cl = new URLClassLoader(
 					conceptLibraries.toArray(new URL[conceptLibraries.size()]));
 			for (String owl : loadOntologyList(cl)) {
@@ -147,7 +146,7 @@ public class ModelSetModule extends AbstractModule {
 
 	protected URL getResource(String bundleName, String path) {
 		Bundle bundle = null;
-		if (KommaCore.IS_ECLIPSE_RUNNING) {
+		if (ModelPlugin.IS_ECLIPSE_RUNNING) {
 			bundle = Platform.getBundle(bundleName);
 		}
 

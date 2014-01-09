@@ -15,13 +15,13 @@ import java.util.Map;
 
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.DiagnosticChain;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IResource;
-import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IResource;
 
 public class DefaultValidator implements IValidator {
-	public static final String DIAGNOSTIC_SOURCE = ModelCore.PLUGIN_ID;
+	public static final String DIAGNOSTIC_SOURCE = ModelPlugin.PLUGIN_ID;
 
 	public static final IValidator INSTANCE = new DefaultValidator();
 

@@ -34,7 +34,7 @@ import org.eclipse.core.runtime.content.IContentDescription;
 
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IURIConverter;
-import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.base.URIHandler;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
@@ -364,7 +364,7 @@ public class PlatformResourceURIHandler extends URIHandler {
 		}
 
 		public static IWorkspaceRoot getWorkspaceRoot() {
-			return ModelCore.getWorkspaceRoot();
+			return ModelPlugin.getWorkspaceRoot();
 		}
 	}
 

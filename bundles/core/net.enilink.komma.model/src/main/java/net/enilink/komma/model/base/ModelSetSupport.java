@@ -22,24 +22,9 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtensionPoint;
-import org.eclipse.core.runtime.IExtensionRegistry;
+import net.enilink.commons.util.extensions.RegistryFactoryHelper;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.traits.Behaviour;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
-
-import net.enilink.commons.extensions.RegistryFactoryHelper;
-import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.adapter.AdapterSet;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.adapter.IAdapterSet;
@@ -48,6 +33,15 @@ import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationSupport;
+import net.enilink.komma.core.EntityVar;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.core.IProvider;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IUnitOfWork;
+import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.dm.change.IDataChange;
@@ -60,6 +54,7 @@ import net.enilink.komma.em.CacheModule;
 import net.enilink.komma.em.CachingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
 import net.enilink.komma.em.ThreadLocalDataManager;
+import net.enilink.komma.em.util.KommaUtil;
 import net.enilink.komma.internal.model.event.NamespaceNotification;
 import net.enilink.komma.internal.model.event.StatementNotification;
 import net.enilink.komma.model.IContentHandler;
@@ -67,18 +62,22 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
-import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.concepts.ModelSet;
-import net.enilink.komma.core.EntityVar;
-import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.IEntityManagerFactory;
-import net.enilink.komma.core.IProvider;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IUnitOfWork;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.util.KommaUtil;
+
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
 
 /**
  * An extensible model set implementation.
@@ -333,7 +332,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 			try {
 				metaDataManagerFactory.close();
 			} catch (Exception e) {
-				KommaCore.log(e);
+				ModelPlugin.log(e);
 			}
 			state.remove();
 		}
@@ -488,7 +487,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 				@Override
 				protected IModel.Factory delegatedGetFactory(URI uri,
 						String contentTypeIdentifier) {
-					IModel.Factory.Registry defaultModelFactoryRegistry = ModelCore
+					IModel.Factory.Registry defaultModelFactoryRegistry = ModelPlugin
 							.getDefault().getModelFactoryRegistry();
 
 					return convert(getFactory(uri,
@@ -530,7 +529,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 			IExtensionRegistry registry = RegistryFactoryHelper.getRegistry();
 			if (registry != null) {
 				IExtensionPoint extensionPoint = registry.getExtensionPoint(
-						ModelCore.PLUGIN_ID, "modules");
+						ModelPlugin.PLUGIN_ID, "modules");
 				if (extensionPoint != null) {
 					for (IConfigurationElement cfgElement : extensionPoint
 							.getConfigurationElements()) {

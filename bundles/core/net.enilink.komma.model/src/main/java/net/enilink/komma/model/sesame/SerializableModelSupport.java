@@ -13,11 +13,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.runtime.content.IContentDescription;
+
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.traits.Behaviour;
-
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.em.util.ISparqlConstants;
+import net.enilink.komma.em.util.KommaUtil;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.MODELS;
@@ -29,8 +31,6 @@ import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Namespace;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
-import net.enilink.komma.util.ISparqlConstants;
-import net.enilink.komma.util.KommaUtil;
 
 @Iri(MODELS.NAMESPACE + "SerializableModel")
 public abstract class SerializableModelSupport implements IModel.Internal,

@@ -25,7 +25,7 @@ import java.util.Set;
 import net.enilink.komma.model.IContentHandler;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.IURIHandler;
-import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.eclipse.PlatformResourceURIHandler;
 import net.enilink.komma.core.URI;
 
@@ -61,7 +61,7 @@ public class ExtensibleURIConverter implements IURIConverter {
 	 * Creates an instance.
 	 */
 	public ExtensibleURIConverter() {
-		this(DEFAULT_URI_HANDLERS, ModelCore.getDefault()
+		this(DEFAULT_URI_HANDLERS, ModelPlugin.getDefault()
 				.getContentHandlerRegistry().getContentHandlers());
 	}
 
@@ -262,7 +262,7 @@ public class ExtensibleURIConverter implements IURIConverter {
 	 */
 	public IURIMapRuleSet getURIMapRules() {
 		if (uriMap == null) {
-			uriMap = new CompoundURIMapRuleSet(new URIMapRuleSet(), ModelCore
+			uriMap = new CompoundURIMapRuleSet(new URIMapRuleSet(), ModelPlugin
 					.getDefault().getURIMap());
 		}
 

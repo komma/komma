@@ -21,16 +21,16 @@ import java.util.Queue;
 import java.util.Set;
 
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.KommaCore;
 import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.DiagnosticChain;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.concepts.IResource;
-import net.enilink.komma.model.IObject;
-import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
+import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelPlugin;
+import net.enilink.komma.model.ModelUtil;
 
 /**
  * A validity checker for basic {@link IObject} constraints.
@@ -64,8 +64,7 @@ public class Diagnostician implements IValidator.SubstitutionLabelProvider,
 
 	public BasicDiagnostic createDefaultDiagnostic(IResource object) {
 		return new BasicDiagnostic(DefaultValidator.DIAGNOSTIC_SOURCE, 0,
-				KommaCore.getDefault().getString(
-						"_UI_DiagnosticRoot_diagnostic",
+				ModelPlugin.getDefault().getString("DiagnosticRoot_diagnostic",
 						new Object[] { getObjectLabel(object) }),
 				new Object[] { object });
 	}
@@ -73,8 +72,7 @@ public class Diagnostician implements IValidator.SubstitutionLabelProvider,
 	public BasicDiagnostic createDefaultDiagnostic(IReference datatype,
 			Object value) {
 		return new BasicDiagnostic(DefaultValidator.DIAGNOSTIC_SOURCE, 0,
-				KommaCore.getDefault().getString(
-						"_UI_DiagnosticRoot_diagnostic",
+				ModelPlugin.getDefault().getString("DiagnosticRoot_diagnostic",
 						new Object[] { getValueLabel(value) }), new Object[] {
 						value, datatype });
 	}

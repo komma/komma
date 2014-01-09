@@ -11,8 +11,7 @@
 package net.enilink.komma.model;
 
 import net.enilink.composition.traits.Behaviour;
-
-import net.enilink.komma.concepts.BehaviorBase;
+import net.enilink.komma.em.concepts.BehaviorBase;
 
 public abstract class ObjectSupport extends BehaviorBase implements IObject,
 		IModelAware, Behaviour<IObject>,

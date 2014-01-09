@@ -17,9 +17,18 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
+import net.enilink.composition.annotations.Iri;
+import net.enilink.komma.common.AbstractKommaPlugin;
+import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.MODELS;
+import net.enilink.komma.model.ModelPlugin;
+import net.enilink.komma.sesame.SesameModule;
+
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
-import net.enilink.composition.annotations.Iri;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -33,15 +42,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-
-import net.enilink.komma.KommaCore;
-import net.enilink.komma.common.AbstractKommaPlugin;
-import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.MODELS;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.sesame.SesameModule;
 
 @Iri(MODELS.NAMESPACE + "MemoryModelSet")
 public abstract class MemoryModelSetSupport implements IModelSet,
@@ -105,7 +105,7 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 					try {
 						conn.close();
 					} catch (RepositoryException e) {
-						KommaCore.log(e);
+						ModelPlugin.log(e);
 					}
 				}
 			}

@@ -14,7 +14,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 
-import net.enilink.commons.extensions.RegistryReader;
+import net.enilink.commons.util.extensions.RegistryReader;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.core.KommaException;
 

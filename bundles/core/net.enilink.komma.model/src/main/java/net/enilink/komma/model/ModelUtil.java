@@ -344,7 +344,7 @@ public class ModelUtil {
 	public static String mimeType(IContentDescription contentDescription) {
 		if (contentDescription != null) {
 			return (String) contentDescription.getProperty(new QualifiedName(
-					ModelCore.PLUGIN_ID, "mimeType"));
+					ModelPlugin.PLUGIN_ID, "mimeType"));
 		}
 		return null;
 	}
@@ -379,7 +379,7 @@ public class ModelUtil {
 			if (lastSegment != null) {
 				IContentType[] matchingTypes = contentTypeManager
 						.findContentTypesFor(lastSegment);
-				QualifiedName mimeType = new QualifiedName(ModelCore.PLUGIN_ID,
+				QualifiedName mimeType = new QualifiedName(ModelPlugin.PLUGIN_ID,
 						"mimeType");
 				for (IContentType matchingType : matchingTypes) {
 					IContentDescription desc = matchingType

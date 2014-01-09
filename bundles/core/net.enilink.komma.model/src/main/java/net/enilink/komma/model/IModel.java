@@ -17,13 +17,12 @@ import java.util.Map;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
-
-import net.enilink.komma.concepts.IOntology;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.em.concepts.IOntology;
 
 @Iri(MODELS.NAMESPACE + "Model")
 public interface IModel {

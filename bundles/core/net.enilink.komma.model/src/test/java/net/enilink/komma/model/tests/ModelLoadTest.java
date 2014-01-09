@@ -20,7 +20,7 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelSetFactory;
 import net.enilink.komma.model.MODELS;
-import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelSetModule;
 import net.enilink.vocab.komma.KOMMA;
 
@@ -35,7 +35,7 @@ public class ModelLoadTest {
 
 	@Before
 	public void beforeTest() throws Exception {
-		KommaModule module = ModelCore.createModelSetModule(getClass()
+		KommaModule module = ModelPlugin.createModelSetModule(getClass()
 				.getClassLoader());
 
 		IModelSetFactory factory = Guice.createInjector(

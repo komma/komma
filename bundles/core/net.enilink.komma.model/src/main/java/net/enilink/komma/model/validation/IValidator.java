@@ -15,10 +15,10 @@ import java.util.Map;
 
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.DiagnosticChain;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
 
 /**
  * A validity checker.

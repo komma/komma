@@ -6,7 +6,7 @@ import net.enilink.komma.model.sesame.MemoryModelSetSupport;
 import net.enilink.komma.model.sesame.RemoteModelSetSupport;
 import net.enilink.komma.model.sesame.SerializableModelSupport;
 import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.util.RoleClassLoader;
+import net.enilink.komma.em.util.RoleClassLoader;
 
 public class ModelModule extends KommaModule {
 	{

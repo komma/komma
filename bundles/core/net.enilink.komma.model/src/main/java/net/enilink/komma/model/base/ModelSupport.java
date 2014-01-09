@@ -20,39 +20,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtensionPoint;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import net.enilink.composition.traits.Behaviour;
-
-import com.google.inject.ConfigurationException;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
-import com.google.inject.name.Names;
-
-import net.enilink.commons.extensions.RegistryFactoryHelper;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.IMap;
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.rdf.RDF;
-import net.enilink.komma.KommaCore;
+import net.enilink.commons.util.extensions.RegistryFactoryHelper;
+import net.enilink.composition.traits.Behaviour;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
-import net.enilink.komma.concepts.IOntology;
-import net.enilink.komma.dm.IDataManager;
-import net.enilink.komma.em.ThreadLocalEntityManager;
-import net.enilink.komma.internal.model.IModelAware;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.IObject;
-import net.enilink.komma.model.IURIConverter;
-import net.enilink.komma.model.ModelCore;
-import net.enilink.komma.model.ObjectSupport;
-import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.core.EntityVar;
 import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IEntity;
@@ -65,7 +38,33 @@ import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.util.ISparqlConstants;
+import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.em.ThreadLocalEntityManager;
+import net.enilink.komma.em.concepts.IOntology;
+import net.enilink.komma.em.util.ISparqlConstants;
+import net.enilink.komma.internal.model.IModelAware;
+import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.IURIConverter;
+import net.enilink.komma.model.ModelPlugin;
+import net.enilink.komma.model.ObjectSupport;
+import net.enilink.komma.model.concepts.Model;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdf.RDF;
+
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
+import com.google.inject.ConfigurationException;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
 
 public abstract class ModelSupport implements IModel, IModel.Internal,
 		INotificationBroadcaster<INotification>, Model,
@@ -278,7 +277,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 
 			// support for registering KommaModules as extensions
 			IExtensionPoint extensionPoint = RegistryFactoryHelper
-					.getRegistry().getExtensionPoint(ModelCore.PLUGIN_ID,
+					.getRegistry().getExtensionPoint(ModelPlugin.PLUGIN_ID,
 							"modules");
 			if (extensionPoint != null) {
 				for (IConfigurationElement cfgElement : extensionPoint
@@ -340,11 +339,11 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 								module.includeModule(importedModule);
 							}
 						} catch (Throwable e) {
-							KommaCore.logErrorStatus(
+							ModelPlugin.logErrorStatus(
 									"Error while loading import: "
 											+ importedUri,
 									new Status(IStatus.WARNING,
-											ModelCore.PLUGIN_ID, 0, e
+											ModelPlugin.PLUGIN_ID, 0, e
 													.getMessage(), e));
 						}
 					}

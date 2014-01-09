@@ -7,9 +7,32 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
+import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.commons.iterator.IMap;
+import net.enilink.composition.annotations.Iri;
+import net.enilink.komma.common.AbstractKommaPlugin;
+import net.enilink.komma.core.IBindings;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IValue;
+import net.enilink.komma.core.InferencingCapability;
+import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.Statement;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.dm.IDataManagerFactory;
+import net.enilink.komma.dm.IDataManagerQuery;
+import net.enilink.komma.dm.change.IDataChangeSupport;
+import net.enilink.komma.internal.sesame.SesameRepositoryDataManager;
+import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.MODELS;
+import net.enilink.komma.model.ModelPlugin;
+import net.enilink.komma.sesame.SesameDataManagerFactory;
+import net.enilink.komma.sesame.SesameModule;
+
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
-import net.enilink.composition.annotations.Iri;
 import org.openrdf.model.Resource;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -24,29 +47,6 @@ import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.util.Modules;
-
-import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.commons.iterator.IMap;
-import net.enilink.komma.KommaCore;
-import net.enilink.komma.common.AbstractKommaPlugin;
-import net.enilink.komma.dm.IDataManager;
-import net.enilink.komma.dm.IDataManagerFactory;
-import net.enilink.komma.dm.IDataManagerQuery;
-import net.enilink.komma.dm.change.IDataChangeSupport;
-import net.enilink.komma.internal.sesame.SesameRepositoryDataManager;
-import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.MODELS;
-import net.enilink.komma.core.IBindings;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.IValue;
-import net.enilink.komma.core.InferencingCapability;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.core.Statement;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.sesame.SesameDataManagerFactory;
-import net.enilink.komma.sesame.SesameModule;
 
 @Iri(MODELS.NAMESPACE + "RemoteModelSet")
 public abstract class RemoteModelSetSupport implements IModelSet.Internal {
@@ -276,7 +276,7 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 					try {
 						conn.close();
 					} catch (RepositoryException e) {
-						KommaCore.log(e);
+						ModelPlugin.log(e);
 					}
 				}
 			}

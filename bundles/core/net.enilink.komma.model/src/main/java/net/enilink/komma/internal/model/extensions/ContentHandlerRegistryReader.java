@@ -15,13 +15,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.enilink.komma.model.IContentHandler;
+import net.enilink.komma.model.ModelPlugin;
+
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
-
-import net.enilink.komma.KommaCore;
-import net.enilink.komma.model.IContentHandler;
-import net.enilink.komma.model.ModelCore;
 
 /**
  * A plugin extension reader that populates the
@@ -39,7 +38,7 @@ public class ContentHandlerRegistryReader extends KommaRegistryReader {
 
 	public ContentHandlerRegistryReader(
 			IContentHandler.Registry contentHandlerRegistry) {
-		super(ModelCore.PLUGIN_ID, "contentHandlers");
+		super(ModelPlugin.PLUGIN_ID, "contentHandlers");
 		this.contentHandlerRegistry = contentHandlerRegistry;
 	}
 
@@ -85,7 +84,7 @@ public class ContentHandlerRegistryReader extends KommaRegistryReader {
 						}
 						contributions.add(contentHandler);
 					} catch (Exception exception) {
-						KommaCore.log(exception);
+						ModelPlugin.log(exception);
 					}
 					return true;
 				} else {

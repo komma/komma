@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Model
 Bundle-SymbolicName: net.enilink.komma.model;singleton:=true
-Bundle-Activator: net.enilink.komma.model.ModelCore$Implementation
+Bundle-Activator: net.enilink.komma.model.ModelPlugin$Implementation
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: net.enilink.komma.internal.model.extensions;x-friends:="net.enilink.komma.edit",

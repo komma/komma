@@ -10,7 +10,6 @@ import com.google.inject.Inject;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.IGraph;
@@ -18,7 +17,8 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.LinkedHashGraph;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.util.UnitOfWork;
+import net.enilink.komma.em.concepts.IResource;
+import net.enilink.komma.em.util.UnitOfWork;
 
 class ModelSetFactory implements IModelSetFactory {
 	@Inject

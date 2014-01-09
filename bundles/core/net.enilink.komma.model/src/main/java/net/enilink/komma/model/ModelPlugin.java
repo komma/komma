@@ -24,7 +24,7 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
 
-import net.enilink.commons.extensions.RegistryFactoryHelper;
+import net.enilink.commons.util.extensions.RegistryFactoryHelper;
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.internal.model.Messages;
@@ -48,7 +48,7 @@ import net.enilink.komma.core.KommaModule;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class ModelCore extends AbstractKommaPlugin {
+public class ModelPlugin extends AbstractKommaPlugin {
 	private IValidator.Registry validatorRegistry = new ValidatorRegistry();
 
 	private IContentHandler.Registry contentHandlerRegistry = new ContentHandlerRegistry();
@@ -60,7 +60,7 @@ public class ModelCore extends AbstractKommaPlugin {
 	// The plug-in ID
 	public static final String PLUGIN_ID = "net.enilink.komma.model";
 
-	private static final ModelCore INSTANCE = new ModelCore();
+	private static final ModelPlugin INSTANCE = new ModelPlugin();
 	static {
 		if (!IS_ECLIPSE_RUNNING) {
 			readExtensions();
@@ -70,7 +70,7 @@ public class ModelCore extends AbstractKommaPlugin {
 	/**
 	 * The constructor
 	 */
-	public ModelCore() {
+	public ModelPlugin() {
 		super(new IResourceLocator[] {});
 	}
 
@@ -79,7 +79,7 @@ public class ModelCore extends AbstractKommaPlugin {
 	 * 
 	 * @return the shared instance
 	 */
-	public static ModelCore getDefault() {
+	public static ModelPlugin getDefault() {
 		return INSTANCE;
 	}
 
@@ -265,16 +265,16 @@ public class ModelCore extends AbstractKommaPlugin {
 	 * Initialize registered extensions.
 	 */
 	private static void readExtensions() {
-		IModel.Factory.Registry modelFactoryRegistry = ModelCore.getDefault()
+		IModel.Factory.Registry modelFactoryRegistry = ModelPlugin.getDefault()
 				.getModelFactoryRegistry();
 		new ExtensionFactoriesRegistryReader(modelFactoryRegistry)
 				.readRegistry();
 		new ProtocolFactoriesRegistryReader(modelFactoryRegistry)
 				.readRegistry();
 		new ContentFactoriesRegistryReader(modelFactoryRegistry).readRegistry();
-		new ContentHandlerRegistryReader(ModelCore.getDefault()
+		new ContentHandlerRegistryReader(ModelPlugin.getDefault()
 				.getContentHandlerRegistry()).readRegistry();
-		new URIMappingRegistryReader(ModelCore.getDefault().getURIMap())
+		new URIMappingRegistryReader(ModelPlugin.getDefault().getURIMap())
 				.readRegistry();
 	}
 
@@ -317,7 +317,7 @@ public class ModelCore extends AbstractKommaPlugin {
 		module.addConcept(IModel.IDiagnostic.class,
 				MODELS.CLASS_DIAGNOSTIC.toString());
 
-		for (KommaModule modelModule : ModelCore.getModelModules()) {
+		for (KommaModule modelModule : ModelPlugin.getModelModules()) {
 			module.includeModule(modelModule);
 		}
 		return module;

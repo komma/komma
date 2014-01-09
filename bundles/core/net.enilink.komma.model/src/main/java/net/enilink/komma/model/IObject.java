@@ -10,8 +10,8 @@
  *******************************************************************************/
 package net.enilink.komma.model;
 
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.em.concepts.IResource;
 
 public interface IObject extends IEntity, IResource, IModelAware {
 }

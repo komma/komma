@@ -10,11 +10,10 @@
  *******************************************************************************/
 package net.enilink.komma.internal.model.extensions;
 
-import org.eclipse.core.runtime.IConfigurationElement;
-
-import net.enilink.komma.KommaCore;
 import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelPlugin;
+
+import org.eclipse.core.runtime.IConfigurationElement;
 
 /**
  * A plugin extension reader that populates the
@@ -32,7 +31,7 @@ public class ContentFactoriesRegistryReader extends KommaRegistryReader {
 
 	public ContentFactoriesRegistryReader(
 			IModel.Factory.Registry ontologyFactoryRegistry) {
-		super(ModelCore.PLUGIN_ID, "contentFactories");
+		super(ModelPlugin.PLUGIN_ID, "contentFactories");
 		this.modelFactoryRegistry = ontologyFactoryRegistry;
 	}
 
@@ -52,7 +51,7 @@ public class ContentFactoriesRegistryReader extends KommaRegistryReader {
 								new ModelFactoryDescriptor(element, ATT_CLASS));
 				if (previous instanceof ModelFactoryDescriptor) {
 					ModelFactoryDescriptor descriptor = (ModelFactoryDescriptor) previous;
-					KommaCore.logErrorMessage("Both '"
+					ModelPlugin.logErrorMessage("Both '"
 							+ descriptor.element.getContributor().getName()
 							+ "' and '" + element.getContributor().getName()
 							+ "' register a content factory for '"

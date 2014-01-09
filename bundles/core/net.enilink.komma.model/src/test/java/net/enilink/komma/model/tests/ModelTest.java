@@ -24,23 +24,23 @@ import com.google.inject.Guice;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationFilter;
-import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelSetFactory;
 import net.enilink.komma.model.MODELS;
-import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.em.concepts.IClass;
 
 public class ModelTest {
 	IModelSet modelSet;
 
 	@Before
 	public void beforeTest() throws Exception {
-		KommaModule module = ModelCore.createModelSetModule(getClass()
+		KommaModule module = ModelPlugin.createModelSetModule(getClass()
 				.getClassLoader());
 
 		IModelSetFactory factory = Guice.createInjector(
