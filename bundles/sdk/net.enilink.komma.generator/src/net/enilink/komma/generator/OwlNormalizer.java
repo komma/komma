@@ -43,22 +43,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.vocab.owl.Class;
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.owl.Ontology;
-import net.enilink.vocab.owl.Thing;
-import net.enilink.vocab.rdf.Property;
-import net.enilink.vocab.rdf.RDF;
-import net.enilink.vocab.rdfs.Datatype;
-import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.ILiteral;
@@ -70,6 +55,21 @@ import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.em.concepts.IResource;
+import net.enilink.vocab.owl.Class;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.owl.Ontology;
+import net.enilink.vocab.owl.Thing;
+import net.enilink.vocab.rdf.Property;
+import net.enilink.vocab.rdf.RDF;
+import net.enilink.vocab.rdfs.Datatype;
+import net.enilink.vocab.rdfs.RDFS;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
 
 /**
  * Applies a series of rules against the ontology, making it easier to convert

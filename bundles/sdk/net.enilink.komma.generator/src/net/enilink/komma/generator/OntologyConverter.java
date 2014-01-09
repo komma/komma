@@ -57,6 +57,36 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
+import net.enilink.composition.mappers.ComposedRoleMapper;
+import net.enilink.composition.mappers.RoleMapper;
+import net.enilink.composition.mappers.TypeFactory;
+import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IUnitOfWork;
+import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.KommaModule.Association;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.visitor.IDataVisitor;
+import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.dm.IDataManagerFactory;
+import net.enilink.komma.em.EagerCachingEntityManagerModule;
+import net.enilink.komma.em.EntityManagerFactoryModule;
+import net.enilink.komma.em.ManagerCompositionModule;
+import net.enilink.komma.em.util.KommaUtil;
+import net.enilink.komma.em.util.RoleClassLoader;
+import net.enilink.komma.em.util.UnitOfWork;
+import net.enilink.komma.generator.concepts.CodeClass;
+import net.enilink.komma.generator.concepts.CodeOntology;
+import net.enilink.komma.generator.concepts.CodeProperty;
+import net.enilink.komma.generator.support.ClassPropertySupport;
+import net.enilink.komma.generator.support.CodePropertySupport;
+import net.enilink.komma.generator.support.ConceptSupport;
+import net.enilink.komma.generator.support.OntologySupport;
+import net.enilink.komma.literals.LiteralConverter;
+import net.enilink.komma.sesame.SesameModule;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
@@ -65,9 +95,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import net.enilink.composition.mappers.ComposedRoleMapper;
-import net.enilink.composition.mappers.RoleMapper;
-import net.enilink.composition.mappers.TypeFactory;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -97,33 +124,6 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
-
-import net.enilink.komma.dm.IDataManager;
-import net.enilink.komma.dm.IDataManagerFactory;
-import net.enilink.komma.em.EagerCachingEntityManagerModule;
-import net.enilink.komma.em.EntityManagerFactoryModule;
-import net.enilink.komma.em.ManagerCompositionModule;
-import net.enilink.komma.generator.concepts.CodeClass;
-import net.enilink.komma.generator.concepts.CodeOntology;
-import net.enilink.komma.generator.concepts.CodeProperty;
-import net.enilink.komma.generator.support.ClassPropertySupport;
-import net.enilink.komma.generator.support.CodePropertySupport;
-import net.enilink.komma.generator.support.ConceptSupport;
-import net.enilink.komma.generator.support.OntologySupport;
-import net.enilink.komma.literals.LiteralConverter;
-import net.enilink.komma.core.IEntityManagerFactory;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.IUnitOfWork;
-import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.KommaModule.Association;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.core.visitor.IDataVisitor;
-import net.enilink.komma.sesame.SesameModule;
-import net.enilink.komma.util.KommaUtil;
-import net.enilink.komma.util.RoleClassLoader;
-import net.enilink.komma.util.UnitOfWork;
 
 /**
  * A Facade to CodeGenerator and OwlGenerator classes. This class provides a
@@ -673,7 +673,6 @@ public class OntologyConverter implements IApplication {
 
 					@Singleton
 					@Provides
-					@SuppressWarnings("unused")
 					Repository provideRepository() {
 						return repository;
 					}
@@ -681,7 +680,7 @@ public class OntologyConverter implements IApplication {
 						kommaModule, null));
 
 		return factoryInjector.createChildInjector(
-				new ManagerCompositionModule(kommaModule, null),
+				new ManagerCompositionModule(kommaModule),
 				new EagerCachingEntityManagerModule(), new AbstractModule() {
 					@Override
 					protected void configure() {
