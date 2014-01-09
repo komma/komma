@@ -33,7 +33,7 @@ import org.eclipse.core.runtime.Path;
 import net.enilink.komma.common.util.WrappedException;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.workbench.internal.KommaWorkbenchContextFactory;
@@ -347,7 +347,7 @@ public class WorkbenchModelHelperBase {
 			int index = href.indexOf('#');
 			if (index > -1)
 				file = href.substring(0, index);
-			return ModelCore.getDefault().getURIMap().map(
+			return ModelPlugin.getDefault().getURIMap().map(
 					URIImpl.createURI(file)) != null;
 		}
 		return false;

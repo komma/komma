@@ -11,3 +11,4 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.model
 Export-Package: net.enilink.komma.workbench,
  net.enilink.komma.workbench.nature
+Bundle-Activator: net.enilink.komma.workbench.internal.KommaWorkbenchPlugin$Implementation

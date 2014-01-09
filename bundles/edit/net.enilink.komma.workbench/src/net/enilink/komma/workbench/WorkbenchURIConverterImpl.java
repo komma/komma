@@ -22,6 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.model.ModelUtil;
+import net.enilink.komma.model.base.ExtensibleURIConverter;
+import net.enilink.komma.model.base.IURIMapRule;
+import net.enilink.komma.model.base.SimpleURIMapRule;
+import net.enilink.komma.workbench.internal.KommaWorkbenchPlugin;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -31,14 +39,6 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
-
-import net.enilink.komma.KommaCore;
-import net.enilink.komma.model.ModelUtil;
-import net.enilink.komma.model.base.ExtensibleURIConverter;
-import net.enilink.komma.model.base.IURIMapRule;
-import net.enilink.komma.model.base.SimpleURIMapRule;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
 
 /**
  * A default implementation of the WorkbenchURIConverter interface.
@@ -93,7 +93,7 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 					}
 				});
 			} catch (CoreException e) {
-				KommaCore.log(e);
+				KommaWorkbenchPlugin.INSTANCE.log(e);
 			}
 		}
 	}
@@ -116,7 +116,7 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 				getURIMapRules().addRule(rule);
 			}
 		} catch (Exception e) {
-			KommaCore.log(e);
+			KommaWorkbenchPlugin.INSTANCE.log(e);
 		}
 	}
 
@@ -152,7 +152,7 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 					}
 				});
 			} catch (CoreException e) {
-				KommaCore.log(e);
+				KommaWorkbenchPlugin.INSTANCE.log(e);
 			}
 			return true;
 		}

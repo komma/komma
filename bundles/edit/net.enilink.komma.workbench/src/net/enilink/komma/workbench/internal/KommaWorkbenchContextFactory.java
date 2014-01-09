@@ -23,7 +23,7 @@ import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 
-import net.enilink.commons.extensions.RegistryReader;
+import net.enilink.commons.util.extensions.RegistryReader;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.workbench.IKommaContextContributor;
 import net.enilink.komma.workbench.KommaWorkbenchContextBase;

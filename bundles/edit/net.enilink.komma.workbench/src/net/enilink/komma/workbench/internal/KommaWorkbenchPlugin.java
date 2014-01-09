@@ -17,6 +17,10 @@ package net.enilink.komma.workbench.internal;
 import java.io.File;
 import java.text.MessageFormat;
 
+import net.enilink.komma.common.AbstractKommaPlugin;
+import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.workbench.internal.nls.WorkbenchResourceHandler;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -28,18 +32,15 @@ import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.osgi.framework.Bundle;
-
-import net.enilink.komma.workbench.internal.nls.WorkbenchResourceHandler;
 
 /**
  * Plugin for Komma Workbench utils.
  * 
  * @since 1.0.0
  */
-public class KommaWorkbenchPlugin extends Plugin {
+public class KommaWorkbenchPlugin extends AbstractKommaPlugin {
 	/**
 	 * Plugin id of this plugin.
 	 * 
@@ -94,11 +95,43 @@ public class KommaWorkbenchPlugin extends Plugin {
 
 	private static String[] GLOBAL_LOADING_PLUGIN_NAMES;
 
-	private static KommaWorkbenchPlugin DEFAULT;
+	public static KommaWorkbenchPlugin INSTANCE = new KommaWorkbenchPlugin();
 
 	public KommaWorkbenchPlugin() {
-		super();
-		DEFAULT = this;
+		super(new IResourceLocator[] {});
+	}
+
+	@Override
+	public IResourceLocator getBundleResourceLocator() {
+		return plugin;
+	}
+
+	/**
+	 * Returns the singleton instance of the Eclipse plugin.
+	 * 
+	 * @return the singleton instance.
+	 */
+	public static Implementation getPlugin() {
+		return plugin;
+	}
+
+	/**
+	 * The plugin singleton
+	 */
+	private static Implementation plugin;
+
+	/**
+	 * A plugin implementation that handles plugin registration.
+	 * 
+	 * @see #startup()
+	 */
+	static public class Implementation extends EclipsePlugin {
+		/**
+		 * Creates the singleton instance.
+		 */
+		public Implementation() {
+			plugin = this;
+		}
 	}
 
 	/**
@@ -110,17 +143,6 @@ public class KommaWorkbenchPlugin extends Plugin {
 	 */
 	public static IWorkspace getWorkspace() {
 		return ResourcesPlugin.getWorkspace();
-	}
-
-	/**
-	 * Get the plugin instance.
-	 * 
-	 * @return plugin instance.
-	 * 
-	 * @since 1.0.0
-	 */
-	public static KommaWorkbenchPlugin getDefault() {
-		return DEFAULT;
 	}
 
 	/**
@@ -155,12 +177,10 @@ public class KommaWorkbenchPlugin extends Plugin {
 		if (root.canRead()) {
 			if (root.isDirectory()) {
 				File[] files = root.listFiles();
-				monitor
-						.beginTask(
-								MessageFormat
-										.format(
-												WorkbenchResourceHandler
-														.getString("ProjectUtil_Delete_1"), new Object[] { root.getName() }), files.length + (deleteRoot ? 1 : 0)); //$NON-NLS-1$
+				monitor.beginTask(
+						MessageFormat
+								.format(WorkbenchResourceHandler
+										.getString("ProjectUtil_Delete_1"), new Object[] { root.getName() }), files.length + (deleteRoot ? 1 : 0)); //$NON-NLS-1$
 				for (int i = 0; i < files.length; i++) {
 					if (files[i].isDirectory())
 						error |= deleteDirectoryContent(files[i], true,
@@ -171,12 +191,10 @@ public class KommaWorkbenchPlugin extends Plugin {
 					monitor.worked(1);
 				}
 			} else {
-				monitor
-						.beginTask(
-								MessageFormat
-										.format(
-												WorkbenchResourceHandler
-														.getString("ProjectUtil_Delete_1"), new Object[] { root.getName() }), 1); //$NON-NLS-1$
+				monitor.beginTask(
+						MessageFormat
+								.format(WorkbenchResourceHandler
+										.getString("ProjectUtil_Delete_1"), new Object[] { root.getName() }), 1); //$NON-NLS-1$
 			}
 			if (deleteRoot) {
 				error |= !root.delete();
