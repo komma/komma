@@ -9,11 +9,11 @@ import org.eclipse.jface.wizard.Wizard;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.ICommand;
-import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.ui.util.EditUIUtil;
 import net.enilink.komma.edit.util.PropertyUtil;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
 
 public class EditPropertyWizard extends Wizard {
 	private Context context;

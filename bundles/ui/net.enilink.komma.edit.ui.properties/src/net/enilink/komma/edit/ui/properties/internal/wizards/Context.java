@@ -3,10 +3,10 @@ package net.enilink.komma.edit.ui.properties.internal.wizards;
 import net.enilink.vocab.owl.AnnotationProperty;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.komma.common.adapter.IAdapterFactory;
-import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
 
 class Context {
 	IAdapterFactory adapterFactory;

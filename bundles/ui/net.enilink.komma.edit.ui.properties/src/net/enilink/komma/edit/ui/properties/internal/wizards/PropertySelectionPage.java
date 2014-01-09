@@ -24,11 +24,11 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 
 import net.enilink.vocab.rdf.Property;
-import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.ui.dialogs.FilteredList;
 import net.enilink.komma.edit.ui.dialogs.FilteredList.AbstractContentProvider;
 import net.enilink.komma.edit.ui.dialogs.FilteredList.ItemsFilter;
 import net.enilink.komma.edit.ui.properties.internal.wizards.ItemUtil.LabeledItem;
+import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.model.ModelUtil;
 
 public class PropertySelectionPage extends WizardPage {

@@ -19,10 +19,10 @@ import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.UniqueExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.vocab.rdf.RDF;
-import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.Statement;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
 
 /**
  * Tree node that represents the values of a given property for a given resource

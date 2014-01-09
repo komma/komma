@@ -24,15 +24,15 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.ui.provider.reflective.ModelContentProvider;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
+import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
-import net.enilink.komma.util.ISparqlConstants;
 
 public class PropertyTreeContentProvider extends ModelContentProvider implements
 		ITreeContentProvider {

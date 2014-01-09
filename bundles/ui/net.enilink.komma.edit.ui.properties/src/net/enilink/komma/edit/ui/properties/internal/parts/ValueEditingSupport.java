@@ -6,9 +6,9 @@ import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 
-import net.enilink.komma.concepts.IProperty;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.ui.celleditor.PropertyCellEditingSupport;
+import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.Statement;
 

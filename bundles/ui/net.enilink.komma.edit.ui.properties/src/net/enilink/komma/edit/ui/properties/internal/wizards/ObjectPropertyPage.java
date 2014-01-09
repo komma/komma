@@ -24,15 +24,15 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
 import net.enilink.vocab.owl.OWL;
-import net.enilink.komma.concepts.IClass;
-import net.enilink.komma.concepts.IProperty;
-import net.enilink.komma.concepts.IResource;
 import net.enilink.komma.edit.ui.dialogs.FilteredList.AbstractContentProvider;
 import net.enilink.komma.edit.ui.dialogs.FilteredList.ItemsFilter;
 import net.enilink.komma.edit.ui.dialogs.FilteredTreeAndListSelectionWidget;
 import net.enilink.komma.edit.ui.dialogs.IFilteredTreeAndListDescriptor;
 import net.enilink.komma.edit.ui.properties.internal.wizards.ItemUtil.LabeledItem;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.ModelUtil;
 
 public class ObjectPropertyPage extends WizardPage implements

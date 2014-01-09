@@ -28,11 +28,11 @@ import org.eclipse.swt.widgets.Text;
 
 import net.enilink.commons.ui.jface.viewers.CComboViewer;
 import net.enilink.vocab.rdfs.Datatype;
-import net.enilink.komma.concepts.IClass;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.ILiteral;
-import net.enilink.komma.util.KommaUtil;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.util.KommaUtil;
 
 class DatatypePropertyPage extends WizardPage {
 	public static final String PAGE_NAME = "Dataproperty";
