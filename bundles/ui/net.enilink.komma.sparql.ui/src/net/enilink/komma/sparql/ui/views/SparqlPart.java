@@ -48,7 +48,6 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.parboiled.Parboiled;
 
-import net.enilink.commons.extensions.RegistryReader;
 import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
@@ -58,6 +57,8 @@ import net.enilink.commons.ui.editor.PageBook;
 import net.enilink.commons.ui.jface.viewers.CComboViewer;
 import net.enilink.commons.ui.progress.ProgressDistributor;
 import net.enilink.commons.ui.progress.UiProgressMonitorWrapper;
+import net.enilink.commons.util.Pair;
+import net.enilink.commons.util.extensions.RegistryReader;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
@@ -66,7 +67,7 @@ import net.enilink.komma.edit.assist.ParboiledProposalProvider;
 import net.enilink.komma.edit.ui.assist.JFaceProposalProvider;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
-import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelDescription;
 import net.enilink.komma.parser.sparql.Sparql11Parser;
 import net.enilink.komma.query.SparqlBuilder;
@@ -82,7 +83,6 @@ import net.enilink.komma.core.ITupleResult;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.sparql.ui.SparqlUI;
 import net.enilink.komma.sparql.ui.assist.SparqlProposals;
-import net.enilink.komma.util.Pair;
 
 class SparqlPart extends AbstractEditorPart {
 	private class LoadResultsJob extends FinishInUIJob {
@@ -487,7 +487,7 @@ class SparqlPart extends AbstractEditorPart {
 		queryText.append("PREFIX owl: <" + OWL.NAMESPACE + ">\n");
 		queryText.append("PREFIX rdf: <" + RDF.NAMESPACE + ">\n");
 		queryText.append("PREFIX rdfs: <" + RDFS.NAMESPACE + ">\n");
-		for (ModelDescription modelDescription : ModelCore.getBaseModels())
+		for (ModelDescription modelDescription : ModelPlugin.getBaseModels())
 			queryText.append("PREFIX " + modelDescription.getPrefix() + ": <"
 					+ modelDescription.getNamespace() + ">\n");
 
