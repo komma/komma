@@ -6,7 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.commands,
- net.enilink.komma,
+ net.enilink.komma.em,
  net.enilink.komma.edit,
  net.enilink.komma.rdfs.edit
 Bundle-ActivationPolicy: lazy
