@@ -8,9 +8,9 @@
  * Contributors:
  *     Angelo Zerr <angelo.zerr@gmail.com> - initial API and implementation
  *******************************************************************************/
-package net.enilink.commons.internal.extensions;
+package net.enilink.commons.util.internal.extensions;
 
-import net.enilink.commons.CommonsPlugin;
+import net.enilink.commons.util.CommonsUtilPlugin;
 
 /**
  * Helper to debug None OSGi-env registry.
@@ -83,7 +83,7 @@ public final class DebugHelper {
 			s.append("\t");
 		}
 		s.append("[");
-		s.append(CommonsPlugin.PLUGIN_ID);
+		s.append(CommonsUtilPlugin.PLUGIN_ID);
 		s.append("] ");
 		if (message != null) {
 			s.append(message);

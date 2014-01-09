@@ -8,7 +8,7 @@
  * Contributors:
  *     Angelo Zerr <angelo.zerr@gmail.com> - initial API and implementation
  *******************************************************************************/
-package net.enilink.commons.internal.extensions;
+package net.enilink.commons.util.internal.extensions;
 
 /**
  * OSGi constants.

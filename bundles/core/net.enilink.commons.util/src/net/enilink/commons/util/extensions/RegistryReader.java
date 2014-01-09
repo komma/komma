@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.commons.extensions;
+package net.enilink.commons.util.extensions;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IRegistryChangeEvent;
 import org.eclipse.core.runtime.IRegistryChangeListener;
 
-import net.enilink.commons.CommonsPlugin;
+import net.enilink.commons.util.CommonsUtilPlugin;
 
 /**
  * Template implementation of a registry reader that creates objects
@@ -87,7 +87,7 @@ public abstract class RegistryReader implements IRegistryChangeListener {
 				.append("Plugin " + extension.getNamespaceIdentifier() + ", extension " + extension.getExtensionPointUniqueIdentifier());//$NON-NLS-2$//$NON-NLS-1$
 		buf.append("\n" + text);//$NON-NLS-1$
 
-		CommonsPlugin.logErrorMessage(buf.toString());
+		CommonsUtilPlugin.logErrorMessage(buf.toString());
 	}
 
 	/**

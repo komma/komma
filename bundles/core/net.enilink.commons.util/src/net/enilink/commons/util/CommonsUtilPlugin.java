@@ -8,36 +8,34 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.commons;
+package net.enilink.commons.util;
+
+import net.enilink.commons.util.extensions.RegistryFactoryHelper;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
 
-import net.enilink.commons.extensions.RegistryFactoryHelper;
-import net.enilink.commons.util.IOpener;
-
 /**
  * The activator class controls the plug-in life cycle
  */
-public class CommonsPlugin extends Plugin {
+public class CommonsUtilPlugin extends Plugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "net.enilink.commons.util";
 
 	// The shared instance
-	private static CommonsPlugin plugin;
+	private static CommonsUtilPlugin plugin;
 
 	/**
 	 * The constructor
 	 */
-	public CommonsPlugin() {
+	public CommonsUtilPlugin() {
 	}
 
 	/*
@@ -69,7 +67,7 @@ public class CommonsPlugin extends Plugin {
 	 * 
 	 * @return the shared instance
 	 */
-	public static CommonsPlugin getDefault() {
+	public static CommonsUtilPlugin getDefault() {
 		return plugin;
 	}
 

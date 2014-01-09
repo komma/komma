@@ -8,14 +8,14 @@
  * Contributors:
  *     Angelo Zerr <angelo.zerr@gmail.com> - initial API and implementation
  *******************************************************************************/
-package net.enilink.commons.extensions;
+package net.enilink.commons.util.extensions;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.RegistryFactory;
 
-import net.enilink.commons.internal.extensions.DebugHelper;
-import net.enilink.commons.internal.extensions.RegistryProviderNonOSGI;
+import net.enilink.commons.util.internal.extensions.DebugHelper;
+import net.enilink.commons.util.internal.extensions.RegistryProviderNonOSGI;
 
 /**
  * Helper class which returns {@link IExtensionRegistry} singleton switch the

@@ -5,9 +5,8 @@ Bundle-SymbolicName: net.enilink.commons.util;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.core.runtime
 Bundle-ActivationPolicy: lazy
-Export-Package: net.enilink.commons,
- net.enilink.commons.extensions,
- net.enilink.commons.util,
+Export-Package: net.enilink.commons.util,
+ net.enilink.commons.util.extensions,
  org.apache.commons.codec;version="1.4.0",
  org.apache.commons.codec.binary;version="1.4.0",
  org.apache.commons.codec.digest;version="1.4.0",
@@ -43,4 +42,4 @@ Bundle-ClassPath: .,
  lib/commons-codec-1.4.jar,
  lib/commons-collections-3.1.jar,
  lib/commons-compress-1.4.1.jar
-Bundle-Activator: net.enilink.commons.CommonsPlugin
+Bundle-Activator: net.enilink.commons.util.CommonsUtilPlugin
