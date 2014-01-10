@@ -19,35 +19,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.window.Window;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.dialogs.SelectionDialog;
-
-import net.enilink.composition.properties.Filterable;
 import net.enilink.commons.iterator.WrappedIterator;
-import net.enilink.vocab.owl.Ontology;
+import net.enilink.composition.properties.Filterable;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.SimpleCommand;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.edit.ui.dialogs.FilteredList;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
@@ -60,29 +39,52 @@ import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
-import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelDescription;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.base.IURIMapRule;
 import net.enilink.komma.model.base.SimpleURIMapRule;
 import net.enilink.komma.owl.edit.IOWLEditImages;
 import net.enilink.komma.owl.edit.OWLEditPlugin;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.vocab.owl.Ontology;
+
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.window.Window;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.dialogs.SelectionDialog;
 
 public class ImportsPart extends AbstractEditingDomainPart {
 	private Ontology ontology;
 	private TreeViewer importsViewer;
-	Action deleteItemAction, addItemAction;
+	private Action deleteItemAction, addItemAction;
 
 	private Collection<ModelDescription> modelDescriptions;
 
 	private IAdapterFactory adapterFactory;
 
 	public void createContents(Composite parent) {
-		parent.setLayout(new FillLayout());
-		createActions();
+		parent.setLayout(new GridLayout(1, false));
+		createActions(parent);
 
 		Tree tree = getWidgetFactory().createTree(parent,
 				SWT.V_SCROLL | SWT.MULTI);
@@ -111,14 +113,21 @@ public class ImportsPart extends AbstractEditingDomainPart {
 								event.getSelection());
 					}
 				});
+		importsViewer.getControl().setLayoutData(
+				new GridData(SWT.FILL, SWT.FILL, true, true));
 		modelDescriptions = ModelPlugin.getBaseModels();
 	}
 
-	public void createActions() {
+	public void createActions(Composite parent) {
 		IToolBarManager toolBarManager = (IToolBarManager) getForm()
 				.getAdapter(IToolBarManager.class);
+		ToolBarManager ownManager = null;
 		if (toolBarManager == null) {
-			return;
+			toolBarManager = ownManager = new ToolBarManager(SWT.HORIZONTAL);
+			ToolBar toolBar = ownManager.createControl(parent);
+			getWidgetFactory().adapt(toolBar);
+			toolBar.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true,
+					false));
 		}
 
 		addItemAction = new Action("Add") {
@@ -143,6 +152,10 @@ public class ImportsPart extends AbstractEditingDomainPart {
 								.getImage(IEditUIPropertiesImages.REMOVE)));
 		deleteItemAction.setEnabled(false);
 		toolBarManager.add(deleteItemAction);
+
+		if (ownManager != null) {
+			ownManager.update(true);
+		}
 	}
 
 	void addItem() {

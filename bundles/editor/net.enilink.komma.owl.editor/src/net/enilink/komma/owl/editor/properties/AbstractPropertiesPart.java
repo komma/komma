@@ -10,27 +10,12 @@
  *******************************************************************************/
 package net.enilink.komma.owl.editor.properties;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Tree;
-
-import net.enilink.vocab.owl.OWL;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
+import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.SimpleCommand;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
@@ -44,8 +29,26 @@ import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.URI;
+import net.enilink.vocab.owl.OWL;
+
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.Tree;
 
 public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 	Action deleteItemAction, addItemAction;
@@ -63,7 +66,7 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 		GridLayout gridLayout = new GridLayout(1, false);
 		gridLayout.marginWidth = gridLayout.marginHeight = 0;
 		parent.setLayout(gridLayout);
-		createActions();
+		createActions(parent);
 
 		tree = getWidgetFactory().createTree(parent, SWT.MULTI);
 		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -93,11 +96,16 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 				new GridData(SWT.FILL, SWT.END, false, false));
 	}
 
-	public void createActions() {
+	public void createActions(Composite parent) {
 		IToolBarManager toolBarManager = (IToolBarManager) getForm()
 				.getAdapter(IToolBarManager.class);
+		ToolBarManager ownManager = null;
 		if (toolBarManager == null) {
-			return;
+			toolBarManager = ownManager = new ToolBarManager(SWT.HORIZONTAL);
+			ToolBar toolBar = ownManager.createControl(parent);
+			getWidgetFactory().adapt(toolBar);
+			toolBar.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true,
+					false));
 		}
 
 		addItemAction = new Action("Add") {
@@ -122,6 +130,10 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 								.getImage(IEditUIPropertiesImages.REMOVE)));
 		deleteItemAction.setEnabled(false);
 		toolBarManager.add(deleteItemAction);
+
+		if (ownManager != null) {
+			ownManager.update(true);
+		}
 	}
 
 	void addItem() {
@@ -130,30 +142,23 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 			public boolean performFinish() {
 				final URI resourceName = getObjectName();
 				try {
-					getEditingDomain().getCommandStack().execute(
-							new SimpleCommand() {
-								@Override
-								protected CommandResult doExecuteWithResult(
-										IProgressMonitor progressMonitor,
-										IAdaptable info)
-										throws ExecutionException {
-									final IEntity property = model.getManager()
-											.createNamed(resourceName,
-													getPropertyType());
-
-									getShell().getDisplay().asyncExec(
-											new Runnable() {
-												@Override
-												public void run() {
-													treeViewer
-															.setSelection(new StructuredSelection(
-																	property));
-												}
-											});
-
-									return CommandResult.newOKCommandResult(property);
-								}
-							}, null, null);
+					ICommand cmd = new SimpleCommand() {
+						@Override
+						protected CommandResult doExecuteWithResult(
+								IProgressMonitor progressMonitor,
+								IAdaptable info) throws ExecutionException {
+							final IEntity property = model.getManager()
+									.createNamed(resourceName,
+											getPropertyType());
+							return CommandResult.newOKCommandResult(property);
+						}
+					};
+					getEditingDomain().getCommandStack().execute(cmd, null,
+							null);
+					// update viewer and set selection
+					refresh();
+					treeViewer.setSelection(new StructuredSelection(cmd
+							.getCommandResult().getReturnValue()), true);
 				} catch (ExecutionException e) {
 					OWLEditorPlugin.INSTANCE.log(e);
 				}

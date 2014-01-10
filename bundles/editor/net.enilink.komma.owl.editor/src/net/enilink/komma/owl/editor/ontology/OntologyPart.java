@@ -20,8 +20,6 @@ import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 /**
  * Extends FormPage that is itself an extension of EditorPart
  * 
- * @author Ken Wenzel
- * 
  */
 public class OntologyPart extends AbstractEditingDomainPart {
 	protected ImportsPart importsDetailsPart;

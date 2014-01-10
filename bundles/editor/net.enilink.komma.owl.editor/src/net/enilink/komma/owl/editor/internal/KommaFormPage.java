@@ -37,8 +37,8 @@ public abstract class KommaFormPage extends FormPage implements
 	protected EditorForm getEditorForm() {
 		if (form == null) {
 			IManagedForm managedForm = getManagedForm();
-			form = new EditorForm(managedForm.getForm(), managedForm
-					.getToolkit()) {
+			form = new EditorForm(managedForm.getForm(),
+					managedForm.getToolkit()) {
 				@Override
 				public Object getAdapter(Class adapter) {
 					if (IEditingDomainProvider.class.equals(adapter)) {
@@ -46,7 +46,8 @@ public abstract class KommaFormPage extends FormPage implements
 					} else if (IViewerMenuSupport.class.equals(adapter)) {
 						return (IViewerMenuSupport) getEditor();
 					}
-					return super.getAdapter(adapter);
+					Object result = KommaFormPage.this.getAdapter(adapter);
+					return result != null ? result : super.getAdapter(adapter);
 				}
 
 				@Override

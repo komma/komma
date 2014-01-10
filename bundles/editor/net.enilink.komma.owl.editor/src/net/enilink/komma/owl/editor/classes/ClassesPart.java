@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -25,6 +26,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 
 import net.enilink.vocab.owl.OWL;
@@ -59,7 +61,7 @@ public class ClassesPart extends AbstractEditingDomainPart {
 		GridLayout gridLayout = new GridLayout(1, false);
 		gridLayout.marginWidth = gridLayout.marginHeight = 0;
 		parent.setLayout(gridLayout);
-		createActions();
+		createActions(parent);
 
 		tree = getWidgetFactory().createTree(parent, SWT.VIRTUAL | SWT.MULTI);
 		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -90,11 +92,16 @@ public class ClassesPart extends AbstractEditingDomainPart {
 				new GridData(SWT.FILL, SWT.END, false, false));
 	}
 
-	public void createActions() {
+	public void createActions(Composite parent) {
 		IToolBarManager toolBarManager = (IToolBarManager) getForm()
 				.getAdapter(IToolBarManager.class);
+		ToolBarManager ownManager = null;
 		if (toolBarManager == null) {
-			return;
+			toolBarManager = ownManager = new ToolBarManager(SWT.HORIZONTAL);
+			ToolBar toolBar = ownManager.createControl(parent);
+			getWidgetFactory().adapt(toolBar);
+			toolBar.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true,
+					false));
 		}
 
 		addItemAction = new Action("Add") {
@@ -119,6 +126,10 @@ public class ClassesPart extends AbstractEditingDomainPart {
 								.getImage(IEditUIPropertiesImages.REMOVE)));
 		deleteItemAction.setEnabled(false);
 		toolBarManager.add(deleteItemAction);
+
+		if (ownManager != null) {
+			ownManager.update(true);
+		}
 	}
 
 	void addItem() {

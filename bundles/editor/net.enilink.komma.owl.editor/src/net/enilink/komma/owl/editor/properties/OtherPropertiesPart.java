@@ -10,11 +10,11 @@
  *******************************************************************************/
 package net.enilink.komma.owl.editor.properties;
 
-import net.enilink.vocab.owl.OWL;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.util.ISparqlConstants;
+import net.enilink.vocab.rdf.RDF;
 
 public class OtherPropertiesPart extends AbstractPropertiesPart {
 	@Override
@@ -48,7 +48,6 @@ public class OtherPropertiesPart extends AbstractPropertiesPart {
 
 	@Override
 	protected URI getPropertyType() {
-		return OWL.TYPE_OWLPROPERTY;
-		// TODO: Typauswahl im Wizard (siehe Topbraid)
+		return RDF.TYPE_PROPERTY;
 	}
 }

@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -30,6 +31,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.ToolBar;
 
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.common.adapter.IAdapterFactory;
@@ -64,7 +66,7 @@ public class InstancesPart extends AbstractEditingDomainPart {
 		gridLayout.marginWidth = gridLayout.marginHeight = 0;
 		parent.setLayout(gridLayout);
 
-		createActions();
+		createActions(parent);
 		createIndividualsPart(parent);
 	}
 
@@ -127,11 +129,16 @@ public class InstancesPart extends AbstractEditingDomainPart {
 		return viewer;
 	}
 
-	public void createActions() {
+	public void createActions(Composite parent) {
 		IToolBarManager toolBarManager = (IToolBarManager) getForm()
 				.getAdapter(IToolBarManager.class);
+		ToolBarManager ownManager = null;
 		if (toolBarManager == null) {
-			return;
+			toolBarManager = ownManager = new ToolBarManager(SWT.HORIZONTAL);
+			ToolBar toolBar = ownManager.createControl(parent);
+			getWidgetFactory().adapt(toolBar);
+			toolBar.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true,
+					false));
 		}
 
 		addItemAction = new Action("Add") {
@@ -156,6 +163,10 @@ public class InstancesPart extends AbstractEditingDomainPart {
 								.getImage(IEditUIPropertiesImages.REMOVE)));
 		deleteItemAction.setEnabled(false);
 		toolBarManager.add(deleteItemAction);
+
+		if (ownManager != null) {
+			ownManager.update(true);
+		}
 	}
 
 	void addItem() {

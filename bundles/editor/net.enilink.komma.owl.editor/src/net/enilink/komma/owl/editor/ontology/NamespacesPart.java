@@ -14,11 +14,29 @@ package net.enilink.komma.owl.editor.ontology;
 import java.util.Collection;
 import java.util.Iterator;
 
+import net.enilink.komma.common.command.CommandResult;
+import net.enilink.komma.common.command.SimpleCommand;
+import net.enilink.komma.common.notify.INotification;
+import net.enilink.komma.common.notify.INotificationListener;
+import net.enilink.komma.common.notify.NotificationFilter;
+import net.enilink.komma.core.INamespace;
+import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.Namespace;
+import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
+import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
+import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
+import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
+import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.event.INamespaceNotification;
+import net.enilink.komma.owl.editor.OWLEditorPlugin;
+
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -35,27 +53,12 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-
-import net.enilink.komma.common.command.CommandResult;
-import net.enilink.komma.common.command.SimpleCommand;
-import net.enilink.komma.common.notify.INotification;
-import net.enilink.komma.common.notify.INotificationListener;
-import net.enilink.komma.common.notify.NotificationFilter;
-import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
-import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
-import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
-import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.event.INamespaceNotification;
-import net.enilink.komma.owl.editor.OWLEditorPlugin;
-import net.enilink.komma.core.INamespace;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.core.Namespace;
-import net.enilink.komma.core.URIImpl;
+import org.eclipse.swt.widgets.ToolBar;
 
 public class NamespacesPart extends AbstractEditingDomainPart {
 	private IModel model;
@@ -209,9 +212,8 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 	}
 
 	public void createContents(Composite parent) {
-		parent.setLayout(new FillLayout());
-
-		createActions();
+		parent.setLayout(new GridLayout(1, false));
+		createActions(parent);
 
 		Table table = getWidgetFactory().createTable(parent,
 				SWT.V_SCROLL | SWT.MULTI | SWT.FULL_SELECTION);
@@ -268,13 +270,20 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 				return ns1.getPrefix().compareToIgnoreCase(ns2.getPrefix());
 			}
 		});
+		namespaceViewer.getControl().setLayoutData(
+				new GridData(SWT.FILL, SWT.FILL, true, true));
 	}
 
-	public void createActions() {
+	public void createActions(Composite parent) {
 		IToolBarManager toolBarManager = (IToolBarManager) getForm()
 				.getAdapter(IToolBarManager.class);
+		ToolBarManager ownManager = null;
 		if (toolBarManager == null) {
-			return;
+			toolBarManager = ownManager = new ToolBarManager(SWT.HORIZONTAL);
+			ToolBar toolBar = ownManager.createControl(parent);
+			getWidgetFactory().adapt(toolBar);
+			toolBar.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true,
+					false));
 		}
 
 		addItemAction = new Action("Add") {
@@ -299,6 +308,10 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 								.getImage(IEditUIPropertiesImages.REMOVE)));
 		deleteItemAction.setEnabled(false);
 		toolBarManager.add(deleteItemAction);
+
+		if (ownManager != null) {
+			ownManager.update(true);
+		}
 	}
 
 	void addItem() {
