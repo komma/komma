@@ -26,6 +26,7 @@ import net.enilink.komma.common.ui.MarkerHelper;
 import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
@@ -80,6 +81,7 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.IPageChangeProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -209,9 +211,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		}
 
 		/**
-		 * This sets the selection into whichever viewer is active. <!--
-		 * begin-user-doc --> <!-- end-user-doc -->
-		 * 
+		 * This sets the selection into whichever viewer is active.
 		 */
 		public void setSelectionToViewer(Collection<?> collection) {
 			final Collection<?> theSelection = collection;
@@ -332,7 +332,6 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 						&& getEditingDomain().equals(
 								provider.getEditingDomain())) {
 					getActionBarContributor().setActiveEditor(editor);
-
 					editorSelectionProvider.setSelectionProvider(p.getSite()
 							.getSelectionProvider());
 				}
@@ -379,28 +378,31 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 					if (properties
 							.contains(((IStatementNotification) notification)
 									.getPredicate().getURI())) {
-						IModel model = (IModel) ((IStatementNotification) notification)
+						IReference model = ((IStatementNotification) notification)
 								.getModelSet()
 								.getMetaDataManager()
 								.find(((IStatementNotification) notification)
 										.getSubject());
-						Diagnostic diagnostic = analyzeModelProblems(model,
-								null);
-						if (diagnostic.getSeverity() != Diagnostic.OK) {
-							modelToDiagnosticMap.put(model, diagnostic);
-						} else {
-							modelToDiagnosticMap.remove(model);
-						}
+						if (model instanceof IModel) {
+							Diagnostic diagnostic = analyzeModelProblems(
+									(IModel) model, null);
+							if (diagnostic.getSeverity() != Diagnostic.OK) {
+								modelToDiagnosticMap.put((IModel) model,
+										diagnostic);
+							} else {
+								modelToDiagnosticMap.remove(model);
+							}
 
-						if (updateProblemIndication) {
-							editor.getSite().getShell().getDisplay()
-									.asyncExec(new Runnable() {
-										public void run() {
-											updateProblemIndication();
-										}
-									});
+							if (updateProblemIndication) {
+								editor.getSite().getShell().getDisplay()
+										.asyncExec(new Runnable() {
+											public void run() {
+												updateProblemIndication();
+											}
+										});
+							}
+							break;
 						}
-						break;
 					}
 				}
 			}
@@ -655,10 +657,8 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 	protected IModelSet createModelSet() {
 		KommaModule module = ModelPlugin.createModelSetModule(getClass()
 				.getClassLoader());
-
 		IModelSetFactory factory = Guice.createInjector(
 				new ModelSetModule(module)).getInstance(IModelSetFactory.class);
-
 		IModelSet modelSet = factory.createModelSet(URIImpl
 				.createURI(MODELS.NAMESPACE +
 				// "MemoryModelSet" //
@@ -706,10 +706,8 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		if (getEditingDomain() != null) {
 			getEditingDomain().getCommandStack().removeCommandStackListener(
 					commandStackListener);
-
 			getEditingDomain().getModelSet().removeMetaDataListener(
 					problemIndicationListener);
-
 			setEditingDomain(null);
 		}
 
@@ -734,7 +732,6 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 
 		if (modelSet != null) {
 			modelSet.dispose();
-
 			modelSet = null;
 		}
 	}
@@ -813,8 +810,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 	}
 
 	protected void doSaveAs(URI uri, IEditorInput editorInput) {
-		getEditingDomain().getModelSet().getModels().iterator().next()
-				.setURI(uri);
+		model.setURI(uri);
 		editor.setInputWithNotify(editorInput);
 		editor.setPartName(editorInput.getName());
 		IProgressMonitor progressMonitor = getActionBars()
@@ -963,10 +959,6 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 	protected abstract IResourceLocator getResourceLocator();
 
 	protected IPath getSaveAsPath() {
-		// SaveAsDialog saveAsDialog = new SaveAsDialog(editor.getSite()
-		// .getShell());
-		// saveAsDialog.open();
-		// IPath path = saveAsDialog.getResult();
 		return null;
 	}
 
@@ -1013,7 +1005,8 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 	 * 
 	 */
 	protected void handleActivate() {
-		handlePageChange(0);
+		handlePageChange(editor instanceof IPageChangeProvider ? ((IPageChangeProvider) editor)
+				.getSelectedPage() : null);
 
 		// Recompute the read only state.
 		if (getEditingDomain().getModelToReadOnlyMap() != null) {
@@ -1112,9 +1105,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 	 */
 	public void init() {
 		initializeEditingDomain();
-
 		editor.getSite().setSelectionProvider(editorSelectionProvider);
-
 		editor.getSite().getPage().addPartListener(partListener);
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(
 				resourceChangeListener, IResourceChangeEvent.POST_CHANGE);

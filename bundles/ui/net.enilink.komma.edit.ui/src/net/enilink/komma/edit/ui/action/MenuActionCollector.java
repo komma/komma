@@ -132,6 +132,18 @@ abstract public class MenuActionCollector<T> extends CollectorJob<T> {
 
 	public void dispose() {
 		cancel();
+		synchronized (handlers) {
+			for (Job handler : handlers) {
+				handler.cancel();
+			}
+			handlers.clear();
+			handlers.notifyAll();
+		}
+		try {
+			join();
+		} catch (InterruptedException e) {
+			// ignore
+		}
 		for (IMenuManager menuManager : menuManagers.keySet()) {
 			depopulateManager(menuManager, menuActions);
 		}

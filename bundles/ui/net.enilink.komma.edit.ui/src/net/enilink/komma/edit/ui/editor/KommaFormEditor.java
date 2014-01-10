@@ -1,5 +1,9 @@
 package net.enilink.komma.edit.ui.editor;
 
+import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
+import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.domain.IEditingDomainProvider;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IMenuListener;
@@ -10,10 +14,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
-
-import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
 
 /**
  * This is a base class for a form-based model editor.
@@ -34,10 +34,16 @@ public abstract class KommaFormEditor extends FormEditor implements
 	@Override
 	public void dispose() {
 		if (editorSupport != null) {
-			editorSupport.dispose();
+			// trick to dispose editor support after action bars are disposed
+			final KommaEditorSupport<?> support = editorSupport;
+			getSite().getShell().getDisplay().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					support.dispose();
+				}
+			});
 			editorSupport = null;
 		}
-
 		super.dispose();
 	}
 
@@ -155,7 +161,7 @@ public abstract class KommaFormEditor extends FormEditor implements
 	@Override
 	protected void pageChange(int newPageIndex) {
 		super.pageChange(newPageIndex);
-		editorSupport.handlePageChange(newPageIndex);
+		editorSupport.handlePageChange(getSelectedPage());
 	}
 
 	public void setActivePage(int pageIndex) {

@@ -164,7 +164,7 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 	@Override
 	protected void pageChange(int newPageIndex) {
 		super.pageChange(newPageIndex);
-		editorSupport.handlePageChange(newPageIndex);
+		editorSupport.handlePageChange(getSelectedPage());
 	}
 
 	public void setActivePage(int pageIndex) {
