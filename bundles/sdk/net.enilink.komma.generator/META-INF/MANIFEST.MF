@@ -6,7 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.core.runtime,
  net.enilink.commons.util,
- net.enilink.komma,
+ net.enilink.komma.em,
  net.enilink.vocab.rdfs,
  net.enilink.vocab.owl,
  net.enilink.komma.owlim,
