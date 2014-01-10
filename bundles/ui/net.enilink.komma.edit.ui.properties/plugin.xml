@@ -6,7 +6,7 @@
       <view
             class="net.enilink.komma.edit.ui.properties.internal.parts.PropertyTreeView"
             id="net.enilink.komma.edit.ui.properties.views.PropertyTreeView"
-            name="Details"
+            name="RDF"
             restorable="true">
       </view>
    </extension>
