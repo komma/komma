@@ -1,5 +1,27 @@
 package net.enilink.komma.edit.ui.rcp.internal.editor;
 
+import net.enilink.komma.common.ui.ViewerPane;
+import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.edit.ui.celleditor.AdapterFactoryTreeEditor;
+import net.enilink.komma.edit.ui.editor.IPropertySheetPageSupport;
+import net.enilink.komma.edit.ui.editor.KommaMultiPageEditor;
+import net.enilink.komma.edit.ui.editor.KommaMultiPageEditorSupport;
+import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
+import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
+import net.enilink.komma.edit.ui.rcp.KommaEditUIRCP;
+import net.enilink.komma.edit.ui.rcp.editor.TabbedPropertySheetPageSupport;
+import net.enilink.komma.edit.ui.views.IViewerMenuSupport;
+import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.IModelSetFactory;
+import net.enilink.komma.model.MODELS;
+import net.enilink.komma.model.ModelPlugin;
+import net.enilink.komma.model.ModelSetModule;
+import net.enilink.komma.workbench.IProjectModelSet;
+import net.enilink.komma.workbench.ProjectModelSetSupport;
+
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -12,27 +34,6 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IFileEditorInput;
 
 import com.google.inject.Guice;
-
-import net.enilink.komma.common.ui.ViewerPane;
-import net.enilink.komma.common.util.IResourceLocator;
-import net.enilink.komma.edit.ui.celleditor.AdapterFactoryTreeEditor;
-import net.enilink.komma.edit.ui.editor.IPropertySheetPageSupport;
-import net.enilink.komma.edit.ui.editor.KommaMultiPageEditor;
-import net.enilink.komma.edit.ui.editor.KommaMultiPageEditorSupport;
-import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
-import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
-import net.enilink.komma.edit.ui.rcp.KommaEditUIRCP;
-import net.enilink.komma.edit.ui.rcp.editor.TabbedPropertySheetPageSupport;
-import net.enilink.komma.edit.ui.views.IViewerMenuSupport;
-import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.IModelSetFactory;
-import net.enilink.komma.model.MODELS;
-import net.enilink.komma.model.ModelCore;
-import net.enilink.komma.model.ModelSetModule;
-import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.workbench.IProjectModelSet;
-import net.enilink.komma.workbench.ProjectModelSetSupport;
 
 /**
  * This is an example of a basic model editor.
@@ -63,8 +64,8 @@ public class BasicEditor extends KommaMultiPageEditor implements
 			}
 
 			protected IModelSet createModelSet() {
-				KommaModule module = ModelCore.createModelSetModule(getClass()
-						.getClassLoader());
+				KommaModule module = ModelPlugin
+						.createModelSetModule(getClass().getClassLoader());
 				module.addConcept(IProjectModelSet.class);
 				module.addBehaviour(ProjectModelSetSupport.class);
 
@@ -184,5 +185,13 @@ public class BasicEditor extends KommaMultiPageEditor implements
 	@Override
 	public void createContextMenuFor(StructuredViewer viewer) {
 		getEditorSupport().createContextMenuFor(viewer);
+	}
+
+	@Override
+	public Object getAdapter(Class key) {
+		if (key == IModel.class) {
+			return getEditorSupport().getModel();
+		}
+		return super.getAdapter(key);
 	}
 }
