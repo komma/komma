@@ -277,8 +277,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	public <T> T create(Class<T> concept, Class<?>... concepts) {
-		return createNamed((net.enilink.komma.core.URI) null, concept,
-				concepts);
+		return createNamed((net.enilink.komma.core.URI) null, concept, concepts);
 	}
 
 	@Override
@@ -369,8 +368,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T createNamed(net.enilink.komma.core.URI uri,
-			Class<T> concept, Class<?>... concepts) {
+	public <T> T createNamed(net.enilink.komma.core.URI uri, Class<T> concept,
+			Class<?>... concepts) {
 		IReference resource = getResourceManager().createResource(uri);
 		Set<URI> types = new HashSet<URI>();
 		boolean isActive = false;
@@ -1025,8 +1024,9 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		IReference after = getResourceManager().createResource(uri);
 		getResourceManager().renameResource(before, after);
 		T newBean = (T) createBean(after, null, null, false, true, null);
-		((IEntityManagerAware) bean).initReference(((IReferenceable) newBean)
-				.getReference());
+		IEntityManagerAware renamed = (IEntityManagerAware) (bean instanceof Behaviour<?> ? ((Behaviour<?>) bean)
+				.getBehaviourDelegate() : bean);
+		renamed.initReference(((IReferenceable) newBean).getReference());
 		return newBean;
 	}
 
