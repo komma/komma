@@ -6,7 +6,7 @@ Bundle-SymbolicName: net.enilink.komma.owl.editor.rcp;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.core.runtime,
- net.enilink.komma,
+ net.enilink.komma.em,
  net.enilink.komma.edit,
  org.eclipse.core.commands,
  org.eclipse.core.runtime,
@@ -22,8 +22,8 @@ Require-Bundle: org.eclipse.core.runtime,
 Import-Package: com.google.inject,
  net.enilink.komma.owl.editor,
  net.enilink.komma.owl.editor.internal,
- net.enilink.komma.owl.editor.internal.classes,
- net.enilink.komma.owl.editor.internal.ontology,
- net.enilink.komma.owl.editor.internal.properties
+ net.enilink.komma.owl.editor.classes,
+ net.enilink.komma.owl.editor.ontology,
+ net.enilink.komma.owl.editor.properties
 Export-Package: net.enilink.komma.owl.editor.rcp
 Bundle-ActivationPolicy: lazy

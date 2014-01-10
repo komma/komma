@@ -1,11 +1,11 @@
 package net.enilink.komma.owl.editor.rcp;
 
-import org.eclipse.jface.viewers.StructuredViewer;
-import org.eclipse.ui.IFileEditorInput;
-
-import com.google.inject.Guice;
-
+import net.enilink.commons.ui.editor.EditorForm;
+import net.enilink.commons.ui.editor.FormPart;
+import net.enilink.commons.ui.editor.IEditorPart;
 import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.edit.ui.editor.IPropertySheetPageSupport;
 import net.enilink.komma.edit.ui.editor.KommaEditorSupport;
 import net.enilink.komma.edit.ui.editor.KommaFormEditor;
@@ -15,37 +15,78 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelSetFactory;
 import net.enilink.komma.model.MODELS;
-import net.enilink.komma.model.ModelCore;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
-import net.enilink.komma.owl.editor.internal.classes.ClassesPage;
-import net.enilink.komma.owl.editor.internal.ontology.OntologyPage;
-import net.enilink.komma.owl.editor.internal.properties.DatatypePropertiesPage;
-import net.enilink.komma.owl.editor.internal.properties.ObjectPropertiesPage;
-import net.enilink.komma.owl.editor.internal.properties.OtherPropertiesPage;
-import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.owl.editor.classes.ClassesPart;
+import net.enilink.komma.owl.editor.internal.KommaFormPage;
+import net.enilink.komma.owl.editor.ontology.OntologyPart;
+import net.enilink.komma.owl.editor.properties.DatatypePropertiesPart;
+import net.enilink.komma.owl.editor.properties.ObjectPropertiesPart;
+import net.enilink.komma.owl.editor.properties.OtherPropertiesPart;
 import net.enilink.komma.workbench.IProjectModelSet;
 import net.enilink.komma.workbench.ProjectModelSetSupport;
 
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.viewers.StructuredViewer;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.dialogs.SaveAsDialog;
+import org.eclipse.ui.forms.IManagedForm;
+import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.widgets.ScrolledForm;
+
+import com.google.inject.Guice;
+
 /**
- * This is the form editor acting as container for all involved editors
- * 
- * @author Ken Wenzel
+ * A basic OWL editor.
  */
 public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
-	protected OntologyPage ontologyPage;
-	protected ClassesPage classesPage;
-	protected ObjectPropertiesPage objectPropertiesPage;
-	protected OtherPropertiesPage otherPropertiesPage;
-	protected DatatypePropertiesPage datatypePropertiesPage;
+	static class EditorPartPage extends KommaFormPage {
+		IEditorPart editorPart;
+
+		EditorPartPage(FormEditor editor, String id, String title,
+				IEditorPart editorPart) {
+			super(editor, id, title);
+			this.editorPart = editorPart;
+		}
+
+		protected void createFormContent(IManagedForm managedForm) {
+			ScrolledForm form = managedForm.getForm();
+			form.setText(getTitle());
+
+			EditorForm editorForm = getEditorForm();
+			managedForm.addPart(new FormPart(editorForm));
+
+			Composite body = form.getBody();
+			body.setLayout(new FillLayout());
+
+			editorPart.initialize(editorForm);
+			editorPart.createContents(body);
+			editorPart.setInput(getEditor().getAdapter(IModel.class));
+			editorPart.refresh();
+		}
+	}
+
+	protected IFormPage ontologyPage;
+	protected IFormPage classesPage;
+	protected IFormPage objectPropertiesPage;
+	protected IFormPage otherPropertiesPage;
+	protected IFormPage datatypePropertiesPage;
 
 	public OWLEditor() {
-		ontologyPage = new OntologyPage(this);
-		classesPage = new ClassesPage(this);
-		objectPropertiesPage = new ObjectPropertiesPage(this);
-		otherPropertiesPage = new OtherPropertiesPage(this);
-		datatypePropertiesPage = new DatatypePropertiesPage(this);
+		ontologyPage = new EditorPartPage(this, "ontology", "Ontology",
+				new OntologyPart());
+		classesPage = new EditorPartPage(this, "classes", "Classes",
+				new ClassesPart());
+		objectPropertiesPage = new EditorPartPage(this, "objectProperties",
+				"ObjectProperties", new ObjectPropertiesPart());
+		otherPropertiesPage = new EditorPartPage(this, "otherProperties",
+				"other Properties", new OtherPropertiesPart());
+		datatypePropertiesPage = new EditorPartPage(this, "datatypeProperties",
+				"DatatypeProperties", new DatatypePropertiesPart());
 	}
 
 	protected void addPages() {
@@ -78,8 +119,8 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 			}
 
 			protected IModelSet createModelSet() {
-				KommaModule module = ModelCore.createModelSetModule(getClass()
-						.getClassLoader());
+				KommaModule module = ModelPlugin
+						.createModelSetModule(getClass().getClassLoader());
 				module.addConcept(IProjectModelSet.class);
 				module.addBehaviour(ProjectModelSetSupport.class);
 
@@ -109,6 +150,13 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 			@Override
 			protected IPropertySheetPageSupport createPropertySheetPageSupport() {
 				return new TabbedPropertySheetPageSupport();
+			}
+
+			protected IPath getSaveAsPath() {
+				SaveAsDialog saveAsDialog = new SaveAsDialog(editor.getSite()
+						.getShell());
+				saveAsDialog.open();
+				return saveAsDialog.getResult();
 			}
 		};
 	}
