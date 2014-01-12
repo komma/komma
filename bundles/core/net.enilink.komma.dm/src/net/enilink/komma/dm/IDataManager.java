@@ -16,7 +16,7 @@ import net.enilink.komma.core.URI;
  * Interface to an RDF data manager providing a set of methods to query and
  * modify the underlying data.
  */
-public interface IDataManager {
+public interface IDataManager extends AutoCloseable {
 	/**
 	 * Add statements to this data manager
 	 * 
