@@ -361,26 +361,30 @@ public class ModelUtil {
 			options = Collections.emptyMap();
 		}
 		IContentDescription contentDescription = null;
-		String contentTypeId = (String) uriConverter.contentDescription(
-				resourceUri, options)
-				.get(IContentHandler.CONTENT_TYPE_PROPERTY);
-		IContentType contentType = null;
-		if (contentTypeId != null) {
-			contentType = contentTypeManager.getContentType(contentTypeId);
-		}
-		if (contentType != null) {
-			contentDescription = contentType.getDefaultDescription();
+		try {
+			String contentTypeId = (String) uriConverter.contentDescription(
+					resourceUri, options).get(
+					IContentHandler.CONTENT_TYPE_PROPERTY);
+			IContentType contentType = null;
+			if (contentTypeId != null) {
+				contentType = contentTypeManager.getContentType(contentTypeId);
+			}
+			if (contentType != null) {
+				contentDescription = contentType.getDefaultDescription();
+			}
+		} catch (IOException ioe) {
+			// file does not exists
 		}
 		if (contentDescription == null) {
 			// use file name with extension as fall back
 			URI normalizedUri = uriConverter.normalize(resourceUri);
 			// simply use the filename to detect the correct RDF format
-			String lastSegment = normalizedUri.fileExtension();
+			String lastSegment = normalizedUri.lastSegment();
 			if (lastSegment != null) {
 				IContentType[] matchingTypes = contentTypeManager
 						.findContentTypesFor(lastSegment);
-				QualifiedName mimeType = new QualifiedName(ModelPlugin.PLUGIN_ID,
-						"mimeType");
+				QualifiedName mimeType = new QualifiedName(
+						ModelPlugin.PLUGIN_ID, "mimeType");
 				for (IContentType matchingType : matchingTypes) {
 					IContentDescription desc = matchingType
 							.getDefaultDescription();

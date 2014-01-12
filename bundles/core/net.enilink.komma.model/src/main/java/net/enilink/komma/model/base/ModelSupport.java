@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -33,9 +34,11 @@ import net.enilink.komma.core.IEntityDecorator;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.Statement;
+import net.enilink.komma.core.StatementPattern;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.dm.IDataManager;
@@ -48,6 +51,7 @@ import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.ModelPlugin;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.ObjectSupport;
 import net.enilink.komma.model.concepts.Model;
 import net.enilink.vocab.owl.OWL;
@@ -58,6 +62,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.content.IContentDescription;
 
 import com.google.inject.ConfigurationException;
 import com.google.inject.Inject;
@@ -524,6 +529,14 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				.get(OPTION_SAVE_ONLY_IF_CHANGED)
 				: getDefaultSaveOptions() != null ? getDefaultSaveOptions()
 						.get(OPTION_SAVE_ONLY_IF_CHANGED) : null;
+		if (saveOnlyIfChanged != null) {
+			Map<Object, Object> newOptions = new HashMap<>(
+					options != null ? options : Collections.emptyMap());
+			newOptions.put(IContentDescription.class, ModelUtil
+					.determineContentDescription(getURI(), getModelSet()
+							.getURIConverter(), options));
+			options = newOptions;
+		}
 		if (OPTION_SAVE_ONLY_IF_CHANGED_FILE_BUFFER.equals(saveOnlyIfChanged)) {
 			saveOnlyIfChangedWithFileBuffer(options);
 		} else if (OPTION_SAVE_ONLY_IF_CHANGED_MEMORY_BUFFER
@@ -728,7 +741,26 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	@Override
 	public void setURI(URI uri) {
 		if (uri != null && !uri.equals(getURI())) {
+			// move model data
+			IDataManager dm = getModelSet().getDataManagerFactory().get();
+			try {
+				dm.getTransaction().begin();
+				getModelSet().getDataChangeSupport().setEnabled(dm, false);
+				dm.add(dm.match(null, null, null, false, getURI()), uri);
+				dm.remove(Collections.singleton(new StatementPattern(null,
+						null, null)), getURI());
+				dm.getTransaction().commit();
+			} finally {
+				if (dm.getTransaction() != null
+						&& dm.getTransaction().isActive()) {
+					dm.getTransaction().rollback();
+				}
+				dm.close();
+			}
+			// rename model
 			getEntityManager().rename(this, uri);
+			setModified(true);
+			// refresh manager
 			unloadManager();
 		}
 	}
