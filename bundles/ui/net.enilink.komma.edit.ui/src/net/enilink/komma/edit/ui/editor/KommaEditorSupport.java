@@ -56,6 +56,7 @@ import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.model.ModelUtil;
+import net.enilink.komma.model.base.IURIMapRuleSet;
 import net.enilink.komma.model.base.SimpleURIMapRule;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.model.validation.IValidator;
@@ -746,7 +747,6 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		final Map<Object, Object> saveOptions = new HashMap<Object, Object>();
 		saveOptions.put(IModel.OPTION_SAVE_ONLY_IF_CHANGED,
 				IModel.OPTION_SAVE_ONLY_IF_CHANGED_MEMORY_BUFFER);
-
 		IRunnableWithProgress saveRunnable = new IRunnableWithProgress() {
 			// This is the method that gets invoked when the operation runs.
 			@Override
@@ -810,7 +810,20 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 	}
 
 	protected void doSaveAs(URI uri, IEditorInput editorInput) {
-		model.setURI(uri);
+		URI oldResourceURI = EditUIUtil.getURI(editor.getEditorInput());
+		if (model.getURI().equals(oldResourceURI)) {
+			// rename model
+			model.setURI(uri);
+		} else {
+			IURIMapRuleSet mapRules = getEditingDomain().getModelSet()
+					.getURIConverter().getURIMapRules();
+			mapRules.removeRule(new SimpleURIMapRule(model.getURI().toString(),
+					oldResourceURI.toString()));
+			mapRules.addRule(new SimpleURIMapRule(model.getURI().toString(),
+					uri.toString()));
+		}
+		// mark model as modified
+		model.setModified(true);
 		editor.setInputWithNotify(editorInput);
 		editor.setPartName(editorInput.getName());
 		IProgressMonitor progressMonitor = getActionBars()
