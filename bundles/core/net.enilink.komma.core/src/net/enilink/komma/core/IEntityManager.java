@@ -20,7 +20,7 @@ import javax.transaction.TransactionRequiredException;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 
-public interface IEntityManager {
+public interface IEntityManager extends AutoCloseable {
 	/**
 	 * Add statements to this manager
 	 * 

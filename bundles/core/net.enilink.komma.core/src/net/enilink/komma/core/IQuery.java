@@ -34,7 +34,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-
 import net.enilink.commons.iterator.IExtendedIterator;
 
 /**
@@ -42,7 +41,7 @@ import net.enilink.commons.iterator.IExtendedIterator;
  * 
  * @author James Leigh
  */
-public interface IQuery<R> extends IQueryBase<IQuery<R>> {
+public interface IQuery<R> extends IQueryBase<IQuery<R>>, AutoCloseable {
 	/**
 	 * Closes any open results from this query.
 	 */
@@ -115,7 +114,7 @@ public interface IQuery<R> extends IQueryBase<IQuery<R>> {
 	 * @return The first result from the query.
 	 */
 	R getSingleResult();
-	
+
 	/**
 	 * Evaluates the query and returns the first result.
 	 * 

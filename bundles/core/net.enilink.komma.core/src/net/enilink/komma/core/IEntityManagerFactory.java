@@ -34,7 +34,7 @@ import java.util.Locale;
  * Factory interface to create {@link IEntityManager}s.
  * 
  */
-public interface IEntityManagerFactory {
+public interface IEntityManagerFactory extends AutoCloseable {
 	/**
 	 * If this factory should be able to create an {@link IEntityManager}.
 	 * 
