@@ -34,7 +34,6 @@ import net.enilink.komma.workbench.ProjectModelSetSupport;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.swt.layout.FillLayout;
@@ -207,12 +206,6 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 						.getShell());
 				saveAsDialog.open();
 				return saveAsDialog.getResult();
-			}
-
-			@Override
-			public void doSave(IProgressMonitor progressMonitor) {
-				// TODO save only own model
-				super.doSave(progressMonitor);
 			}
 
 			@Override
