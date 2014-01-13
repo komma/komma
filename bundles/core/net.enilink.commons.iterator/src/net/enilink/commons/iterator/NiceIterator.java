@@ -174,8 +174,8 @@ public class NiceIterator<T> implements IExtendedIterator<T> {
 	public static void close(Iterator<?> it) {
 		if (it instanceof AutoCloseable) {
 			try {
-				((Closeable) it).close();
-			} catch (IOException e) {
+				((AutoCloseable) it).close();
+			} catch (Exception e) {
 				// ignore
 			}
 		}
