@@ -1024,9 +1024,12 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		IReference after = getResourceManager().createResource(uri);
 		getResourceManager().renameResource(before, after);
 		T newBean = (T) createBean(after, null, null, false, true, null);
-		IEntityManagerAware renamed = (IEntityManagerAware) (bean instanceof Behaviour<?> ? ((Behaviour<?>) bean)
-				.getBehaviourDelegate() : bean);
-		renamed.initReference(((IReferenceable) newBean).getReference());
+		Object renamed = bean instanceof Behaviour<?> ? ((Behaviour<?>) bean)
+				.getBehaviourDelegate() : bean;
+		if (renamed instanceof IEntityManagerAware) {
+			((IEntityManagerAware) renamed)
+					.initReference(((IReferenceable) newBean).getReference());
+		}
 		return newBean;
 	}
 

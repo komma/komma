@@ -72,7 +72,7 @@ public class ResourceManager {
 			} finally {
 				stmts.close();
 			}
-			stmts = dm.match(null, before, null, false);
+			stmts = dm.match(null, before, null, false, contexts);
 			try {
 				while (stmts.hasNext()) {
 					IStatement stmt = stmts.next();
@@ -84,7 +84,7 @@ public class ResourceManager {
 			} finally {
 				stmts.close();
 			}
-			stmts = dm.match(null, null, before, false);
+			stmts = dm.match(null, null, before, false, contexts);
 			try {
 				while (stmts.hasNext()) {
 					IStatement stmt = stmts.next();
