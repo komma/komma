@@ -34,7 +34,6 @@ import net.enilink.komma.core.IEntityDecorator;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.Statement;
