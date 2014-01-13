@@ -740,14 +740,17 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	@Override
 	public void setURI(URI uri) {
 		if (uri != null && !uri.equals(getURI())) {
+			URI oldURI = getURI();
+			// rename ontology in data
+			getManager().rename(oldURI, uri);
 			// move model data
 			IDataManager dm = getModelSet().getDataManagerFactory().get();
 			try {
 				dm.getTransaction().begin();
 				getModelSet().getDataChangeSupport().setEnabled(dm, false);
-				dm.add(dm.match(null, null, null, false, getURI()), uri);
+				dm.add(dm.match(null, null, null, false, oldURI), uri);
 				dm.remove(Collections.singleton(new StatementPattern(null,
-						null, null)), getURI());
+						null, null)), oldURI);
 				dm.getTransaction().commit();
 			} finally {
 				if (dm.getTransaction() != null
@@ -756,7 +759,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				}
 				dm.close();
 			}
-			// rename model
+			// rename model in meta data
 			getEntityManager().rename(this, uri);
 			setModified(true);
 			// refresh manager

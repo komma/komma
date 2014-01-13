@@ -27,10 +27,7 @@ public class SimpleURIMapRule implements IURIMapRule {
 
 	@Override
 	public String apply(String uri) {
-		if (!pattern.equals(uri)) {
-			return null;
-		}
-		return replacement;
+		return pattern.equals(uri) ? replacement : null;
 	}
 
 	@Override
