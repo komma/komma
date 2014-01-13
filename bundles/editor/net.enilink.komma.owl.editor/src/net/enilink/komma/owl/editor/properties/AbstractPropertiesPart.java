@@ -22,7 +22,7 @@ import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 import net.enilink.komma.edit.ui.provider.reflective.ObjectComparator;
-import net.enilink.komma.edit.ui.util.FilterWidget;
+import net.enilink.komma.edit.ui.util.SearchWidget;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
 import net.enilink.komma.em.concepts.IProperty;
@@ -89,10 +89,10 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 			}
 		});
 
-		FilterWidget filterWidget = new FilterWidget();
-		filterWidget.setViewer(treeViewer);
-		filterWidget.createControl(parent);
-		filterWidget.getControl().setLayoutData(
+		SearchWidget searchWidget = new SearchWidget();
+		searchWidget.setViewer(treeViewer);
+		searchWidget.createControl(parent);
+		searchWidget.getControl().setLayoutData(
 				new GridData(SWT.FILL, SWT.END, false, false));
 	}
 

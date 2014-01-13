@@ -22,16 +22,16 @@ import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
  * 
  */
 public class OntologyPart extends AbstractEditingDomainPart {
-	protected ImportsPart importsDetailsPart;
+	protected ImportsPart importsPart;
 	protected NamespacesPart namespacePart;
 
 	@Override
 	public void createContents(Composite parent) {
 		parent.setLayout(new FillLayout(SWT.VERTICAL));
 
-		importsDetailsPart = new ImportsPart();
-		addPart(importsDetailsPart);
-		importsDetailsPart.createContents(createSection(parent, "Imports"));
+		importsPart = new ImportsPart();
+		addPart(importsPart);
+		importsPart.createContents(createSection(parent, "Imports"));
 
 		namespacePart = new NamespacesPart();
 		addPart(namespacePart);
@@ -46,20 +46,18 @@ public class OntologyPart extends AbstractEditingDomainPart {
 		Composite client = getWidgetFactory()
 				.createComposite(section, SWT.NONE);
 		section.setClient(client);
-
 		return client;
 	}
 
 	@Override
 	public void refresh() {
 		refreshParts();
-
 		super.refresh();
 	}
 
 	@Override
 	public void setInput(Object input) {
-		importsDetailsPart.setInput(input);
+		importsPart.setInput(input);
 		namespacePart.setInput(input);
 	}
 }
