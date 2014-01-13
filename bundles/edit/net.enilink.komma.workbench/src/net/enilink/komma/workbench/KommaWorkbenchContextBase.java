@@ -43,10 +43,10 @@ public class KommaWorkbenchContextBase {
 	 */
 	public KommaWorkbenchContextBase(IProject project) {
 		if (project == null)
-			throw new IllegalArgumentException(WorkbenchResourceHandler
-					.getString("KommaWorkbenchContextBase_ERROR_1")); //$NON-NLS-1$
+			throw new IllegalArgumentException(
+					WorkbenchResourceHandler
+							.getString("KommaWorkbenchContextBase_ERROR_1")); //$NON-NLS-1$
 		this.project = project;
-
 		setURIConverter(new WorkbenchURIConverterImpl(getProject()));
 	}
 
@@ -58,8 +58,9 @@ public class KommaWorkbenchContextBase {
 	 * @since 1.0.0
 	 */
 	public void deleteFile(IModel model) {
-		throw new UnsupportedOperationException(WorkbenchResourceHandler
-				.getString("KommaWorkbenchContextBase_ERROR_0")); //$NON-NLS-1$
+		throw new UnsupportedOperationException(
+				WorkbenchResourceHandler
+						.getString("KommaWorkbenchContextBase_ERROR_0")); //$NON-NLS-1$
 	}
 
 	/**
@@ -71,8 +72,9 @@ public class KommaWorkbenchContextBase {
 	 * @since 1.0.0
 	 */
 	public void deleteModel(IModel model) throws CoreException {
-		if (model != null)
+		if (model != null) {
 			deleteFile(model);
+		}
 	}
 
 	/**

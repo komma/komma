@@ -115,7 +115,7 @@ public class KommaWorkbenchContextFactory {
 		KommaWorkbenchContextBase context = getCachedContext(project);
 		boolean contributorFound = false;
 		if (context == null) {
-			context = primCreateKommaContext(project);
+			context = new KommaWorkbenchContextBase(project);
 			cacheKommaContext(project, context);
 			contributorFound = initializeKommaContextFromContributors(project,
 					context, contributor);
@@ -157,8 +157,9 @@ public class KommaWorkbenchContextFactory {
 
 	protected String[] getNatureIds(IProject project) {
 		try {
-			if (project.isAccessible())
+			if (project.isAccessible()) {
 				return project.getDescription().getNatureIds();
+			}
 		} catch (CoreException e) {
 		}
 		return null;
@@ -170,10 +171,6 @@ public class KommaWorkbenchContextFactory {
 		} catch (CoreException e) {
 			return null;
 		}
-	}
-
-	protected KommaWorkbenchContextBase primCreateKommaContext(IProject aProject) {
-		return new KommaWorkbenchContextBase(aProject);
 	}
 
 	/**

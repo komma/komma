@@ -38,7 +38,7 @@ public abstract class ProjectModelSetSupport implements IProjectModelSet,
 	/**
 	 * Returns the synchronizer.
 	 * 
-	 * @return ResourceSetWorkbenchSynchronizer
+	 * @return The model set synchronizer.
 	 */
 	public ModelSetWorkbenchSynchronizer getSynchronizer() {
 		return synchronizer;
@@ -60,11 +60,9 @@ public abstract class ProjectModelSetSupport implements IProjectModelSet,
 	 */
 	public void setProject(IProject project) {
 		this.project = project;
-
 		if (project != null) {
 			KommaWorkbenchContextFactory.INSTANCE.createSynchronizer(
 					getBehaviourDelegate(), project);
-
 			getURIConverter().setURIMapRules(
 					new CompoundURIMapRuleSet(
 							KommaWorkbenchContextFactory.INSTANCE
@@ -83,9 +81,9 @@ public abstract class ProjectModelSetSupport implements IProjectModelSet,
 	public void setSynchronizer(ModelSetWorkbenchSynchronizer synchronizer) {
 		this.synchronizer = synchronizer;
 	}
-	
+
 	@Override
 	public void release() {
-		// do nothing		
+		// do nothing
 	}
 }

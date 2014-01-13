@@ -16,6 +16,7 @@
 package net.enilink.komma.workbench;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.ICommand;
@@ -46,7 +47,7 @@ import net.enilink.komma.model.IObject;
 import net.enilink.komma.workbench.internal.KommaWorkbenchPlugin;
 
 /**
- * EMF Workbench Project Utilities.
+ * KOMMA Workbench Project Utilities.
  * 
  * @since 1.0.0
  */
@@ -150,27 +151,15 @@ public class ProjectUtilities {
 	 */
 	public static void addReferenceProjects(IProject project,
 			List<IProject> toBeAddedProjectsList) throws CoreException {
-
 		IProjectDescription description = project.getDescription();
 		IProject[] projects = description.getReferencedProjects();
 
-		ArrayList<IProject> projectsList = new ArrayList<IProject>();
+		List<IProject> projectsList = new ArrayList<IProject>(
+				Arrays.asList(projects));
+		projectsList.addAll(toBeAddedProjectsList);
 
-		for (int i = 0; i < projects.length; i++) {
-			projectsList.add(projects[i]);
-		}
-
-		for (int i = 0; i < toBeAddedProjectsList.size(); i++) {
-			projectsList.add(toBeAddedProjectsList.get(i));
-		}
-
-		IProject[] refProjects = new IProject[projectsList.size()];
-
-		for (int i = 0; i < refProjects.length; i++) {
-			refProjects[i] = (projectsList.get(i));
-		}
-
-		description.setReferencedProjects(refProjects);
+		description.setReferencedProjects(projectsList
+				.toArray(new IProject[projectsList.size()]));
 		project.setDescription(description, null);
 	}
 
@@ -189,21 +178,12 @@ public class ProjectUtilities {
 		IProjectDescription description = project.getDescription();
 		IProject[] projects = description.getReferencedProjects();
 
-		ArrayList<IProject> projectsList = new ArrayList<IProject>();
-
-		for (int i = 0; i < projects.length; i++) {
-			projectsList.add(projects[i]);
-		}
-
+		List<IProject> projectsList = new ArrayList<IProject>(
+				Arrays.asList(projects));
 		projectsList.add(projectToBeAdded);
 
-		IProject[] refProjects = new IProject[projectsList.size()];
-
-		for (int i = 0; i < refProjects.length; i++) {
-			refProjects[i] = (projectsList.get(i));
-		}
-
-		description.setReferencedProjects(refProjects);
+		description.setReferencedProjects(projectsList
+				.toArray(new IProject[projectsList.size()]));
 		project.setDescription(description, null);
 	}
 
@@ -349,23 +329,12 @@ public class ProjectUtilities {
 		IProjectDescription description = project.getDescription();
 		IProject[] projects = description.getReferencedProjects();
 
-		ArrayList<IProject> projectsList = new ArrayList<IProject>();
+		List<IProject> projectsList = new ArrayList<IProject>(
+				Arrays.asList(projects));
+		projectsList.removeAll(toBeRemovedProjectList);
 
-		for (int i = 0; i < projects.length; i++) {
-			projectsList.add(projects[i]);
-		}
-
-		for (int i = 0; i < toBeRemovedProjectList.size(); i++) {
-			projectsList.remove(toBeRemovedProjectList.get(i));
-		}
-
-		IProject[] refProjects = new IProject[projectsList.size()];
-
-		for (int i = 0; i < refProjects.length; i++) {
-			refProjects[i] = (projectsList.get(i));
-		}
-
-		description.setReferencedProjects(refProjects);
+		description.setReferencedProjects(projectsList
+				.toArray(new IProject[projectsList.size()]));
 		project.setDescription(description, null);
 	}
 
@@ -385,21 +354,12 @@ public class ProjectUtilities {
 		IProjectDescription description = project.getDescription();
 		IProject[] projects = description.getReferencedProjects();
 
-		ArrayList<IProject> projectsList = new ArrayList<IProject>();
-
-		for (int i = 0; i < projects.length; i++) {
-			projectsList.add((projects[i]));
-		}
-
+		List<IProject> projectsList = new ArrayList<IProject>(
+				Arrays.asList(projects));
 		projectsList.remove(toBeRemovedProject);
 
-		IProject[] refProjects = new IProject[projectsList.size()];
-
-		for (int i = 0; i < refProjects.length; i++) {
-			refProjects[i] = (projectsList.get(i));
-		}
-
-		description.setReferencedProjects(refProjects);
+		description.setReferencedProjects(projectsList
+				.toArray(new IProject[projectsList.size()]));
 		project.setDescription(description, null);
 	}
 
@@ -517,10 +477,8 @@ public class ProjectUtilities {
 					newCount++;
 				}
 			}
-
 			description.setBuildSpec(newCommands);
 			project.setDescription(description, null);
-
 		}
 		return found;
 

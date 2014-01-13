@@ -52,7 +52,7 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 	protected Map<URI, IURIMapRule> ruleMap = new HashMap<URI, IURIMapRule>();
 
 	protected Set<String> supportedExtensions = new HashSet<String>(
-			Arrays.asList("owl", "rdf", "n3"));
+			Arrays.asList("owl", "rdf", "n3", "ttl"));
 
 	/**
 	 * Default converter constructor, no containers.

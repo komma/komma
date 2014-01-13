@@ -51,7 +51,7 @@ public class ModelSetWorkbenchSynchronizer implements IResourceChangeListener {
 	private int currentEventType = -1;
 
 	/**
-	 * Constructor taking a resource set and project.
+	 * Constructor taking a model set and project.
 	 * 
 	 * @param modelSet
 	 * @param project
@@ -197,7 +197,7 @@ public class ModelSetWorkbenchSynchronizer implements IResourceChangeListener {
 
 	/**
 	 * Tell Synchronizer that a file is about to be saved. This method should be
-	 * called prior to writing to an IFile from an EMF resource.
+	 * called prior to writing to an IFile from a KOMMA model.
 	 * <p>
 	 * Default does nothing, but subclasses can do something.
 	 * </p>
