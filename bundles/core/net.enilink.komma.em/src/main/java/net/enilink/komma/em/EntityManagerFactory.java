@@ -31,17 +31,6 @@ package net.enilink.komma.em;
 import java.util.Locale;
 import java.util.Set;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Module;
-import com.google.inject.Provider;
-import com.google.inject.TypeLiteral;
-import com.google.inject.name.Names;
-
-import net.enilink.komma.dm.IDataManagerFactory;
-import net.enilink.komma.em.util.IClosable;
 import net.enilink.komma.core.IDialect;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
@@ -50,6 +39,17 @@ import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.SparqlStandardDialect;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.dm.IDataManagerFactory;
+import net.enilink.komma.em.util.IClosable;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Module;
+import com.google.inject.Provider;
+import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
 
 /**
  * Creates {@link IEntityManager}s.
@@ -65,7 +65,6 @@ class EntityManagerFactory implements IEntityManagerFactory {
 	@Inject(optional = true)
 	Provider<IEntityManager> emProvider;
 
-	@Inject
 	Injector injector;
 
 	private IEntityManagerFactory parent = null;
@@ -238,5 +237,13 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 	public boolean isOpen() {
 		return open;
+	}
+
+	@Inject
+	public void setInjector(Injector injector) {
+		// do not re-inject injector for currentFactory
+		if (this.injector == null) {
+			this.injector = injector;
+		}
 	}
 }
