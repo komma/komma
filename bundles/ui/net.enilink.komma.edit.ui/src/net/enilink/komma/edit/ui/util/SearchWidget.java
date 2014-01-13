@@ -54,90 +54,88 @@ import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 /**
  * A simple control that provides a text widget for searching in viewers.
  */
-public class FilterWidget {
+public class SearchWidget {
 	protected ContentViewer viewer;
 
 	/**
-	 * The filter text widget to be used by this tree. This value may be
-	 * <code>null</code> if there is no filter widget, or if the controls have
+	 * The search text widget to be used by this tree. This value may be
+	 * <code>null</code> if there is no search widget, or if the controls have
 	 * not yet been created.
 	 */
-	protected Text filterText;
+	protected Text searchText;
 
 	/**
-	 * The control representing the search button for the filter text entry.
+	 * The control representing the search button for the search text entry.
 	 * This value may be <code>null</code> if no such button exists, or if the
 	 * controls have not yet been created.
 	 */
-	protected ToolBarManager filterToolBar;
+	protected ToolBarManager searchToolBar;
 
 	/**
-	 * The Composite on which the filter controls are created. This is used to
-	 * set the background color of the filter controls to match the surrounding
+	 * The Composite on which the search controls are created. This is used to
+	 * set the background color of the search controls to match the surrounding
 	 * controls.
 	 */
-	protected Composite filterComposite;
+	protected Composite searchComposite;
 
 	/**
-	 * The text to initially show in the filter text control.
+	 * The text to initially show in the search text control.
 	 */
 	protected String initialText = ""; //$NON-NLS-1$
 
 	/**
-	 * Create the filtered tree's controls. Subclasses should override.
+	 * Create the controls. Subclasses should override.
 	 * 
 	 * @param parent
 	 * @param treeStyle
 	 */
 	public Control createControl(Composite parent) {
-		filterComposite = new Composite(parent, SWT.NONE);
-		GridLayout filterLayout = new GridLayout(2, false);
-		filterLayout.marginHeight = 0;
-		filterLayout.marginWidth = 0;
-		filterComposite.setLayout(filterLayout);
-		filterComposite.setFont(parent.getFont());
+		searchComposite = new Composite(parent, SWT.NONE);
+		GridLayout layout = new GridLayout(2, false);
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+		searchComposite.setLayout(layout);
+		searchComposite.setFont(parent.getFont());
 
-		createFilterControls(filterComposite);
+		createSearchControls(searchComposite);
+		setInitialText("Search...");
 
-		setInitialText("Filter");
-
-		return filterComposite;
+		return searchComposite;
 	}
 
 	public Control getControl() {
-		return filterComposite;
+		return searchComposite;
 	}
 
 	/**
-	 * Create the filter controls. By default, a text and corresponding tool bar
+	 * Create the search controls. By default, a text and corresponding tool bar
 	 * button that executes the search is created. Subclasses may override.
 	 * 
 	 * @param parent
-	 *            parent <code>Composite</code> of the filter controls
-	 * @return the <code>Composite</code> that contains the filter controls
+	 *            parent <code>Composite</code> of the search controls
+	 * @return the <code>Composite</code> that contains the search controls
 	 */
-	protected Composite createFilterControls(Composite parent) {
-		createFilterText(parent);
+	protected Composite createSearchControls(Composite parent) {
+		createSearchText(parent);
 		createSearchButton(parent);
-		if (filterToolBar != null) {
-			filterToolBar.update(false);
+		if (searchToolBar != null) {
+			searchToolBar.update(false);
 		}
 		return parent;
 	}
 
 	/**
-	 * Creates the filter text and adds listeners. This method calls
-	 * {@link #doCreateFilterText(Composite)} to create the text control.
-	 * Subclasses should override {@link #doCreateFilterText(Composite)} instead
+	 * Creates the search text and adds listeners. This method calls
+	 * {@link #doCreateSearchText(Composite)} to create the text control.
+	 * Subclasses should override {@link #doCreateSearchText(Composite)} instead
 	 * of overriding this method.
 	 * 
 	 * @param parent
-	 *            <code>Composite</code> of the filter text
+	 *            <code>Composite</code> of the search text
 	 */
-	protected void createFilterText(Composite parent) {
-		filterText = doCreateFilterText(parent);
-
-		filterText.addFocusListener(new FocusAdapter() {
+	protected void createSearchText(Composite parent) {
+		searchText = doCreateSearchText(parent);
+		searchText.addFocusListener(new FocusAdapter() {
 			/*
 			 * (non-Javadoc)
 			 * 
@@ -150,13 +148,13 @@ public class FilterWidget {
 				 * Running in an asyncExec because the selectAll() does not
 				 * appear to work when using mouse to give focus to text.
 				 */
-				Display display = filterText.getDisplay();
+				Display display = searchText.getDisplay();
 				display.asyncExec(new Runnable() {
 					public void run() {
-						if (!filterText.isDisposed()) {
+						if (!searchText.isDisposed()) {
 							if (getInitialText().equals(
-									filterText.getText().trim())) {
-								filterText.selectAll();
+									searchText.getText().trim())) {
+								searchText.selectAll();
 							}
 						}
 					}
@@ -164,13 +162,13 @@ public class FilterWidget {
 			}
 		});
 
-		filterText.addSelectionListener(new SelectionAdapter() {
+		searchText.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
-				doSearch(filterText.getText());
+				doSearch(searchText.getText());
 			}
 		});
-		filterText.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true,
+		searchText.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true,
 				false));
 
 		// content proposals for searching
@@ -184,7 +182,7 @@ public class FilterWidget {
 		}
 
 		ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(
-				filterText, new TextContentAdapter(),
+				searchText, new TextContentAdapter(),
 				new IContentProposalProvider() {
 					@Override
 					public IContentProposal[] getProposals(String contents,
@@ -230,30 +228,30 @@ public class FilterWidget {
 	}
 
 	/**
-	 * Creates the text control for entering the filter text. Subclasses may
+	 * Creates the text control for entering the search text. Subclasses may
 	 * override.
 	 * 
 	 * @param parent
 	 *            the parent composite
 	 * @return the text widget
 	 */
-	protected Text doCreateFilterText(Composite parent) {
+	protected Text doCreateSearchText(Composite parent) {
 		return new Text(parent, SWT.SINGLE | SWT.BORDER | SWT.SEARCH
 				| SWT.CANCEL);
 	}
 
 	/**
-	 * Set the background for the widgets that support the filter text area.
+	 * Set the background for the widgets that support the search text area.
 	 * 
 	 * @param background
 	 *            background <code>Color</code> to set
 	 */
 	public void setBackground(Color background) {
-		if (filterComposite != null) {
-			filterComposite.setBackground(background);
+		if (searchComposite != null) {
+			searchComposite.setBackground(background);
 		}
-		if (filterToolBar != null && filterToolBar.getControl() != null) {
-			filterToolBar.getControl().setBackground(background);
+		if (searchToolBar != null && searchToolBar.getControl() != null) {
+			searchToolBar.getControl().setBackground(background);
 		}
 	}
 
@@ -264,12 +262,12 @@ public class FilterWidget {
 	 *            parent <code>Composite</code> of toolbar button
 	 */
 	private void createSearchButton(Composite parent) {
-		filterToolBar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-		filterToolBar.createControl(parent);
+		searchToolBar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+		searchToolBar.createControl(parent);
 
 		IAction searchAction = new Action("", IAction.AS_PUSH_BUTTON) {//$NON-NLS-1$
 			public void run() {
-				doSearch(filterText.getText());
+				doSearch(searchText.getText());
 			}
 		};
 		searchAction.setImageDescriptor(ExtendedImageRegistry.getInstance()
@@ -285,47 +283,46 @@ public class FilterWidget {
 		// .getImageRegistry().getDescriptor(
 		// ISharedImages.));
 
-		filterToolBar.add(searchAction);
+		searchToolBar.add(searchAction);
 	}
 
 	/**
-	 * Clears the text in the filter text widget. Also removes the optional
-	 * additional filter that is provided via addFilter(ViewerFilter).
+	 * Clears the text in the search text widget.
 	 */
 	protected void clearText() {
-		setFilterText(""); //$NON-NLS-1$
+		setSearchText(""); //$NON-NLS-1$
 	}
 
 	/**
-	 * Set the text in the filter control.
+	 * Set the text in the search control.
 	 * 
 	 * @param string
 	 */
-	protected void setFilterText(String string) {
-		if (filterText != null) {
-			filterText.setText(string);
+	protected void setSearchText(String string) {
+		if (searchText != null) {
+			searchText.setText(string);
 			selectAll();
 		}
 	}
 
 	/**
-	 * Get the filter text for the receiver, if it was created. Otherwise return
+	 * Get the search text for the receiver, if it was created. Otherwise return
 	 * <code>null</code>.
 	 * 
-	 * @return the filter Text, or null if it was not created
+	 * @return the search Text, or null if it was not created
 	 */
-	public Text getFilterControl() {
-		return filterText;
+	public Text getSearchControl() {
+		return searchText;
 	}
 
 	/**
-	 * Convenience method to return the text of the filter control. If the text
+	 * Convenience method to return the text of the search control. If the text
 	 * widget is not created, then null is returned.
 	 * 
 	 * @return String in the text, or null if the text does not exist
 	 */
-	protected String getFilterString() {
-		return filterText != null ? filterText.getText() : null;
+	protected String getSearchString() {
+		return searchText != null ? searchText.getText() : null;
 	}
 
 	/**
@@ -338,16 +335,16 @@ public class FilterWidget {
 	 */
 	public void setInitialText(String text) {
 		initialText = text;
-		setFilterText(initialText);
+		setSearchText(initialText);
 	}
 
 	/**
-	 * Select all text in the filter text field.
+	 * Select all text in the search text field.
 	 * 
 	 */
 	protected void selectAll() {
-		if (filterText != null) {
-			filterText.selectAll();
+		if (searchText != null) {
+			searchText.selectAll();
 		}
 	}
 

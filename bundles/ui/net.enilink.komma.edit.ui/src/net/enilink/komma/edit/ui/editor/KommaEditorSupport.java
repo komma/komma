@@ -290,6 +290,10 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 
 	protected IModelSet modelSet;
 
+	protected boolean disposeModelSet = true;
+
+	protected boolean saveAllModels = true;
+
 	/**
 	 * Map to store the diagnostic associated with a resource.
 	 * 
@@ -432,9 +436,8 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 			try {
 				class ResourceDeltaVisitor implements IResourceDeltaVisitor {
 					protected Collection<IModel> changedModels = new ArrayList<IModel>();
-					protected IModelSet modelSet = getEditingDomain()
-							.getModelSet();
 					protected Collection<IModel> removedModels = new ArrayList<IModel>();
+					final IModelSet modelSet = KommaEditorSupport.this.modelSet;
 
 					public Collection<IModel> getChangedModels() {
 						return changedModels;
@@ -467,7 +470,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 					}
 				}
 
-				getEditingDomain().getModelSet().getUnitOfWork().begin();
+				modelSet.getUnitOfWork().begin();
 				try {
 					ResourceDeltaVisitor visitor = new ResourceDeltaVisitor();
 					delta.accept(visitor);
@@ -497,7 +500,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 						}
 					}
 				} finally {
-					getEditingDomain().getModelSet().getUnitOfWork().end();
+					modelSet.getUnitOfWork().end();
 				}
 			} catch (CoreException exception) {
 				KommaEditUIPlugin.INSTANCE.log(exception);
@@ -597,22 +600,18 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 	 */
 	public void createModel() {
 		URI resourceURI = EditUIUtil.getURI(editor.getEditorInput());
-
 		if (resourceURI.scheme() == null
 				|| !resourceURI.scheme().toLowerCase().startsWith("http")) {
 			InputStream in = null;
 			try {
-				IURIConverter uriConverter = getEditingDomain().getModelSet()
-						.getURIConverter();
+				IURIConverter uriConverter = modelSet.getURIConverter();
 				in = uriConverter.createInputStream(resourceURI);
 
 				String ontology = ModelUtil.findOntology(in, resourceURI
 						.toString(), ModelUtil.mimeType(ModelUtil
 						.contentDescription(uriConverter, resourceURI)));
 				if (ontology != null) {
-					getEditingDomain()
-							.getModelSet()
-							.getURIConverter()
+					modelSet.getURIConverter()
 							.getURIMapRules()
 							.addRule(
 									new SimpleURIMapRule(ontology, resourceURI
@@ -637,12 +636,10 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		Exception exception = null;
 		try {
 			// Load the model through the editing domain.
-			model = getEditingDomain().getModelSet()
-					.getModel(resourceURI, true);
+			model = modelSet.getModel(resourceURI, true);
 		} catch (Exception e) {
 			exception = e;
-			model = getEditingDomain().getModelSet().getModel(resourceURI,
-					false);
+			model = modelSet.getModel(resourceURI, false);
 		}
 
 		Diagnostic diagnostic = analyzeModelProblems(model, exception);
@@ -651,8 +648,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 					analyzeModelProblems(model, exception));
 		}
 
-		getEditingDomain().getModelSet().addMetaDataListener(
-				problemIndicationListener);
+		modelSet.addMetaDataListener(problemIndicationListener);
 	}
 
 	protected IModelSet createModelSet() {
@@ -707,8 +703,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		if (getEditingDomain() != null) {
 			getEditingDomain().getCommandStack().removeCommandStackListener(
 					commandStackListener);
-			getEditingDomain().getModelSet().removeMetaDataListener(
-					problemIndicationListener);
+			modelSet.removeMetaDataListener(problemIndicationListener);
 			setEditingDomain(null);
 		}
 
@@ -731,10 +726,24 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 			contentOutlinePage.dispose();
 		}
 
-		if (modelSet != null) {
+		if (disposeModelSet && modelSet != null) {
 			modelSet.dispose();
 			modelSet = null;
 		}
+	}
+
+	protected boolean saveModel(IModel model, Map<Object, Object> saveOptions) {
+		if (model.isModified() && !getEditingDomain().isReadOnly(model)) {
+			try {
+				model.save(saveOptions);
+				savedModels.add(model);
+				return true;
+			} catch (Exception exception) {
+				modelToDiagnosticMap.put(model,
+						analyzeModelProblems(model, exception));
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -751,24 +760,18 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 			// This is the method that gets invoked when the operation runs.
 			@Override
 			public void run(IProgressMonitor monitor) {
-				getEditingDomain().getModelSet().getUnitOfWork().begin();
 				// Save the resources to the file system.
 				try {
-					for (IModel model : getEditingDomain().getModelSet()
-							.getModels()) {
-						if (model.isModified()
-								&& !getEditingDomain().isReadOnly(model)) {
-							try {
-								model.save(saveOptions);
-								savedModels.add(model);
-							} catch (Exception exception) {
-								modelToDiagnosticMap.put(model,
-										analyzeModelProblems(model, exception));
-							}
+					modelSet.getUnitOfWork().begin();
+					if (saveAllModels) {
+						for (IModel model : modelSet.getModels()) {
+							saveModel(model, saveOptions);
 						}
+					} else {
+						saveModel(model, saveOptions);
 					}
 				} finally {
-					getEditingDomain().getModelSet().getUnitOfWork().end();
+					modelSet.getUnitOfWork().end();
 				}
 			}
 		};
@@ -815,8 +818,8 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 			// rename model
 			model.setURI(uri);
 		} else {
-			IURIMapRuleSet mapRules = getEditingDomain().getModelSet()
-					.getURIConverter().getURIMapRules();
+			IURIMapRuleSet mapRules = modelSet.getURIConverter()
+					.getURIMapRules();
 			mapRules.removeRule(new SimpleURIMapRule(model.getURI().toString(),
 					oldResourceURI.toString()));
 			mapRules.addRule(new SimpleURIMapRule(model.getURI().toString(),
@@ -862,9 +865,6 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 			}
 			return operationHistory;
 		}
-		// else if (key.equals(IGotoMarker.class)) {
-		// return this;
-		// }
 		return null;
 	}
 
@@ -895,18 +895,16 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 					contentOutlineViewer
 							.setLabelProvider(new AdapterFactoryLabelProvider(
 									getAdapterFactory()));
-					contentOutlineViewer.setInput(getEditingDomain()
-							.getModelSet());
+					contentOutlineViewer.setInput(modelSet);
 
 					// Make sure our popups work.
 					createContextMenuFor(contentOutlineViewer);
 
-					if (!getEditingDomain().getModelSet().getModels().isEmpty()) {
+					if (!modelSet.getModels().isEmpty()) {
 						// Select the root object in the view.
 						contentOutlineViewer.setSelection(
-								new StructuredSelection(getEditingDomain()
-										.getModelSet().getModels().iterator()
-										.next()), true);
+								new StructuredSelection(modelSet.getModels()
+										.iterator().next()), true);
 					}
 				}
 
@@ -998,8 +996,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 						IValidator.URI_ATTRIBUTE, null);
 				if (uriAttribute != null) {
 					URI uri = URIImpl.createURI(uriAttribute);
-					IObject object = getEditingDomain().getModelSet()
-							.getObject(uri, true);
+					IObject object = modelSet.getObject(uri, true);
 					if (object != null) {
 						editorSelectionProvider
 								.setSelectionToViewer(Collections
@@ -1053,8 +1050,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 	protected void handleChangedModels() {
 		if (!changedModels.isEmpty() && (!isDirty() || handleDirtyConflict())) {
 			if (isDirty()) {
-				changedModels.addAll(getEditingDomain().getModelSet()
-						.getModels());
+				changedModels.addAll(modelSet.getModels());
 			}
 			getEditingDomain().getCommandStack().flush();
 
@@ -1321,15 +1317,15 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		if (updateProblemIndication) {
 			BasicDiagnostic diagnostic = new BasicDiagnostic(Diagnostic.OK,
 					"net.enilink.komma.edit.ui.editor", 0, null,
-					new Object[] { getEditingDomain().getModelSet() });
+					new Object[] { modelSet });
 			for (Diagnostic childDiagnostic : modelToDiagnosticMap.values()) {
 				if (childDiagnostic.getSeverity() != Diagnostic.OK) {
 					diagnostic.add(childDiagnostic);
 				}
 			}
 
-			if (markerHelper.hasMarkers(getEditingDomain().getModelSet())) {
-				markerHelper.deleteMarkers(getEditingDomain().getModelSet());
+			if (markerHelper.hasMarkers(modelSet)) {
+				markerHelper.deleteMarkers(modelSet);
 				if (diagnostic.getSeverity() != Diagnostic.OK) {
 					try {
 						markerHelper.createMarkers(diagnostic);
