@@ -79,11 +79,9 @@ public abstract class KommaFormEditor extends FormEditor implements
 	@Override
 	public Object getAdapter(Class key) {
 		Object adapter = editorSupport.getAdapter(key);
-
 		if (adapter != null) {
 			return adapter;
 		}
-
 		return super.getAdapter(key);
 	}
 

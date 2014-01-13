@@ -814,17 +814,19 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 
 	protected void doSaveAs(URI uri, IEditorInput editorInput) {
 		URI oldResourceURI = EditUIUtil.getURI(editor.getEditorInput());
-		if (model.getURI().equals(oldResourceURI)) {
+		URI oldModelURI = model.getURI();
+		if (oldModelURI.equals(oldResourceURI)) {
 			// rename model
 			model.setURI(uri);
-		} else {
-			IURIMapRuleSet mapRules = modelSet.getURIConverter()
-					.getURIMapRules();
-			mapRules.removeRule(new SimpleURIMapRule(model.getURI().toString(),
-					oldResourceURI.toString()));
-			mapRules.addRule(new SimpleURIMapRule(model.getURI().toString(),
-					uri.toString()));
 		}
+
+		// update mapping rules
+		IURIMapRuleSet mapRules = modelSet.getURIConverter().getURIMapRules();
+		mapRules.removeRule(new SimpleURIMapRule(oldModelURI.toString(),
+				oldResourceURI.toString()));
+		mapRules.addRule(new SimpleURIMapRule(model.getURI().toString(), uri
+				.toString()));
+
 		// mark model as modified
 		model.setModified(true);
 		editor.setInputWithNotify(editorInput);

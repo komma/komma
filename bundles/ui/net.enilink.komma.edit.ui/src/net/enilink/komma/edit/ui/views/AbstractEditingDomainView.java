@@ -253,6 +253,7 @@ public class AbstractEditingDomainView extends ViewPart implements
 			this.part = null;
 			this.editingDomainProvider = null;
 		} else if (lastProvider != null
+				&& lastProvider.getEditingDomain() != null
 				&& lastProvider.getEditingDomain().equals(
 						editingDomainProvider.getEditingDomain())) {
 			if (part instanceof org.eclipse.ui.IEditorPart) {
