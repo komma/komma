@@ -36,19 +36,15 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import net.enilink.commons.iterator.ConvertingIterator;
+import net.enilink.commons.iterator.Filter;
+import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.properties.Filterable;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.exceptions.PropertyException;
 import net.enilink.composition.properties.traits.Mergeable;
-
-import com.google.inject.Inject;
-
-import net.enilink.commons.iterator.ConvertingIterator;
-import net.enilink.commons.iterator.Filter;
-import net.enilink.commons.iterator.IClosableIterator;
-import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.ILiteral;
@@ -59,6 +55,8 @@ import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
+
+import com.google.inject.Inject;
 
 /**
  * A set for a given subject and predicate.
@@ -716,8 +714,12 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 				sb.append(iter.next());
 			}
 		} finally {
-			if (iter instanceof IClosableIterator<?>) {
-				((IClosableIterator<?>) iter).close();
+			if (iter instanceof AutoCloseable) {
+				try {
+					((AutoCloseable) iter).close();
+				} catch (Exception e) {
+					// ignore
+				}
 			}
 		}
 		return sb.toString();
