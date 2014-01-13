@@ -350,11 +350,9 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				}
 
 				if (((IStatement) element).isInferred()) {
-					return ExtendedImageRegistry
-							.getInstance()
-							.getImage(
-									KommaEditUIPropertiesPlugin.INSTANCE
-											.getImage(IEditUIPropertiesImages.CHECKED));
+					return ExtendedImageRegistry.getInstance().getImage(
+							KommaEditUIPropertiesPlugin.INSTANCE
+									.getImage(IEditUIPropertiesImages.CHECKED));
 				}
 			}
 
@@ -549,8 +547,8 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 	@Override
 	public void createContents(Composite parent) {
-		GridLayout gridLayout = new GridLayout(1, false);
-		parent.setLayout(gridLayout);
+		parent.setLayout(new GridLayout(1, false));
+		getWidgetFactory().paintBordersFor(parent);
 
 		context = (IPropertiesContext) getForm().getAdapter(
 				IPropertiesContext.class);
@@ -559,37 +557,27 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 		}
 
 		createToolbar(parent);
-
 		createTree(parent);
 	}
 
 	private void createToolbar(Composite parent) {
-		Composite toolBar = new Composite(parent, SWT.HORIZONTAL | SWT.RIGHT);
-		toolBar.setFocus();
-		getWidgetFactory().adapt(toolBar, false, false);
-
-		GridData toolBarGridData = new GridData(SWT.FILL, SWT.FILL, false,
-				false);
-		toolBarGridData.horizontalAlignment = SWT.FILL;
-		toolBar.setLayoutData(toolBarGridData);
-
+		Composite toolBar = getWidgetFactory().createComposite(parent);
 		toolBar.setLayout(new GridLayout(6, false));
+		toolBar.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		itemShowFull = getWidgetFactory().createButton(toolBar, "Full",
 				SWT.TOGGLE);
 		itemShowFull.setToolTipText("Show the full URI");
 		itemShowFull.addSelectionListener(new ShowFullButtonListener());
-		itemShowFull.setLayoutData(new GridData());
 		itemShowFull.setEnabled(true);
 
 		changeUri = getWidgetFactory().createButton(toolBar, "OK", SWT.NONE);
 		changeUri.setToolTipText("Change the URI of the selected entity");
 		changeUri.addSelectionListener(new ChangeUriButtonListener());
-		changeUri.setLayoutData(new GridData());
 		changeUri.setEnabled(false);
 
 		uriText = getWidgetFactory().createText(toolBar, "", SWT.SINGLE);
-		uriText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
+		uriText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		uriText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
