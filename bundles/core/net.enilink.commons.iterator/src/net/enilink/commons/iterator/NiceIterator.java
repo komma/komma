@@ -45,9 +45,7 @@ import java.util.Set;
  * defines equivalent instance methods for descendants and to satisfy
  * ExtendedIterator.
  * 
- * @author kers
  */
-
 public class NiceIterator<T> implements IExtendedIterator<T> {
 	public NiceIterator() {
 		super();
@@ -174,10 +172,7 @@ public class NiceIterator<T> implements IExtendedIterator<T> {
 	 * tests [that were] scattered through the code.
 	 */
 	public static void close(Iterator<?> it) {
-		if (it instanceof IClosableIterator<?>) {
-			((IClosableIterator<?>) it).close();
-		}
-		if (it instanceof Closeable) {
+		if (it instanceof AutoCloseable) {
 			try {
 				((Closeable) it).close();
 			} catch (IOException e) {

@@ -32,8 +32,7 @@ import java.util.Iterator;
  * An iterator that consumes an underlying iterator and maps its results before
  * delivering them; supports remove if the underlying iterator does.
  */
-public class MappedIterator<A, B> extends NiceIterator<B> implements
-		IClosableIterator<B> {
+public class MappedIterator<A, B> extends NiceIterator<B> {
 	private Iterator<? extends A> base;
 	private IMap<? super A, ? extends B> map;
 

@@ -43,7 +43,8 @@ import java.util.Set;
  * ClosableIterators.
  */
 
-public interface IExtendedIterator<T> extends IClosableIterator<T>, Iterable<T> {
+public interface IExtendedIterator<T> extends Iterator<T>, AutoCloseable,
+		Iterable<T> {
 
 	/**
 	 * return a new iterator which delivers all the elements of this iterator
@@ -84,4 +85,9 @@ public interface IExtendedIterator<T> extends IClosableIterator<T>, Iterable<T> 
 	 * consuming this iterator.
 	 */
 	Set<T> toSet();
+
+	/**
+	 * Close this iterator and free the corresponding resources.
+	 */
+	void close();
 }

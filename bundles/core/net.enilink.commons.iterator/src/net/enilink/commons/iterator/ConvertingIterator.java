@@ -17,8 +17,7 @@ import java.util.Iterator;
  * before delivering them; supports remove if the underlying iterator does.
  * 
  */
-public abstract class ConvertingIterator<A, B> extends NiceIterator<B>
-		implements IClosableIterator<B> {
+public abstract class ConvertingIterator<A, B> extends NiceIterator<B> {
 	private Iterator<? extends A> base;
 
 	/**
