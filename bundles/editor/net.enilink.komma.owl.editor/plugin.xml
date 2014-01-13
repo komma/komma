@@ -29,12 +29,14 @@
    <view
          category="net.enilink.komma.owl.editor"
          class="net.enilink.komma.owl.editor.instances.InstancesView"
+         icon="icons/full/view16/instances.gif"
          id="net.enilink.komma.owl.editor.views.InstancesView"
          name="Instances">
    </view>
    <view
          category="net.enilink.komma.owl.editor"
          class="net.enilink.komma.owl.editor.ontology.ImportsView"
+         icon="icons/full/view16/rdf_16x16.png"
          id="net.enilink.komma.owl.editor.views.ImportsView"
          name="Imports">
    </view>
@@ -68,12 +70,14 @@
    </view>
    <view
          class="net.enilink.komma.owl.editor.instances.InstanceTreeView"
+         icon="icons/full/view16/tree.gif"
          id="net.enilink.komma.owl.editor.views.InstanceTreeView"
          name="Instance Tree"
          restorable="true">
    </view>
    <view
          class="net.enilink.komma.owl.editor.instances.InstanceTableView"
+         icon="icons/full/view16/table.gif"
          id="net.enilink.komma.owl.editor.views.InstanceTableView"
          name="Instance Table"
          restorable="true">
