@@ -10,6 +10,9 @@ import net.enilink.commons.ui.editor.IEditorPart;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.edit.command.EditingDomainCommandStack;
+import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
+import net.enilink.komma.edit.provider.ComposedAdapterFactory;
 import net.enilink.komma.edit.ui.editor.IPropertySheetPageSupport;
 import net.enilink.komma.edit.ui.editor.KommaEditorSupport;
 import net.enilink.komma.edit.ui.editor.KommaFormEditor;
@@ -51,10 +54,15 @@ import com.google.inject.Guice;
  * A basic OWL editor.
  */
 public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
-	protected static QualifiedName PROPERTY_MODELSET = new QualifiedName(
-			OWLEditor.class.getName(), "modelSet");
-	protected static QualifiedName PROPERTY_OPENEDITORS = new QualifiedName(
-			OWLEditor.class.getName(), "openEditors");
+	static protected class Shared {
+		IModelSet modelSet;
+		Set<Object> openEditors = Collections
+				.newSetFromMap(new WeakHashMap<Object, Boolean>());
+		ComposedAdapterFactory adapterFactory;
+	}
+
+	protected static QualifiedName PROPERTY_SHARED = new QualifiedName(
+			OWLEditor.class.getName(), "shared");
 
 	static class EditorPartPage extends KommaFormPage {
 		IEditorPart editorPart;
@@ -89,7 +97,7 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 	protected IFormPage datatypePropertiesPage;
 
 	protected IProject project;
-	protected Set<Object> openEditors;
+	protected Shared shared;
 
 	public OWLEditor() {
 		ontologyPage = new EditorPartPage(this, "ontology", "Ontology",
@@ -138,31 +146,51 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 				return OWLEditorPlugin.INSTANCE;
 			}
 
-			@SuppressWarnings("unchecked")
+			protected AdapterFactoryEditingDomain getExistingEditingDomain(
+					IModelSet modelSet) {
+				AdapterFactoryEditingDomain editingDomain = super
+						.getExistingEditingDomain(modelSet);
+				if (shared.adapterFactory == null) {
+					shared.adapterFactory = createDefaultAdapterFactory();
+				}
+
+				// set up an editor-local editing domain with own command stack
+				EditingDomainCommandStack commandStack = new EditingDomainCommandStack();
+				editingDomain = new AdapterFactoryEditingDomain(
+						shared.adapterFactory, commandStack, modelSet) {
+					protected void registerDomainProviderAdapter() {
+						// do not register this editing domain as adapter
+					}
+				};
+				commandStack.setEditingDomain(editingDomain);
+				editingDomain
+						.setModelToReadOnlyMap(new java.util.WeakHashMap<IModel, Boolean>());
+				return editingDomain;
+			}
+
 			protected IModelSet createModelSet() {
 				project = getEditorInput() instanceof IFileEditorInput ? ((IFileEditorInput) getEditorInput())
 						.getFile().getProject() : null;
 				IModelSet modelSet = null;
 				try {
-					modelSet = (IModelSet) project
-							.getSessionProperty(PROPERTY_MODELSET);
-					openEditors = (Set<Object>) project
-							.getSessionProperty(PROPERTY_OPENEDITORS);
-					if (openEditors == null) {
-						openEditors = Collections
-								.newSetFromMap(new WeakHashMap<Object, Boolean>());
-						project.setSessionProperty(PROPERTY_OPENEDITORS,
-								openEditors);
-					}
+					shared = (Shared) project
+							.getSessionProperty(PROPERTY_SHARED);
 				} catch (CoreException e) {
 					// ignore
 				}
-				if (openEditors != null) {
-					openEditors.add(OWLEditor.this);
+				if (shared == null) {
+					shared = new Shared();
+					try {
+						project.setSessionProperty(PROPERTY_SHARED, shared);
+					} catch (CoreException e) {
+						// ignore
+					}
 				}
+				shared.openEditors.add(OWLEditor.this);
+
 				// use shared model set
-				if (modelSet != null) {
-					return modelSet;
+				if (shared.modelSet != null) {
+					return shared.modelSet;
 				}
 
 				KommaModule module = ModelPlugin
@@ -173,7 +201,6 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 				IModelSetFactory factory = Guice.createInjector(
 						new ModelSetModule(module)).getInstance(
 						IModelSetFactory.class);
-
 				modelSet = factory
 						.createModelSet(
 								URIImpl.createURI(MODELS.NAMESPACE +
@@ -185,13 +212,8 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 				if (modelSet instanceof IProjectModelSet && project != null) {
 					((IProjectModelSet) modelSet).setProject(project);
 				}
-				// share model set via session property
-				try {
-					project.setSessionProperty(PROPERTY_MODELSET, modelSet);
-					project.setSessionProperty(PROPERTY_OPENEDITORS,
-							openEditors);
-				} catch (CoreException e) {
-					// ignore
+				if (shared != null) {
+					shared.modelSet = modelSet;
 				}
 				return modelSet;
 			}
@@ -211,17 +233,18 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 			@Override
 			public void dispose() {
 				super.dispose();
-				if (openEditors != null) {
-					openEditors.remove(OWLEditor.this);
-				}
-				if (modelSet != null
-						&& (openEditors == null || openEditors.isEmpty())) {
+				shared.openEditors.remove(OWLEditor.this);
+				if (modelSet != null && shared.openEditors.isEmpty()) {
+					// dipose shared adapter factory
+					if (shared.adapterFactory != null) {
+						shared.adapterFactory.dispose();
+						shared.adapterFactory = null;
+					}
 					modelSet.dispose();
 					modelSet = null;
 					// remove shared properties from project
 					try {
-						project.setSessionProperty(PROPERTY_MODELSET, null);
-						project.setSessionProperty(PROPERTY_OPENEDITORS, null);
+						project.setSessionProperty(PROPERTY_SHARED, null);
 					} catch (CoreException e) {
 						// ignore
 					}
@@ -231,7 +254,7 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 	}
 
 	@Override
-	public Object getAdapter(Class key) {
+	public Object getAdapter(@SuppressWarnings("rawtypes") Class key) {
 		if (key == IModel.class) {
 			return getEditorSupport().getModel();
 		}
