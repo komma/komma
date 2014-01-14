@@ -10,6 +10,7 @@
  *******************************************************************************/
 package net.enilink.komma.owl.editor.ontology;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.enilink.commons.iterator.Filter;
@@ -112,40 +113,75 @@ public class OntologyPart extends AbstractEditingDomainPart {
 					try {
 						getEditingDomain().getCommandStack().execute(
 								new SimpleCommand() {
+									URI oldUri = model.getURI();
+									URI newUri = URIImpl.createURI(uriText
+											.getText().trim());
+
+									IURIMapRuleSet ruleSet = model
+											.getModelSet().getURIConverter()
+											.getURIMapRules();
+									List<IURIMapRule> oldRules = ruleSet
+											.iterator()
+											.filterKeep(
+													new Filter<IURIMapRule>() {
+														public boolean accept(
+																IURIMapRule o) {
+															return o instanceof SimpleURIMapRule
+																	&& ((SimpleURIMapRule) o)
+																			.getPattern()
+																			.equals(oldUri
+																					.toString());
+														};
+													}).toList();
+									List<IURIMapRule> newRules = new ArrayList<>();
+									{
+										for (IURIMapRule rule : oldRules) {
+											newRules.add(new SimpleURIMapRule(
+													rule.getPriority(), newUri
+															.toString(),
+													((SimpleURIMapRule) rule)
+															.getReplacement()));
+										}
+									}
+
+									protected CommandResult doRedoWithResult(
+											IProgressMonitor progressMonitor,
+											IAdaptable info)
+											throws ExecutionException {
+										uriText.setText(newUri.toString());
+										return doExecuteWithResult(
+												progressMonitor, info);
+									}
+
+									protected CommandResult doUndoWithResult(
+											IProgressMonitor progressMonitor,
+											IAdaptable info)
+											throws ExecutionException {
+										uriText.setText(oldUri.toString());
+										model.setURI(oldUri);
+										// update mapping rules
+										for (IURIMapRule rule : newRules) {
+											ruleSet.removeRule(rule);
+										}
+										for (IURIMapRule rule : oldRules) {
+											ruleSet.addRule(rule);
+										}
+										return CommandResult
+												.newOKCommandResult();
+									}
+
 									@Override
 									protected CommandResult doExecuteWithResult(
 											IProgressMonitor progressMonitor,
 											IAdaptable info)
 											throws ExecutionException {
-										URI uri = URIImpl.createURI(uriText
-												.getText().trim());
-										final URI oldUri = model.getURI();
-										model.setURI(uri);
-										IURIMapRuleSet ruleSet = model
-												.getModelSet()
-												.getURIConverter()
-												.getURIMapRules();
-										List<IURIMapRule> existingRules = ruleSet
-												.iterator()
-												.filterKeep(
-														new Filter<IURIMapRule>() {
-															public boolean accept(
-																	IURIMapRule o) {
-																return o instanceof SimpleURIMapRule
-																		&& ((SimpleURIMapRule) o)
-																				.getPattern()
-																				.equals(oldUri
-																						.toString());
-															};
-														}).toList();
+										model.setURI(newUri);
 										// update mapping rules
-										for (IURIMapRule rule : existingRules) {
+										for (IURIMapRule rule : oldRules) {
 											ruleSet.removeRule(rule);
-											ruleSet.addRule(new SimpleURIMapRule(
-													rule.getPriority(), uri
-															.toString(),
-													((SimpleURIMapRule) rule)
-															.getReplacement()));
+										}
+										for (IURIMapRule rule : newRules) {
+											ruleSet.addRule(rule);
 										}
 										changeUri.setEnabled(false);
 										return CommandResult

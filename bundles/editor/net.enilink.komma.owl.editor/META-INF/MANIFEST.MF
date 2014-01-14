@@ -17,7 +17,6 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.commons.ui,
  net.enilink.komma.workbench
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Activator: net.enilink.komma.owl.editor.OWLEditorPlugin$Implementation
 Export-Package: net.enilink.komma.owl.editor,
  net.enilink.komma.owl.editor.classes,
