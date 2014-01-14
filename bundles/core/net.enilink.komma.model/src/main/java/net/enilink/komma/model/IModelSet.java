@@ -46,10 +46,25 @@ public interface IModelSet extends INotifier<INotification> {
 		 */
 		void collectInjectionModules(Collection<Module> modules);
 
+		/**
+		 * Returns the injector that was used to assemble this model set.
+		 * 
+		 * @return The associated injector
+		 */
 		Injector getInjector();
 
+		/**
+		 * Returns a factory for data managers.
+		 * 
+		 * @return The data manager factory
+		 */
 		IDataManagerFactory getDataManagerFactory();
 
+		/**
+		 * Returns a factory for entity managers.
+		 * 
+		 * @return The entity manager factory
+		 */
 		IEntityManagerFactory getEntityManagerFactory();
 
 		/**
@@ -91,10 +106,13 @@ public interface IModelSet extends INotifier<INotification> {
 	 */
 	IAdapterSet adapters();
 
+	/**
+	 * Register listener which gets notified on meta data changes.
+	 */
 	void addMetaDataListener(INotificationListener<INotification> listener);
 
 	/**
-	 * Register listener which gets notified on changes of <code>object</code>
+	 * Register listener which gets notified on changes of <code>object</code>.
 	 */
 	void addSubjectListener(IReference object,
 			INotificationListener<INotification> listener);
@@ -175,6 +193,11 @@ public interface IModelSet extends INotifier<INotification> {
 	 */
 	Map<Object, Object> getLoadOptions();
 
+	/**
+	 * Returns the entity manager for meta data of this model set.
+	 * 
+	 * @return The meta data manager
+	 */
 	IEntityManager getMetaDataManager();
 
 	/**
@@ -282,6 +305,12 @@ public interface IModelSet extends INotifier<INotification> {
 	 */
 	IObject getObject(URI uri, boolean loadOnDemand);
 
+	/**
+	 * Returns the unit of work that manages resources (entity and data
+	 * managers) on a per-thread basis.
+	 * 
+	 * @return The unit of work
+	 */
 	IUnitOfWork getUnitOfWork();
 
 	/**
@@ -300,6 +329,12 @@ public interface IModelSet extends INotifier<INotification> {
 	 */
 	boolean isPersistent();
 
+	/**
+	 * Removes a previously registered meta data listener.
+	 * 
+	 * @param listener
+	 *            The listener that should be removed
+	 */
 	void removeMetaDataListener(INotificationListener<INotification> listener);
 
 	/**
