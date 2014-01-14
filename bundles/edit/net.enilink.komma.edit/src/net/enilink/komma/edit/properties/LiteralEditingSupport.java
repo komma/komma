@@ -4,6 +4,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.IdentityCommand;
@@ -58,7 +59,8 @@ public class LiteralEditingSupport implements IPropertyEditingSupport {
 				}
 				ranges.close();
 			}
-			if (RDFS.TYPE_LITERAL.equals(literalType)) {
+			if (OWL.TYPE_THING.equals(literalType)
+					|| RDFS.TYPE_LITERAL.equals(literalType)) {
 				literalType = null;
 			}
 			newLiteral = subject.getEntityManager().createLiteral(

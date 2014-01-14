@@ -69,8 +69,7 @@ import net.enilink.komma.core.URIImpl;
 
 /**
  * This class implements an editing domain by delegating to adapters that
- * implement
- * {@link net.enilink.komma.edit.provider.IEditingDomainItemProvider}.
+ * implement {@link net.enilink.komma.edit.provider.IEditingDomainItemProvider}.
  */
 public class AdapterFactoryEditingDomain implements IEditingDomain,
 		IEditingDomain.Internal {
@@ -118,8 +117,8 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 	 * if it can't be determined. It is recommended that you always work
 	 * directly with an EditingDomain instance whenever possible. This is
 	 * implemented to checks if the object itself implements
-	 * {@link net.enilink.komma.edit.domain.IEditingDomainProvider} and
-	 * returns that result. Otherwise it checks if it is valid to call
+	 * {@link net.enilink.komma.edit.domain.IEditingDomainProvider} and returns
+	 * that result. Otherwise it checks if it is valid to call
 	 * {@link #getEditingDomainFor(org.eclipse.emf.ecore.EObject)
 	 * getEditingDomainFor(EObject)} and returns that result or null.
 	 * 
@@ -139,10 +138,9 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 			return getEditingDomainFor(((IWrapperItemProvider) object)
 					.getValue());
 		} else if (object instanceof IObject) {
-			return ((IEditingDomainProvider) ((IObject) object).getModel()
+			return getEditingDomainFor(((IObject) object).getModel()
 					.getModelSet().adapters()
-					.getAdapter(IEditingDomainProvider.class))
-					.getEditingDomain();
+					.getAdapter(IEditingDomainProvider.class));
 		}
 		return null;
 	}
@@ -255,19 +253,23 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 	 * Create an instance from the adapter factory, the specialized command
 	 * stack, and the specialized resource set. If the resource set's context is
 	 * null, one will be created here; otherwise, the existing context should
-	 * implement
-	 * {@link net.enilink.komma.edit.domain.IEditingDomainProvider}.
+	 * implement {@link net.enilink.komma.edit.domain.IEditingDomainProvider}.
 	 */
 	public AdapterFactoryEditingDomain(IAdapterFactory adapterFactory,
 			ICommandStack commandStack, IModelSet modelSet) {
 		this.adapterFactory = adapterFactory;
 		this.commandStack = commandStack;
 		this.modelSet = modelSet;
+		registerDomainProviderAdapter();
+		initialize();
+	}
 
+	/**
+	 * Register an {@link IEditingDomainProvider} as adapter on the model set.
+	 */
+	protected void registerDomainProviderAdapter() {
 		domainProvider = new EditingDomainProviderAdapter();
 		this.modelSet.adapters().add(domainProvider);
-
-		initialize();
 	}
 
 	/**

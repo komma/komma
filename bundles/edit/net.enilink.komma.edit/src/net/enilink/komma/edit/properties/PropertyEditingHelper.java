@@ -1,11 +1,6 @@
 package net.enilink.komma.edit.properties;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
+import java.util.Iterator;
 
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
@@ -13,6 +8,12 @@ import net.enilink.komma.common.command.CompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.ICompositeCommand;
 import net.enilink.komma.common.command.IdentityCommand;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.ILiteral;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.ITransaction;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -20,18 +21,23 @@ import net.enilink.komma.edit.properties.IPropertyEditingSupport.ProposalSupport
 import net.enilink.komma.edit.util.PropertyUtil;
 import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.concepts.IResource;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.ILiteral;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.ITransaction;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
 
 /**
  * Helper class to simplify the usage of {@link IPropertyEditingSupport}
  * implementations that are supplied by an adapter factory.
  */
 public abstract class PropertyEditingHelper {
+	public static enum Type {
+		PROPERTY, VALUE, LITERAL_LANG_TYPE
+	}
+
 	public URI NULL_URI = URIImpl.createURI("urn:null");
 
 	protected IAdapterFactory delegatingAdapterFactory = new IAdapterFactory() {
@@ -50,17 +56,17 @@ public abstract class PropertyEditingHelper {
 		}
 	};
 
-	protected final boolean editPredicate;
+	protected final Type type;
 
-	public PropertyEditingHelper(boolean editPredicate) {
-		this.editPredicate = editPredicate;
+	public PropertyEditingHelper(Type type) {
+		this.type = type;
 
 	}
 
 	public boolean canEdit(Object element) {
 		IStatement stmt = getStatement(element);
 		// forbid changing the predicate of existing statements
-		if (editPredicate) {
+		if (type == Type.PROPERTY) {
 			return stmt.getObject() == null;
 		}
 
@@ -93,9 +99,12 @@ public abstract class PropertyEditingHelper {
 	protected IPropertyEditingSupport getPropertyEditingSupport(IStatement stmt) {
 		if (stmt != null) {
 			// use the resource editor for predicates
-			if (editPredicate) {
+			if (type == Type.PROPERTY) {
 				return new ResourceEditingSupport(delegatingAdapterFactory,
 						true);
+			} else if (type == Type.LITERAL_LANG_TYPE) {
+				return new LiteralLangTypeEditingSupport(
+						delegatingAdapterFactory);
 			}
 			return PropertyUtil.getEditingSupport(delegatingAdapterFactory,
 					(IEntity) stmt.getSubject(), stmt.getPredicate(),
@@ -169,7 +178,7 @@ public abstract class PropertyEditingHelper {
 					value, (IEntity) stmt.getSubject(), stmt.getPredicate(),
 					stmt.getObject());
 		}
-		if (editPredicate && newObjectCommand != null) {
+		if (type == Type.PROPERTY && newObjectCommand != null) {
 			try {
 				newObjectCommand.execute(new NullProgressMonitor(), null);
 			} catch (ExecutionException e) {
@@ -230,8 +239,13 @@ public abstract class PropertyEditingHelper {
 						Object returnValue = null;
 						if (status.isOK()
 								&& !result.getReturnValues().isEmpty()) {
-							returnValue = result.getReturnValues().iterator()
-									.next();
+							// use last return value in case of composite
+							// commands
+							Iterator<?> it = result.getReturnValues()
+									.iterator();
+							while (it.hasNext()) {
+								returnValue = it.next();
+							}
 							status = addAndExecute(PropertyUtil.getAddCommand(
 									getEditingDomain(), subject, predicate,
 									returnValue, index), progressMonitor, info);

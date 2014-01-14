@@ -74,7 +74,7 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 					+ searchL //
 					+ " FILTER regex(str(?l), ?labelPattern, \"i\")" //
 					+ "} UNION {" //
-					+ (isFilter ? " ?s [] [] . " : "") + searchS
+					+ (isFilter ? " ?s ?p [] . " : "") + searchS
 					+ " FILTER regex(str(?s), ?uriPattern, \"i\")" //
 					+ "} " //
 					// if FTS is natively implemented then add

@@ -29,9 +29,9 @@ import net.enilink.komma.model.change.ChangeRecorder;
 import net.enilink.komma.core.IEntity;
 
 /**
- * An editing domain manages a self-contained set of interrelated EMF models and
+ * An editing domain manages a self-contained set of interrelated RDF models and
  * the {@link ICommand}s that modify them. The models are maintained in the form
- * of a {@link ResourceSet}. Commands that modify the model are typically
+ * of a {@link IModelSet}. Commands that modify the model are typically
  * created through the domain and are executed using the {@link ICommandStack}.
  * An optional feature of an editing domain, which is used to implement mapping
  * domains, is the ability to override primitive commands, see

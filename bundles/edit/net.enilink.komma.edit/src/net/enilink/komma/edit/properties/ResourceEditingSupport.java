@@ -229,7 +229,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 
 	protected String getLabel(Object value) {
 		if (value == null) {
-			return null;
+			return "";
 		}
 		IItemLabelProvider labelProvider = (IItemLabelProvider) adapterFactory
 				.adapt(value, IItemLabelProvider.class);
@@ -445,8 +445,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		if (editPredicate) {
 			value = property;
 		}
-		String text = value != null ? getLabel(value) : null;
-		return text != null ? text : "";
+		return value != null ? getLabel(value) : "";
 	}
 
 	protected URI toURI(IModel model, Object value) {
