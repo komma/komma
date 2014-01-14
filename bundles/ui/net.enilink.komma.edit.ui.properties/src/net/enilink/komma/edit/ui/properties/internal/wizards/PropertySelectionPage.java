@@ -49,11 +49,8 @@ public class PropertySelectionPage extends WizardPage {
 
 	PropertySelectionPage(Context context) {
 		super(PAGE_NAME, "Select property", null);
-
 		this.context = context;
-
 		this.labelProvider = new ItemUtil.LabelProvider(context.adapterFactory);
-
 		showAllProperties = false;
 	}
 

@@ -48,8 +48,8 @@ class DatatypePropertyPage extends WizardPage {
 
 	private Context context;
 
-	private Collection<String> languages = new LinkedHashSet<String>(KommaUtil
-			.getDefaultLanguages());
+	private Collection<String> languages = new LinkedHashSet<String>(
+			KommaUtil.getDefaultLanguages());
 
 	public DatatypePropertyPage(Context context) {
 		super(PAGE_NAME, "Edit property value", null);
@@ -69,13 +69,13 @@ class DatatypePropertyPage extends WizardPage {
 		composite.setLayoutData(gd);
 
 		Label labelValue = new Label(composite, SWT.NONE);
-		labelValue.setText("Wert");
+		labelValue.setText("Value");
 		GridData gridData = new GridData(SWT.BEGINNING, SWT.BEGINNING, false,
 				false);
 		labelValue.setLayoutData(gridData);
 
-		labelText = new Text(composite, SWT.MULTI | SWT.BORDER
-				| SWT.H_SCROLL | SWT.V_SCROLL);
+		labelText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL
+				| SWT.V_SCROLL);
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		labelText.setLayoutData(gridData);
 
@@ -100,7 +100,7 @@ class DatatypePropertyPage extends WizardPage {
 		});
 
 		Label labelLanguage = new Label(composite, SWT.NONE);
-		labelLanguage.setText("Sprache");
+		labelLanguage.setText("Language");
 		gridData = new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false);
 		labelLanguage.setLayoutData(gridData);
 
@@ -117,7 +117,7 @@ class DatatypePropertyPage extends WizardPage {
 		languageViewer.add(languages.toArray());
 
 		Label labelDatatype = new Label(composite, SWT.NONE);
-		labelDatatype.setText("Datentyp");
+		labelDatatype.setText("Type");
 		gridData = new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false);
 		labelDatatype.setLayoutData(gridData);
 
@@ -143,7 +143,7 @@ class DatatypePropertyPage extends WizardPage {
 				});
 
 		Label labelUseRanges = new Label(composite, SWT.NONE);
-		labelUseRanges.setText("Use Ranges");
+		labelUseRanges.setText("Determine from value range");
 		gridData = new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false);
 		labelUseRanges.setLayoutData(gridData);
 
@@ -177,8 +177,8 @@ class DatatypePropertyPage extends WizardPage {
 					.toSet();
 
 			if (listOfDatatypes == null) {
-				listOfDatatypes = context.subject.getEntityManager().findAll(
-						Datatype.class).toList();
+				listOfDatatypes = context.subject.getEntityManager()
+						.findAll(Datatype.class).toList();
 			}
 
 			super.setDescription("Edit property "
@@ -207,9 +207,10 @@ class DatatypePropertyPage extends WizardPage {
 			}
 
 			if (context.objectType != null) {
-				datatypeViewer.setSelection(new StructuredSelection(
-						context.subject.getEntityManager().find(
-								context.objectType)), true);
+				datatypeViewer.setSelection(
+						new StructuredSelection(context.subject
+								.getEntityManager().find(context.objectType)),
+						true);
 			}
 			languageCombo.setEditable(context.objectType == null);
 			languageCombo.setEnabled(context.objectType == null);

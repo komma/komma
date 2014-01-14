@@ -11,9 +11,35 @@
 package net.enilink.komma.edit.ui.properties.internal.parts;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import net.enilink.commons.ui.editor.IEditorForm;
+import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.common.command.CommandResult;
+import net.enilink.komma.common.command.ICommand;
+import net.enilink.komma.common.command.SimpleCommand;
+import net.enilink.komma.core.ILiteral;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.edit.properties.PropertyEditingHelper;
+import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
+import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
+import net.enilink.komma.edit.ui.properties.internal.context.IPropertiesContext;
+import net.enilink.komma.edit.ui.properties.internal.wizards.EditPropertyWizard;
+import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
+import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
+import net.enilink.komma.edit.ui.util.EditUIUtil;
+import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
+import net.enilink.komma.edit.util.PropertyUtil;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
+import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelUtil;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -62,32 +88,12 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
-import net.enilink.commons.ui.editor.IEditorForm;
-import net.enilink.komma.common.adapter.IAdapterFactory;
-import net.enilink.komma.common.command.CommandResult;
-import net.enilink.komma.common.command.ICommand;
-import net.enilink.komma.common.command.SimpleCommand;
-import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
-import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
-import net.enilink.komma.edit.ui.properties.internal.context.IPropertiesContext;
-import net.enilink.komma.edit.ui.properties.internal.wizards.EditPropertyWizard;
-import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
-import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
-import net.enilink.komma.edit.ui.util.EditUIUtil;
-import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
-import net.enilink.komma.edit.util.PropertyUtil;
-import net.enilink.komma.em.concepts.IProperty;
-import net.enilink.komma.em.concepts.IResource;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.IObject;
-import net.enilink.komma.model.ModelUtil;
-import net.enilink.komma.core.ILiteral;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
-
 public class PropertyTreePart extends AbstractEditingDomainPart implements
 		IPropertyChangeListener {
+	enum ColumnType {
+		PROPERTY, VALUE, LITERAL_LANG_TYPE, INFERRED
+	}
+
 	class AddButtonListener extends SelectionAdapter {
 		public void widgetSelected(SelectionEvent event) {
 			Object selected = ((IStructuredSelection) treeViewer.getSelection())
@@ -267,9 +273,9 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	class TreeLabelProvider extends ColumnLabelProvider {
 		private Color background;
 		private Color invalidBackground;
-		private int column;
+		private ColumnType column;
 
-		public TreeLabelProvider(int column) {
+		public TreeLabelProvider(ColumnType column) {
 			this.column = column;
 			background = new Color(Display.getDefault(), 229, 229, 229);
 			invalidBackground = Display.getDefault().getSystemColor(
@@ -284,7 +290,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 		@Override
 		public Color getBackground(Object element) {
-			if (column == 1 && element instanceof StatementNode
+			if (column == ColumnType.VALUE && element instanceof StatementNode
 					&& !((StatementNode) element).getStatus().isOK()) {
 				return invalidBackground;
 			}
@@ -304,7 +310,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 		@Override
 		public Image getImage(Object element) {
 			switch (column) {
-			case 0:
+			case PROPERTY:
 				if (element instanceof PropertyNode) {
 					if (((PropertyNode) element).getStatement().getPredicate() == null) {
 						return ExtendedImageRegistry.getInstance().getImage(
@@ -318,7 +324,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 							.getPredicate());
 				}
 				break;
-			case 1:
+			case VALUE:
 				if ((element instanceof PropertyNode)) {
 					if (((PropertyNode) element).isIncomplete()
 							|| ((PropertyNode) element)
@@ -336,14 +342,12 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 					return toImage(element);
 				}
 				break;
-			case 2:
+			case INFERRED:
 				if (element instanceof PropertyNode) {
 					if (treeViewer.getExpandedState(element)
-							|| ((PropertyNode) element)
-									.isCreateNewStatementOnEdit()) {
+							|| ((PropertyNode) element).isIncomplete()) {
 						return null;
 					}
-
 					element = ((PropertyNode) element).getStatement();
 				} else {
 					element = ((StatementNode) element).getStatement();
@@ -354,32 +358,30 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 							KommaEditUIPropertiesPlugin.INSTANCE
 									.getImage(IEditUIPropertiesImages.CHECKED));
 				}
+			default:
 			}
-
 			return null;
 		}
 
 		@Override
 		public String getText(Object element) {
-			if (element instanceof PropertyNode) {
-				PropertyNode propertyNode = (PropertyNode) element;
+			if (element instanceof StatementNode) {
 				switch (column) {
-				case 0:
-					return (propertyNode.isInverse() ? "<- " : "")
-							+ toString(propertyNode.getStatement()
-									.getPredicate());
-				case 1:
-					return toString(propertyNode);
-				}
-			} else if (element instanceof StatementNode) {
-				switch (column) {
-				case 0:
+				case PROPERTY:
+					if (element instanceof PropertyNode) {
+						PropertyNode propertyNode = (PropertyNode) element;
+						return (propertyNode.isInverse() ? "<- " : "")
+								+ toString(propertyNode.getStatement()
+										.getPredicate());
+					}
 					return "";
-				case 1:
+				case VALUE:
 					return toString(element);
+				case LITERAL_LANG_TYPE:
+					return toString(element);
+				default:
 				}
 			}
-
 			return null;
 		}
 
@@ -390,7 +392,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 		@Override
 		public String getToolTipText(Object element) {
-			if (column == 1 && element instanceof StatementNode
+			if (column == ColumnType.VALUE && element instanceof StatementNode
 					&& !((StatementNode) element).getStatus().isOK()) {
 				return ((StatementNode) element).getStatus().getMessage();
 			}
@@ -399,26 +401,28 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 			if (element instanceof PropertyNode) {
 				PropertyNode propertyNode = (PropertyNode) element;
 				switch (column) {
-				case 0:
+				case PROPERTY:
 					target = propertyNode.getStatement().getPredicate();
 					break;
-				case 1:
+				case VALUE:
 					if (treeViewer.getExpandedState(element)) {
 						return null;
 					}
 					target = propertyNode.getStatement().getObject();
 					break;
+				default:
 				}
 			} else if (element instanceof StatementNode) {
 				switch (column) {
-				case 0:
+				case PROPERTY:
 					target = ((StatementNode) element).getStatement()
 							.getPredicate();
 					break;
-				case 1:
+				case VALUE:
 					target = ((StatementNode) element).getStatement()
 							.getObject();
 					break;
+				default:
 				}
 			}
 
@@ -429,14 +433,12 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 			if (labelProvider == null || element == null) {
 				return null;
 			}
-
 			if (element instanceof PropertyNode) {
 				element = ((PropertyNode) element).getStatement()
 						.getPredicate();
 			} else if (element instanceof StatementNode) {
 				element = ((StatementNode) element).getValue();
 			}
-
 			return labelProvider.getImage(element);
 		}
 
@@ -444,7 +446,6 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 			if (labelProvider == null || element == null) {
 				return null;
 			}
-
 			if (element instanceof PropertyNode
 					&& treeViewer.getExpandedState(element)) {
 				return null;
@@ -458,10 +459,21 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 					element = ((StatementNode) element).getValue();
 				}
 			}
+			if (column == ColumnType.LITERAL_LANG_TYPE) {
+				if (element instanceof ILiteral) {
+					String lang = ((ILiteral) element).getLanguage();
+					if (lang != null) {
+						return "@" + lang;
+					}
+					URI datatype = ((ILiteral) element).getDatatype();
+					return datatype != null ? labelProvider.getText(resource
+							.getEntityManager().find(datatype)) : null;
+				}
+				return null;
+			}
 			if (element instanceof ILiteral) {
 				return ((ILiteral) element).getLabel();
 			}
-
 			return labelProvider.getText(element);
 		}
 	}
@@ -475,7 +487,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 	private IPropertiesContext context;
 
-	private ValueEditingSupport[] editingSupports;
+	private List<ValueEditingSupport> editingSupports;
 
 	private Button itemShowFull;
 
@@ -639,25 +651,39 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 		TreeViewerColumn column = new TreeViewerColumn(treeViewer, SWT.LEFT);
 		column.getColumn().setText("Property");
 		column.getColumn().setWidth(300);
-		column.setLabelProvider(new TreeLabelProvider(0));
+		column.setLabelProvider(new TreeLabelProvider(ColumnType.PROPERTY));
 
-		editingSupports = new ValueEditingSupport[2];
-		editingSupports[0] = new ValueEditingSupport(treeViewer, true);
-		column.setEditingSupport(editingSupports[0]);
+		editingSupports = new ArrayList<>();
+		ValueEditingSupport editingSupport = new ValueEditingSupport(
+				treeViewer, PropertyEditingHelper.Type.PROPERTY);
+		editingSupports.add(editingSupport);
+		column.setEditingSupport(editingSupport);
 
 		column = new TreeViewerColumn(treeViewer, SWT.LEFT);
 		column.getColumn().setAlignment(SWT.LEFT);
 		column.getColumn().setText("Value");
 		column.getColumn().setWidth(200);
-		column.setLabelProvider(new TreeLabelProvider(1));
+		column.setLabelProvider(new TreeLabelProvider(ColumnType.VALUE));
 
-		editingSupports[1] = new ValueEditingSupport(treeViewer);
-		column.setEditingSupport(editingSupports[1]);
+		editingSupport = new ValueEditingSupport(treeViewer);
+		editingSupports.add(editingSupport);
+		column.setEditingSupport(editingSupport);
+
+		column = new TreeViewerColumn(treeViewer, SWT.CENTER);
+		column.getColumn().setText("lang/type");
+		column.setLabelProvider(new TreeLabelProvider(
+				ColumnType.LITERAL_LANG_TYPE));
+		column.getColumn().setWidth(80);
+
+		editingSupport = new ValueEditingSupport(treeViewer,
+				PropertyEditingHelper.Type.LITERAL_LANG_TYPE);
+		editingSupports.add(editingSupport);
+		column.setEditingSupport(editingSupport);
 
 		column = new TreeViewerColumn(treeViewer, SWT.CENTER);
 		column.getColumn().setText("Inferred");
-		column.setLabelProvider(new TreeLabelProvider(2));
-		column.getColumn().setWidth(80);
+		column.setLabelProvider(new TreeLabelProvider(ColumnType.INFERRED));
+		column.getColumn().setWidth(50);
 
 		treeViewer.addTreeListener(new ITreeViewerListener() {
 			@Override

@@ -61,7 +61,6 @@ public class EditPropertyWizard extends Wizard {
 			removeCommand = PropertyUtil.getRemoveCommand(editingDomain,
 					context.subject, originalPredicate, originalObject);
 		}
-
 		Object object = context.object;
 		if (context.isDatatypeProperty()) {
 			object = context.subject.getEntityManager().createLiteral(
@@ -81,7 +80,6 @@ public class EditPropertyWizard extends Wizard {
 		} catch (ExecutionException exc) {
 			status = EditUIUtil.createErrorStatus(exc);
 		}
-
 		return status.isOK();
 	}
 

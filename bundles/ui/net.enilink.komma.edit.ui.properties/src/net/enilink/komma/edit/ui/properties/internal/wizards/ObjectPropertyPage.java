@@ -52,7 +52,6 @@ public class ObjectPropertyPage extends WizardPage implements
 	protected ObjectPropertyPage(Context context) {
 		super(PAGE_NAME, "Edit property value", null);
 		this.context = context;
-
 		this.labelProvider = new ItemUtil.LabelProvider(context.adapterFactory);
 	}
 
@@ -62,9 +61,7 @@ public class ObjectPropertyPage extends WizardPage implements
 		parentComposite.setLayout(new GridLayout(2, false));
 
 		widget = new FilteredTreeAndListSelectionWidget(this, false);
-
 		widget.createControl(parentComposite);
-
 		widget.getFilteredTree().getViewer()
 				.addSelectionChangedListener(new ISelectionChangedListener() {
 					@Override
@@ -74,10 +71,8 @@ public class ObjectPropertyPage extends WizardPage implements
 						widget.getFilteredList().clearAndRefresh();
 					}
 				});
-
 		widget.getFilteredList().addSelectionChangedListener(
 				new ISelectionChangedListener() {
-
 					@Override
 					public void selectionChanged(SelectionChangedEvent event) {
 						context.object = ItemUtil
