@@ -558,10 +558,9 @@ public class CompositeCommand extends AbstractCommand implements
 
 						// Undo the operation to date, excluding the current
 						// child, and don't proceed
-						Trace
-								.trace(
-										CommonPlugin.getPlugin(),
-										"Composite operation execution recovery: child command status is CANCEL or ERROR."); //$NON-NLS-1$
+						Trace.trace(
+								CommonPlugin.getPlugin(),
+								"Composite operation execution recovery: child command status is CANCEL or ERROR."); //$NON-NLS-1$
 						// back-track over the operation that failed
 						iter.previous();
 						unwindFailedExecute(iter, info);
@@ -570,9 +569,8 @@ public class CompositeCommand extends AbstractCommand implements
 					} else if (progressMonitor.isCanceled()) {
 						// Undo the operation to date, including the current
 						// child, and don't proceed
-						Trace
-								.trace(CommonPlugin.getPlugin(),
-										"Composite operation redo recovery: child command monitor is cancelled."); //$NON-NLS-1$
+						Trace.trace(CommonPlugin.getPlugin(),
+								"Composite operation redo recovery: child command monitor is cancelled."); //$NON-NLS-1$
 
 						CommandResult cancelResult = CommandResult
 								.newCancelledCommandResult();
@@ -612,13 +610,10 @@ public class CompositeCommand extends AbstractCommand implements
 
 		progressMonitor.beginTask(getLabel(), size());
 		try {
-
 			for (ListIterator<IUndoableOperation> iter = listIterator(); iter
 					.hasNext();) {
 				IUndoableOperation next = (IUndoableOperation) iter.next();
-
 				try {
-
 					IStatus status = next.redo(new SubProgressMonitor(
 							progressMonitor, 1), info);
 					result.add(status);
@@ -627,20 +622,17 @@ public class CompositeCommand extends AbstractCommand implements
 					if (severity == IStatus.CANCEL || severity == IStatus.ERROR) {
 						// Undo the operation to date, excluding the current
 						// child, and don't proceed
-						Trace
-								.trace(CommonPlugin.getPlugin(),
-										"Composite operation redo recovery: child command status is CANCEL or ERROR."); //$NON-NLS-1$
+						Trace.trace(CommonPlugin.getPlugin(),
+								"Composite operation redo recovery: child command status is CANCEL or ERROR."); //$NON-NLS-1$
 						// back-track over the operation that failed
 						iter.previous();
 						unwindFailedRedo(iter, info);
 						break;
-
 					} else if (progressMonitor.isCanceled()) {
 						// Undo the operation to date, including the current
 						// child, and don't proceed
-						Trace
-								.trace(CommonPlugin.getPlugin(),
-										"Composite operation redo recovery: child command monitor is cancelled."); //$NON-NLS-1$
+						Trace.trace(CommonPlugin.getPlugin(),
+								"Composite operation redo recovery: child command monitor is cancelled."); //$NON-NLS-1$
 
 						CommandResult cancelResult = CommandResult
 								.newCancelledCommandResult();
@@ -653,7 +645,6 @@ public class CompositeCommand extends AbstractCommand implements
 						progressMonitor.worked(1);
 						executed = true;
 					}
-
 				} catch (ExecutionException e) {
 					// Undo the operation to date, and re-throw the exception
 					// back-track over the operation that failed
@@ -696,9 +687,8 @@ public class CompositeCommand extends AbstractCommand implements
 					if (severity == IStatus.CANCEL || severity == IStatus.ERROR) {
 						// Redo the operation to date, excluding the current
 						// child, and don't proceed
-						Trace
-								.trace(CommonPlugin.getPlugin(),
-										"Composite operation undo recovery: child command status is CANCEL or ERROR."); //$NON-NLS-1$
+						Trace.trace(CommonPlugin.getPlugin(),
+								"Composite operation undo recovery: child command status is CANCEL or ERROR."); //$NON-NLS-1$
 						// back-track over the operation that failed or was
 						// cancelled
 						iter.next();
@@ -708,9 +698,8 @@ public class CompositeCommand extends AbstractCommand implements
 					} else if (progressMonitor.isCanceled()) {
 						// Redo the operation to date, including the current
 						// child, and don't proceed
-						Trace
-								.trace(CommonPlugin.getPlugin(),
-										"Composite operation undo recovery: child command monitor is cancelled."); //$NON-NLS-1$
+						Trace.trace(CommonPlugin.getPlugin(),
+								"Composite operation undo recovery: child command monitor is cancelled."); //$NON-NLS-1$
 
 						CommandResult cancelResult = CommandResult
 								.newCancelledCommandResult();
@@ -849,7 +838,7 @@ public class CompositeCommand extends AbstractCommand implements
 					Object returnValue = result.getReturnValue();
 
 					if (returnValue != null) {
-						if (getClass().isInstance(command)) {
+						if (command instanceof ICompositeCommand) {
 							// unwrap the values from other composites
 							if (returnValue != null
 									&& returnValue instanceof Collection<?>) {
@@ -1026,15 +1015,14 @@ public class CompositeCommand extends AbstractCommand implements
 			IUndoableOperation prev = (IUndoableOperation) iter.previous();
 			if (!prev.canUndo()) {
 				// Can't unwind
-				Log
-						.error(
-								CommonPlugin.getPlugin(),
-								CommonStatusCodes.EXECUTE_RECOVERY_FAILED,
-								CommonPlugin.INSTANCE
-										.getString(
-												"Command_executeRecoveryFailed",
-												CommonPlugin.INSTANCE
-														.getString("Command_cannotUndoExecuted")));
+				Log.error(
+						CommonPlugin.getPlugin(),
+						CommonStatusCodes.EXECUTE_RECOVERY_FAILED,
+						CommonPlugin.INSTANCE
+								.getString(
+										"Command_executeRecoveryFailed",
+										CommonPlugin.INSTANCE
+												.getString("Command_cannotUndoExecuted")));
 				break;
 			}
 
@@ -1045,8 +1033,8 @@ public class CompositeCommand extends AbstractCommand implements
 				Log.error(CommonPlugin.getPlugin(),
 						CommonStatusCodes.EXECUTE_RECOVERY_FAILED,
 						CommonPlugin.INSTANCE.getString(
-								"Command_executeRecoveryFailed", inner
-										.getLocalizedMessage()));
+								"Command_executeRecoveryFailed",
+								inner.getLocalizedMessage()));
 				break;
 			}
 		}
@@ -1084,8 +1072,8 @@ public class CompositeCommand extends AbstractCommand implements
 				Log.error(CommonPlugin.getPlugin(),
 						CommonStatusCodes.REDO_RECOVERY_FAILED,
 						CommonPlugin.INSTANCE.getString(
-								"Command_redoRecoveryFailed", inner
-										.getLocalizedMessage()));
+								"Command_redoRecoveryFailed",
+								inner.getLocalizedMessage()));
 				break;
 			}
 		}
@@ -1122,8 +1110,8 @@ public class CompositeCommand extends AbstractCommand implements
 				Log.error(CommonPlugin.getPlugin(),
 						CommonStatusCodes.UNDO_RECOVERY_FAILED,
 						CommonPlugin.INSTANCE.getString(
-								"Command_undoRecoveryFailed", inner
-										.getLocalizedMessage()));
+								"Command_undoRecoveryFailed",
+								inner.getLocalizedMessage()));
 				break;
 			}
 		}
