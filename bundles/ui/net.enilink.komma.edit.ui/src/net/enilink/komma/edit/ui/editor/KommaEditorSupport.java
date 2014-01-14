@@ -635,11 +635,10 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 
 		Exception exception = null;
 		try {
-			// Load the model through the editing domain.
 			model = modelSet.getModel(resourceURI, true);
 		} catch (Exception e) {
 			exception = e;
-			model = modelSet.getModel(resourceURI, false);
+			model = modelSet.createModel(resourceURI);
 		}
 
 		Diagnostic diagnostic = analyzeModelProblems(model, exception);
@@ -890,7 +889,6 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 					contentOutlineViewer.addSelectionChangedListener(this);
 
 					// Set up the tree viewer.
-					//
 					contentOutlineViewer
 							.setContentProvider(new AdapterFactoryContentProvider(
 									getAdapterFactory()));
@@ -957,11 +955,9 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 			IModelSet modelSet) {
 		IEditingDomainProvider provider = (IEditingDomainProvider) modelSet
 				.adapters().getAdapter(IEditingDomainProvider.class);
-
 		if (provider != null) {
 			return (AdapterFactoryEditingDomain) provider.getEditingDomain();
 		}
-
 		return null;
 	}
 
@@ -1122,6 +1118,52 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 				resourceChangeListener, IResourceChangeEvent.POST_CHANGE);
 	}
 
+	protected ComposedAdapterFactory createDefaultAdapterFactory() {
+		ComposedAdapterFactory adapterFactory = new ComposedAdapterFactory(
+				ComposedAdapterFactory.IDescriptor.IRegistry.INSTANCE) {
+			/**
+			 * Default adapter factory for all namespaces
+			 */
+			class DefaultItemProviderAdapterFactory extends
+					ReflectiveItemProviderAdapterFactory {
+				public DefaultItemProviderAdapterFactory() {
+					super(KommaEditUIPlugin.getPlugin());
+				}
+
+				@Override
+				public Object adapt(Object object, Object type) {
+					if (object instanceof IClass) {
+						// do not override the adapter for classes
+						return null;
+					}
+					return super.adapt(object, type);
+				}
+
+				public boolean isFactoryForType(Object type) {
+					// support any namespace
+					return type instanceof URI || supportedTypes.contains(type);
+				}
+			}
+
+			DefaultItemProviderAdapterFactory defaultAdapterFactory;
+			{
+				defaultAdapterFactory = new DefaultItemProviderAdapterFactory();
+				defaultAdapterFactory.setParentAdapterFactory(this);
+			}
+
+			@Override
+			protected IAdapterFactory getDefaultAdapterFactory(Object type) {
+				// provide a default adapter factory as fallback if no
+				// specific adapter factory was found
+				return defaultAdapterFactory;
+			}
+		};
+		if (injector != null) {
+			injector.injectMembers(adapterFactory);
+		}
+		return adapterFactory;
+	}
+
 	/**
 	 * This sets up the editing domain for the model editor.
 	 * 
@@ -1132,59 +1174,12 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		initializeModelSet(modelSet);
 
 		setEditingDomain(getExistingEditingDomain(modelSet));
-
 		if (getEditingDomain() == null) {
 			// Create an adapter factory that yields item providers.
-			ownedAdapterFactory = new ComposedAdapterFactory(
-					ComposedAdapterFactory.IDescriptor.IRegistry.INSTANCE) {
-				/**
-				 * Default adapter factory for all namespaces
-				 */
-				class DefaultItemProviderAdapterFactory extends
-						ReflectiveItemProviderAdapterFactory {
-					public DefaultItemProviderAdapterFactory() {
-						super(KommaEditUIPlugin.getPlugin());
-					}
-
-					@Override
-					public Object adapt(Object object, Object type) {
-						if (object instanceof IClass) {
-							// do not override the adapter for classes
-							return null;
-						}
-						return super.adapt(object, type);
-					}
-
-					public boolean isFactoryForType(Object type) {
-						// support any namespace
-						return type instanceof URI
-								|| supportedTypes.contains(type);
-					}
-				}
-
-				DefaultItemProviderAdapterFactory defaultAdapterFactory;
-				{
-					defaultAdapterFactory = new DefaultItemProviderAdapterFactory();
-					defaultAdapterFactory.setParentAdapterFactory(this);
-				}
-
-				@Override
-				protected IAdapterFactory getDefaultAdapterFactory(Object type) {
-					// provide a default adapter factory as fallback if no
-					// specific adapter factory was found
-					return defaultAdapterFactory;
-				}
-			};
-
-			if (injector != null) {
-				injector.injectMembers(ownedAdapterFactory);
-			}
-
+			ownedAdapterFactory = createDefaultAdapterFactory();
 			// Create the command stack that will notify this editor as commands
-			// are
-			// executed.
+			// are executed.
 			EditingDomainCommandStack commandStack = new EditingDomainCommandStack();
-
 			setEditingDomain(new AdapterFactoryEditingDomain(
 					ownedAdapterFactory, commandStack, modelSet));
 			commandStack.setEditingDomain(getEditingDomain());
@@ -1194,7 +1189,6 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 
 		// Add a listener to set the most recent command's affected objects to
 		// be the selection of the viewer with focus.
-
 		commandStackListener = new ICommandStackListener() {
 			public void commandStackChanged(final EventObject event) {
 				editor.getEditorSite().getShell().getDisplay()

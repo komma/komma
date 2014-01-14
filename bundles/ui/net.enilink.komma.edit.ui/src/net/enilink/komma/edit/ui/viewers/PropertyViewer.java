@@ -28,6 +28,7 @@ import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.properties.IPropertyEditingSupport;
 import net.enilink.komma.edit.properties.IResourceProposal;
 import net.enilink.komma.edit.properties.PropertyEditingHelper;
+import net.enilink.komma.edit.properties.PropertyEditingHelper.Type;
 import net.enilink.komma.edit.ui.assist.JFaceContentProposal;
 import net.enilink.komma.edit.ui.celleditor.CellEditorHelper;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
@@ -56,7 +57,7 @@ public class PropertyViewer extends ContentViewer {
 	protected Object currentElement;
 
 	private final PropertyEditingHelper helper = new PropertyEditingHelper(
-			false) {
+			Type.VALUE) {
 		protected IPropertyEditingSupport getPropertyEditingSupport(
 				IStatement stmt) {
 			return propertyEditingSupport != null ? propertyEditingSupport

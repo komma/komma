@@ -1,5 +1,14 @@
 package net.enilink.komma.edit.ui.celleditor;
 
+import net.enilink.komma.common.ui.celleditor.TextCellEditorWithContentProposal;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.properties.IPropertyEditingSupport;
+import net.enilink.komma.edit.properties.IResourceProposal;
+import net.enilink.komma.edit.properties.PropertyEditingHelper;
+import net.enilink.komma.edit.ui.assist.JFaceContentProposal;
+import net.enilink.komma.em.concepts.IProperty;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalListener;
@@ -14,22 +23,13 @@ import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Tree;
 
-import net.enilink.komma.common.ui.celleditor.TextCellEditorWithContentProposal;
-import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.properties.IPropertyEditingSupport;
-import net.enilink.komma.edit.properties.IResourceProposal;
-import net.enilink.komma.edit.properties.PropertyEditingHelper;
-import net.enilink.komma.edit.ui.assist.JFaceContentProposal;
-import net.enilink.komma.em.concepts.IProperty;
-import net.enilink.komma.core.IStatement;
-
 /**
  * An abstract base class for editing of cells which represent RDF statements.
  */
 public abstract class PropertyCellEditingSupport extends EditingSupport {
 	private static final int PROPOSAL_DELAY = 1000;
 
-	protected boolean editPredicate;
+	protected PropertyEditingHelper.Type type;
 
 	protected PropertyEditingHelper helper;
 
@@ -60,14 +60,14 @@ public abstract class PropertyCellEditingSupport extends EditingSupport {
 	};
 
 	public PropertyCellEditingSupport(ColumnViewer viewer) {
-		this(viewer, false, SWT.NONE);
+		this(viewer, PropertyEditingHelper.Type.VALUE, SWT.NONE);
 	}
 
 	public PropertyCellEditingSupport(final ColumnViewer viewer,
-			boolean editPredicate, final int cellEditorStyle) {
+			PropertyEditingHelper.Type type, final int cellEditorStyle) {
 		super(viewer);
-		this.editPredicate = editPredicate;
-		helper = new PropertyEditingHelper(editPredicate) {
+		this.type = type;
+		helper = new PropertyEditingHelper(type) {
 			@Override
 			protected IStatement getStatement(Object element) {
 				return PropertyCellEditingSupport.this.getStatement(element);
@@ -111,6 +111,9 @@ public abstract class PropertyCellEditingSupport extends EditingSupport {
 				if ((cellEditorStyle & SWT.MULTI) != 0) {
 					layoutData.verticalAlignment = SWT.TOP;
 					layoutData.minimumHeight = getItemHeight() * 6;
+				} else {
+					// required for editors with SWT.SINGLE
+					layoutData.minimumHeight = 0;
 				}
 				return layoutData;
 			}
