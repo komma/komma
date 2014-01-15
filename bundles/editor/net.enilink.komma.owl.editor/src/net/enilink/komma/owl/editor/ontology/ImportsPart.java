@@ -25,6 +25,7 @@ import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.edit.ui.dialogs.FilteredList;
@@ -34,6 +35,7 @@ import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 import net.enilink.komma.edit.ui.provider.reflective.ObjectComparator;
+import net.enilink.komma.edit.ui.util.EditUIUtil;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IModel;
@@ -57,6 +59,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -71,6 +75,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.SelectionDialog;
 
 public class ImportsPart extends AbstractEditingDomainPart {
@@ -101,8 +107,9 @@ public class ImportsPart extends AbstractEditingDomainPart {
 								break;
 							}
 						}
-						if (deleteItemAction != null)
+						if (deleteItemAction != null) {
 							deleteItemAction.setEnabled(deleteEnabled);
+						}
 					}
 				});
 		importsViewer
@@ -113,6 +120,20 @@ public class ImportsPart extends AbstractEditingDomainPart {
 								event.getSelection());
 					}
 				});
+		importsViewer.addDoubleClickListener(new IDoubleClickListener() {
+			@Override
+			public void doubleClick(DoubleClickEvent event) {
+				if (PlatformUI.isWorkbenchRunning()) {
+					Object selected = ((IStructuredSelection) event
+							.getSelection()).getFirstElement();
+					try {
+						EditUIUtil.openEditor((IReference) selected);
+					} catch (PartInitException e) {
+						// ignore
+					}
+				}
+			}
+		});
 		importsViewer.getControl().setLayoutData(
 				new GridData(SWT.FILL, SWT.FILL, true, true));
 		modelDescriptions = ModelPlugin.getBaseModels();

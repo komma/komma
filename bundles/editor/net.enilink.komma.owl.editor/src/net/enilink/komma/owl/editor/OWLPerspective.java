@@ -17,7 +17,7 @@ public class OWLPerspective implements IPerspectiveFactory {
 			IFolderLayout topLeft = layout.createFolder("topLeft",
 					IPageLayout.LEFT, 0.25f, editorArea);
 			// Top left: Resource Navigator view and Bookmarks view placeholder
-			topLeft.addView(IPageLayout.ID_RES_NAV);
+			topLeft.addView(IPageLayout.ID_PROJECT_EXPLORER);
 			topLeft.addPlaceholder(IPageLayout.ID_BOOKMARKS);
 		}
 

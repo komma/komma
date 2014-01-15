@@ -32,6 +32,7 @@ import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -63,13 +64,16 @@ public class OntologyPart extends AbstractEditingDomainPart {
 
 		createNameComposite(parent);
 
+		SashForm sashForm = new SashForm(parent, SWT.VERTICAL);
+		sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
 		importsPart = new ImportsPart();
 		addPart(importsPart);
-		importsPart.createContents(createSection(parent, "Imports"));
+		importsPart.createContents(createSection(sashForm, "Imports"));
 
 		namespacePart = new NamespacesPart();
 		addPart(namespacePart);
-		namespacePart.createContents(createSection(parent, "Namespaces"));
+		namespacePart.createContents(createSection(sashForm, "Namespaces"));
 	}
 
 	private void createNameComposite(Composite parent) {
@@ -202,11 +206,9 @@ public class OntologyPart extends AbstractEditingDomainPart {
 		Section section = getWidgetFactory().createSection(parent,
 				Section.TITLE_BAR | Section.EXPANDED);
 		section.setText(name);
-
 		Composite client = getWidgetFactory()
 				.createComposite(section, SWT.NONE);
 		section.setClient(client);
-		section.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		return client;
 	}
 
