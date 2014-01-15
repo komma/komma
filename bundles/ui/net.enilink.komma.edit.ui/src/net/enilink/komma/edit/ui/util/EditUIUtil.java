@@ -22,6 +22,18 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import net.enilink.komma.common.AbstractKommaPlugin;
+import net.enilink.komma.common.ui.EclipseUtil;
+import net.enilink.komma.common.ui.URIEditorInput;
+import net.enilink.komma.common.util.UniqueExtensibleList;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.edit.ui.KommaEditUIPlugin;
+import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.IURIConverter;
+import net.enilink.komma.model.base.ExtensibleURIConverter;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -34,60 +46,45 @@ import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorRegistry;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import net.enilink.komma.common.AbstractKommaPlugin;
-import net.enilink.komma.common.ui.EclipseUtil;
-import net.enilink.komma.common.ui.URIEditorInput;
-import net.enilink.komma.common.util.UniqueExtensibleList;
-import net.enilink.komma.edit.ui.KommaEditUIPlugin;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.IObject;
-import net.enilink.komma.model.IURIConverter;
-import net.enilink.komma.model.base.ExtensibleURIConverter;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
-
 public class EditUIUtil {
 	/**
-	 * Opens the default editor for the resource that contains the specified
-	 * IObject. This method only works if the model's URI is a platform resource
-	 * URI.
+	 * Opens the default editor for the resource. This method only works if the
+	 * model's URI is a platform resource URI.
 	 */
-	public static boolean openEditor(IObject iObject) throws PartInitException {
-		if (iObject != null) {
-			IModel model = iObject.getModel();
-			if (model != null) {
-				URI uri = model.getURI();
-				if (uri != null) {
-					IEditorInput editorInput = null;
-					if (uri.isPlatformResource()) {
-						String path = uri.toPlatformString(true);
-						IResource workspaceResource = ResourcesPlugin
-								.getWorkspace().getRoot()
-								.findMember(new Path(path));
-						if (workspaceResource instanceof IFile) {
-							editorInput = EclipseUtil
-									.createEditorInput((IFile) workspaceResource);
-						}
-					} else {
-						editorInput = new URIEditorInput(uri);
-					}
-					if (editorInput != null) {
-						IWorkbench workbench = PlatformUI.getWorkbench();
-						IWorkbenchPage page = workbench
-								.getActiveWorkbenchWindow().getActivePage();
-						IEditorPart editorPart = page.openEditor(
-								editorInput,
-								workbench.getEditorRegistry()
-										.getDefaultEditor(uri.lastSegment())
-										.getId());
-						return editorPart != null;
-					}
+	public static boolean openEditor(IReference resource)
+			throws PartInitException {
+		URI uri = resource.getURI();
+		if (uri != null) {
+			URI normalizedURI = uri;
+			if (resource instanceof IObject) {
+				normalizedURI = ((IObject) resource).getModel().getModelSet()
+						.getURIConverter().normalize(uri);
+			}
+			IEditorInput editorInput = null;
+			if (normalizedURI.isPlatformResource()) {
+				String path = normalizedURI.toPlatformString(true);
+				IResource workspaceResource = ResourcesPlugin.getWorkspace()
+						.getRoot().findMember(new Path(path));
+				if (workspaceResource instanceof IFile) {
+					editorInput = EclipseUtil
+							.createEditorInput((IFile) workspaceResource);
 				}
+			}
+			if (editorInput == null) {
+				editorInput = new URIEditorInput(uri);
+			}
+			IEditorDescriptor editorDesc = getDefaultEditor(normalizedURI
+					.toString());
+			if (editorDesc != null) {
+				IWorkbenchPage page = PlatformUI.getWorkbench()
+						.getActiveWorkbenchWindow().getActivePage();
+				IEditorPart editorPart = page.openEditor(editorInput,
+						editorDesc.getId());
+				return editorPart != null;
 			}
 		}
 		return false;

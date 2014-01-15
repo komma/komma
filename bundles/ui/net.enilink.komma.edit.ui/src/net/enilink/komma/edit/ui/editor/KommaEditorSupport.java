@@ -1322,12 +1322,12 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 
 			if (markerHelper.hasMarkers(modelSet)) {
 				markerHelper.deleteMarkers(modelSet);
-				if (diagnostic.getSeverity() != Diagnostic.OK) {
-					try {
-						markerHelper.createMarkers(diagnostic);
-					} catch (CoreException exception) {
-						KommaEditUIPlugin.INSTANCE.log(exception);
-					}
+			}
+			if (diagnostic.getSeverity() != Diagnostic.OK) {
+				try {
+					markerHelper.createMarkers(diagnostic);
+				} catch (CoreException exception) {
+					KommaEditUIPlugin.INSTANCE.log(exception);
 				}
 			}
 		}
