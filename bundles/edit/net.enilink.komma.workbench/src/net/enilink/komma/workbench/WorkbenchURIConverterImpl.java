@@ -70,13 +70,6 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 		addInputContainer(inputContainer);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.eclipse.jem.util.emf.workbench.WorkbenchURIConverter#addInputContainer
-	 * (org.eclipse.core.resources.IContainer)
-	 */
 	public void addInputContainer(IContainer container) {
 		if (container != null && !getInputContainers().contains(container)) {
 			inputContainers.add(container);
@@ -120,24 +113,10 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.eclipse.jem.util.emf.workbench.WorkbenchURIConverter#getInputContainers
-	 * ()
-	 */
 	public List<IContainer> getInputContainers() {
 		return inputContainers;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.eclipse.jem.util.emf.workbench.WorkbenchURIConverter#removeInputContainer
-	 * (org.eclipse.core.resources.IContainer)
-	 */
 	public boolean removeInputContainer(IContainer container) {
 		if (inputContainers.remove(container)) {
 			try {

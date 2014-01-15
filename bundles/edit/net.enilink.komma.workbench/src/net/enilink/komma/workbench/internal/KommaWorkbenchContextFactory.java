@@ -15,13 +15,6 @@
 package net.enilink.komma.workbench.internal;
 
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
-
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectNature;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
 
 import net.enilink.commons.util.extensions.RegistryReader;
 import net.enilink.komma.model.IModelSet;
@@ -31,12 +24,19 @@ import net.enilink.komma.workbench.ModelSetWorkbenchSynchronizer;
 import net.enilink.komma.workbench.internal.nls.WorkbenchResourceHandler;
 import net.enilink.komma.workbench.nature.KommaNature;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectNature;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.QualifiedName;
+
 public class KommaWorkbenchContextFactory {
 	public static final KommaWorkbenchContextFactory INSTANCE = createFactoryInstance();
 
 	private final Class<IKommaContextContributor> CONTRIBUTOR_CLASS = IKommaContextContributor.class;
 
-	protected Map<IProject, KommaWorkbenchContextBase> contextCache = new WeakHashMap<IProject, KommaWorkbenchContextBase>();
+	private static final QualifiedName PROPERTY_CONTEXT = new QualifiedName(
+			KommaWorkbenchContextFactory.class.getName(), "cachedContext");
 
 	private static KommaWorkbenchContextFactory createFactoryInstance() {
 		KommaWorkbenchContextFactory factory = createFactoryInstanceFromExtension();
@@ -78,13 +78,22 @@ public class KommaWorkbenchContextFactory {
 	protected void cacheKommaContext(IProject project,
 			KommaWorkbenchContextBase kommaContext) {
 		if (project != null && kommaContext != null) {
-			contextCache.put(project, kommaContext);
+			try {
+				project.setSessionProperty(PROPERTY_CONTEXT, kommaContext);
+			} catch (CoreException e) {
+				// ignore
+			}
 		}
 	}
 
 	protected KommaWorkbenchContextBase getCachedContext(IProject project) {
 		if (project != null) {
-			return contextCache.get(project);
+			try {
+				return (KommaWorkbenchContextBase) project
+						.getSessionProperty(PROPERTY_CONTEXT);
+			} catch (CoreException e) {
+				// ignore
+			}
 		}
 		return null;
 	}
@@ -95,7 +104,11 @@ public class KommaWorkbenchContextFactory {
 	 */
 	public void removeCachedProject(IProject project) {
 		if (project != null) {
-			contextCache.remove(project);
+			try {
+				project.setSessionProperty(PROPERTY_CONTEXT, null);
+			} catch (CoreException e) {
+				// ignore
+			}
 		}
 	}
 
