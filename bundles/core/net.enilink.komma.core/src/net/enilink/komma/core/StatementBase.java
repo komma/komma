@@ -150,25 +150,24 @@ public abstract class StatementBase implements IStatementPattern {
 		// commonly the smallest, so predicate equality is checked last.
 		Object object = getObject();
 		Object otherObject = other.getObject();
-		if (object != otherObject || object != null
-				&& !object.equals(otherObject)) {
+		if (object != otherObject
+				&& (object == null || !object.equals(otherObject))) {
 			return false;
 		}
 
 		Object subject = getSubject();
 		Object otherSubject = other.getSubject();
-		if (subject != otherSubject || subject != null
-				&& !subject.equals(otherSubject)) {
+		if (subject != otherSubject
+				&& (subject == null || !subject.equals(otherSubject))) {
 			return false;
 		}
 
 		Object predicate = getPredicate();
 		Object otherPredicate = other.getPredicate();
-		if (predicate != otherPredicate || predicate != null
-				&& !predicate.equals(otherPredicate)) {
+		if (predicate != otherPredicate
+				&& (predicate == null || !predicate.equals(otherPredicate))) {
 			return false;
 		}
-
 		return true;
 	}
 
