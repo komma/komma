@@ -13,7 +13,10 @@ package net.enilink.komma.em;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.google.inject.Inject;
+
 import net.enilink.komma.em.internal.behaviours.IEntityManagerAware;
+import net.enilink.komma.em.util.UnitOfWork;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
 import net.enilink.komma.core.IEntityManager;
@@ -29,6 +32,9 @@ public abstract class ThreadLocalEntityManager extends DelegatingEntityManager {
 	};
 
 	private List<IEntityDecorator> decorators = new CopyOnWriteArrayList<IEntityDecorator>();
+
+	@Inject
+	protected UnitOfWork uow;
 
 	public void addDecorator(IEntityDecorator decorator) {
 		decorators.add(decorator);
@@ -56,6 +62,7 @@ public abstract class ThreadLocalEntityManager extends DelegatingEntityManager {
 				manager.addDecorator(decorator);
 			}
 			manager.addDecorator(managerInjector);
+			uow.addCloseable(this);
 			delegate.set(manager);
 		}
 		return manager;

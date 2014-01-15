@@ -80,6 +80,7 @@ public class CacheModule extends AbstractModule {
 		@Override
 		public void close() {
 			if (cache != null) {
+				cache.clear();
 				cache.stop();
 				cache = null;
 			}

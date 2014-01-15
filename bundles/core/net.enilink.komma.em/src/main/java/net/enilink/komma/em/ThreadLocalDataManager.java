@@ -43,7 +43,7 @@ public class ThreadLocalDataManager extends DelegatingDataManager {
 				throw new KommaException("No active unit of work found.");
 			}
 			manager = dmFactory.get();
-			uow.addManager(manager);
+			uow.addCloseable(this);
 			delegate.set(manager);
 		}
 		return manager;
