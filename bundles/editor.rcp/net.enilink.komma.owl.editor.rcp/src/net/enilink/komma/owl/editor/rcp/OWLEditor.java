@@ -233,22 +233,25 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 			@Override
 			public void dispose() {
 				super.dispose();
-				shared.openEditors.remove(OWLEditor.this);
-				if (modelSet != null && shared.openEditors.isEmpty()) {
-					// dipose shared adapter factory
-					if (shared.adapterFactory != null) {
-						shared.adapterFactory.dispose();
-						shared.adapterFactory = null;
-					}
-					modelSet.dispose();
-					modelSet = null;
-					// remove shared properties from project
-					try {
-						project.setSessionProperty(PROPERTY_SHARED, null);
-					} catch (CoreException e) {
-						// ignore
+				if (shared != null) {
+					shared.openEditors.remove(OWLEditor.this);
+					if (modelSet != null && shared.openEditors.isEmpty()) {
+						// dipose shared adapter factory
+						if (shared.adapterFactory != null) {
+							shared.adapterFactory.dispose();
+							shared.adapterFactory = null;
+						}
+						modelSet.dispose();
+						modelSet = null;
+						// remove shared properties from project
+						try {
+							project.setSessionProperty(PROPERTY_SHARED, null);
+						} catch (CoreException e) {
+							// ignore
+						}
 					}
 				}
+				shared = null;
 			}
 		};
 	}
