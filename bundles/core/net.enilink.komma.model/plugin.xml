@@ -42,6 +42,7 @@
    <extension
          point="net.enilink.komma.model.uriMapRules">
       <rule
+            ifPattern="^(file|platform)"
             pattern="^.*$"
             priority="50"
             replacement="$0.owl"
