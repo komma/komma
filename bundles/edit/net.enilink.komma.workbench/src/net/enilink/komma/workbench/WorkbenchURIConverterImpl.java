@@ -102,12 +102,13 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 			ontology = ModelUtil.findOntology(file.getContents(), fileURI
 					.toString(), ModelUtil.mimeType(ModelUtil
 					.contentDescription(this, fileURI)));
-			if (ontology != null) {
-				SimpleURIMapRule rule = new SimpleURIMapRule(ontology,
-						fileURI.toString());
-				ruleMap.put(fileURI, rule);
-				getURIMapRules().addRule(rule);
+			if (ontology == null) {
+				ontology = fileURI.toString();
 			}
+			SimpleURIMapRule rule = new SimpleURIMapRule(ontology,
+					fileURI.toString());
+			ruleMap.put(fileURI, rule);
+			getURIMapRules().addRule(rule);
 		} catch (Exception e) {
 			KommaWorkbenchPlugin.INSTANCE.log(e);
 		}
