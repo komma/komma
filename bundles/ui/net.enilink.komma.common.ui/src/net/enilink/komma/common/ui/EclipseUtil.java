@@ -3,14 +3,14 @@ package net.enilink.komma.common.ui;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IEditorInput;
 import org.osgi.framework.Bundle;
-
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
 
 public class EclipseUtil {
 	static final Class<?> FILE_CLASS;

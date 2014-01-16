@@ -99,10 +99,9 @@ public class URIEditorInput implements IEditorInput, IPersistableElement {
 	public String getName() {
 		if (name == null) {
 			URI uri = getURI();
-			return URIImpl
-					.decode(uri.isHierarchical() && uri.lastSegment() != null ? uri
-							.lastSegment()
-							: uri.toString());
+			return URIImpl.decode(uri.isHierarchical()
+					&& uri.lastSegment() != null ? uri.lastSegment() : uri
+					.toString());
 		} else {
 			return name;
 		}
@@ -175,8 +174,8 @@ public class URIEditorInput implements IEditorInput, IPersistableElement {
 		public static Object getAdapter(Class<?> adapter, URI uri) {
 			if ((adapter == IFile.class || adapter == IResource.class)
 					&& uri.isPlatformResource()) {
-				return ResourcesPlugin.getWorkspace().getRoot().getFile(
-						new Path(uri.toPlatformString(true)));
+				return ResourcesPlugin.getWorkspace().getRoot()
+						.getFile(new Path(uri.toPlatformString(true)));
 			} else {
 				return null;
 			}
@@ -184,8 +183,8 @@ public class URIEditorInput implements IEditorInput, IPersistableElement {
 
 		public static boolean exists(URI uri) {
 			if (uri.isPlatformResource()) {
-				return ResourcesPlugin.getWorkspace().getRoot().getFile(
-						new Path(uri.toPlatformString(true))).exists();
+				return ResourcesPlugin.getWorkspace().getRoot()
+						.getFile(new Path(uri.toPlatformString(true))).exists();
 			} else {
 				return false;
 			}
