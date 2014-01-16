@@ -54,6 +54,9 @@ public class ObjectSerializationConverter<T> implements IConverter<T> {
 	@Inject
 	private ILiteralFactory lf;
 
+	@Inject
+	private ClassLoader cl;
+
 	private Class<T> type;
 
 	private URI datatype;
@@ -79,7 +82,17 @@ public class ObjectSerializationConverter<T> implements IConverter<T> {
 		try {
 			byte[] decoded = decode(label);
 			InputStream is = new ByteArrayInputStream(decoded);
-			ObjectInputStream ois = new ObjectInputStream(is);
+			ObjectInputStream ois = new ObjectInputStream(is) {
+				protected java.lang.Class<?> resolveClass(
+						java.io.ObjectStreamClass desc)
+						throws java.io.IOException, ClassNotFoundException {
+					try {
+						return cl.loadClass(desc.getName());
+					} catch (ClassNotFoundException e) {
+						return super.resolveClass(desc);
+					}
+				}
+			};
 			Object result = ois.readObject();
 			ois.close();
 			return type.cast(result);
@@ -98,7 +111,7 @@ public class ObjectSerializationConverter<T> implements IConverter<T> {
 			oos.close();
 			byte[] byteArray = bos.toByteArray();
 			String label = encode(byteArray);
-			return lf.createLiteral(object, label, datatype, null);
+			return lf.createLiteral(label, datatype, null);
 		} catch (ObjectConversionException e) {
 			throw e;
 		} catch (Exception e) {
