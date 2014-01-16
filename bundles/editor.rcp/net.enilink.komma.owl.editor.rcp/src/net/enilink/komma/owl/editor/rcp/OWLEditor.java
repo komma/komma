@@ -169,8 +169,13 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 			}
 
 			protected IModelSet createModelSet() {
-				project = getEditorInput() instanceof IFileEditorInput ? ((IFileEditorInput) getEditorInput())
-						.getFile().getProject() : null;
+				if (getEditorInput() instanceof IFileEditorInput) {
+					project = ((IFileEditorInput) getEditorInput()).getFile()
+							.getProject();
+				} else {
+					project = (IProject) getEditorInput().getAdapter(
+							IProject.class);
+				}
 				IModelSet modelSet = null;
 				try {
 					shared = (Shared) project
