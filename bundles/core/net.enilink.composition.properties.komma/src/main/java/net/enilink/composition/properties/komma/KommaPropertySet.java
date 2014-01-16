@@ -103,20 +103,21 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 	 * @return <code>true</code>
 	 */
 	public boolean add(E o) {
+		refresh();
 		try {
 			manager.add(new Statement(bean, property, convertInstance(o)));
 		} catch (KommaException e) {
 			throw new PropertyException(e);
 		}
-		refreshEntity();
+		refresh(bean);
 		refresh(o);
 		return true;
 	}
 
 	public boolean addAll(Collection<? extends E> c) {
+		refresh();
 		boolean modified = false;
 		ITransaction transaction = manager.getTransaction();
-
 		try {
 			boolean active = transaction.isActive();
 			if (!active) {
@@ -139,15 +140,15 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		} catch (KommaException e) {
 			throw new PropertyException(e);
 		}
-
-		refreshEntity();
+		refresh(bean);
 		return modified;
 	}
 
 	public void clear() {
 		manager.remove(new Statement(bean, property, null));
 		refreshCache();
-		refreshEntity();
+		refresh();
+		refresh(bean);
 	}
 
 	protected boolean containsWithoutCache(Object o) {
@@ -496,20 +497,16 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		}
 	}
 
-	protected void refreshEntity() {
-		refresh();
-		refresh(bean);
-	}
-
 	/**
 	 * This method always returns <code>true</code>
 	 * 
 	 * @return <code>true</code>
 	 */
 	public boolean remove(Object o) {
+		refresh();
 		manager.remove(new Statement(bean, property, convertInstance(o)));
 		refresh(o);
-		refreshEntity();
+		refresh(bean);
 		return true;
 	}
 
@@ -517,7 +514,6 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		boolean modified = false;
 		try {
 			ITransaction transaction = manager.getTransaction();
-
 			boolean active = transaction.isActive();
 			if (!active) {
 				transaction.begin();
@@ -540,15 +536,15 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 			throw new PropertyException(e);
 		}
 		refreshCache();
-		refreshEntity();
+		refresh(bean);
 		return modified;
 	}
 
 	public boolean retainAll(Collection<?> c) {
+		refresh();
 		boolean modified = false;
 		try {
 			ITransaction transaction = manager.getTransaction();
-
 			boolean active = transaction.isActive();
 			if (!active) {
 				transaction.begin();
@@ -559,7 +555,6 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 					while (e.hasNext()) {
 						if (!c.contains(e.next())) {
 							remove(e);
-
 							modified = true;
 						}
 					}
@@ -578,7 +573,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 			throw new PropertyException(e);
 		}
 		refreshCache();
-		refreshEntity();
+		refresh(bean);
 		return modified;
 	}
 
@@ -591,9 +586,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 			return;
 		}
 		Set<E> c = new HashSet<E>(set);
-
 		ITransaction transaction = manager.getTransaction();
-
 		try {
 			boolean active = transaction.isActive();
 			if (!active) {
@@ -628,7 +621,6 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 			clear();
 		} else {
 			ITransaction transaction = manager.getTransaction();
-
 			try {
 				boolean active = transaction.isActive();
 				if (!active) {
