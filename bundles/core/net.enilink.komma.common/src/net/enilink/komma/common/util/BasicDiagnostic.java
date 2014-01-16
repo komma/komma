@@ -21,9 +21,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.core.runtime.IStatus;
-
 import net.enilink.komma.common.AbstractKommaPlugin;
+import net.enilink.komma.common.CommonPlugin;
+
+import org.eclipse.core.runtime.IStatus;
 
 /**
  * A basic implementation of a diagnostic that that also acts as a chain.
@@ -183,8 +184,7 @@ public class BasicDiagnostic implements Diagnostic, DiagnosticChain {
 			severity = OK;
 			for (Diagnostic child : children) {
 				int childSeverity = child instanceof BasicDiagnostic ? ((BasicDiagnostic) child)
-						.recomputeSeverity()
-						: child.getSeverity();
+						.recomputeSeverity() : child.getSeverity();
 				if (childSeverity > severity) {
 					severity = childSeverity;
 				}
@@ -437,15 +437,15 @@ public class BasicDiagnostic implements Diagnostic, DiagnosticChain {
 	 * @param throwable
 	 * @return {@link Diagnostic}
 	 */
-	public static Diagnostic toDiagnostic(Throwable throwable) {
+	public static Diagnostic toDiagnostic(Throwable throwable, Object... data) {
 		if (throwable instanceof DiagnosticException) {
 			return ((DiagnosticException) throwable).getDiagnostic();
 		} else if (throwable instanceof WrappedException) {
-			return toDiagnostic(throwable.getCause());
+			return toDiagnostic(throwable.getCause(), data);
 		}
 
 		if (AbstractKommaPlugin.IS_ECLIPSE_RUNNING) {
-			Diagnostic diagnostic = EclipseHelper.toDiagnostic(throwable);
+			Diagnostic diagnostic = EclipseHelper.toDiagnostic(throwable, data);
 			if (diagnostic != null) {
 				return diagnostic;
 			}
@@ -460,20 +460,22 @@ public class BasicDiagnostic implements Diagnostic, DiagnosticChain {
 			message = message + ": " + throwable.getLocalizedMessage();
 		}
 
+		Object[] diagnosticData = Arrays.copyOf(data, data.length + 1);
+		diagnosticData[diagnosticData.length - 1] = throwable;
 		BasicDiagnostic basicDiagnostic = new BasicDiagnostic(Diagnostic.ERROR,
-				"org.eclipse.emf.common", 0, message,
-				new Object[] { throwable });
+				CommonPlugin.PLUGIN_ID, 0, message, diagnosticData);
 
 		if (throwable.getCause() != null && throwable.getCause() != throwable) {
 			throwable = throwable.getCause();
-			basicDiagnostic.add(toDiagnostic(throwable));
+			basicDiagnostic.add(toDiagnostic(throwable, data));
 		}
 
 		return basicDiagnostic;
 	}
 
 	private static class EclipseHelper {
-		public static Diagnostic toDiagnostic(Throwable throwable) {
+		public static Diagnostic toDiagnostic(Throwable throwable,
+				Object... data) {
 			if (throwable instanceof org.eclipse.core.runtime.CoreException) {
 				IStatus status = ((org.eclipse.core.runtime.CoreException) throwable)
 						.getStatus();
@@ -482,7 +484,7 @@ public class BasicDiagnostic implements Diagnostic, DiagnosticChain {
 				Throwable cause = throwable.getCause();
 				if (cause != null && cause != throwable) {
 					wrapperDiagnostic.basicGetChildren().add(
-							BasicDiagnostic.toDiagnostic(cause));
+							BasicDiagnostic.toDiagnostic(cause, data));
 				}
 				return wrapperDiagnostic;
 			}
