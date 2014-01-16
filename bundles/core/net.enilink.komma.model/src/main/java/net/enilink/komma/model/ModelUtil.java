@@ -286,7 +286,7 @@ public class ModelUtil {
 		if (mimeType == null && !in.markSupported()) {
 			in = new BufferedInputStream(in);
 		}
-		final org.openrdf.model.URI[] ontology = { null };
+		final String[] ontology = { null };
 		RDFParser parser = Rio.createParser(determineFormat(mimeType, in));
 		parser.setRDFHandler(new RDFHandler() {
 			@Override
@@ -301,19 +301,20 @@ public class ModelUtil {
 						&& org.openrdf.model.vocabulary.OWL.ONTOLOGY
 								.equals(stmt.getObject())) {
 					if (stmt.getSubject() instanceof org.openrdf.model.URI) {
-						ontology[0] = (org.openrdf.model.URI) stmt.getSubject();
+						ontology[0] = stmt.getSubject().stringValue();
+						throw new RDFHandlerException("found ontology URI");
 					}
-				}
-
-				if (ontology[0] != null) {
-					throw new RDFHandlerException("found ontology URI");
 				}
 			}
 
 			@Override
 			public void handleNamespace(String prefx, String uri)
 					throws RDFHandlerException {
-
+				if (prefx.length() == 0) {
+					// use empty prefix as fallback
+					ontology[0] = URIImpl.createURI(uri).trimFragment()
+							.toString();
+				}
 			}
 
 			@Override
@@ -335,10 +336,7 @@ public class ModelUtil {
 			in.close();
 		}
 
-		if (ontology[0] != null) {
-			return ontology[0].stringValue();
-		}
-		return null;
+		return ontology[0];
 	}
 
 	public static String mimeType(IContentDescription contentDescription) {
