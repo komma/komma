@@ -54,7 +54,6 @@ public class EditUIMarkerHelper extends MarkerHelper {
 				return getFile(URIImpl.createURI(location));
 			}
 		}
-
 		return super.getFile(datum);
 	}
 
@@ -73,8 +72,9 @@ public class EditUIMarkerHelper extends MarkerHelper {
 				if (element instanceof IModel.IDiagnostic) {
 					IModel.IDiagnostic modelDiagnostic = (IModel.IDiagnostic) element;
 					if (modelDiagnostic.getLocation() != null) {
-						marker.setAttribute(IMarker.LOCATION, KommaEditUIPlugin
-								.getPlugin().getString(
+						marker.setAttribute(
+								IMarker.LOCATION,
+								KommaEditUIPlugin.getPlugin().getString(
 										"_UI_MarkerLocation",
 
 										Integer.toString(modelDiagnostic

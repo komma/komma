@@ -534,15 +534,14 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 			BasicDiagnostic basicDiagnostic = new BasicDiagnostic(
 					Diagnostic.ERROR, KommaEditUIPlugin.PLUGIN_ID, 0,
 					getString("_UI_CreateModelError_message", model.getURI()),
-					new Object[] { exception == null ? (Object) model
-							: exception });
+					new Object[] { model, exception });
 			basicDiagnostic.merge(ModelUtil.computeDiagnostic(model, true));
 			return basicDiagnostic;
 		} else if (exception != null) {
 			return new BasicDiagnostic(Diagnostic.ERROR,
 					KommaEditUIPlugin.PLUGIN_ID, 0, getString(
 							"_UI_CreateModelError_message", model.getURI()),
-					new Object[] { exception });
+					new Object[] { model, exception });
 		} else {
 			return Diagnostic.OK_INSTANCE;
 		}
@@ -814,7 +813,8 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 	protected void doSaveAs(URI uri, IEditorInput editorInput) {
 		URI oldResourceURI = EditUIUtil.getURI(editor.getEditorInput());
 		URI oldModelURI = model.getURI();
-		if (oldModelURI.equals(oldResourceURI)) {
+		if (oldModelURI.isPlatformResource()
+				&& oldModelURI.equals(oldResourceURI)) {
 			// rename model
 			model.setURI(uri);
 		}
@@ -1226,8 +1226,9 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 	 * 
 	 */
 	public boolean isDirty() {
-		return ((BasicCommandStack) getEditingDomain().getCommandStack())
-				.isSaveNeeded();
+		return getEditingDomain() != null
+				&& ((BasicCommandStack) getEditingDomain().getCommandStack())
+						.isSaveNeeded();
 	}
 
 	/**
@@ -1319,7 +1320,6 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 					diagnostic.add(childDiagnostic);
 				}
 			}
-
 			if (markerHelper.hasMarkers(modelSet)) {
 				markerHelper.deleteMarkers(modelSet);
 			}

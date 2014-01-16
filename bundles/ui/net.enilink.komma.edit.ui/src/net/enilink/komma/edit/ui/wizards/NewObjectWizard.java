@@ -123,7 +123,7 @@ abstract public class NewObjectWizard extends Wizard {
 											.getNamespace(prefix);
 								}
 								if (ns != null) {
-									name = ns.appendFragment(localPart);
+									name = ns.appendLocalPart(localPart);
 								} else {
 									errorMsg = "Unknown prefix";
 								}

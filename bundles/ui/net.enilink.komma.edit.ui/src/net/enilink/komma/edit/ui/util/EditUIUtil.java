@@ -19,6 +19,7 @@ package net.enilink.komma.edit.ui.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,11 +31,13 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
+import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.base.ExtensibleURIConverter;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
@@ -46,11 +49,54 @@ import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorRegistry;
+import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 public class EditUIUtil {
+	public static class URIEditorInputWithProject extends URIEditorInput {
+		IProject project;
+
+		public URIEditorInputWithProject(URI uri, IProject project) {
+			super(uri);
+			this.project = project;
+		}
+
+		public URIEditorInputWithProject(IMemento memento) {
+			super(memento);
+		}
+
+		@Override
+		protected void loadState(IMemento memento) {
+			super.loadState(memento);
+			String projectName = memento.getString("project");
+			if (AbstractKommaPlugin.IS_RESOURCES_BUNDLE_AVAILABLE) {
+				project = ResourcesPlugin.getWorkspace().getRoot()
+						.getProject(projectName);
+			}
+		}
+
+		@Override
+		public void saveState(IMemento memento) {
+			super.saveState(memento);
+			memento.putString("project", project.getName());
+		}
+
+		@Override
+		public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+			if (IProject.class.equals(adapter)) {
+				return project;
+			}
+			return super.getAdapter(adapter);
+		}
+
+		@Override
+		protected String getBundleSymbolicName() {
+			return KommaEditUIPlugin.PLUGIN_ID;
+		}
+	}
+
 	/**
 	 * Opens the default editor for the resource. This method only works if the
 	 * model's URI is a platform resource URI.
@@ -59,10 +105,22 @@ public class EditUIUtil {
 			throws PartInitException {
 		URI uri = resource.getURI();
 		if (uri != null) {
+			IProject project = null;
 			URI normalizedURI = uri;
 			if (resource instanceof IObject) {
-				normalizedURI = ((IObject) resource).getModel().getModelSet()
-						.getURIConverter().normalize(uri);
+				IModelSet modelSet = ((IObject) resource).getModel()
+						.getModelSet();
+				normalizedURI = modelSet.getURIConverter().normalize(uri);
+				try {
+					Method getProject = modelSet.getClass().getMethod(
+							"getProject");
+					if (IProject.class.isAssignableFrom(getProject
+							.getReturnType())) {
+						project = (IProject) getProject.invoke(modelSet);
+					}
+				} catch (Exception e) {
+					// method does not exists
+				}
 			}
 			IEditorInput editorInput = null;
 			if (normalizedURI.isPlatformResource()) {
@@ -75,7 +133,11 @@ public class EditUIUtil {
 				}
 			}
 			if (editorInput == null) {
-				editorInput = new URIEditorInput(uri);
+				if (project == null) {
+					editorInput = new URIEditorInput(uri);
+				} else {
+					editorInput = new URIEditorInputWithProject(uri, project);
+				}
 			}
 			IEditorDescriptor editorDesc = getDefaultEditor(normalizedURI
 					.toString());

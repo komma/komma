@@ -33,6 +33,7 @@ public abstract class KommaFormEditor extends FormEditor implements
 
 	@Override
 	public void dispose() {
+		super.dispose();
 		if (editorSupport != null) {
 			// trick to dispose editor support after action bars are disposed
 			final KommaEditorSupport<?> support = editorSupport;
@@ -44,7 +45,6 @@ public abstract class KommaFormEditor extends FormEditor implements
 			});
 			editorSupport = null;
 		}
-		super.dispose();
 	}
 
 	/**
@@ -127,7 +127,6 @@ public abstract class KommaFormEditor extends FormEditor implements
 		setSite(site);
 		setInputWithNotify(editorInput);
 		setPartName(editorInput.getName());
-
 		editorSupport.init();
 	}
 
@@ -137,7 +136,7 @@ public abstract class KommaFormEditor extends FormEditor implements
 	 */
 	@Override
 	public boolean isDirty() {
-		return editorSupport.isDirty();
+		return editorSupport != null && editorSupport.isDirty();
 	}
 
 	/**
@@ -145,7 +144,7 @@ public abstract class KommaFormEditor extends FormEditor implements
 	 */
 	@Override
 	public boolean isSaveAsAllowed() {
-		return editorSupport.isSaveAsAllowed();
+		return editorSupport != null && editorSupport.isSaveAsAllowed();
 	}
 
 	/**

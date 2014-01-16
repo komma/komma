@@ -83,7 +83,7 @@ public class CreateChildAction extends StaticSelectionCommandAction {
 			ITreeContentProvider treeContentProvider = null;
 			if (childDescriptor.requiresType()) {
 				treeInput = model.getManager().find(
-						OWL.NAMESPACE_URI.appendFragment("Thing"));
+						OWL.NAMESPACE_URI.appendLocalPart("Thing"));
 				treeContentProvider = new AdapterFactoryContentProvider(
 						getAdapterFactory());
 				labelProvider = new AdapterFactoryLabelProvider(
