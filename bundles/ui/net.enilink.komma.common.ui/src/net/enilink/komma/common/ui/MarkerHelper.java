@@ -35,7 +35,6 @@ import net.enilink.komma.core.URI;
  * to simplify the creation of markers using the information described in
  * {@link Diagnostic}s.
  * 
- * @since 2.2.0
  */
 public class MarkerHelper {
 	protected String getMarkerID() {
@@ -85,22 +84,28 @@ public class MarkerHelper {
 	 * @param diagnostic
 	 * @throws CoreException
 	 */
-	public void createMarkers(Diagnostic diagnostic) throws CoreException {
-		if (diagnostic.getChildren().isEmpty()) {
-			createMarkers(getFile(diagnostic), diagnostic, null);
-		} else if (diagnostic.getMessage() == null) {
+	public boolean createMarkers(Diagnostic diagnostic) throws CoreException {
+		boolean created = false;
+		if (diagnostic.getMessage() == null) {
 			for (Diagnostic childDiagnostic : diagnostic.getChildren()) {
-				createMarkers(childDiagnostic);
+				created |= createMarkers(childDiagnostic);
 			}
 		} else {
 			for (Diagnostic childDiagnostic : diagnostic.getChildren()) {
-				createMarkers(getFile(childDiagnostic), childDiagnostic,
-						diagnostic);
+				created |= createMarkers(getFile(childDiagnostic),
+						childDiagnostic, diagnostic);
 			}
 		}
+		if (!created) {
+			IResource resource = getFile(diagnostic);
+			if (resource != null) {
+				created = createMarkers(resource, diagnostic, null);
+			}
+		}
+		return created;
 	}
 
-	protected void createMarkers(IResource resource, Diagnostic diagnostic,
+	protected boolean createMarkers(IResource resource, Diagnostic diagnostic,
 			Diagnostic parentDiagnostic) throws CoreException {
 		if (resource != null && resource.exists()) {
 			IMarker marker = resource.createMarker(getMarkerID());
@@ -119,7 +124,9 @@ public class MarkerHelper {
 			}
 
 			adjustMarker(marker, diagnostic, parentDiagnostic);
+			return true;
 		}
+		return false;
 	}
 
 	/**
