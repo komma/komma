@@ -642,10 +642,8 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 
 		Diagnostic diagnostic = analyzeModelProblems(model, exception);
 		if (diagnostic.getSeverity() != Diagnostic.OK) {
-			modelToDiagnosticMap.put(model,
-					analyzeModelProblems(model, exception));
+			modelToDiagnosticMap.put(model, diagnostic);
 		}
-
 		modelSet.addMetaDataListener(problemIndicationListener);
 	}
 

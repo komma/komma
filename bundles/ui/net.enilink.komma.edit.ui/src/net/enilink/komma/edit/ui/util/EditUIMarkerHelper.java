@@ -76,7 +76,6 @@ public class EditUIMarkerHelper extends MarkerHelper {
 								IMarker.LOCATION,
 								KommaEditUIPlugin.getPlugin().getString(
 										"_UI_MarkerLocation",
-
 										Integer.toString(modelDiagnostic
 												.getLine()),
 										Integer.toString(modelDiagnostic
