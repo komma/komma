@@ -590,21 +590,25 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	 *            the exception thrown from the resource while loading.
 	 * @see #demandLoadHelper(IModel)
 	 */
-	protected void handleDemandLoadException(IModel model, IOException exception)
-			throws RuntimeException {
+	protected void handleDemandLoadException(IModel model, IOException exception) {
 		String location = model.getURI() == null ? null : model.getURI()
 				.toString();
 		Exception cause = exception instanceof IModel.IOWrappedException ? (Exception) exception
 				.getCause() : exception;
 		DiagnosticWrappedException wrappedException = new DiagnosticWrappedException(
 				location, cause);
-
 		if (model.getErrors().isEmpty()) {
-			model.getErrors()
-					.add(exception instanceof IModel.IDiagnostic ? (IModel.IDiagnostic) exception
-							: wrappedException);
+			try {
+				model.getErrors()
+						.add(exception instanceof IModel.IDiagnostic ? (IModel.IDiagnostic) exception
+								: wrappedException);
+			} catch (Exception e) {
+				// exception is not serializable
+				wrappedException = new DiagnosticWrappedException(location,
+						new RuntimeException(cause.getMessage()));
+				model.getErrors().add(wrappedException);
+			}
 		}
-
 		throw wrappedException;
 	}
 
@@ -621,8 +625,10 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		URI metaDataContext = getMetaDataContext();
 		if (metaDataContext != null) {
 			KommaModule module = new KommaModule();
-			// reuse module with model concepts and behaviours, but ignore its graphs
-			module.includeModule(getEntityManager().getFactory().getModule(), false);
+			// reuse module with model concepts and behaviours, but ignore its
+			// graphs
+			module.includeModule(getEntityManager().getFactory().getModule(),
+					false);
 			module.addWritableGraph(metaDataContext);
 			module.addReadableGraph(metaDataContext);
 			IEntityManager newMetaDataManager = modelSetInjector

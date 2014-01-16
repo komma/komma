@@ -59,8 +59,6 @@ import net.enilink.vocab.rdf.RDF;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.content.IContentDescription;
 
 import com.google.inject.ConfigurationException;
@@ -343,12 +341,11 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 								module.includeModule(importedModule);
 							}
 						} catch (Throwable e) {
-							ModelPlugin.logErrorStatus(
-									"Error while loading import: "
-											+ importedUri,
-									new Status(IStatus.WARNING,
-											ModelPlugin.PLUGIN_ID, 0, e
-													.getMessage(), e));
+							getErrors().add(
+									new DiagnosticWrappedException(getURI()
+											.toString(), new RuntimeException(
+											"Error while loading import: "
+													+ importedUri)));
 						}
 					}
 				} catch (Throwable e) {

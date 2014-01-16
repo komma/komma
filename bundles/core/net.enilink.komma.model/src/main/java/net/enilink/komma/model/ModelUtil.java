@@ -172,13 +172,13 @@ public class ModelUtil {
 			for (IModel.IDiagnostic modelDiagnostic : model.getErrors()) {
 				Diagnostic diagnostic = null;
 				if (modelDiagnostic instanceof Throwable) {
-					diagnostic = BasicDiagnostic
-							.toDiagnostic((Throwable) modelDiagnostic);
+					diagnostic = BasicDiagnostic.toDiagnostic(
+							(Throwable) modelDiagnostic, model);
 				} else {
 					diagnostic = new BasicDiagnostic(Diagnostic.ERROR,
-							"org.eclipse.emf.ecore.resource", 0,
-							modelDiagnostic.getMessage(),
-							new Object[] { modelDiagnostic });
+							ModelPlugin.PLUGIN_ID, 0,
+							modelDiagnostic.getMessage(), new Object[] { model,
+									modelDiagnostic });
 				}
 				basicDiagnostic.add(diagnostic);
 			}
@@ -187,13 +187,13 @@ public class ModelUtil {
 				for (IModel.IDiagnostic modelDiagnostic : model.getWarnings()) {
 					Diagnostic diagnostic = null;
 					if (modelDiagnostic instanceof Throwable) {
-						diagnostic = BasicDiagnostic
-								.toDiagnostic((Throwable) modelDiagnostic);
+						diagnostic = BasicDiagnostic.toDiagnostic(
+								(Throwable) modelDiagnostic, model);
 					} else {
 						diagnostic = new BasicDiagnostic(Diagnostic.WARNING,
-								"org.eclipse.emf.ecore.resource", 0,
-								modelDiagnostic.getMessage(),
-								new Object[] { modelDiagnostic });
+								ModelPlugin.PLUGIN_ID, 0,
+								modelDiagnostic.getMessage(), new Object[] {
+										model, modelDiagnostic });
 					}
 					basicDiagnostic.add(diagnostic);
 				}
