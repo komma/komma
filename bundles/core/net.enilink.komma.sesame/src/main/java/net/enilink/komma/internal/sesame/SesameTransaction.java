@@ -54,7 +54,7 @@ public class SesameTransaction implements ITransaction {
 		try {
 			if (isActive())
 				throw new IllegalStateException("Transaction already started");
-			dm.getConnection().setAutoCommit(false);
+			dm.getConnection().begin();
 		} catch (RepositoryException e) {
 			throw new KommaException(e);
 		}
@@ -66,7 +66,6 @@ public class SesameTransaction implements ITransaction {
 				throw new IllegalStateException(
 						"Transaction has not been started");
 			dm.getConnection().commit();
-			dm.getConnection().setAutoCommit(true);
 			rollbackOnly = false;
 
 			if (changeSupport.isEnabled(dm)) {
@@ -83,7 +82,6 @@ public class SesameTransaction implements ITransaction {
 				throw new IllegalStateException(
 						"Transaction has not been started");
 			dm.getConnection().rollback();
-			dm.getConnection().setAutoCommit(true);
 			rollbackOnly = false;
 
 			if (changeSupport.isEnabled(dm)) {
@@ -108,7 +106,7 @@ public class SesameTransaction implements ITransaction {
 
 	public boolean isActive() {
 		try {
-			return !dm.getConnection().isAutoCommit();
+			return dm.getConnection().isActive();
 		} catch (RepositoryException e) {
 			throw new KommaException(e);
 		}
