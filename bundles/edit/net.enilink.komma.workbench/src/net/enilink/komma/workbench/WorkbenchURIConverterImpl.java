@@ -97,21 +97,21 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 		if (!supportedExtensions.contains(fileURI.fileExtension())) {
 			return;
 		}
-		String ontology;
+		String ontology = null;
 		try {
 			ontology = ModelUtil.findOntology(file.getContents(), fileURI
 					.toString(), ModelUtil.mimeType(ModelUtil
 					.contentDescription(this, fileURI)));
-			if (ontology == null) {
-				ontology = fileURI.toString();
-			}
-			SimpleURIMapRule rule = new SimpleURIMapRule(ontology,
-					fileURI.toString());
-			ruleMap.put(fileURI, rule);
-			getURIMapRules().addRule(rule);
 		} catch (Exception e) {
-			KommaWorkbenchPlugin.INSTANCE.log(e);
+			// ignore parse exception
 		}
+		if (ontology == null) {
+			ontology = fileURI.toString();
+		}
+		SimpleURIMapRule rule = new SimpleURIMapRule(ontology,
+				fileURI.toString());
+		ruleMap.put(fileURI, rule);
+		getURIMapRules().addRule(rule);
 	}
 
 	public List<IContainer> getInputContainers() {
