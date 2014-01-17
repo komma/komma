@@ -37,9 +37,16 @@ Export-Package: net.enilink.commons.util,
  org.apache.commons.compress.compressors.gzip;version="1.4.1",
  org.apache.commons.compress.compressors.pack200;version="1.4.1",
  org.apache.commons.compress.compressors.xz;version="1.4.1",
- org.apache.commons.compress.utils;version="1.4.1"
+ org.apache.commons.compress.utils;version="1.4.1",
+ org.apache.commons.io;version="2.4.0",
+ org.apache.commons.io.comparator;version="2.4.0",
+ org.apache.commons.io.filefilter;version="2.4.0",
+ org.apache.commons.io.input;version="2.4.0",
+ org.apache.commons.io.monitor;version="2.4.0",
+ org.apache.commons.io.output;version="2.4.0"
 Bundle-ClassPath: .,
  lib/commons-codec-1.6.jar,
  lib/commons-collections-3.1.jar,
- lib/commons-compress-1.4.1.jar
+ lib/commons-compress-1.4.1.jar,
+ lib/commons-io-2.4.jar
 Bundle-Activator: net.enilink.commons.util.CommonsUtilPlugin
