@@ -3,19 +3,21 @@
       id="net.enilink.komma.edit.feature"
       label="KOMMA - Editing Framework"
       version="1.0.0.qualifier"
-      provider-name="Fraunhofer IWU">
+      provider-name="Fraunhofer IWU"
+      license-feature="net.enilink.komma.license"
+      license-feature-version="1.0.0.qualifier">
 
-   <description url="http://www.example.com/description">
-      [Enter Feature Description here.]
+   <description>
+      KOMMA - Base components for editing support
    </description>
 
-   <copyright url="http://www.example.com/copyright">
-      [Enter Copyright Description here.]
+   <copyright>
+      Copyright (c) 2010 Fraunhofer IWU and others.
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the Eclipse Public License v1.0 
+which accompanies this distribution, and is available at
+http://www.eclipse.org/legal/epl-v10.html
    </copyright>
-
-   <license url="http://www.example.com/license">
-      [Enter License Description here.]
-   </license>
 
    <plugin
          id="net.enilink.komma.workbench"
