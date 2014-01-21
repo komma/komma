@@ -12,13 +12,12 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.internal.change.AddChange;
-import net.enilink.komma.dm.internal.change.OverrideNamespaceChange;
+import net.enilink.komma.dm.internal.change.NamespaceChange;
 import net.enilink.komma.dm.internal.change.RemoveChange;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IValue;
-import net.enilink.komma.core.URI;
 
 /**
  * Tracks changes to an {@link IDataManager} by implementing the interface
@@ -27,7 +26,6 @@ import net.enilink.komma.core.URI;
  */
 public class DataChangeTracker implements IDataChangeSupport,
 		IDataChangeTracker {
-	private final static IReference[] NULL_CONTEXT = { null };
 	protected Map<IDataManager, List<IDataChange>> activeDataManagers = new HashMap<IDataManager, List<IDataChange>>();
 	protected WeakHashMap<IDataManager, Object> disabledDataManagers = new WeakHashMap<IDataManager, Object>();
 
@@ -37,14 +35,8 @@ public class DataChangeTracker implements IDataChangeSupport,
 	private ThreadLocal<Boolean> disabled = new ThreadLocal<Boolean>();
 
 	@Override
-	public void add(IDataManager dm, IReference subj, IReference pred,
-			IValue obj, IReference... contexts) {
-		if (contexts == null || contexts.length == 0) {
-			contexts = NULL_CONTEXT;
-		}
-		for (IReference context : contexts) {
-			addChange(dm, new AddChange(subj, pred, obj, context));
-		}
+	public void add(IDataManager dm, IStatement stmt) {
+		addChange(dm, new AddChange(stmt));
 	}
 
 	private void addChange(IDataManager dm, IDataChange change) {
@@ -123,14 +115,8 @@ public class DataChangeTracker implements IDataChangeSupport,
 	}
 
 	@Override
-	public void remove(IDataManager dm, IReference subj, IReference pred,
-			IValue obj, IReference... contexts) {
-		if (contexts == null || contexts.length == 0) {
-			contexts = NULL_CONTEXT;
-		}
-		for (IReference context : contexts) {
-			addChange(dm, new RemoveChange(subj, pred, obj, context));
-		}
+	public void remove(IDataManager dm, IStatement stmt) {
+		addChange(dm, new RemoveChange(stmt));
 	}
 
 	@Override
@@ -144,7 +130,7 @@ public class DataChangeTracker implements IDataChangeSupport,
 
 	@Override
 	public void removeNamespace(IDataManager dm, String prefix, URI namespace) {
-		IDataChange change = new OverrideNamespaceChange(prefix, namespace,
+		IDataChange change = new NamespaceChange(prefix, namespace,
 				null);
 		addChange(dm, change);
 	}
@@ -180,7 +166,7 @@ public class DataChangeTracker implements IDataChangeSupport,
 	@Override
 	public void setNamespace(IDataManager dm, String prefix, URI oldNS,
 			URI newNS) {
-		IDataChange change = new OverrideNamespaceChange(prefix, oldNS, newNS);
+		IDataChange change = new NamespaceChange(prefix, oldNS, newNS);
 		addChange(dm, change);
 	}
 }

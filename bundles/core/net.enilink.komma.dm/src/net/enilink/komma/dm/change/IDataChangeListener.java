@@ -12,6 +12,16 @@ package net.enilink.komma.dm.change;
 
 import java.util.List;
 
+/**
+ * Listener interface for changes of statements or namespaces.
+ * 
+ */
 public interface IDataChangeListener {
+	/**
+	 * Called if some data changes occurred.
+	 * 
+	 * @param changes
+	 *            The changes of some data set
+	 */
 	void dataChanged(List<IDataChange> changes);
 }

@@ -5,12 +5,12 @@
  */
 package net.enilink.komma.dm.internal.change;
 
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.Statement;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.dm.change.IStatementChange;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IValue;
-import net.enilink.komma.core.Statement;
 
 /**
  * Command object for statements that are removed from the repository.
@@ -18,9 +18,9 @@ import net.enilink.komma.core.Statement;
  */
 public class RemoveChange extends Statement implements IDataChange,
 		IStatementChange {
-	public RemoveChange(IReference subj, IReference pred, IValue obj,
-			IReference ctx) {
-		super(subj, pred, obj, ctx);
+	public RemoveChange(IStatement stmt) {
+		super(stmt.getSubject(), stmt.getPredicate(), stmt.getObject(), stmt
+				.getContext(), stmt.isInferred());
 	}
 
 	protected IReference[] getModifyContexts() {

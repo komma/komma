@@ -5,12 +5,12 @@
  */
 package net.enilink.komma.dm.internal.change;
 
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.Statement;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.dm.change.IStatementChange;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IValue;
-import net.enilink.komma.core.Statement;
 
 /**
  * Internal command object representing a statement being added to the
@@ -19,9 +19,9 @@ import net.enilink.komma.core.Statement;
  */
 public class AddChange extends Statement implements IDataChange,
 		IStatementChange {
-	public AddChange(IReference subj, IReference pred, IValue obj,
-			IReference ctx) {
-		super(subj, pred, obj, ctx);
+	public AddChange(IStatement stmt) {
+		super(stmt.getSubject(), stmt.getPredicate(), stmt.getObject(), stmt
+				.getContext(), stmt.isInferred());
 	}
 
 	protected IReference[] getModifyContexts() {

@@ -14,14 +14,14 @@ import net.enilink.komma.core.URI;
  * Saves a single change to the namespace.
  * 
  */
-public class OverrideNamespaceChange implements INamespaceChange, IDataChange {
+public class NamespaceChange implements INamespaceChange, IDataChange {
 	private URI newNS;
 
 	private URI oldNS;
 
 	private String prefix;
 
-	public OverrideNamespaceChange(String prefix, URI oldNS, URI newNS) {
+	public NamespaceChange(String prefix, URI oldNS, URI newNS) {
 		this.prefix = prefix;
 		this.oldNS = oldNS;
 		this.newNS = newNS;
