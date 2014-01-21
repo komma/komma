@@ -6,6 +6,24 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.enilink.commons.iterator.Filter;
+import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.komma.core.INamespace;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IStatementPattern;
+import net.enilink.komma.core.ITransaction;
+import net.enilink.komma.core.IValue;
+import net.enilink.komma.core.InferencingCapability;
+import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.Statement;
+import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.dm.IDataManagerQuery;
+import net.enilink.komma.dm.change.IDataChangeSupport;
+import net.enilink.komma.internal.sesame.result.SesameGraphResult;
+import net.enilink.komma.internal.sesame.result.SesameResult;
+import net.enilink.komma.sesame.SesameValueConverter;
+
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -20,23 +38,6 @@ import org.openrdf.repository.RepositoryException;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-
-import net.enilink.commons.iterator.Filter;
-import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.dm.IDataManager;
-import net.enilink.komma.dm.IDataManagerQuery;
-import net.enilink.komma.dm.change.IDataChangeSupport;
-import net.enilink.komma.internal.sesame.result.SesameGraphResult;
-import net.enilink.komma.internal.sesame.result.SesameResult;
-import net.enilink.komma.core.INamespace;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.IStatementPattern;
-import net.enilink.komma.core.ITransaction;
-import net.enilink.komma.core.IValue;
-import net.enilink.komma.core.InferencingCapability;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.sesame.SesameValueConverter;
 
 public class SesameRepositoryDataManager implements IDataManager {
 	private static final URI[] EMPTY_URIS = new URI[0];
@@ -81,6 +82,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 			Iterator<? extends IStatement> it = statements.iterator();
 
 			RepositoryConnection conn = getConnection();
+			boolean trackChanges = changeSupport.isEnabled(this);
 			while (it.hasNext()) {
 				IStatement stmt = it.next();
 
@@ -89,15 +91,21 @@ public class SesameRepositoryDataManager implements IDataManager {
 				Value object = valueConverter.toSesame((IValue) stmt
 						.getObject());
 
-				if (changeSupport.isEnabled(this)) {
+				if (trackChanges) {
 					if (!conn.hasStatement(subject, predicate, object, false,
 							readCtx)) {
-						changeSupport.add(this, stmt.getSubject(),
-								stmt.getPredicate(), (IValue) stmt.getObject(),
-								addContexts);
+						for (IReference ctx : addContexts) {
+							changeSupport.add(
+									this,
+									new Statement(stmt.getSubject(), stmt
+											.getPredicate(), stmt.getObject(),
+											ctx, stmt.isInferred()));
+						}
 					}
 				}
-				conn.add(subject, predicate, object, addCtx);
+				if (!stmt.isInferred()) {
+					conn.add(subject, predicate, object, addCtx);
+				}
 			}
 			if (changeSupport.isEnabled(this) && !getTransaction().isActive()) {
 				changeSupport.commit(this);
@@ -288,8 +296,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 		try {
 			String namespaceURI = getConnection().getNamespace(prefix);
 			if (namespaceURI != null) {
-				return net.enilink.komma.core.URIImpl
-						.createURI(namespaceURI);
+				return net.enilink.komma.core.URIImpl.createURI(namespaceURI);
 			}
 			return null;
 		} catch (Exception e) {
@@ -417,25 +424,45 @@ public class SesameRepositoryDataManager implements IDataManager {
 		URI[] removeContexts = toURI(contexts);
 		try {
 			RepositoryConnection conn = getConnection();
+			boolean trackChanges = changeSupport.isEnabled(this);
 			for (IStatementPattern stmt : statements) {
-				Resource subject = getResource(stmt.getSubject());
-				URI predicate = (URI) getResource(stmt.getPredicate());
-				Value object = valueConverter.toSesame((IValue) stmt
-						.getObject());
-				if (changeSupport.isEnabled(this)) {
-					for (IStatement existing : match(stmt.getSubject(),
-							stmt.getPredicate(), (IValue) stmt.getObject(),
-							false, contexts)) {
-						// pretend that statement was in changeCtx if no context
-						// is set
-						IReference[] changeContexts = existing.getContext() != null ? new IReference[] { existing
-								.getContext() } : contexts;
-						changeSupport.remove(this, existing.getSubject(),
-								existing.getPredicate(),
-								(IValue) existing.getObject(), changeContexts);
+				if (stmt instanceof IStatement
+						&& ((IStatement) stmt).isInferred()) {
+					// special handling for inferred statements
+					if (trackChanges) {
+						for (IReference ctx : contexts) {
+							changeSupport.remove(
+									this,
+									new Statement(stmt.getSubject(), stmt
+											.getPredicate(), stmt.getObject(),
+											ctx, true));
+						}
 					}
+				} else {
+					Resource subject = getResource(stmt.getSubject());
+					URI predicate = (URI) getResource(stmt.getPredicate());
+					Value object = valueConverter.toSesame((IValue) stmt
+							.getObject());
+					if (trackChanges) {
+						for (IStatement existing : match(stmt.getSubject(),
+								stmt.getPredicate(), (IValue) stmt.getObject(),
+								false, contexts)) {
+							// pretend that statement was in changeCtx if no
+							// context
+							// is set
+							IReference[] changeContexts = existing.getContext() != null ? new IReference[] { existing
+									.getContext() } : contexts;
+							for (IReference ctx : changeContexts) {
+								changeSupport.remove(this,
+										new Statement(existing.getSubject(),
+												existing.getPredicate(),
+												existing.getObject(), ctx,
+												existing.isInferred()));
+							}
+						}
+					}
+					conn.remove(subject, predicate, object, removeContexts);
 				}
-				conn.remove(subject, predicate, object, removeContexts);
 			}
 			if (changeSupport.isEnabled(this) && !getTransaction().isActive()) {
 				changeSupport.commit(this);
@@ -452,9 +479,10 @@ public class SesameRepositoryDataManager implements IDataManager {
 			if (changeSupport.isEnabled(this)) {
 				String namespace = getConnection().getNamespace(prefix);
 				if (namespace != null) {
-					changeSupport.removeNamespace(this, prefix,
-							net.enilink.komma.core.URIImpl
-									.createURI(namespace));
+					changeSupport
+							.removeNamespace(this, prefix,
+									net.enilink.komma.core.URIImpl
+											.createURI(namespace));
 				}
 			}
 
