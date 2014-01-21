@@ -15,26 +15,27 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
+import net.enilink.komma.common.command.AbstractCommand;
+import net.enilink.komma.common.command.AbstractCommand.INoChangeRecording;
+import net.enilink.komma.common.command.CommandResult;
+import net.enilink.komma.common.command.ICommand;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.ITransaction;
+import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.change.IChangeDescription;
+
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 
-import net.enilink.komma.common.command.AbstractCommand;
-import net.enilink.komma.common.command.CommandResult;
-import net.enilink.komma.common.command.ICommand;
-import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.change.IChangeDescription;
-import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.ITransaction;
-
 /**
- * A partial command implementation
- * that records the changes made by a subclass's direct manipulation of objects
- * via the metamodel's API. This simplifies the programming model for complex
- * commands (not requiring composition of set/add/remove commands) while still
- * providing automatic undo/redo support.
+ * A partial command implementation that records the changes made by a
+ * subclass's direct manipulation of objects via the metamodel's API. This
+ * simplifies the programming model for complex commands (not requiring
+ * composition of set/add/remove commands) while still providing automatic
+ * undo/redo support.
  * <p>
  * Subclasses are simply required to implement the {@link #doExecute()} method
  * to make the desired changes to the model. Note that, because changes are
@@ -43,9 +44,9 @@ import net.enilink.komma.core.ITransaction;
  * be undone).
  * </p>
  * 
- * @author Ken Wenzel
  */
-public class RecordingWrapperCommand extends AbstractCommand {
+public class RecordingWrapperCommand extends AbstractCommand implements
+		INoChangeRecording {
 	private IChangeDescription change;
 	private ICommand command;
 	private IEditingDomain domain;
@@ -89,7 +90,6 @@ public class RecordingWrapperCommand extends AbstractCommand {
 	@Override
 	public void dispose() {
 		super.dispose();
-
 		change = null;
 	}
 
@@ -105,8 +105,8 @@ public class RecordingWrapperCommand extends AbstractCommand {
 			IAdaptable info) throws ExecutionException {
 		IEditingDomain.Internal internalDomain = (IEditingDomain.Internal) domain;
 
-		Collection<?> affectedModels = new HashSet<Object>(command
-				.getAffectedResources(IModel.class));
+		Collection<?> affectedModels = new HashSet<Object>(
+				command.getAffectedResources(IModel.class));
 		List<ITransaction> startedTransactions = new ArrayList<ITransaction>(
 				affectedModels.size());
 		for (Object model : affectedModels) {
@@ -125,12 +125,9 @@ public class RecordingWrapperCommand extends AbstractCommand {
 		boolean rollback = true;
 		try {
 			internalDomain.getChangeRecorder().beginRecording();
-
 			IStatus status = command.execute(progressMonitor, info);
-
 			if (status.isOK()) {
 				rollback = false;
-
 				for (ITransaction transaction : startedTransactions) {
 					if (transaction.isActive()) {
 						transaction.commit();
@@ -167,7 +164,6 @@ public class RecordingWrapperCommand extends AbstractCommand {
 		if (status.isOK() && change != null) {
 			status = change.redo(progressMonitor, info);
 		}
-
 		return CommandResult.newCommandResult(status, command
 				.getCommandResult().getReturnValue());
 	}
@@ -188,7 +184,6 @@ public class RecordingWrapperCommand extends AbstractCommand {
 		if (status.isOK() && change != null) {
 			status = change.undo(progressMonitor, info);
 		}
-
 		return CommandResult.newCommandResult(status, command
 				.getCommandResult().getReturnValue());
 	}

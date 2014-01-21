@@ -21,19 +21,18 @@ import java.util.Collection;
 import java.util.List;
 
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.edit.KommaEditPlugin;
-import net.enilink.komma.em.concepts.IClass;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.URI;
+import net.enilink.vocab.rdfs.RDFS;
 
 /**
  * This adapter implementation provides reflective support that emulates the
@@ -45,13 +44,14 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 		IItemLabelProvider, IItemPropertySource, ISearchableItemProvider {
 
 	protected IResourceLocator resourceLocator;
-	protected Collection<IClass> supportedTypes;
+	protected Collection<? extends IReference> targetTypes;
 
 	public ReflectiveItemProvider(IAdapterFactory adapterFactory,
-			IResourceLocator resourceLocator, Collection<IClass> supportedTypes) {
+			IResourceLocator resourceLocator,
+			Collection<? extends IReference> targetTypes) {
 		super(adapterFactory);
 		this.resourceLocator = resourceLocator;
-		this.supportedTypes = supportedTypes;
+		this.targetTypes = targetTypes;
 	}
 
 	public IResourceLocator getResourceLocator() {
@@ -183,7 +183,7 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 
 	@Override
 	public Object getImage(Object object) {
-		for (IClass type : getTypes(object)) {
+		for (IReference type : getTypes(object)) {
 			try {
 				return overlayImage(
 						object,
@@ -204,8 +204,8 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 		}
 	}
 
-	protected Collection<? extends IClass> getTypes(Object object) {
-		return supportedTypes;
+	protected Collection<? extends IReference> getTypes(Object object) {
+		return targetTypes;
 	}
 
 	public String getText(Object object) {

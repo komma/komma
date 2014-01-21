@@ -34,11 +34,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-
-import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.komma.common.adapter.IAdapter;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
@@ -58,6 +53,9 @@ import net.enilink.komma.common.util.ExtensibleList;
 import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IList;
 import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.AddCommand;
 import net.enilink.komma.edit.command.CommandParameter;
@@ -81,9 +79,11 @@ import net.enilink.komma.model.IModelAware;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.URI;
+import net.enilink.vocab.owl.DatatypeProperty;
+
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * This adapter implementation provides a convenient reusable base for adapters

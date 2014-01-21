@@ -32,9 +32,7 @@ import net.enilink.komma.common.notify.NotificationSupport;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.edit.KommaEditPlugin;
-import net.enilink.komma.edit.provider.ComposedAdapterFactory.IDescriptor;
 import net.enilink.komma.em.concepts.IClass;
-import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.concepts.IResource;
 
 import com.google.inject.Inject;
@@ -386,7 +384,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 	protected Object internalAdapt(Object target, Object type) {
 		Object result = null;
 
-		if (target instanceof IClass || target instanceof IProperty) {
+		if (target instanceof IReference) {
 			URI uri = ((IReference) target).getURI();
 			if (uri != null) {
 				IAdapterFactory factory = getFactoryForTypes(Arrays.asList(

@@ -210,7 +210,6 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public Collection<?> getChildren(Object object) {
 		List<Object> children = new ArrayList<Object>();
 
