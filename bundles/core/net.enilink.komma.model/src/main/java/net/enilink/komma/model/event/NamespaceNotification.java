@@ -8,10 +8,9 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.internal.model.event;
+package net.enilink.komma.model.event;
 
 import net.enilink.komma.common.notify.INotification;
-import net.enilink.komma.model.event.INamespaceNotification;
 import net.enilink.komma.core.URI;
 
 /**

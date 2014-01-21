@@ -212,7 +212,6 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	 * documentation inherited
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public void fireNotifications(
 			Collection<? extends INotification> notifications) {
 		((INotificationBroadcaster<INotification>) getModelSet())

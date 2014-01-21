@@ -8,12 +8,13 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.internal.model.event;
+package net.enilink.komma.model.event;
 
 import net.enilink.komma.common.notify.INotification;
-import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.IObject;
 
 public class StatementNotification implements IStatementNotification {
 	private boolean add;
@@ -28,8 +29,28 @@ public class StatementNotification implements IStatementNotification {
 
 	private IReference subj;
 
+	public StatementNotification(boolean add, IReference subj, IReference pred,
+			Object obj) {
+		this(null, add, subj, pred, obj, null);
+	}
+
 	public StatementNotification(IModelSet modelSet, boolean add,
 			IReference subj, IReference pred, Object obj, IReference ctx) {
+		if (modelSet == null) {
+			IModel model;
+			if (subj instanceof IObject) {
+				model = ((IObject) subj).getModel();
+			} else if (obj instanceof IObject) {
+				model = ((IObject) obj).getModel();
+			} else {
+				throw new IllegalArgumentException(
+						"The argument modelSet may not be null.");
+			}
+			modelSet = model.getModelSet();
+			if (ctx == null) {
+				ctx = model.getURI();
+			}
+		}
 		this.modelSet = modelSet;
 		this.add = add;
 		this.subj = subj;
@@ -116,8 +137,8 @@ public class StatementNotification implements IStatementNotification {
 
 	@Override
 	public String toString() {
-		return new StringBuilder("[").append(getSubject()).append(", ").append(
-				getPredicate()).append(", ").append(getObject()).append("]")
-				.toString();
+		return new StringBuilder("[").append(getSubject()).append(", ")
+				.append(getPredicate()).append(", ").append(getObject())
+				.append("]").toString();
 	}
 }

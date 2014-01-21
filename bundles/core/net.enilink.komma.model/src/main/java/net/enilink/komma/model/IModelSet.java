@@ -17,25 +17,24 @@ import java.util.Set;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
-
-import com.google.inject.Injector;
-import com.google.inject.Module;
-
 import net.enilink.komma.common.adapter.IAdapterSet;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.INotifier;
 import net.enilink.komma.common.util.WrappedException;
-import net.enilink.komma.dm.IDataManagerFactory;
-import net.enilink.komma.dm.change.IDataChangeSupport;
-import net.enilink.komma.dm.change.IDataChangeTracker;
-import net.enilink.komma.model.base.ModelSetSupport;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.dm.IDataManagerFactory;
+import net.enilink.komma.dm.change.IDataChangeSupport;
+import net.enilink.komma.dm.change.IDataChangeTracker;
+import net.enilink.komma.model.base.ModelSetSupport;
+
+import com.google.inject.Injector;
+import com.google.inject.Module;
 
 @Iri(MODELS.NAMESPACE + "ModelSet")
 public interface IModelSet extends INotifier<INotification> {

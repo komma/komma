@@ -55,8 +55,6 @@ import net.enilink.komma.em.CachingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
 import net.enilink.komma.em.ThreadLocalDataManager;
 import net.enilink.komma.em.util.KommaUtil;
-import net.enilink.komma.internal.model.event.NamespaceNotification;
-import net.enilink.komma.internal.model.event.StatementNotification;
 import net.enilink.komma.model.IContentHandler;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
@@ -64,6 +62,9 @@ import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.concepts.ModelSet;
+import net.enilink.komma.model.event.IStatementNotification;
+import net.enilink.komma.model.event.NamespaceNotification;
+import net.enilink.komma.model.event.StatementNotification;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -347,6 +348,16 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		return list;
 	}
 
+	protected Map<Object, List<INotification>> addNotification(
+			Map<Object, List<INotification>> groupedNotifications,
+			INotification notification, Object target) {
+		if (groupedNotifications == null) {
+			groupedNotifications = new HashMap<Object, List<INotification>>();
+		}
+		ensureList(groupedNotifications, target).add(notification);
+		return groupedNotifications;
+	}
+
 	@Override
 	public void fireNotifications(
 			Collection<? extends INotification> notifications) {
@@ -364,18 +375,25 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		Map<Object, List<INotification>> groupedNotifications = null;
 		for (INotification notification : notifications) {
 			Object subject = notification.getSubject();
-
+			boolean notify;
 			synchronized (subjectListeners) {
-				if (!subjectListeners.containsKey(subject)) {
-					continue;
+				notify = subjectListeners.containsKey(subject);
+			}
+			if (notify) {
+				groupedNotifications = addNotification(groupedNotifications,
+						notification, subject);
+			}
+			// also send notifications for objects of statements
+			if (notification instanceof IStatementNotification) {
+				subject = ((IStatementNotification) notification).getObject();
+				synchronized (subjectListeners) {
+					notify = subjectListeners.containsKey(subject);
+				}
+				if (notify) {
+					groupedNotifications = addNotification(
+							groupedNotifications, notification, subject);
 				}
 			}
-
-			if (groupedNotifications == null) {
-				groupedNotifications = new HashMap<Object, List<INotification>>();
-			}
-
-			ensureList(groupedNotifications, subject).add(notification);
 		}
 		if (groupedNotifications != null) {
 			for (Map.Entry<Object, List<INotification>> entry : groupedNotifications
