@@ -3,7 +3,6 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Generator Plug-in
 Bundle-SymbolicName: net.enilink.komma.generator
 Bundle-Version: 1.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.core.runtime,
  net.enilink.commons.util,
  net.enilink.komma.em,
@@ -13,7 +12,7 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.literals,
  org.eclipse.jdt.core;resolution:=optional,
  net.enilink.komma.sesame,
- org.openrdf.sesame;bundle-version="2.0.0"
+ org.openrdf.sesame
 Bundle-ClassPath: ., lib/commons-cli-1.1.jar
 Import-Package: com.google.inject;version="2.0.0",
  com.google.inject.binder;version="2.0.0",

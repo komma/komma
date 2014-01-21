@@ -130,8 +130,6 @@ import com.google.inject.name.Names;
  * simpler interface to create concept packages and build ontologies. Unlike the
  * composed classes, this class reads and creates jar packages.
  * 
- * @author James Leigh
- * 
  */
 public class OntologyConverter implements IApplication {
 	static class CommandLineModule extends AbstractModule {
@@ -568,18 +566,21 @@ public class OntologyConverter implements IApplication {
 			URLClassLoader cl) throws Exception {
 		List<Class<?>> beans = new ArrayList<Class<?>>();
 		for (URL jar : urls) {
-			JarFile file = new JarFile(asLocalFile(jar));
-			Enumeration<JarEntry> entries = file.entries();
-			while (entries.hasMoreElements()) {
-				JarEntry entry = entries.nextElement();
-				String name = entry.getName();
-				if (name.contains("-") || !name.endsWith(".class"))
-					continue;
-				name = name.replace('/', '.').replace('\\', '.');
-				if (pkgName == null || name.startsWith(pkgName)
-						&& name.substring(pkgName.length() + 1).contains(".")) {
-					name = name.replaceAll(".class$", "");
-					beans.add(Class.forName(name, true, cl));
+			try (JarFile file = new JarFile(asLocalFile(jar))) {
+				Enumeration<JarEntry> entries = file.entries();
+				while (entries.hasMoreElements()) {
+					JarEntry entry = entries.nextElement();
+					String name = entry.getName();
+					if (name.contains("-") || !name.endsWith(".class"))
+						continue;
+					name = name.replace('/', '.').replace('\\', '.');
+					if (pkgName == null
+							|| name.startsWith(pkgName)
+							&& name.substring(pkgName.length() + 1).contains(
+									".")) {
+						name = name.replaceAll(".class$", "");
+						beans.add(Class.forName(name, true, cl));
+					}
 				}
 			}
 		}
@@ -696,9 +697,8 @@ public class OntologyConverter implements IApplication {
 					}
 
 					@Provides
-					@Named("baseClasses")
-					@SuppressWarnings("unused")
 					@Singleton
+					@Named("baseClasses")
 					Collection<Class<?>> provideBaseClasses(
 							@Named("baseClasses") Collection<String> baseClasses,
 							ClassLoader cl) throws Exception {
@@ -712,7 +712,6 @@ public class OntologyConverter implements IApplication {
 					}
 
 					@Provides
-					@SuppressWarnings("unused")
 					@Singleton
 					JavaNameResolver provideNameResolver(Injector injector,
 							OwlNormalizer normalizer, ClassLoader cl,
@@ -776,7 +775,6 @@ public class OntologyConverter implements IApplication {
 					}
 
 					@Provides
-					@SuppressWarnings("unused")
 					@Singleton
 					OwlNormalizer provideNormalizer(Injector injector)
 							throws Exception {

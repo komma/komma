@@ -50,11 +50,9 @@ public abstract class CodePropertySupport implements CodeProperty {
 			+ "	UNION { ?eq owl:inverseOf ?eqinv }\n"
 			+ "	FILTER ( ?prop != ?eqinv && isURI(?eqinv) ) }";
 
-	@SuppressWarnings("unchecked")
 	public List<Property> findAllInverseOfProperties() {
-		IQuery query = getEntityManager().createQuery(EQINV_WHERE_PROP);
+		IQuery<?> query = getEntityManager().createQuery(EQINV_WHERE_PROP);
 		query.setParameter("prop", this);
-		return (List<Property>)query.getResultList();
+		return query.bindResultType(Property.class).getResultList();
 	}
-
 }

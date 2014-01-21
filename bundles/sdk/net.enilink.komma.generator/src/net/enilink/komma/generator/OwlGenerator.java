@@ -45,15 +45,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
-import org.openrdf.rio.RDFHandlerException;
-
-import com.google.inject.Inject;
-
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.rdf.RDF;
-import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.literals.LiteralConverter;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaException;
@@ -61,6 +52,13 @@ import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.core.visitor.IDataVisitor;
+import net.enilink.komma.literals.LiteralConverter;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdf.RDF;
+import net.enilink.vocab.rdfs.RDFS;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
+
+import com.google.inject.Inject;
 
 /**
  * Reads BeanInfo objects and writes the class and properties into an OWL
@@ -80,48 +78,6 @@ public class OwlGenerator {
 
 	private IDataVisitor<?> target;
 
-	private IReference createList(Object[] objects) throws RDFHandlerException {
-		IReference list = null, origin = null;
-		for (Object obj : objects) {
-			if (list == null) {
-				origin = list = manager.create();
-				handleStatement(list, RDF.PROPERTY_TYPE, RDF.TYPE_LIST);
-			} else {
-				IReference rest = manager.create();
-				handleStatement(list, RDF.PROPERTY_REST, rest);
-				list = rest;
-				handleStatement(list, RDF.PROPERTY_TYPE, RDF.TYPE_LIST);
-			}
-			handleStatement(list, RDF.PROPERTY_FIRST, createURI(obj));
-		}
-		if (list != null) {
-			handleStatement(list, RDF.PROPERTY_REST, RDF.NIL);
-		}
-		return origin;
-	}
-
-	private IReference createList(String[] labels, URI datatype)
-			throws RDFHandlerException {
-		IReference list = null, origin = null;
-		for (String label : labels) {
-			if (list == null) {
-				origin = list = manager.create();
-				handleStatement(list, RDF.PROPERTY_TYPE, RDF.TYPE_LIST);
-			} else {
-				IReference rest = manager.create();
-				handleStatement(list, RDF.PROPERTY_REST, rest);
-				list = rest;
-				handleStatement(list, RDF.PROPERTY_TYPE, RDF.TYPE_LIST);
-			}
-			handleStatement(list, RDF.PROPERTY_FIRST,
-					manager.createLiteral(label, datatype, null));
-		}
-		if (list != null) {
-			handleStatement(list, RDF.PROPERTY_REST, RDF.NIL);
-		}
-		return origin;
-	}
-
 	private URI createURI(Class<?> beanClass) {
 		if (beanClass.isAnnotationPresent(Iri.class)) {
 			String value = beanClass.getAnnotation(Iri.class).value();
@@ -134,14 +90,8 @@ public class OwlGenerator {
 		return URIImpl.createURI(ns + localName);
 	}
 
-	private URI createURI(Object obj) {
-		if (obj instanceof Class<?>)
-			return createURI((Class<?>) obj);
-		return URIImpl.createURI(obj.toString());
-	}
-
 	public Set<URI> exportOntology(List<Class<?>> beans, IDataVisitor<?> handler)
-			throws IntrospectionException, RDFHandlerException {
+			throws IntrospectionException {
 		if (beans.isEmpty())
 			throw new IllegalArgumentException();
 		target = handler;
@@ -182,8 +132,7 @@ public class OwlGenerator {
 		if (range.equals(String.class))
 			return XMLSCHEMA.TYPE_STRING;
 		try {
-			net.enilink.komma.core.URI datatype = lc
-					.findDatatype(range);
+			net.enilink.komma.core.URI datatype = lc.findDatatype(range);
 			if (datatype.scheme().equals("java")) {
 				return null;
 			}
@@ -245,7 +194,7 @@ public class OwlGenerator {
 		return range;
 	}
 
-	private URI handleBeanClass(BeanDescriptor desc) throws RDFHandlerException {
+	private URI handleBeanClass(BeanDescriptor desc) {
 		Class<?> beanClass = desc.getBeanClass();
 		URI uri = createURI(beanClass);
 		if (beanClass.isAnnotationPresent(Deprecated.class)) {
@@ -262,49 +211,10 @@ public class OwlGenerator {
 		for (Class<?> face : beanClass.getInterfaces()) {
 			handleStatement(uri, RDFS.PROPERTY_SUBCLASSOF, createURI(face));
 		}
-		// if (beanClass.isAnnotationPresent(rdf.class)) {
-		// String[] eq = beanClass.getAnnotation(rdf.class).value();
-		// for (int i = 1; i < eq.length; i++) {
-		// handleStatement(uri, OWL.EQUIVALENTCLASS, uriFactory
-		// .createURI(eq[i]));
-		// }
-		// }
-		// if (beanClass.isAnnotationPresent(disjointWith.class)) {
-		// disjointWith dw = beanClass.getAnnotation(disjointWith.class);
-		// for (Class<?> c : dw.value()) {
-		// handleStatement(uri, OWL.DISJOINTWITH, createURI(c));
-		// }
-		// }
-		// if (beanClass.isAnnotationPresent(intersectionOf.class)) {
-		// intersectionOf io = beanClass.getAnnotation(intersectionOf.class);
-		// BNode list = createList(io.value());
-		// handleStatement(uri, OWL.INTERSECTIONOF, list);
-		// }
-		// if (beanClass.isAnnotationPresent(complementOf.class)) {
-		// complementOf co = beanClass.getAnnotation(complementOf.class);
-		// handleStatement(uri, OWL.COMPLEMENTOF, createURI(co.value()));
-		// }
-		// if (beanClass.isAnnotationPresent(oneOf.class)) {
-		// oneOf one = beanClass.getAnnotation(oneOf.class);
-		// BNode list = bnodeFactory.createBNode();
-		// handleStatement(uri, OWL.ONEOF, list);
-		// for (int i = 0, n = one.value().length; i < n; i++) {
-		// String of = one.value()[i];
-		// handleStatement(list, RDF.FIRST, uriFactory.createURI(of));
-		// if (i < n - 1) {
-		// BNode rest = bnodeFactory.createBNode();
-		// handleStatement(list, RDF.REST, rest);
-		// list = rest;
-		// } else {
-		// handleStatement(list, RDF.REST, RDF.NIL);
-		// }
-		// }
-		// }
 		return ns;
 	}
 
-	private void handleBeanProperty(URI domain, PropertyDescriptor desc)
-			throws RDFHandlerException {
+	private void handleBeanProperty(URI domain, PropertyDescriptor desc) {
 		URI uri;
 		if (desc.getReadMethod().isAnnotationPresent(Iri.class)) {
 			Iri ann = desc.getReadMethod().getAnnotation(Iri.class);
@@ -345,37 +255,9 @@ public class OwlGenerator {
 		}
 		handleLabel(uri, desc);
 		handleStatement(uri, RDFS.PROPERTY_ISDEFINEDBY, ns);
-		// Method getter = desc.getReadMethod();
-		// if (getter.isAnnotationPresent(rdf.class)) {
-		// String[] eq = getter.getAnnotation(rdf.class).value();
-		// for (int i = 1; i < eq.length; i++) {
-		// handleStatement(uri, RDFS.SUBPROPERTYOF, uriFactory
-		// .createURI(eq[i]));
-		// }
-		// }
-		// if (getter.isAnnotationPresent(inverseOf.class)) {
-		// inverseOf io = getter.getAnnotation(inverseOf.class);
-		// for (String inv : io.value()) {
-		// handleStatement(uri, OWL.INVERSEOF, uriFactory.createURI(inv));
-		// }
-		// }
-		// Method setter = desc.getWriteMethod();
-		// if (setter != null && setter.isAnnotationPresent(oneOf.class)) {
-		// oneOf oo = setter.getAnnotation(oneOf.class);
-		// String dt = oo.datatype();
-		// BNode list = createList(oo.label(), dt);
-		// if (list != null) {
-		// handleStatement(uri, OWL.ONEOF, list);
-		// }
-		// list = createList(oo.value());
-		// if (list != null) {
-		// handleStatement(uri, OWL.ONEOF, list);
-		// }
-		// }
 	}
 
-	private void handleLabel(URI uri, FeatureDescriptor desc)
-			throws RDFHandlerException {
+	private void handleLabel(URI uri, FeatureDescriptor desc) {
 		String prefix = prefixes.get(uri.namespace().toString());
 		String label = removePrefix(prefix, desc.getDisplayName());
 		String comment = removePrefix(prefix, desc.getShortDescription());

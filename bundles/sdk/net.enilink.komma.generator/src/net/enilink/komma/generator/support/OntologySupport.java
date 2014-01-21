@@ -43,7 +43,6 @@ public abstract class OntologySupport implements CodeOntology,
 	public String generatePackageInfo(String namespace,
 			JavaNameResolver resolver) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
 		JavaClassBuilder jcb = new JavaClassBuilder(new PrintWriter(baos));
 		JavaCodeBuilder builder = new JavaCodeBuilder(jcb, resolver);
 		builder.packageInfo(getBehaviourDelegate(), namespace);
