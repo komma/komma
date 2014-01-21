@@ -10,8 +10,22 @@
  *******************************************************************************/
 package net.enilink.komma.core;
 
+/**
+ * Represents an association of a namespace URI to a prefix.
+ * 
+ */
 public interface INamespace {
+	/**
+	 * Returns the prefix of this namespace declaration.
+	 * 
+	 * @return The prefix
+	 */
 	String getPrefix();
-	
+
+	/**
+	 * Returns the associated URI of this namespace declaration.
+	 * 
+	 * @return The associated URI
+	 */
 	URI getURI();
 }
