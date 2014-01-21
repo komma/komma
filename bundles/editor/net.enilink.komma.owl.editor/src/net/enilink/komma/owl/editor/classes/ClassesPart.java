@@ -36,6 +36,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -128,6 +129,18 @@ public class ClassesPart extends AbstractEditingDomainPart {
 								.getImage(IEditUIPropertiesImages.REMOVE)));
 		deleteItemAction.setEnabled(false);
 		toolBarManager.add(deleteItemAction);
+
+		IAction refreshAction = new Action("Refresh") {
+			@Override
+			public void run() {
+				refresh();
+			}
+		};
+		refreshAction.setImageDescriptor(ExtendedImageRegistry.getInstance()
+				.getImageDescriptor(
+						KommaEditUIPropertiesPlugin.INSTANCE
+								.getImage(IEditUIPropertiesImages.REFRESH)));
+		toolBarManager.add(refreshAction);
 
 		if (ownManager != null) {
 			ownManager.update(true);

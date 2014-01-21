@@ -3,22 +3,24 @@ package net.enilink.komma.owl.editor.internal;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import net.enilink.commons.ui.editor.EditorForm;
+import net.enilink.commons.ui.editor.FormPart;
+import net.enilink.commons.ui.editor.IEditorPart;
+import net.enilink.komma.edit.domain.IEditingDomainProvider;
+import net.enilink.komma.edit.ui.views.IViewerMenuSupport;
+import net.enilink.komma.owl.editor.OWLEditorPlugin;
+
 import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.core.runtime.SafeRunner;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
-
-import net.enilink.commons.ui.editor.EditorForm;
-import net.enilink.commons.ui.editor.IEditorPart;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
-import net.enilink.komma.edit.ui.views.IViewerMenuSupport;
-import net.enilink.komma.owl.editor.OWLEditorPlugin;
 
 public abstract class KommaFormPage extends FormPage implements
 		ISelectionProvider {
@@ -58,6 +60,7 @@ public abstract class KommaFormPage extends FormPage implements
 					KommaFormPage.this.fireSelectionChanged(currentSelection);
 				}
 			};
+			managedForm.addPart(new FormPart(form));
 		}
 		return form;
 	}
@@ -99,7 +102,11 @@ public abstract class KommaFormPage extends FormPage implements
 
 	@Override
 	public void setSelection(ISelection selection) {
-		form.setInput(selection);
+		Object input = selection;
+		if (input instanceof IStructuredSelection) {
+			input = ((IStructuredSelection) input).getFirstElement();
+		}
+		form.setInput(input);
 	}
 
 }
