@@ -2,7 +2,6 @@ package net.enilink.komma.dm;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.core.INamespace;
-import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IStatementPattern;
@@ -59,10 +58,10 @@ public interface IDataManager extends AutoCloseable {
 	void close();
 
 	/**
-	 * Creates an IKommaQuery to evaluate the query string.
+	 * Creates an {@link IDataManagerQuery} to evaluate the query string.
 	 * 
 	 * @param query
-	 *            rdf query in the configured language - default SPARQL.
+	 *            RDF query in the configured language - default SPARQL.
 	 * @param baseURI
 	 *            base URI for relative URIs or <code>null</code> if the query
 	 *            does not contain relative URIs
@@ -71,9 +70,27 @@ public interface IDataManager extends AutoCloseable {
 	 *            the results or not.
 	 * @param contexts
 	 *            The context(s) where to get or modify the data.
-	 * @return {@link IQuery}.
+	 * @return {@link IDataManagerQuery}.
 	 */
 	<R> IDataManagerQuery<R> createQuery(String query, String baseURI,
+			boolean includeInferred, IReference... contexts);
+
+	/**
+	 * Creates an {@link IDataManagerUpdate} to evaluate the update string.
+	 * 
+	 * @param update
+	 *            RDF update in the configured language - default SPARQL.
+	 * @param baseURI
+	 *            base URI for relative URIs or <code>null</code> if the update
+	 *            does not contain relative URIs
+	 * @param includeInferred
+	 *            Controls if inferred statements should be included to compute
+	 *            the results or not.
+	 * @param contexts
+	 *            The context(s) where to get or modify the data.
+	 * @return {@link IDataManagerUpdate}.
+	 */
+	IDataManagerUpdate createUpdate(String update, String baseURI,
 			boolean includeInferred, IReference... contexts);
 
 	/**
