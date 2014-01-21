@@ -4,8 +4,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import net.enilink.commons.ui.editor.EditorForm;
-import net.enilink.commons.ui.editor.FormPart;
 import net.enilink.commons.ui.editor.IEditorPart;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.KommaModule;
@@ -77,13 +75,12 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 			ScrolledForm form = managedForm.getForm();
 			form.setText(getTitle());
 
-			EditorForm editorForm = getEditorForm();
-			managedForm.addPart(new FormPart(editorForm));
+			getEditorForm().addPart(editorPart);
 
 			Composite body = form.getBody();
 			body.setLayout(new FillLayout());
 
-			editorPart.initialize(editorForm);
+			editorPart.initialize(getEditorForm());
 			editorPart.createContents(body);
 			editorPart.setInput(getEditor().getAdapter(IModel.class));
 			editorPart.refresh();
