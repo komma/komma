@@ -57,5 +57,11 @@ public interface KOMMA {
 	public static final URI PROPERTY_PRECEDES = NAMESPACE_URI.appendFragment("precedes");
 
 	public static final URI PROPERTY_ISABSTRACT = NAMESPACE_URI.appendFragment("isAbstract");
+	
+	public static final URI PROPERTY_ROOTOBJECTPROPERTY = NAMESPACE_URI.appendFragment("rootObjectProperty");
+	
+	public static final URI PROPERTY_ROOTDATATYPEPROPERTY = NAMESPACE_URI.appendFragment("rootDatatypeProperty");
+	
+	public static final URI PROPERTY_ROOTPROPERTY = NAMESPACE_URI.appendFragment("rootProperty");
 
 }
