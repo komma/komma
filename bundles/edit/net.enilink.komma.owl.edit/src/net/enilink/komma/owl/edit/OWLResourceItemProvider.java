@@ -12,12 +12,11 @@ package net.enilink.komma.owl.edit;
 
 import java.util.Collection;
 
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.owl.Ontology;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.provider.IViewerNotification;
@@ -26,6 +25,8 @@ import net.enilink.komma.em.concepts.IClass;
 import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.event.IStatementNotification;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.owl.Ontology;
 
 public class OWLResourceItemProvider extends ReflectiveItemProvider {
 	public OWLResourceItemProvider(
@@ -99,7 +100,7 @@ public class OWLResourceItemProvider extends ReflectiveItemProvider {
 	}
 
 	@Override
-	protected Collection<? extends IClass> getTypes(Object object) {
+	protected Collection<? extends IReference> getTypes(Object object) {
 		return super.getTypes(object);
 	}
 
