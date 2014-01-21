@@ -10,6 +10,15 @@
  *******************************************************************************/
 package net.enilink.komma.internal.sesame;
 
+import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.komma.core.IValue;
+import net.enilink.komma.core.KommaException;
+import net.enilink.komma.dm.IDataManagerQuery;
+import net.enilink.komma.internal.sesame.result.SesameBooleanResult;
+import net.enilink.komma.internal.sesame.result.SesameGraphResult;
+import net.enilink.komma.internal.sesame.result.SesameTupleResult;
+import net.enilink.komma.sesame.SesameValueConverter;
+
 import org.openrdf.model.Value;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
@@ -18,15 +27,6 @@ import org.openrdf.query.TupleQuery;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-
-import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.dm.IDataManagerQuery;
-import net.enilink.komma.internal.sesame.result.SesameBooleanResult;
-import net.enilink.komma.internal.sesame.result.SesameGraphResult;
-import net.enilink.komma.internal.sesame.result.SesameTupleResult;
-import net.enilink.komma.core.IValue;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.sesame.SesameValueConverter;
 
 /**
  * Implements {@link IDataManagerQuery} for {@link SesameRepositoryDataManager}.

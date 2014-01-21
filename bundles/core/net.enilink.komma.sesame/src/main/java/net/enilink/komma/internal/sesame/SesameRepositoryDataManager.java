@@ -19,6 +19,7 @@ import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerQuery;
+import net.enilink.komma.dm.IDataManagerUpdate;
 import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.internal.sesame.result.SesameGraphResult;
 import net.enilink.komma.internal.sesame.result.SesameResult;
@@ -29,8 +30,10 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.Operation;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.Update;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -234,6 +237,19 @@ public class SesameRepositoryDataManager implements IDataManager {
 		return sb.toString();
 	}
 
+	protected void setDataset(Operation operation, IReference[] contexts) {
+		if (contexts.length > 0) {
+			DatasetImpl ds = new DatasetImpl();
+			for (URI graph : toURI(contexts)) {
+				ds.addDefaultGraph(graph);
+				if (graph != null) {
+					ds.addNamedGraph(graph);
+				}
+			}
+			operation.setDataset(ds);
+		}
+	}
+
 	@Override
 	public <R> IDataManagerQuery<R> createQuery(String query, String baseURI,
 			boolean includeInferred, IReference... contexts) {
@@ -241,16 +257,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 			// query = ensureBindingsInGraph(query, contexts);
 			Query sesameQuery = prepareSesameQuery(query, baseURI,
 					includeInferred);
-			if (contexts.length > 0) {
-				DatasetImpl ds = new DatasetImpl();
-				for (URI graph : toURI(contexts)) {
-					ds.addDefaultGraph(graph);
-					if (graph != null) {
-						ds.addNamedGraph(graph);
-					}
-				}
-				sesameQuery.setDataset(ds);
-			}
+			setDataset(sesameQuery, contexts);
 			sesameQuery.setIncludeInferred(includeInferred);
 
 			SesameQuery<R> result = new SesameQuery<R>(sesameQuery);
@@ -260,6 +267,20 @@ public class SesameRepositoryDataManager implements IDataManager {
 			throw new KommaException(e);
 		} catch (MalformedQueryException e) {
 			throw new KommaException("Invalid query format", e);
+		}
+	}
+
+	@Override
+	public IDataManagerUpdate createUpdate(final String update, String baseURI,
+			final boolean includeInferred, final IReference... contexts) {
+		try {
+			Update updateOp = getConnection().prepareUpdate(
+					QueryLanguage.SPARQL, update);
+			setDataset(updateOp, contexts);
+			updateOp.setIncludeInferred(includeInferred);
+			return new SesameUpdate(updateOp);
+		} catch (Exception e) {
+			throw new KommaException(e);
 		}
 	}
 
