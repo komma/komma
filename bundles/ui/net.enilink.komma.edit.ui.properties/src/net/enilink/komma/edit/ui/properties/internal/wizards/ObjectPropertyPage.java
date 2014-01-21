@@ -4,9 +4,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import net.enilink.komma.edit.ui.dialogs.FilteredList.AbstractContentProvider;
+import net.enilink.komma.edit.ui.dialogs.FilteredList.ItemsFilter;
+import net.enilink.komma.edit.ui.dialogs.FilteredTreeAndListSelectionWidget;
+import net.enilink.komma.edit.ui.dialogs.IFilteredTreeAndListDescriptor;
+import net.enilink.komma.edit.ui.properties.internal.wizards.ItemUtil.LabeledItem;
+import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
+import net.enilink.komma.model.ModelUtil;
+import net.enilink.vocab.owl.OWL;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -22,18 +33,6 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-
-import net.enilink.vocab.owl.OWL;
-import net.enilink.komma.edit.ui.dialogs.FilteredList.AbstractContentProvider;
-import net.enilink.komma.edit.ui.dialogs.FilteredList.ItemsFilter;
-import net.enilink.komma.edit.ui.dialogs.FilteredTreeAndListSelectionWidget;
-import net.enilink.komma.edit.ui.dialogs.IFilteredTreeAndListDescriptor;
-import net.enilink.komma.edit.ui.properties.internal.wizards.ItemUtil.LabeledItem;
-import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
-import net.enilink.komma.em.concepts.IClass;
-import net.enilink.komma.em.concepts.IProperty;
-import net.enilink.komma.em.concepts.IResource;
-import net.enilink.komma.model.ModelUtil;
 
 public class ObjectPropertyPage extends WizardPage implements
 		IFilteredTreeAndListDescriptor {
@@ -108,13 +107,10 @@ public class ObjectPropertyPage extends WizardPage implements
 		Set<IResource> individuals = new LinkedHashSet<IResource>();
 
 		for (IClass clazz : typeClasses) {
-			for (Iterator<IResource> it = clazz.getInstances().iterator(); it
-					.hasNext();) {
-				IResource resource = it.next();
-				if (resource.isOntLanguageTerm()) {
-					continue;
+			for (IResource resource : clazz.getInstances()) {
+				if (!resource.isOntLanguageTerm()) {
+					individuals.add(resource);
 				}
-				individuals.add(resource);
 			}
 		}
 
