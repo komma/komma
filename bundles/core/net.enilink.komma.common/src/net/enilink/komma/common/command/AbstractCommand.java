@@ -189,7 +189,9 @@ public abstract class AbstractCommand extends AbstractOperation implements
 
 	@Override
 	public Collection<?> getAffectedObjects() {
-		return Collections.emptyList();
+		CommandResult result = getCommandResult();
+		return result != null ? result.getReturnValues() : Collections
+				.emptyList();
 	}
 
 	@Override
