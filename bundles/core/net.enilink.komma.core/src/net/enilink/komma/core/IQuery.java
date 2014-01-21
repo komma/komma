@@ -28,18 +28,15 @@
  */
 package net.enilink.komma.core;
 
-import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 
 /**
- * Interface used to bind and evaluate a query
+ * Interface used to bind and evaluate a query.
  * 
- * @author James Leigh
  */
 public interface IQuery<R> extends IQueryBase<IQuery<R>>, AutoCloseable {
 	/**
@@ -159,30 +156,6 @@ public interface IQuery<R> extends IQueryBase<IQuery<R>>, AutoCloseable {
 	IQuery<R> setLockMode(LockModeType lockMode);
 
 	/**
-	 * Bind an instance of java.util.Date to a named parameter.
-	 * 
-	 * @param name
-	 * @param value
-	 * @param temporalType
-	 * @return the same query instance
-	 * @throws IllegalArgumentException
-	 *             if parameter name does not correspond to a parameter of the
-	 *             query
-	 */
-	IQuery<R> setParameter(String name, Calendar value,
-			TemporalType temporalType);
-
-	/**
-	 * Binds a literal with no type and a language of <code>locale</code>.
-	 * 
-	 * @param name
-	 *            Name of the variable to bind to.
-	 * @param label
-	 * @param locale
-	 */
-	IQuery<R> setParameter(String name, String label, Locale locale);
-
-	/**
 	 * Assigns a concept to the given name.
 	 * 
 	 * @param name
@@ -190,5 +163,5 @@ public interface IQuery<R> extends IQueryBase<IQuery<R>>, AutoCloseable {
 	 * @param concept
 	 *            Registered concept.
 	 */
-	IQuery<R> setType(String name, Class<?> concept);
+	IQuery<R> setTypeParameter(String name, Class<?> concept);
 }

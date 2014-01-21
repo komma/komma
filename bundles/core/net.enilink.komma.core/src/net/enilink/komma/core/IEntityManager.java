@@ -169,11 +169,10 @@ public interface IEntityManager extends AutoCloseable {
 	IQuery<?> createQuery(String query, boolean includeInferred);
 
 	/**
-	 * Creates an {@link IQuery} to evaluate the query string against asserted
-	 * statements.
+	 * Creates an {@link IQuery} to evaluate the query string.
 	 * 
 	 * @param query
-	 *            rdf query in the configured language - default SPARQL.
+	 *            RDF query in the configured language - default SPARQL.
 	 * @param baseURI
 	 *            base URI for relative URIs or <code>null</code> if the query
 	 *            does not contain relative URIs
@@ -199,6 +198,21 @@ public interface IEntityManager extends AutoCloseable {
 	 * @return A new reference object.
 	 */
 	IReference createReference(String id);
+
+	/**
+	 * Creates an {@link IUpdate} to evaluate the update string.
+	 * 
+	 * @param update
+	 *            RDF update in the configured language - default SPARQL.
+	 * @param baseURI
+	 *            base URI for relative URIs or <code>null</code> if the update
+	 *            does not contain relative URIs
+	 * @param includeInferred
+	 *            Controls if inferred statements should be included to compute
+	 *            the results or not.
+	 * @return {@link IUpdate}.
+	 */
+	IUpdate createUpdate(String update, String baseURI, boolean includeInferred);
 
 	/**
 	 * Assigns <code>concept</code> to the given entity and return a new object
