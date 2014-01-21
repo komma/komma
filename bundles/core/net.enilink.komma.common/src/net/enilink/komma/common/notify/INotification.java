@@ -11,7 +11,7 @@
 package net.enilink.komma.common.notify;
 
 /**
- * A general interface for notifications within KOMA
+ * A general interface for notifications within KOMMA
  */
 public interface INotification {
 	/**

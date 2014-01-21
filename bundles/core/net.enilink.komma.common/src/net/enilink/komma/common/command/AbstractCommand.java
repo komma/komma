@@ -367,4 +367,12 @@ public abstract class AbstractCommand extends AbstractOperation implements
 	public static interface INonDirtying {
 		// This is just a marker interface.
 	}
+
+	/**
+	 * A marker interface implemented by commands that don't want their changes
+	 * to be recorded.
+	 */
+	public static interface INoChangeRecording {
+		// This is just a marker interface.
+	}
 }
