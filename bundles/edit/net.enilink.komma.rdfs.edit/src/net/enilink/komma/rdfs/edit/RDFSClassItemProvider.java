@@ -296,11 +296,10 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 	}
 
 	@Override
-	protected Collection<? extends IClass> getTypes(Object object) {
-		if (object instanceof IClass
-				&& (((IClass) object).equals(OWL.TYPE_OBJECTPROPERTY) || ((IClass) object)
-						.equals(OWL.TYPE_DATATYPEPROPERTY))) {
-			return Arrays.asList((IClass) object);
+	protected Collection<? extends IReference> getTypes(Object object) {
+		if (object.equals(OWL.TYPE_OBJECTPROPERTY)
+				|| object.equals(OWL.TYPE_DATATYPEPROPERTY)) {
+			return Arrays.asList((IReference) object);
 		}
 		return super.getTypes(object);
 	}
