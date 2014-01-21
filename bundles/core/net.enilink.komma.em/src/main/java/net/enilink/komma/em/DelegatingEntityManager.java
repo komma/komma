@@ -28,6 +28,7 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IStatementPattern;
 import net.enilink.komma.core.ITransaction;
+import net.enilink.komma.core.IUpdate;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.InferencingCapability;
 import net.enilink.komma.core.LockModeType;
@@ -86,8 +87,8 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public <T> T createNamed(net.enilink.komma.core.URI uri,
-			Class<T> concept, Class<?>... concepts) {
+	public <T> T createNamed(net.enilink.komma.core.URI uri, Class<T> concept,
+			Class<?>... concepts) {
 		return getDelegate().createNamed(uri, concept, concepts);
 	}
 
@@ -126,6 +127,12 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	@Override
 	public IReference createReference(String id) {
 		return getDelegate().createReference(id);
+	}
+
+	@Override
+	public IUpdate createUpdate(String update, String baseURI,
+			boolean includeInferred) {
+		return getDelegate().createUpdate(update, baseURI, includeInferred);
 	}
 
 	@Override
@@ -331,8 +338,7 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public void setNamespace(String prefix,
-			net.enilink.komma.core.URI uri) {
+	public void setNamespace(String prefix, net.enilink.komma.core.URI uri) {
 		getDelegate().setNamespace(prefix, uri);
 	}
 

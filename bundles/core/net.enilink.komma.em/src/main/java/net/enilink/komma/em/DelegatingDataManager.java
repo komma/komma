@@ -13,6 +13,7 @@ package net.enilink.komma.em;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerQuery;
+import net.enilink.komma.dm.IDataManagerUpdate;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
@@ -52,6 +53,13 @@ public abstract class DelegatingDataManager implements IDataManager {
 	public <R> IDataManagerQuery<R> createQuery(String query, String baseURI,
 			boolean includeInferred, IReference... contexts) {
 		return getDelegate().createQuery(query, baseURI, includeInferred,
+				contexts);
+	}
+
+	@Override
+	public IDataManagerUpdate createUpdate(String update, String baseURI,
+			boolean includeInferred, IReference... contexts) {
+		return getDelegate().createUpdate(update, baseURI, includeInferred,
 				contexts);
 	}
 
