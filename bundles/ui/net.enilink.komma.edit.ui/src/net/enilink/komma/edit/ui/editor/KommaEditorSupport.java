@@ -1141,6 +1141,13 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 					// support any namespace
 					return type instanceof URI || supportedTypes.contains(type);
 				}
+
+				@Override
+				protected Collection<IClass> getTypes(Object object) {
+					return object instanceof net.enilink.komma.em.concepts.IResource ? super
+							.getTypes(object) : Collections
+							.<IClass> emptyList();
+				}
 			}
 
 			DefaultItemProviderAdapterFactory defaultAdapterFactory;
