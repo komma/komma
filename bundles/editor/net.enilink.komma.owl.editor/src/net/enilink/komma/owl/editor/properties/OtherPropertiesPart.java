@@ -10,10 +10,8 @@
  *******************************************************************************/
 package net.enilink.komma.owl.editor.properties;
 
-import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.em.concepts.IProperty;
-import net.enilink.komma.em.util.ISparqlConstants;
+import net.enilink.vocab.komma.KOMMA;
 import net.enilink.vocab.rdf.RDF;
 
 public class OtherPropertiesPart extends AbstractPropertiesPart {
@@ -23,31 +21,12 @@ public class OtherPropertiesPart extends AbstractPropertiesPart {
 	}
 
 	@Override
-	public void refresh() {
-		super.refresh();
-		if (model != null) {
-			IQuery<?> query = model
-					.getOntology()
-					.getEntityManager()
-					.createQuery(
-							ISparqlConstants.PREFIX
-									+ "SELECT DISTINCT ?p WHERE {"
-									+ "?p a [rdfs:subClassOf rdf:Property] ."
-									+ "OPTIONAL {?p rdfs:subPropertyOf ?other ."
-									+ "FILTER (?p != ?other && isIRI(?other))} "
-									+ "OPTIONAL {"
-									+ "		?p a ?type . ?type rdfs:subClassOf rdf:Property ."
-									+ " 	FILTER (?type = owl:AnnotationProperty || ?type != rdf:Property && !regex(str(?type), 'http://www.w3.org/2002/07/owl#'))"
-									+ "}"
-									+ "FILTER (bound(?type) && !bound(?other) && isIRI(?p)) }");
-
-			treeViewer.setInput(query.evaluate(IProperty.class).toList()
-					.toArray());
-		}
+	protected URI getPropertyType() {
+		return RDF.TYPE_PROPERTY;
 	}
 
 	@Override
-	protected URI getPropertyType() {
-		return RDF.TYPE_PROPERTY;
+	protected URI getRootProperty() {
+		return KOMMA.PROPERTY_ROOTPROPERTY;
 	}
 }

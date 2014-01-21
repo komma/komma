@@ -71,6 +71,10 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 	}
 
 	abstract class NamespaceCommand extends SimpleCommand {
+		public NamespaceCommand() {
+			super("Modify namespace");
+		}
+
 		@Override
 		protected CommandResult doExecuteWithResult(
 				IProgressMonitor progressMonitor, IAdaptable info)

@@ -10,8 +10,9 @@
  *******************************************************************************/
 package net.enilink.komma.owl.editor.properties;
 
-import net.enilink.vocab.owl.OWL;
 import net.enilink.komma.core.URI;
+import net.enilink.vocab.komma.KOMMA;
+import net.enilink.vocab.owl.OWL;
 
 public class DatatypePropertiesPart extends AbstractPropertiesPart {
 	@Override
@@ -23,13 +24,17 @@ public class DatatypePropertiesPart extends AbstractPropertiesPart {
 	public void refresh() {
 		super.refresh();
 		if (model != null) {
-			treeViewer.setInput(model.getOntology().getRootDatatypeProperties()
-					.toList().toArray());
+			treeViewer.setInput(model.getManager().find(getRootProperty()));
 		}
 	}
 
 	@Override
 	protected URI getPropertyType() {
 		return OWL.TYPE_DATATYPEPROPERTY;
+	}
+
+	@Override
+	protected URI getRootProperty() {
+		return KOMMA.PROPERTY_ROOTDATATYPEPROPERTY;
 	}
 }

@@ -10,6 +10,28 @@
  *******************************************************************************/
 package net.enilink.komma.owl.editor.classes;
 
+import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.common.command.CommandResult;
+import net.enilink.komma.common.command.ICommand;
+import net.enilink.komma.common.command.SimpleCommand;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.Statement;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
+import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
+import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
+import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
+import net.enilink.komma.edit.ui.provider.LazyAdapterFactoryContentProvider;
+import net.enilink.komma.edit.ui.util.SearchWidget;
+import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
+import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IResource;
+import net.enilink.komma.model.IModel;
+import net.enilink.komma.owl.editor.OWLEditorPlugin;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdfs.RDFS;
+
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -28,26 +50,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
-
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.komma.common.adapter.IAdapterFactory;
-import net.enilink.komma.common.command.CommandResult;
-import net.enilink.komma.common.command.SimpleCommand;
-import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
-import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
-import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
-import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
-import net.enilink.komma.edit.ui.provider.LazyAdapterFactoryContentProvider;
-import net.enilink.komma.edit.ui.util.SearchWidget;
-import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
-import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
-import net.enilink.komma.em.concepts.IClass;
-import net.enilink.komma.em.concepts.IResource;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.owl.editor.OWLEditorPlugin;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.URI;
 
 public class ClassesPart extends AbstractEditingDomainPart {
 	protected Tree tree;
@@ -138,37 +140,26 @@ public class ClassesPart extends AbstractEditingDomainPart {
 			public boolean performFinish() {
 				final URI resourceName = getObjectName();
 				try {
-					getEditingDomain().getCommandStack().execute(
-							new SimpleCommand() {
-								@Override
-								protected CommandResult doExecuteWithResult(
-										IProgressMonitor progressMonitor,
-										IAdaptable info)
-										throws ExecutionException {
-									final IEntity entity = model.getManager()
-											.createNamed(resourceName,
-													OWL.TYPE_CLASS);
-									if (treeViewer.getSelection() != null)
-										entity.getEntityManager()
-												.setProperty(
-														RDFS.PROPERTY_SUBCLASSOF
-																.toString(),
-														(Object) treeViewer
-																.getSelection());
-									getShell().getDisplay().asyncExec(
-											new Runnable() {
-												@Override
-												public void run() {
-													treeViewer
-															.setSelection(new StructuredSelection(
-																	entity));
-												}
-											});
-
-									return CommandResult
-											.newOKCommandResult(entity);
-								}
-							}, null, null);
+					ICommand cmd = new SimpleCommand("Create class") {
+						@Override
+						protected CommandResult doExecuteWithResult(
+								IProgressMonitor progressMonitor,
+								IAdaptable info) throws ExecutionException {
+							final IEntity entity = model.getManager()
+									.createNamed(resourceName, OWL.TYPE_CLASS);
+							model.getManager().add(
+									new Statement(entity,
+											RDFS.PROPERTY_SUBCLASSOF,
+											OWL.TYPE_THING, true));
+							return CommandResult.newOKCommandResult(entity);
+						}
+					};
+					getEditingDomain().getCommandStack().execute(cmd, null,
+							null);
+					if (cmd.getCommandResult().getStatus().isOK()) {
+						treeViewer.setSelection(new StructuredSelection(cmd
+								.getCommandResult().getReturnValue()));
+					}
 				} catch (ExecutionException e) {
 					OWLEditorPlugin.INSTANCE.log(e);
 				}
@@ -183,30 +174,27 @@ public class ClassesPart extends AbstractEditingDomainPart {
 
 	void deleteItem() {
 		try {
-			getEditingDomain().getCommandStack().execute(new SimpleCommand() {
+			ICommand cmd = new SimpleCommand("Delete class") {
 				@Override
 				protected CommandResult doExecuteWithResult(
 						IProgressMonitor progressMonitor, IAdaptable info)
 						throws ExecutionException {
-
-					final Object selected = ((IStructuredSelection) treeViewer.getSelection()).getFirstElement();
-
+					final Object selected = ((IStructuredSelection) treeViewer
+							.getSelection()).getFirstElement();
 					if (selected instanceof IResource) {
 						((IResource) selected).getEntityManager().remove(
 								(IResource) selected);
-						getShell().getDisplay().asyncExec(new Runnable() {
-							@Override
-							public void run() {
-								treeViewer
-										.setSelection(new StructuredSelection(
-												selected));
-							}
-						});
+						model.getManager().remove(
+								new Statement((IResource) selected,
+										RDFS.PROPERTY_SUBCLASSOF,
+										OWL.TYPE_THING, true));
 						return CommandResult.newOKCommandResult(selected);
 					}
 					return CommandResult.newCancelledCommandResult();
 				}
-			}, null, null);
+			};
+			getEditingDomain().getCommandStack().execute(cmd, null, null);
+
 		} catch (ExecutionException e) {
 			OWLEditorPlugin.INSTANCE.log(e);
 		}

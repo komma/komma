@@ -116,7 +116,7 @@ public class OntologyPart extends AbstractEditingDomainPart {
 				if (model != null) {
 					try {
 						getEditingDomain().getCommandStack().execute(
-								new SimpleCommand() {
+								new SimpleCommand("Change model URI") {
 									URI oldUri = model.getURI();
 									URI newUri = URIImpl.createURI(uriText
 											.getText().trim());

@@ -335,7 +335,7 @@ public class ImportsPart extends AbstractEditingDomainPart {
 			if (selectedElements != null) {
 				try {
 					getEditingDomain().getCommandStack().execute(
-							new SimpleCommand() {
+							new SimpleCommand("Add import") {
 								IModel model;
 
 								@Override
@@ -394,52 +394,53 @@ public class ImportsPart extends AbstractEditingDomainPart {
 		final Object[] selectedElements = ((IStructuredSelection) importsViewer
 				.getSelection()).toArray();
 		try {
-			getEditingDomain().getCommandStack().execute(new SimpleCommand() {
-				IModel model;
+			getEditingDomain().getCommandStack().execute(
+					new SimpleCommand("Delete import") {
+						IModel model;
 
-				@Override
-				protected CommandResult doExecuteWithResult(
-						IProgressMonitor progressMonitor, IAdaptable info)
-						throws ExecutionException {
-					model = ((IObject) ontology).getModel();
-					for (Object element : selectedElements) {
-						IResource importedOntology = (IResource) element;
-						URI importedOntUri = importedOntology.getURI();
-						if (!ontology.getOwlImports().contains(element)) {
-							continue;
+						@Override
+						protected CommandResult doExecuteWithResult(
+								IProgressMonitor progressMonitor,
+								IAdaptable info) throws ExecutionException {
+							model = ((IObject) ontology).getModel();
+							for (Object element : selectedElements) {
+								IResource importedOntology = (IResource) element;
+								URI importedOntUri = importedOntology.getURI();
+								if (!ontology.getOwlImports().contains(element)) {
+									continue;
+								}
+								try {
+									((IObject) ontology).getModel()
+											.removeImport(importedOntUri);
+								} catch (Exception ex) {
+									OWLEditorPlugin.INSTANCE.log(ex);
+								}
+							}
+							// ensure update of imports
+							reloadManager(model);
+							return CommandResult.newOKCommandResult();
 						}
-						try {
-							((IObject) ontology).getModel().removeImport(
-									importedOntUri);
-						} catch (Exception ex) {
-							OWLEditorPlugin.INSTANCE.log(ex);
+
+						@Override
+						protected CommandResult doRedoWithResult(
+								IProgressMonitor progressMonitor,
+								IAdaptable info) throws ExecutionException {
+							if (model != null) {
+								reloadManager(model);
+							}
+							return CommandResult.newOKCommandResult();
 						}
-					}
-					// ensure update of imports
-					reloadManager(model);
-					return CommandResult.newOKCommandResult();
-				}
 
-				@Override
-				protected CommandResult doRedoWithResult(
-						IProgressMonitor progressMonitor, IAdaptable info)
-						throws ExecutionException {
-					if (model != null) {
-						reloadManager(model);
-					}
-					return CommandResult.newOKCommandResult();
-				}
-
-				@Override
-				protected CommandResult doUndoWithResult(
-						IProgressMonitor progressMonitor, IAdaptable info)
-						throws ExecutionException {
-					if (model != null) {
-						reloadManager(model);
-					}
-					return CommandResult.newOKCommandResult();
-				}
-			}, null, null);
+						@Override
+						protected CommandResult doUndoWithResult(
+								IProgressMonitor progressMonitor,
+								IAdaptable info) throws ExecutionException {
+							if (model != null) {
+								reloadManager(model);
+							}
+							return CommandResult.newOKCommandResult();
+						}
+					}, null, null);
 		} catch (ExecutionException exception) {
 			OWLEditorPlugin.INSTANCE.log(exception);
 		}

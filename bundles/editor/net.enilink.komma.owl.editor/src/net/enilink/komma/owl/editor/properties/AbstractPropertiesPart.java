@@ -15,6 +15,7 @@ import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
@@ -29,12 +30,13 @@ import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
-import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdfs.RDFS;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -60,6 +62,8 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 	abstract protected String getName();
 
 	abstract protected URI getPropertyType();
+
+	abstract protected URI getRootProperty();
 
 	@Override
 	public void createContents(Composite parent) {
@@ -131,6 +135,18 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 		deleteItemAction.setEnabled(false);
 		toolBarManager.add(deleteItemAction);
 
+		IAction refreshAction = new Action("Refresh") {
+			@Override
+			public void run() {
+				refresh();
+			}
+		};
+		refreshAction.setImageDescriptor(ExtendedImageRegistry.getInstance()
+				.getImageDescriptor(
+						KommaEditUIPropertiesPlugin.INSTANCE
+								.getImage(IEditUIPropertiesImages.REFRESH)));
+		toolBarManager.add(refreshAction);
+
 		if (ownManager != null) {
 			ownManager.update(true);
 		}
@@ -142,7 +158,7 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 			public boolean performFinish() {
 				final URI resourceName = getObjectName();
 				try {
-					ICommand cmd = new SimpleCommand() {
+					ICommand cmd = new SimpleCommand("Add property") {
 						@Override
 						protected CommandResult doExecuteWithResult(
 								IProgressMonitor progressMonitor,
@@ -150,13 +166,18 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 							final IEntity property = model.getManager()
 									.createNamed(resourceName,
 											getPropertyType());
+							// add inferred property
+							model.getManager().add(
+									new Statement(property,
+											RDFS.PROPERTY_SUBPROPERTYOF,
+											getRootProperty(), true));
 							return CommandResult.newOKCommandResult(property);
 						}
 					};
 					getEditingDomain().getCommandStack().execute(cmd, null,
 							null);
 					// update viewer and set selection
-					refresh();
+					// refresh();
 					treeViewer.setSelection(new StructuredSelection(cmd
 							.getCommandResult().getReturnValue()), true);
 				} catch (ExecutionException e) {
@@ -173,30 +194,27 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 
 	void deleteItem() {
 		try {
-			getEditingDomain().getCommandStack().execute(new SimpleCommand() {
-				@Override
-				protected CommandResult doExecuteWithResult(
-						IProgressMonitor progressMonitor, IAdaptable info)
-						throws ExecutionException {
-
-					final Object selected = ((IStructuredSelection) treeViewer.getSelection()).getFirstElement();
-
-					if (selected instanceof IResource) {
-						((IResource) selected).getEntityManager().remove(
-								(IResource) selected);
-						getShell().getDisplay().asyncExec(new Runnable() {
-							@Override
-							public void run() {
-								treeViewer
-										.setSelection(new StructuredSelection(
-												selected));
+			getEditingDomain().getCommandStack().execute(
+					new SimpleCommand("Delete property") {
+						@Override
+						protected CommandResult doExecuteWithResult(
+								IProgressMonitor progressMonitor,
+								IAdaptable info) throws ExecutionException {
+							final Object selected = ((IStructuredSelection) treeViewer.getSelection()).getFirstElement();
+							if (selected instanceof IResource) {
+								((IResource) selected).getEntityManager()
+										.remove((IResource) selected);
+								// add inferred property
+								model.getManager().remove(
+										new Statement((IResource) selected,
+												RDFS.PROPERTY_SUBPROPERTYOF,
+												getRootProperty(), true));
+								return CommandResult
+										.newOKCommandResult(selected);
 							}
-						});
-						return CommandResult.newOKCommandResult(selected);
-					}
-					return CommandResult.newCancelledCommandResult();
-				}
-			}, null, null);
+							return CommandResult.newCancelledCommandResult();
+						}
+					}, null, null);
 		} catch (ExecutionException e) {
 			OWLEditorPlugin.INSTANCE.log(e);
 		}
@@ -247,8 +265,7 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 								adapterFactory, treeViewer));
 			}
 			createContextMenuFor(treeViewer);
-			treeViewer.setInput(new Object[] { model.getManager().find(
-					OWL.TYPE_THING) });
+			treeViewer.setInput(model.getManager().find(getRootProperty()));
 		} else if (adapterFactory != null) {
 			treeViewer.setInput(new Object[0]);
 		}
