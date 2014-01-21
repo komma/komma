@@ -10,12 +10,9 @@
  *******************************************************************************/
 package net.enilink.komma.em.concepts;
 
-import java.util.Collection;
-
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.cache.annotations.Cacheable;
-
-import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
 
@@ -23,9 +20,9 @@ import net.enilink.komma.core.URI;
 public interface IClass extends net.enilink.vocab.owl.Class, IResource {
 	IExtendedIterator<IProperty> getDeclaredProperties(boolean includeInferred);
 
-	Collection<IResource> getInstances();
-	
-	Collection<IReference> getInstancesAsReferences();
+	IExtendedIterator<IResource> getInstances();
+
+	IExtendedIterator<IReference> getInstancesAsReferences();
 
 	IExtendedIterator<IClass> getNamedSubClasses();
 

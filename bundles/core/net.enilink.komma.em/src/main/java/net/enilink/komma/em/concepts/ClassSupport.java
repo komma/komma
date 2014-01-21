@@ -10,22 +10,19 @@
  *******************************************************************************/
 package net.enilink.komma.em.concepts;
 
-import java.util.Collection;
-
-import net.enilink.composition.traits.Behaviour;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.rdfs.RDFS;
+import net.enilink.composition.traits.Behaviour;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IResultDescriptor;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.em.results.ResultDescriptor;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdfs.RDFS;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class ClassSupport extends BehaviorBase implements IClass,
 		Behaviour<IClass> {
@@ -130,16 +127,16 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 				"komma:directNamedSuperClasses", "superClass", "subClass");
 	}
 
-	public Collection<IResource> getInstances() {
+	public IExtendedIterator<IResource> getInstances() {
 		IQuery<?> query = getEntityManager().createQuery(SELECT_INSTANCES);
 		query.setParameter("class", this);
-		return query.evaluate(IResource.class).toSet();
+		return query.evaluate(IResource.class);
 	}
 
-	public Collection<IReference> getInstancesAsReferences() {
+	public IExtendedIterator<IReference> getInstancesAsReferences() {
 		IQuery<?> query = getEntityManager().createQuery(SELECT_INSTANCES);
 		query.setParameter("class", this);
-		return query.evaluateRestricted(IReference.class).toSet();
+		return query.evaluateRestricted(IReference.class);
 	}
 
 	@Override

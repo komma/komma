@@ -160,7 +160,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				}
 				return new Statement(getReference(stmt.getSubject()),
 						getReference(stmt.getPredicate()), toValue(stmt
-								.getObject()), stmt.getContext());
+								.getObject()), stmt.getContext(), stmt
+								.isInferred());
 			}
 		}, readContexts, modifyContexts);
 	}
@@ -916,9 +917,12 @@ public abstract class AbstractEntityManager implements IEntityManager,
 						&& stmt.getObject() instanceof IValue) {
 					return stmt;
 				}
-				return new StatementPattern(getReference(stmt.getSubject()),
-						getReference(stmt.getPredicate()), toValue(stmt
-								.getObject()), stmt.getContext());
+				IReference s = getReference(stmt.getSubject());
+				IReference p = getReference(stmt.getPredicate());
+				IValue o = toValue(stmt.getObject());
+				return stmt instanceof IStatement ? new Statement(s, p, o, stmt
+						.getContext(), ((IStatement) stmt).isInferred())
+						: new StatementPattern(s, p, o, stmt.getContext());
 			}
 		}, modifyContexts);
 	}
