@@ -1,5 +1,6 @@
 package net.enilink.komma.owl.editor.instances;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.viewers.AbstractTableViewer;
@@ -86,6 +87,10 @@ public class InstanceTablePart extends InstancesPart {
 			if (properties != null && columnIndex < properties.size()) {
 				IProperty property = properties.get(columnIndex);
 				IResource resource = (IResource) object;
+				if (property == null) {
+					// return the object name
+					return super.getColumnText(object, columnIndex);
+				}
 				// access all values to fill the property set cache
 				Object[] values = resource.getAsSet(property).toArray();
 				if (values.length > 0) {
@@ -190,23 +195,28 @@ public class InstanceTablePart extends InstancesPart {
 				}
 				column.dispose();
 			}
-			properties = input
-					.getEntityManager()
-					.createQuery(
-							ISparqlConstants.PREFIX
-									+ "SELECT DISTINCT ?p WHERE { "
-									+ "{ select ?r where { ?r a ?c } limit "
-									+ LIMIT
-									+ " } ?r ?p ?o filter (isLiteral(?o) && not exists {?r ?otherP ?o . ?otherP rdfs:subPropertyOf ?p filter (?otherP != ?p)})}")
-					.setParameter("c", input).evaluate(IProperty.class)
-					.toList();
+			properties = new ArrayList<>();
+			// null for the object itself
+			properties.add(null);
+			properties
+					.addAll(input
+							.getEntityManager()
+							.createQuery(
+									ISparqlConstants.PREFIX
+											+ "SELECT DISTINCT ?p WHERE { "
+											+ "{ select ?r where { ?r a ?c } limit "
+											+ LIMIT
+											+ " } ?r ?p ?o filter (isLiteral(?o) && not exists {?r ?otherP ?o . ?otherP rdfs:subPropertyOf ?p filter (?otherP != ?p)})}")
+							.setParameter("c", input).evaluate(IProperty.class)
+							.toList());
 
 			int col = 0;
 			for (IProperty property : properties) {
 				TableColumn column = new TableColumn(tableViewer.getTable(),
 						SWT.LEFT);
-				column.setText(((ILabelProvider) viewer.getLabelProvider())
-						.getText(property));
+				column.setText(property == null ? "Instance"
+						: ((ILabelProvider) viewer.getLabelProvider())
+								.getText(property));
 				column.setResizable(true);
 				column.setMoveable(true);
 				column.addSelectionListener(getSelectionAdapter(column, col++));
