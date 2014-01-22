@@ -17,21 +17,15 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.vocab.owl.DatatypeProperty;
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.owl.ObjectProperty;
-import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.edit.command.AddCommand;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.command.CreateChildCommand;
@@ -47,8 +41,14 @@ import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.IReference;
+import net.enilink.vocab.owl.DatatypeProperty;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.owl.ObjectProperty;
+import net.enilink.vocab.rdfs.RDFS;
+
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 	IReference subPropertyOf = RDFS.PROPERTY_SUBPROPERTYOF;
@@ -228,14 +228,11 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 	@Override
 	public Object getParent(Object object) {
 		if (object instanceof IProperty) {
-			IExtendedIterator<?> it = ((IProperty) object)
-					.getDirectSuperProperties();
-			try {
+			try (IExtendedIterator<?> it = ((IProperty) object)
+					.getDirectSuperProperties()) {
 				if (it.hasNext()) {
 					return it.next();
 				}
-			} finally {
-				it.close();
 			}
 		}
 		return super.getParent(object);
