@@ -48,7 +48,7 @@ public abstract class OntologySupport extends BehaviorBase implements IOntology 
 				.createQuery(
 						ISparqlConstants.PREFIX
 								+ "SELECT DISTINCT ?p WHERE {"
-								+ "?p a ?type . ?type rdfs:subClassOf rdf:Property ."
+								+ "?p a ?type { ?type rdfs:subClassOf rdf:Property } UNION { ?p a rdf:Property } "
 								+ "FILTER NOT EXISTS {"
 								+ " ?p rdfs:subPropertyOf ?other FILTER (?p != ?other && isIRI(?other))"
 								+ "} "

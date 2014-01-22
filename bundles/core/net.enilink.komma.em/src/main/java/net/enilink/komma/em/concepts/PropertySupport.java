@@ -35,19 +35,19 @@ public abstract class PropertySupport extends BehaviorBase implements
 				+ "SELECT DISTINCT ?subProperty "
 				+ "WHERE { "
 				+ "?subProperty rdfs:subPropertyOf ?superProperty . "
-				+ "OPTIONAL {"
+				+ "FILTER NOT EXISTS {"
 				+ "?subProperty rdfs:subPropertyOf ?otherSuperProperty . "
 				+ "?otherSuperProperty rdfs:subPropertyOf ?superProperty . "
-				+ "FILTER (!sameTerm(?subProperty, ?otherSuperProperty) && !sameTerm(?superProperty, ?otherSuperProperty))"
-				+ "} FILTER (!sameTerm(?subProperty, ?superProperty)"
-				+ (named ? " && isIRI(?subProperty)" : "")
-				+ " && !bound(?otherSuperProperty)) }";
+				+ "FILTER (?subProperty != ?otherSuperProperty && ?superProperty != ?otherSuperProperty)"
+				+ "} " //
+				+ "FILTER (?subProperty != ?superProperty"
+				+ (named ? " && isIRI(?subProperty)" : "") + ") }";
 	};
 
 	private static final String SELECT_SUBPROPERTIES(boolean named) {
 		return PREFIX + "SELECT DISTINCT ?subProperty " + "WHERE { "
 				+ "?subProperty rdfs:subPropertyOf ?superProperty . "
-				+ "FILTER (!sameTerm(?subProperty, ?superProperty)"
+				+ "FILTER (?subProperty != ?superProperty"
 				+ (named ? "&& isIRI(?subProperty)" : "") + ") }";
 	};
 
@@ -56,19 +56,19 @@ public abstract class PropertySupport extends BehaviorBase implements
 				+ "SELECT DISTINCT ?superProperty "
 				+ "WHERE { "
 				+ "?subProperty rdfs:subPropertyOf ?superProperty . "
-				+ "OPTIONAL {"
+				+ "FILTER NOT EXISTS {"
 				+ "?subProperty rdfs:subPropertyOf ?otherSuperProperty . "
 				+ "?otherSuperProperty rdfs:subPropertyOf ?superProperty . "
-				+ "FILTER (!sameTerm(?subProperty, ?otherSuperClass) && !sameTerm(?superProperty, ?otherSuperProperty))"
-				+ "} FILTER (!sameTerm(?subProperty, ?superProperty)"
-				+ (named ? "&& isIRI(?superProperty)" : "")
-				+ "&& !bound(?otherSuperProperty)) }";
+				+ "FILTER (?subProperty != ?otherSuperProperty && ?superProperty != ?otherSuperProperty)"
+				+ "} " + "FILTER (?subProperty != ?superProperty"
+				+ (named ? " && isIRI(?subProperty)" : "") + ")" //
+				+ "}";
 	};
 
 	private static final String SELECT_SUPERPROPERTIES(boolean named) {
 		return PREFIX + "SELECT DISTINCT ?superProperty " + "WHERE { "
 				+ "?subProperty rdfs:subPropertyOf ?superProperty . "
-				+ "FILTER (!sameTerm(?subProperty, ?superProperty)"
+				+ "FILTER (?subProperty != ?superProperty"
 				+ (named ? "&& isIRI(?subProperty)" : "") + ") }";
 	}
 
@@ -97,8 +97,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 	private static final String DIRECT_RANGE_QUERY = PREFIX
 			+ "SELECT DISTINCT ?range WHERE { " //
 			+ "?property rdfs:range ?range " //
-			+ "OPTIONAL { ?property rdfs:range ?otherRange . ?range rdfs:subClassOf ?otherRange FILTER (?range != ?otherRange) }" //
-			+ "FILTER (!bound(?otherRange))" //
+			+ "FILTER NOT EXISTS { ?property rdfs:range ?otherRange . ?range rdfs:subClassOf ?otherRange FILTER (?range != ?otherRange) }" //
 			+ " }";
 
 	private static final String RANGE_QUERY = PREFIX
