@@ -66,6 +66,7 @@ public abstract class ItemProviderAdapterFactory<T> extends AdapterFactory
 		supportedTypes.add(IItemLabelProvider.class);
 		supportedTypes.add(IItemPropertySource.class);
 		supportedTypes.add(ITableItemLabelProvider.class);
+		supportedTypes.add(ISearchableItemProvider.class);
 	}
 
 	@Override

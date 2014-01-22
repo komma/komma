@@ -25,8 +25,10 @@ import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.edit.provider.ISearchableItemProvider;
 import net.enilink.komma.edit.provider.IViewerNotification;
 import net.enilink.komma.edit.provider.ReflectiveItemProvider;
+import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
 import net.enilink.komma.edit.provider.ViewerNotification;
 import net.enilink.komma.em.concepts.IOntology;
 import net.enilink.komma.em.concepts.IProperty;
@@ -34,6 +36,7 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.vocab.komma.KOMMA;
+import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdfs.RDFS;
 
 /**
@@ -82,12 +85,36 @@ public class KommaRootPropertyItemProvider extends ReflectiveItemProvider {
 			Collection<IProperty> childrenProperties) {
 	}
 
-	/**
-	 * This returns the parent of the Resource.
-	 */
+	protected String findPatternsFor(URI propertyType) {
+		String typeLiteral = "<" + propertyType + ">";
+		StringBuilder patterns = new StringBuilder("?s a ").append(typeLiteral)
+				.append(" . ");
+		if (OWL.TYPE_OBJECTPROPERTY.equals(propertyType)) {
+			patterns.append("FILTER NOT EXISTS {" //
+					+ "		?s a ?otherType . ?otherType rdfs:subClassOf "
+					+ typeLiteral //
+					+ "		FILTER (?otherType = owl:AnnotationProperty || ?otherType = owl:DatatypeProperty || ?otherType = rdfs:ContainerMembershipProperty)" //
+					+ "}");
+		}
+		return patterns.toString();
+	};
+
 	@Override
-	public Object getParent(Object object) {
-		return null;
+	protected ISearchableItemProvider getSearchableItemProvider() {
+		return new SparqlSearchableItemProvider() {
+			@Override
+			protected String getQueryFindPatterns(Object parent) {
+				if (KOMMA.PROPERTY_ROOTOBJECTPROPERTY.equals(parent)) {
+					return findPatternsFor(OWL.TYPE_OBJECTPROPERTY);
+				} else if (KOMMA.PROPERTY_ROOTDATATYPEPROPERTY.equals(parent)) {
+					return findPatternsFor(OWL.TYPE_DATATYPEPROPERTY);
+				} else if (KOMMA.PROPERTY_ROOTPROPERTY.equals(parent)) {
+					return "?s a ?type { ?type rdfs:subClassOf rdf:Property } UNION { ?s a rdf:Property } "
+							+ "FILTER (?type = owl:AnnotationProperty || !regex(str(?type), 'http://www.w3.org/2002/07/owl#'))";
+				}
+				return super.getQueryFindPatterns(parent);
+			}
+		};
 	}
 
 	/**

@@ -21,6 +21,7 @@
           net.enilink.komma.edit.provider.IStructuredItemContentProvider
           net.enilink.komma.edit.provider.ITreeItemContentProvider
           net.enilink.komma.edit.provider.IItemLabelProvider
+          net.enilink.komma.edit.provider.ISearchableItemProvider
           net.enilink.komma.edit.provider.IItemPropertySource" />
   </extension>
 
@@ -29,6 +30,7 @@
           net.enilink.komma.edit.provider.IStructuredItemContentProvider
           net.enilink.komma.edit.provider.ITreeItemContentProvider
           net.enilink.komma.edit.provider.IItemLabelProvider
+          net.enilink.komma.edit.provider.ISearchableItemProvider
           net.enilink.komma.edit.provider.IItemPropertySource" />
   </extension>
 </plugin>
