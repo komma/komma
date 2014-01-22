@@ -49,7 +49,7 @@ public class LiteralLangTypeEditingSupport extends ResourceEditingSupport {
 		}
 		final ICommand command = super.convertValueFromEditor(editorValue,
 				subject, property, oldValue);
-		return command.compose(new SimpleCommand() {
+		return command == null ? null : command.compose(new SimpleCommand() {
 			@Override
 			protected CommandResult doExecuteWithResult(
 					IProgressMonitor progressMonitor, IAdaptable info)
