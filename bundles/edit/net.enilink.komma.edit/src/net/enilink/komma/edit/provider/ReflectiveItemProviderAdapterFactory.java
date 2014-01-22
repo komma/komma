@@ -17,6 +17,7 @@
 package net.enilink.komma.edit.provider;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.URI;
@@ -40,6 +41,8 @@ public class ReflectiveItemProviderAdapterFactory extends
 	}
 
 	protected Collection<IClass> getTypes(Object object) {
-		return ((IResource) object).getDirectNamedClasses().toSet();
+		return object instanceof IResource ? ((IResource) object)
+				.getDirectNamedClasses().toSet() : Collections
+				.<IClass> emptySet();
 	}
 }
