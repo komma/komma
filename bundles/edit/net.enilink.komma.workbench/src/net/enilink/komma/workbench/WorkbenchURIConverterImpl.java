@@ -108,8 +108,8 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 		if (ontology == null) {
 			ontology = fileURI.toString();
 		}
-		SimpleURIMapRule rule = new SimpleURIMapRule(ontology,
-				fileURI.toString());
+		SimpleURIMapRule rule = new SimpleURIMapRule(file.isDerived() ? 10 : 0,
+				ontology, fileURI.toString());
 		ruleMap.put(fileURI, rule);
 		getURIMapRules().addRule(rule);
 	}
@@ -144,7 +144,7 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 				.toString(), true);
 		IURIMapRule rule = ruleMap.remove(fileURI);
 		if (rule != null) {
-			getURIMapRules().addRule(rule);
+			getURIMapRules().removeRule(rule);
 		}
 	}
 
