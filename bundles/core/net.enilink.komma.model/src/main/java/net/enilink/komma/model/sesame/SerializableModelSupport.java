@@ -3,20 +3,26 @@ package net.enilink.komma.model.sesame;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.eclipse.core.runtime.content.IContentDescription;
-
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.traits.Behaviour;
-import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.komma.core.INamespace;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.Namespace;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.komma.em.util.KommaUtil;
@@ -25,12 +31,8 @@ import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.concepts.Model;
-import net.enilink.komma.core.INamespace;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.core.Namespace;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
+
+import org.eclipse.core.runtime.content.IContentDescription;
 
 @Iri(MODELS.NAMESPACE + "SerializableModel")
 public abstract class SerializableModelSupport implements IModel.Internal,
@@ -103,6 +105,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 	@Override
 	public void load(final InputStream in, final Map<?, ?> options)
 			throws IOException {
+		final List<INamespace> namespaces = new ArrayList<>();
 		final IDataManager dm = ((IModelSet.Internal) getModelSet())
 				.getDataManagerFactory().get();
 		getModelSet().getDataChangeSupport().setEnabled(dm, false);
@@ -141,8 +144,9 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 
 								@Override
 								public Void visitNamespace(INamespace namespace) {
-									dm.setNamespace(namespace.getPrefix(),
-											namespace.getURI());
+									// dm.setNamespace(namespace.getPrefix(),
+									// namespace.getURI());
+									namespaces.add(namespace);
 									return null;
 								}
 							};
@@ -170,6 +174,14 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 				// until endRDF of the above handler is called
 				dm.add(new BlockingIterator<IStatement>(queue, finished),
 						getURI());
+				// add namespaces as model meta-data
+				for (INamespace ns : namespaces) {
+					net.enilink.komma.model.concepts.Namespace modelNs = getEntityManager()
+							.create(net.enilink.komma.model.concepts.Namespace.class);
+					modelNs.setPrefix(ns.getPrefix());
+					modelNs.setURI(ns.getURI());
+					getModelNamespaces().add(modelNs);
+				}
 				if (exception[0] != null) {
 					throw exception[0];
 				}

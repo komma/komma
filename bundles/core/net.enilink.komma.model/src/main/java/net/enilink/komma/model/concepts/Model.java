@@ -95,4 +95,15 @@ public interface Model extends IEntity {
 	 * @generated 
 	 */
 	void setModelWarnings(Set<? extends Diagnostic> warnings);
+	
+	/**
+	 * Namespace mappings for this model.
+	 */
+	@Iri("http://enilink.net/vocab/komma/models#namespace")
+	Set<Namespace> getModelNamespaces();
+	
+	/**
+	 * Namespace mappings for this model.
+	 */
+	void setModelNamespaces(Set<Namespace> namespaces);
 }

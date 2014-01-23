@@ -100,7 +100,7 @@ import com.google.inject.Singleton;
  * </p>
  */
 public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
-		INotificationBroadcaster<INotification>, Behaviour<IModelSet.Internal> {
+		Behaviour<IModelSet.Internal> {
 	private final static Logger log = LoggerFactory
 			.getLogger(ModelSetSupport.class);
 

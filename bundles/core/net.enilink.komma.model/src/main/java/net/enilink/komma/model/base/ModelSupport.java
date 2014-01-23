@@ -15,14 +15,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.IMap;
+import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.commons.util.extensions.RegistryFactoryHelper;
 import net.enilink.composition.traits.Behaviour;
 import net.enilink.komma.common.notify.INotification;
@@ -53,6 +58,8 @@ import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.ObjectSupport;
 import net.enilink.komma.model.concepts.Model;
+import net.enilink.komma.model.concepts.Namespace;
+import net.enilink.komma.model.event.NamespaceNotification;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
 
@@ -116,6 +123,9 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				s = new State();
 				final State theState = s;
 				s.manager = new ThreadLocalEntityManager() {
+					volatile Map<URI, String> uriToPrefix = new ConcurrentHashMap<>();
+					volatile Map<String, URI> prefixToUri = new ConcurrentHashMap<>();
+
 					@Override
 					protected IEntityManager initialValue() {
 						return getModelSet()
@@ -128,11 +138,74 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 					}
 
 					@Override
+					public void removeNamespace(String prefix) {
+						for (Namespace ns : new ArrayList<>(
+								getModelNamespaces())) {
+							if (prefix.equals(ns.getPrefix())) {
+								getModelNamespaces().remove(ns);
+
+								fireNotifications(Arrays
+										.asList(new NamespaceNotification(
+												prefix, ns.getURI(), null)));
+								break;
+							}
+						}
+
+						clearNamespaceCache();
+					}
+
+					@Override
+					public void setNamespace(String prefix, URI uri) {
+						URI oldUri = null;
+						for (Namespace ns : new ArrayList<>(
+								getModelNamespaces())) {
+							if (prefix.equals(ns.getPrefix())) {
+								ns.setPrefix(prefix);
+								oldUri = ns.getURI();
+								break;
+							}
+						}
+						if (oldUri == null) {
+							Namespace ns = getEntityManager().create(
+									Namespace.class);
+							ns.setPrefix(prefix);
+							ns.setURI(uri);
+							getModelNamespaces().add(ns);
+						}
+						fireNotifications(Arrays
+								.asList(new NamespaceNotification(prefix,
+										oldUri, uri)));
+						clearNamespaceCache();
+					}
+
+					@Override
+					public IExtendedIterator<INamespace> getNamespaces() {
+						Map<String, INamespace> prefixMap = new LinkedHashMap<>();
+						for (INamespace ns : WrappedIterator.create(
+								new ArrayList<INamespace>(getModelNamespaces())
+										.iterator()).andThen(
+								super.getNamespaces())) {
+							if (!prefixMap.containsKey(ns.getPrefix())) {
+								prefixMap.put(
+										ns.getPrefix(),
+										new net.enilink.komma.core.Namespace(ns
+												.getPrefix(), ns.getURI()));
+							}
+						}
+						return WrappedIterator.create(prefixMap.values()
+								.iterator());
+					}
+
+					@Override
 					public URI getNamespace(String prefix) {
 						if (prefix == null || prefix.length() == 0) {
 							return getURI().appendLocalPart("");
 						}
-						return super.getNamespace(prefix);
+						if (prefixToUri.isEmpty()) {
+							cacheNamespaces();
+						}
+						URI uri = prefixToUri.get(prefix);
+						return uri != null ? uri : super.getNamespace(prefix);
 					}
 
 					@Override
@@ -140,7 +213,25 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 						if (namespace.equals(getURI().appendLocalPart(""))) {
 							return "";
 						}
-						return super.getPrefix(namespace);
+						if (uriToPrefix.isEmpty()) {
+							cacheNamespaces();
+						}
+						String prefix = uriToPrefix.get(namespace);
+						return prefix != null ? prefix : super
+								.getPrefix(namespace);
+					}
+
+					protected void clearNamespaceCache() {
+						uriToPrefix.clear();
+						prefixToUri.clear();
+					}
+
+					protected void cacheNamespaces() {
+						for (INamespace ns : new ArrayList<>(
+								getModelNamespaces())) {
+							uriToPrefix.put(ns.getURI(), ns.getPrefix());
+							prefixToUri.put(ns.getPrefix(), ns.getURI());
+						}
 					}
 				};
 				injector.injectMembers(s.manager);
@@ -214,8 +305,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	@Override
 	public void fireNotifications(
 			Collection<? extends INotification> notifications) {
-		((INotificationBroadcaster<INotification>) getModelSet())
-				.fireNotifications(notifications);
+		getModelSet().fireNotifications(notifications);
 	}
 
 	protected Map<?, ?> getDefaultDeleteOptions() {

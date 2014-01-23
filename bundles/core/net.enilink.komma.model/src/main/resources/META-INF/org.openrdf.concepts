@@ -2,3 +2,4 @@ net.enilink.komma.model.concepts.Diagnostic
 net.enilink.komma.model.concepts.Model
 net.enilink.komma.model.concepts.ModelSet
 net.enilink.komma.model.concepts.ModelSetContainer
+net.enilink.komma.model.concepts.Namespace

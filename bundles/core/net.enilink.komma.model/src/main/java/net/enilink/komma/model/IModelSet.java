@@ -19,6 +19,7 @@ import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.komma.common.adapter.IAdapterSet;
 import net.enilink.komma.common.notify.INotification;
+import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.INotifier;
 import net.enilink.komma.common.util.WrappedException;
@@ -38,7 +39,8 @@ import com.google.inject.Module;
 
 @Iri(MODELS.NAMESPACE + "ModelSet")
 public interface IModelSet extends INotifier<INotification> {
-	interface Internal extends IModelSet {
+	interface Internal extends IModelSet,
+			INotificationBroadcaster<INotification> {
 		/**
 		 * Collects {@link Module} that are used to construct an
 		 * {@link Injector} instance for models.
