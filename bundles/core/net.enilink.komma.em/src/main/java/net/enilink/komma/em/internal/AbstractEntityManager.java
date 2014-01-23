@@ -140,7 +140,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	private volatile TypeManager typeManager;
 
-	private Map<net.enilink.komma.core.URI, String> uriToPrefix = null;
+	private volatile Map<URI, String> uriToPrefix = new ConcurrentHashMap<>();
+	private volatile Map<String, URI> prefixToUri = new ConcurrentHashMap<>();
 
 	private static final URI[] NO_CONTEXTS = new URI[0];
 
@@ -607,8 +608,11 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@Override
-	public net.enilink.komma.core.URI getNamespace(String prefix) {
-		return dm.getNamespace(prefix);
+	public URI getNamespace(String prefix) {
+		if (prefixToUri.isEmpty()) {
+			cacheNamespaces();
+		}
+		return prefixToUri.get(prefix);
 	}
 
 	@Override
@@ -617,14 +621,23 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@Override
-	public String getPrefix(net.enilink.komma.core.URI namespaceUri) {
-		if (uriToPrefix == null) {
-			uriToPrefix = new ConcurrentHashMap<net.enilink.komma.core.URI, String>();
-			for (INamespace namespace : getNamespaces()) {
-				uriToPrefix.put(namespace.getURI(), namespace.getPrefix());
-			}
+	public String getPrefix(URI namespaceUri) {
+		if (uriToPrefix.isEmpty()) {
+			cacheNamespaces();
 		}
 		return uriToPrefix.get(namespaceUri);
+	}
+
+	protected void clearNamespaceCache() {
+		uriToPrefix.clear();
+		prefixToUri.clear();
+	}
+
+	protected void cacheNamespaces() {
+		for (INamespace ns : getNamespaces()) {
+			uriToPrefix.put(ns.getURI(), ns.getPrefix());
+			prefixToUri.put(ns.getPrefix(), ns.getURI());
+		}
 	}
 
 	@Override
@@ -1011,7 +1024,6 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				if (type == null) {
 					continue;
 				}
-
 				getTypeManager().removeType(resource, type);
 			}
 
@@ -1027,8 +1039,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	public void removeNamespace(String prefix) {
-		uriToPrefix = null;
 		dm.removeNamespace(prefix);
+		clearNamespaceCache();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1101,8 +1113,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	public void setNamespace(String prefix, URI uri) {
-		uriToPrefix = null;
 		dm.setNamespace(prefix, uri);
+		clearNamespaceCache();
 	}
 
 	@Override
