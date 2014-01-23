@@ -67,8 +67,25 @@ public interface IQuery<R> extends IQueryBase<IQuery<R>>, AutoCloseable {
 	<T> IExtendedIterator<T> evaluateRestricted(Class<T> resultType,
 			Class<?>... resultTypes);
 
+	/**
+	 * Asserts the given <code>resultTypes</code> for the result values. This
+	 * ensures that the values have at least the <code>resultTypes</code>.
+	 * 
+	 * @param resultTypes
+	 *            The types for the result values
+	 * @return The query object
+	 */
 	<T> IQuery<T> bindResultType(Class<T> resultType, Class<?>... resultTypes);
 
+	/**
+	 * Restricts the types of the result values to the given
+	 * <code>resultTypes</code>. This ensures that no additional queries are
+	 * executed to retrieve the actual types of the values.
+	 * 
+	 * @param resultTypes
+	 *            The types for the result values
+	 * @return The query object
+	 */
 	<T> IQuery<T> restrictResultType(Class<T> resultType,
 			Class<?>... resultTypes);
 

@@ -11,8 +11,31 @@
 package net.enilink.komma.core;
 
 public interface IQueryBase<Q extends IQueryBase<Q>> {
+	/**
+	 * Asserts the given <code>resultTypes</code> for the result denoted by
+	 * <code>name</code>. This ensures that the result values for
+	 * <code>name</code> have at least the <code>resultTypes</code>.
+	 * 
+	 * @param name
+	 *            The name of the result variable
+	 * @param resultTypes
+	 *            The types for the result variable
+	 * @return The query object
+	 */
 	Q bindResultType(String name, Class<?>... resultTypes);
 
+	/**
+	 * Restricts the types of the result values for <code>name</code> to the
+	 * given <code>resultTypes</code>. This ensures that no additional queries
+	 * are executed to retrieve the actual types of the result values for
+	 * <code>name</code>.
+	 * 
+	 * @param name
+	 *            The name of the result variable
+	 * @param resultTypes
+	 *            The types for the result variable
+	 * @return The query object
+	 */
 	Q restrictResultType(String name, Class<?>... resultTypes);
 
 	/**
