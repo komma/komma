@@ -62,7 +62,7 @@ public class RDFXMLWriter implements RDFWriter {
 	 * Creates a new RDFXMLWriter that will write to the supplied OutputStream.
 	 * 
 	 * @param out
-	 *        The OutputStream to write the RDF/XML document to.
+	 *            The OutputStream to write the RDF/XML document to.
 	 */
 	public RDFXMLWriter(OutputStream out) {
 		this(new OutputStreamWriter(out, Charset.forName("UTF-8")));
@@ -72,7 +72,7 @@ public class RDFXMLWriter implements RDFWriter {
 	 * Creates a new RDFXMLWriter that will write to the supplied Writer.
 	 * 
 	 * @param writer
-	 *        The Writer to write the RDF/XML document to.
+	 *            The Writer to write the RDF/XML document to.
 	 */
 	public RDFXMLWriter(Writer writer) {
 		this.writer = writer;
@@ -101,9 +101,7 @@ public class RDFXMLWriter implements RDFWriter {
 		writingStarted = true;
 	}
 
-	protected void writeHeader()
-		throws IOException
-	{
+	protected void writeHeader() throws IOException {
 		try {
 			// This export format needs the RDF namespace to be defined, add a
 			// prefix for it if there isn't one yet.
@@ -141,15 +139,12 @@ public class RDFXMLWriter implements RDFWriter {
 			writeEndOfStartTag();
 
 			writeNewLine();
-		}
-		finally {
+		} finally {
 			headerWritten = true;
 		}
 	}
 
-	public void endRDF()
-		throws RDFHandlerException
-	{
+	public void endRDF() throws RDFHandlerException {
 		if (!writingStarted) {
 			throw new RuntimeException("Document writing has not yet started");
 		}
@@ -165,11 +160,9 @@ public class RDFXMLWriter implements RDFWriter {
 			writeEndTag(RDF.NAMESPACE, "RDF");
 
 			writer.flush();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new RDFHandlerException(e);
-		}
-		finally {
+		} finally {
 			writingStarted = false;
 			headerWritten = false;
 		}
@@ -186,21 +179,26 @@ public class RDFXMLWriter implements RDFWriter {
 		}
 
 		if (!namespaceTable.containsKey(name)) {
-			// Namespace not yet mapped to a prefix, try to give it the specified
+			// Namespace not yet mapped to a prefix, try to give it the
+			// specified
 			// prefix
 
-			boolean isLegalPrefix = prefix.length() == 0 || XMLUtil.isNCName(prefix);
+			boolean isLegalPrefix = prefix.length() == 0
+					|| XMLUtil.isNCName(prefix);
 
 			if (!isLegalPrefix || namespaceTable.containsValue(prefix)) {
-				// Specified prefix is not legal or the prefix is already in use,
+				// Specified prefix is not legal or the prefix is already in
+				// use,
 				// generate a legal unique prefix
 
 				if (fixedPrefix) {
 					if (isLegalPrefix) {
-						throw new IllegalArgumentException("Prefix is already in use: " + prefix);
-					}
-					else {
-						throw new IllegalArgumentException("Prefix is not a valid XML namespace prefix: " + prefix);
+						throw new IllegalArgumentException(
+								"Prefix is already in use: " + prefix);
+					} else {
+						throw new IllegalArgumentException(
+								"Prefix is not a valid XML namespace prefix: "
+										+ prefix);
 					}
 				}
 
@@ -221,11 +219,18 @@ public class RDFXMLWriter implements RDFWriter {
 		}
 	}
 
-	public void handleStatement(Statement st)
-		throws RDFHandlerException
-	{
+	protected String startWithLetter(String nodeID) {
+		if (nodeID.length() > 0 && Character.isDigit(nodeID.charAt(0))) {
+			return "b" + nodeID;
+		} else {
+			return nodeID;
+		}
+	}
+
+	public void handleStatement(Statement st) throws RDFHandlerException {
 		if (!writingStarted) {
-			throw new RuntimeException("Document writing has not yet been started");
+			throw new RuntimeException(
+					"Document writing has not yet been started");
 		}
 
 		Resource subj = st.getSubject();
@@ -237,8 +242,9 @@ public class RDFXMLWriter implements RDFWriter {
 		String predString = pred.toString();
 		int predSplitIdx = XMLUtil.findURISplitIndex(predString);
 		if (predSplitIdx == -1) {
-			throw new RDFHandlerException("Unable to create XML namespace-qualified name for predicate: "
-					+ predString);
+			throw new RDFHandlerException(
+					"Unable to create XML namespace-qualified name for predicate: "
+							+ predString);
 		}
 
 		String predNamespace = predString.substring(0, predSplitIdx);
@@ -257,11 +263,11 @@ public class RDFXMLWriter implements RDFWriter {
 				writeNewLine();
 				writeStartOfStartTag(RDF.NAMESPACE, "Description");
 				if (subj instanceof BNode) {
-					BNode bNode = (BNode)subj;
-					writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
-				}
-				else {
-					URI uri = (URI)subj;
+					BNode bNode = (BNode) subj;
+					writeAttribute(RDF.NAMESPACE, "nodeID",
+							startWithLetter(bNode.getID()));
+				} else {
+					URI uri = (URI) subj;
 					writeAttribute(RDF.NAMESPACE, "about", uri.toString());
 				}
 				writeEndOfStartTag();
@@ -276,21 +282,20 @@ public class RDFXMLWriter implements RDFWriter {
 
 			// OBJECT
 			if (obj instanceof Resource) {
-				Resource objRes = (Resource)obj;
+				Resource objRes = (Resource) obj;
 
 				if (objRes instanceof BNode) {
-					BNode bNode = (BNode)objRes;
-					writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
-				}
-				else {
-					URI uri = (URI)objRes;
+					BNode bNode = (BNode) objRes;
+					writeAttribute(RDF.NAMESPACE, "nodeID",
+							startWithLetter(bNode.getID()));
+				} else {
+					URI uri = (URI) objRes;
 					writeAttribute(RDF.NAMESPACE, "resource", uri.toString());
 				}
 
 				writeEndOfEmptyTag();
-			}
-			else if (obj instanceof Literal) {
-				Literal objLit = (Literal)obj;
+			} else if (obj instanceof Literal) {
+				Literal objLit = (Literal) obj;
 
 				// language attribute
 				if (objLit.getLanguage() != null) {
@@ -306,9 +311,9 @@ public class RDFXMLWriter implements RDFWriter {
 
 					if (isXMLLiteral) {
 						writeAttribute(RDF.NAMESPACE, "parseType", "Literal");
-					}
-					else {
-						writeAttribute(RDF.NAMESPACE, "datatype", datatype.toString());
+					} else {
+						writeAttribute(RDF.NAMESPACE, "datatype",
+								datatype.toString());
 					}
 				}
 
@@ -318,8 +323,7 @@ public class RDFXMLWriter implements RDFWriter {
 				if (isXMLLiteral) {
 					// Write XML literal as plain XML
 					writer.write(objLit.getLabel());
-				}
-				else {
+				} else {
 					writeCharacterData(objLit.getLabel());
 				}
 
@@ -330,15 +334,12 @@ public class RDFXMLWriter implements RDFWriter {
 
 			// Don't write </rdf:Description> yet, maybe the next statement
 			// has the same subject.
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new RDFHandlerException(e);
 		}
 	}
 
-	public void handleComment(String comment)
-		throws RDFHandlerException
-	{
+	public void handleComment(String comment) throws RDFHandlerException {
 		try {
 			if (!headerWritten) {
 				writeHeader();
@@ -350,15 +351,12 @@ public class RDFXMLWriter implements RDFWriter {
 			writer.write(comment);
 			writer.write(" -->");
 			writeNewLine();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new RDFHandlerException(e);
 		}
 	}
 
-	protected void flushPendingStatements()
-		throws IOException
-	{
+	protected void flushPendingStatements() throws IOException {
 		if (lastWrittenSubject != null) {
 			// The last statement still has to be closed:
 			writeEndTag(RDF.NAMESPACE, "Description");
@@ -369,8 +367,7 @@ public class RDFXMLWriter implements RDFWriter {
 	}
 
 	protected void writeStartOfStartTag(String namespace, String localName)
-		throws IOException
-	{
+			throws IOException {
 		String prefix = namespaceTable.get(namespace);
 
 		if (prefix == null) {
@@ -379,13 +376,11 @@ public class RDFXMLWriter implements RDFWriter {
 			writer.write(" xmlns=\"");
 			writer.write(XMLUtil.escapeDoubleQuotedAttValue(namespace));
 			writer.write("\"");
-		}
-		else if (prefix.length() == 0) {
+		} else if (prefix.length() == 0) {
 			// default namespace
 			writer.write("<");
 			writer.write(localName);
-		}
-		else {
+		} else {
 			writer.write("<");
 			writer.write(prefix);
 			writer.write(":");
@@ -394,8 +389,7 @@ public class RDFXMLWriter implements RDFWriter {
 	}
 
 	protected void writeAttribute(String attName, String value)
-		throws IOException
-	{
+			throws IOException {
 		writer.write(" ");
 		writer.write(attName);
 		writer.write("=\"");
@@ -404,13 +398,13 @@ public class RDFXMLWriter implements RDFWriter {
 	}
 
 	protected void writeAttribute(String namespace, String attName, String value)
-		throws IOException
-	{
+			throws IOException {
 		String prefix = namespaceTable.get(namespace);
 
 		if (prefix == null || prefix.length() == 0) {
-			throw new RuntimeException("No prefix has been declared for the namespace used in this attribute: "
-					+ namespace);
+			throw new RuntimeException(
+					"No prefix has been declared for the namespace used in this attribute: "
+							+ namespace);
 		}
 
 		writer.write(" ");
@@ -422,29 +416,23 @@ public class RDFXMLWriter implements RDFWriter {
 		writer.write("\"");
 	}
 
-	protected void writeEndOfStartTag()
-		throws IOException
-	{
+	protected void writeEndOfStartTag() throws IOException {
 		writer.write(">");
 	}
 
-	protected void writeEndOfEmptyTag()
-		throws IOException
-	{
+	protected void writeEndOfEmptyTag() throws IOException {
 		writer.write("/>");
 	}
 
 	protected void writeEndTag(String namespace, String localName)
-		throws IOException
-	{
+			throws IOException {
 		String prefix = namespaceTable.get(namespace);
 
 		if (prefix == null || prefix.length() == 0) {
 			writer.write("</");
 			writer.write(localName);
 			writer.write(">");
-		}
-		else {
+		} else {
 			writer.write("</");
 			writer.write(prefix);
 			writer.write(":");
@@ -453,21 +441,15 @@ public class RDFXMLWriter implements RDFWriter {
 		}
 	}
 
-	protected void writeCharacterData(String chars)
-		throws IOException
-	{
+	protected void writeCharacterData(String chars) throws IOException {
 		writer.write(XMLUtil.escapeCharacterData(chars));
 	}
 
-	protected void writeIndent()
-		throws IOException
-	{
+	protected void writeIndent() throws IOException {
 		writer.write("\t");
 	}
 
-	protected void writeNewLine()
-		throws IOException
-	{
+	protected void writeNewLine() throws IOException {
 		writer.write("\n");
 	}
 
@@ -478,7 +460,7 @@ public class RDFXMLWriter implements RDFWriter {
 
 	@Override
 	public WriterConfig getWriterConfig() {
-		return this.config; 
+		return this.config;
 	}
 
 	@Override

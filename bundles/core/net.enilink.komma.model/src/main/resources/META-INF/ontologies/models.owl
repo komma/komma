@@ -13,25 +13,25 @@
 <owl:Class rdf:about="#Diagnostic">
 	<rdfs:comment>A noteworthy issue in a document.</rdfs:comment>
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode4">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode4">
 			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
 			<owl:onProperty rdf:resource="#line"/>
 		</owl:Restriction>
 	</rdfs:subClassOf>
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode5">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode5">
 			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
 			<owl:onProperty rdf:resource="#message"/>
 		</owl:Restriction>
 	</rdfs:subClassOf>
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode6">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode6">
 			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
 			<owl:onProperty rdf:resource="#column"/>
 		</owl:Restriction>
 	</rdfs:subClassOf>
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode7">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode7">
 			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
 			<owl:onProperty rdf:resource="#location"/>
 		</owl:Restriction>
@@ -39,37 +39,37 @@
 </owl:Class>
 <owl:Class rdf:about="#Model">
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode10">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode10">
 			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
 			<owl:onProperty rdf:resource="#persistent"/>
 		</owl:Restriction>
 	</rdfs:subClassOf>
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode11">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode11">
 			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
 			<owl:onProperty rdf:resource="#modified"/>
 		</owl:Restriction>
 	</rdfs:subClassOf>
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode12">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode12">
 			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
 			<owl:onProperty rdf:resource="#loading"/>
 		</owl:Restriction>
 	</rdfs:subClassOf>
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode13">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode13">
 			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
 			<owl:onProperty rdf:resource="#loaded"/>
 		</owl:Restriction>
 	</rdfs:subClassOf>
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode8">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode8">
 			<owl:allValuesFrom rdf:resource="#Diagnostic"/>
 			<owl:onProperty rdf:resource="#warning"/>
 		</owl:Restriction>
 	</rdfs:subClassOf>
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode9">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode9">
 			<owl:allValuesFrom rdf:resource="#Diagnostic"/>
 			<owl:onProperty rdf:resource="#error"/>
 		</owl:Restriction>
@@ -77,13 +77,13 @@
 </owl:Class>
 <owl:Class rdf:about="#ModelSet">
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode2">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode2">
 			<owl:allValuesFrom rdf:resource="#Model"/>
 			<owl:onProperty rdf:resource="#model"/>
 		</owl:Restriction>
 	</rdfs:subClassOf>
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode3">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode3">
 			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
 			<owl:onProperty rdf:resource="#persistent"/>
 		</owl:Restriction>
@@ -91,7 +91,7 @@
 </owl:Class>
 <owl:Class rdf:about="#ModelSetContainer">
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode1">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode1">
 			<owl:allValuesFrom rdf:resource="#ModelSet"/>
 			<owl:onProperty rdf:resource="#containsModelSet"/>
 		</owl:Restriction>
@@ -99,13 +99,13 @@
 </owl:Class>
 <owl:Class rdf:about="#Namespace">
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode64">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode64">
 			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int">1</owl:cardinality>
 			<owl:onProperty rdf:resource="#prefix"/>
 		</owl:Restriction>
 	</rdfs:subClassOf>
 	<rdfs:subClassOf>
-		<owl:Restriction rdf:nodeID="088aa36be7ce409b8d119d312257c00fnode65">
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode65">
 			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int">1</owl:cardinality>
 			<owl:onProperty rdf:resource="#uri"/>
 		</owl:Restriction>
