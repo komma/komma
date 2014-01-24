@@ -601,11 +601,8 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		URI resourceURI = EditUIUtil.getURI(editor.getEditorInput());
 		if (resourceURI.scheme() == null
 				|| !resourceURI.scheme().toLowerCase().startsWith("http")) {
-			InputStream in = null;
-			try {
-				IURIConverter uriConverter = modelSet.getURIConverter();
-				in = uriConverter.createInputStream(resourceURI);
-
+			IURIConverter uriConverter = modelSet.getURIConverter();
+			try (InputStream in = uriConverter.createInputStream(resourceURI)) {
 				String ontology = ModelUtil.findOntology(in, resourceURI
 						.toString(), ModelUtil.mimeType(ModelUtil
 						.contentDescription(uriConverter, resourceURI)));
@@ -615,21 +612,11 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 							.addRule(
 									new SimpleURIMapRule(ontology, resourceURI
 											.toString()));
-
 					resourceURI = URIImpl.createURI(ontology);
 				}
 			} catch (Exception e) {
 				KommaEditUIPlugin.INSTANCE.log(e);
-			} finally {
-				if (in != null) {
-					try {
-						in.close();
-					} catch (IOException e) {
-						KommaEditUIPlugin.INSTANCE.log(e);
-					}
-				}
 			}
-
 		}
 
 		Exception exception = null;
