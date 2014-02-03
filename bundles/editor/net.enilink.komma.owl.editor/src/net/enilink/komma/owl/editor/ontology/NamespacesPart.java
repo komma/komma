@@ -152,8 +152,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 
 		@Override
 		protected boolean canEdit(Object element) {
-			return element instanceof INamespace
-					&& !((INamespace) element).isDerived();
+			return true;
 		}
 
 		@Override
