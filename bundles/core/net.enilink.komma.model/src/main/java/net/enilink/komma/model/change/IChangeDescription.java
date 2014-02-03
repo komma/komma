@@ -14,17 +14,34 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 
-
 /**
  * Description of an model change
  */
 public interface IChangeDescription {
+	/**
+	 * Undoes my changes.
+	 * 
+	 * @param monitor
+	 *            The progress indicator
+	 * @param info
+	 *            Additional context information
+	 * @return A status object that describes the result of this operation.
+	 */
 	IStatus undo(IProgressMonitor monitor, IAdaptable info);
 
+	/**
+	 * Re-does my changes.
+	 * 
+	 * @param monitor
+	 *            The progress indicator
+	 * @param info
+	 *            Additional context information
+	 * @return A status object that describes the result of this operation.
+	 */
 	IStatus redo(IProgressMonitor monitor, IAdaptable info);
 
 	/**
-	 * Queries whether I can {@link IChangeDescription#undo() undo} my changes.
+	 * Queries whether I can {@link IChangeDescription#undo} my changes.
 	 * 
 	 * @return <code>true</code> if my changes can be undone; <code>false</code>
 	 *         otherwise
