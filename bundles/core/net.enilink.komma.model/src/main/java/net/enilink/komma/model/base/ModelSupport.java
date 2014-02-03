@@ -150,7 +150,6 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 								break;
 							}
 						}
-
 						clearNamespaceCache();
 					}
 
@@ -184,12 +183,22 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 						for (INamespace ns : WrappedIterator.create(
 								new ArrayList<INamespace>(getModelNamespaces())
 										.iterator()).andThen(
-								super.getNamespaces())) {
+								super.getNamespaces().mapWith(
+								// mark inherited namespaces as derived
+										new IMap<INamespace, INamespace>() {
+											@Override
+											public INamespace map(INamespace ns) {
+												return new net.enilink.komma.core.Namespace(
+														ns.getPrefix(), ns
+																.getURI(), true);
+											}
+										}))) {
 							if (!prefixMap.containsKey(ns.getPrefix())) {
 								prefixMap.put(
 										ns.getPrefix(),
 										new net.enilink.komma.core.Namespace(ns
-												.getPrefix(), ns.getURI()));
+												.getPrefix(), ns.getURI(), ns
+												.isDerived()));
 							}
 						}
 						return WrappedIterator.create(prefixMap.values()

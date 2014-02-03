@@ -235,7 +235,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 			}
 			// use empty prefix for namespace of this model
 			dataVisitor.visitNamespace(new Namespace("", getURI()
-					.appendLocalPart("").toString()));
+					.appendLocalPart("")));
 
 			// expand blank nodes below IRIs up to expandDepth
 			// TODO also expand blank nodes below other blank nodes

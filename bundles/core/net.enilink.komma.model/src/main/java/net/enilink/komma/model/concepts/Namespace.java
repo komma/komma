@@ -15,4 +15,7 @@ public interface Namespace extends INamespace {
 	URI getURI();
 
 	void setURI(URI uri);
+
+	@Iri("http://enilink.net/vocab/komma/models#derived")
+	boolean isDerived();
 }
