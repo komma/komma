@@ -14,17 +14,21 @@ package net.enilink.komma.owl.editor.ontology;
 import java.util.Collection;
 import java.util.Iterator;
 
+import net.enilink.komma.common.command.AbstractCommand.INoChangeRecording;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationFilter;
+import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Namespace;
 import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.edit.provider.IItemColorProvider;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
+import net.enilink.komma.edit.ui.provider.ExtendedColorRegistry;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.model.IModel;
@@ -42,6 +46,7 @@ import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -52,6 +57,7 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -70,17 +76,31 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		Prefix, Namespace
 	}
 
-	abstract class NamespaceCommand extends SimpleCommand {
-		public NamespaceCommand() {
+	static class ModifyNamespaceCommand extends SimpleCommand implements
+			INoChangeRecording {
+		final IModel model;
+		final INamespace oldNs;
+		final INamespace newNs;
+
+		ModifyNamespaceCommand(IModel model, INamespace oldNs, INamespace newNs) {
 			super("Modify namespace");
+			this.model = model;
+			this.oldNs = oldNs;
+			this.newNs = newNs;
 		}
 
 		@Override
 		protected CommandResult doExecuteWithResult(
 				IProgressMonitor progressMonitor, IAdaptable info)
 				throws ExecutionException {
+			IEntityManager em = model.getManager();
 			try {
-				modifyNamespace();
+				if (oldNs != null) {
+					em.removeNamespace(oldNs.getPrefix());
+				}
+				if (newNs != null) {
+					em.setNamespace(newNs.getPrefix(), newNs.getURI());
+				}
 				// force model to be modified
 				model.setModified(true);
 			} catch (KommaException e) {
@@ -89,7 +109,30 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 			return CommandResult.newOKCommandResult();
 		}
 
-		protected abstract void modifyNamespace();
+		@Override
+		protected CommandResult doUndoWithResult(
+				IProgressMonitor progressMonitor, IAdaptable info)
+				throws ExecutionException {
+			IEntityManager em = model.getManager();
+			try {
+				if (newNs != null) {
+					em.removeNamespace(newNs.getPrefix());
+				}
+				if (oldNs != null) {
+					em.setNamespace(oldNs.getPrefix(), oldNs.getURI());
+				}
+			} catch (KommaException e) {
+				return CommandResult.newErrorCommandResult(e);
+			}
+			return CommandResult.newOKCommandResult();
+		}
+
+		@Override
+		protected CommandResult doRedoWithResult(
+				IProgressMonitor progressMonitor, IAdaptable info)
+				throws ExecutionException {
+			return doExecuteWithResult(progressMonitor, info);
+		}
 	}
 
 	private class NamespaceEditingSupport extends EditingSupport {
@@ -109,7 +152,8 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 
 		@Override
 		protected boolean canEdit(Object element) {
-			return true;
+			return element instanceof INamespace
+					&& !((INamespace) element).isDerived();
 		}
 
 		@Override
@@ -127,40 +171,28 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		@Override
 		protected void setValue(Object element, final Object value) {
 			final INamespace namespace = (INamespace) element;
+			final IEntityManager em = model.getManager();
 			switch (columnType) {
 			case Prefix:
-				for (INamespace existing : model.getManager().getNamespaces()) {
+				for (INamespace existing : em.getNamespaces()) {
 					if (value.equals(existing.getPrefix())) {
 						return;
 					}
 				}
-				execute(new NamespaceCommand() {
-					@Override
-					protected void modifyNamespace() {
-						model.getManager().removeNamespace(
-								namespace.getPrefix());
-						model.getManager().setNamespace((String) value,
-								namespace.getURI());
-					}
-				});
+				execute(new ModifyNamespaceCommand(model, namespace,
+						new Namespace((String) value, namespace.getURI())));
 				break;
 			case Namespace:
-				execute(new NamespaceCommand() {
-					@Override
-					protected void modifyNamespace() {
-						model.getManager().removeNamespace(
-								namespace.getPrefix());
-						model.getManager().setNamespace(namespace.getPrefix(),
-								URIImpl.createURI((String) value));
-					}
-				});
+				execute(new ModifyNamespaceCommand(model, namespace,
+						new Namespace(namespace.getPrefix(),
+								URIImpl.createURI((String) value))));
 			}
 
 		}
 
 	}
 
-	private boolean execute(NamespaceCommand command) {
+	private boolean execute(ModifyNamespaceCommand command) {
 		try {
 			getEditingDomain().getCommandStack().execute(command, null, null);
 			return true;
@@ -171,12 +203,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 	}
 
 	public void removeNamespace(final INamespace element) {
-		execute(new NamespaceCommand() {
-			@Override
-			protected void modifyNamespace() {
-				model.getManager().removeNamespace(element.getPrefix());
-			}
-		});
+		execute(new ModifyNamespaceCommand(model, element, null));
 	}
 
 	private class NamespaceListener implements
@@ -194,7 +221,9 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 	};
 
 	private class NamespaceLabelProvider extends LabelProvider implements
-			ITableLabelProvider {
+			ITableLabelProvider, ITableColorProvider {
+		Color foreground = namespaceViewer.getControl().getForeground();
+		Color background = namespaceViewer.getControl().getBackground();
 
 		@Override
 		public Image getColumnImage(Object element, int columnIndex) {
@@ -212,6 +241,21 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 				}
 			}
 			return "";
+		}
+
+		@Override
+		public Color getForeground(Object element, int columnIndex) {
+			if (element instanceof INamespace
+					&& ((INamespace) element).isDerived()) {
+				return ExtendedColorRegistry.INSTANCE.getColor(foreground,
+						background, IItemColorProvider.GRAYED_OUT_COLOR);
+			}
+			return null;
+		}
+
+		@Override
+		public Color getBackground(Object element, int columnIndex) {
+			return null;
 		}
 	}
 
@@ -319,7 +363,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 	}
 
 	void addItem() {
-		INamespace newNs = new Namespace("", "http://");
+		INamespace newNs = new Namespace("", URIImpl.createURI("http://"));
 		namespaceViewer.add(newNs);
 		namespaceViewer.setSelection(new StructuredSelection(newNs), true);
 	}
