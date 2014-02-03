@@ -17,6 +17,7 @@ import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.InferencingCapability;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
+import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerQuery;
 import net.enilink.komma.dm.IDataManagerUpdate;
@@ -335,7 +336,8 @@ public class SesameRepositoryDataManager implements IDataManager {
 						throws Exception {
 					try {
 						return new net.enilink.komma.core.Namespace(
-								element.getPrefix(), element.getName());
+								element.getPrefix(), URIImpl.createURI(element
+										.getName()));
 					} catch (IllegalArgumentException e) {
 						return null;
 					}
