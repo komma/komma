@@ -13,14 +13,16 @@ package net.enilink.komma.core;
 public class Namespace implements INamespace {
 	protected String prefix;
 	protected URI uri;
-
-	public Namespace(String prefix, String uri) {
-		this(prefix, URIImpl.createURI(uri));
-	}
+	protected boolean derived;
 
 	public Namespace(String prefix, URI uri) {
+		this(prefix, uri, false);
+	}
+
+	public Namespace(String prefix, URI uri, boolean derived) {
 		this.prefix = prefix;
 		this.uri = uri;
+		this.derived = derived;
 	}
 
 	@Override
@@ -31,6 +33,11 @@ public class Namespace implements INamespace {
 	@Override
 	public URI getURI() {
 		return uri;
+	}
+
+	@Override
+	public boolean isDerived() {
+		return derived;
 	}
 
 	@Override

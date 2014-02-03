@@ -16,9 +16,9 @@ package net.enilink.komma.core;
  */
 public interface IStatement extends IStatementPattern {
 	/**
-	 * Returns whether this statement is inferred or not
+	 * Returns whether this statement is inferred or not.
 	 * 
-	 * @return <code>true<</code> if this statement is inferred
+	 * @return <code>true</code> if this statement is inferred
 	 */
 	boolean isInferred();
 }

@@ -11,7 +11,7 @@
 package net.enilink.komma.core;
 
 /**
- * Represents an association of a namespace URI to a prefix.
+ * Represents an association of a prefix to a namespace URI.
  * 
  */
 public interface INamespace {
@@ -28,4 +28,12 @@ public interface INamespace {
 	 * @return The associated URI
 	 */
 	URI getURI();
+
+	/**
+	 * Returns whether this namespace is explicit, and thus changeable, or in
+	 * some way derived, and thus read-only.
+	 * 
+	 * @return <code>true</code> if this statement is inferred
+	 */
+	boolean isDerived();
 }
