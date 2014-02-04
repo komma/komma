@@ -48,7 +48,9 @@ public interface KOMMA {
 
 	public static final URI PROPERTY_CONTAINSTRANSITIVE = NAMESPACE_URI.appendFragment("containsTransitive");
 	
-	public static final URI PROPERTY_HASDESCENDANT = NAMESPACE_URI.appendFragment("hasDescendant");
+	public static final URI PROPERTY_CHILD = NAMESPACE_URI.appendFragment("child");
+	
+	public static final URI PROPERTY_DESCENDANT = NAMESPACE_URI.appendFragment("descendant");
 
 	public static final URI PROPERTY_CONTAINS = NAMESPACE_URI.appendFragment("contains");
 

@@ -1,295 +1,343 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <rdf:RDF
-    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    xmlns:ontologies="http://enilink.net/vocab/"
-    xmlns:owl="http://www.w3.org/2002/07/owl#"
-    xmlns:owl2xml="http://www.w3.org/2006/12/owl2-xml#"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-    xmlns:komma="http://enilink.net/vocab/komma#"
-  xml:base="http://enilink.net/vocab/komma">
-  <owl:Ontology rdf:about=""/>
-  <owl:Class rdf:ID="LiteralKeyValueMap">
-    <komma:isAbstract rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean"
-    >true</komma:isAbstract>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class>
-            <owl:intersectionOf rdf:parseType="Collection">
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:FunctionalProperty rdf:ID="keyData"/>
-                </owl:onProperty>
-              </owl:Restriction>
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:FunctionalProperty rdf:ID="valueData"/>
-                </owl:onProperty>
-              </owl:Restriction>
-            </owl:intersectionOf>
-          </owl:Class>
-        </owl:allValuesFrom>
-        <owl:onProperty>
-          <owl:InverseFunctionalProperty rdf:ID="entry"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Class rdf:ID="Map"/>
-    </rdfs:subClassOf>
-  </owl:Class>
-  <owl:Class rdf:about="http://www.w3.org/2002/07/owl#Thing"/>
-  <owl:Class rdf:about="#Map">
-    <komma:isAbstract rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean"
-    >true</komma:isAbstract>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class rdf:ID="MapEntry"/>
-        </owl:allValuesFrom>
-        <owl:onProperty>
-          <owl:InverseFunctionalProperty rdf:about="#entry"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-  </owl:Class>
-  <owl:Class rdf:ID="KeyValueMap">
-    <komma:isAbstract rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean"
-    >true</komma:isAbstract>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class>
-            <owl:intersectionOf rdf:parseType="Collection">
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:FunctionalProperty rdf:ID="key"/>
-                </owl:onProperty>
-              </owl:Restriction>
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:ObjectProperty rdf:ID="value"/>
-                </owl:onProperty>
-              </owl:Restriction>
-            </owl:intersectionOf>
-          </owl:Class>
-        </owl:allValuesFrom>
-        <owl:onProperty>
-          <owl:InverseFunctionalProperty rdf:about="#entry"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf rdf:resource="#Map"/>
-  </owl:Class>
-  <owl:Class rdf:about="#MapEntry">
-    <komma:isAbstract rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean"
-    >true</komma:isAbstract>
-    <rdfs:subClassOf>
-      <owl:Class>
-        <owl:unionOf rdf:parseType="Collection">
-          <owl:Class>
-            <owl:intersectionOf rdf:parseType="Collection">
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:ObjectProperty rdf:about="#value"/>
-                </owl:onProperty>
-              </owl:Restriction>
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:FunctionalProperty rdf:about="#keyData"/>
-                </owl:onProperty>
-              </owl:Restriction>
-            </owl:intersectionOf>
-          </owl:Class>
-          <owl:Class>
-            <owl:intersectionOf rdf:parseType="Collection">
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:FunctionalProperty rdf:about="#keyData"/>
-                </owl:onProperty>
-              </owl:Restriction>
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:FunctionalProperty rdf:about="#valueData"/>
-                </owl:onProperty>
-              </owl:Restriction>
-            </owl:intersectionOf>
-          </owl:Class>
-          <owl:Class>
-            <owl:unionOf rdf:parseType="Collection">
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:FunctionalProperty rdf:about="#key"/>
-                </owl:onProperty>
-              </owl:Restriction>
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:ObjectProperty rdf:about="#value"/>
-                </owl:onProperty>
-              </owl:Restriction>
-            </owl:unionOf>
-          </owl:Class>
-          <owl:Class>
-            <owl:unionOf rdf:parseType="Collection">
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:FunctionalProperty rdf:about="#key"/>
-                </owl:onProperty>
-              </owl:Restriction>
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:FunctionalProperty rdf:about="#valueData"/>
-                </owl:onProperty>
-              </owl:Restriction>
-            </owl:unionOf>
-          </owl:Class>
-        </owl:unionOf>
-      </owl:Class>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-  </owl:Class>
-  <owl:Class rdf:ID="Connection"/>
-  <owl:Class rdf:ID="LiteralValueMap">
-    <komma:isAbstract rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean"
-    >true</komma:isAbstract>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class>
-            <owl:intersectionOf rdf:parseType="Collection">
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:FunctionalProperty rdf:about="#key"/>
-                </owl:onProperty>
-              </owl:Restriction>
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:FunctionalProperty rdf:about="#valueData"/>
-                </owl:onProperty>
-              </owl:Restriction>
-            </owl:intersectionOf>
-          </owl:Class>
-        </owl:allValuesFrom>
-        <owl:onProperty>
-          <owl:InverseFunctionalProperty rdf:about="#entry"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf rdf:resource="#Map"/>
-  </owl:Class>
-  <owl:Class rdf:ID="LiteralKeyMap">
-    <komma:isAbstract rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean"
-    >true</komma:isAbstract>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class>
-            <owl:intersectionOf rdf:parseType="Collection">
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:ObjectProperty rdf:about="#value"/>
-                </owl:onProperty>
-              </owl:Restriction>
-              <owl:Restriction>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
-                >1</owl:cardinality>
-                <owl:onProperty>
-                  <owl:FunctionalProperty rdf:about="#keyData"/>
-                </owl:onProperty>
-              </owl:Restriction>
-            </owl:intersectionOf>
-          </owl:Class>
-        </owl:allValuesFrom>
-        <owl:onProperty>
-          <owl:InverseFunctionalProperty rdf:about="#entry"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf rdf:resource="#Map"/>
-  </owl:Class>
-  <owl:ObjectProperty rdf:ID="hasDescendant">
-    <rdfs:subPropertyOf>
-      <owl:ObjectProperty rdf:ID="relatedTo"/>
-    </rdfs:subPropertyOf>
-  </owl:ObjectProperty>
-  <owl:ObjectProperty rdf:ID="orderedContains">
-    <rdfs:subPropertyOf>
-      <owl:InverseFunctionalProperty rdf:ID="contains"/>
-    </rdfs:subPropertyOf>
-  </owl:ObjectProperty>
-  <owl:ObjectProperty rdf:about="#value">
-    <rdfs:domain rdf:resource="#MapEntry"/>
-  </owl:ObjectProperty>
-  <owl:ObjectProperty rdf:ID="precedes">
-    <rdfs:subPropertyOf>
-      <owl:TransitiveProperty rdf:ID="precedesTransitive"/>
-    </rdfs:subPropertyOf>
-  </owl:ObjectProperty>
-  <owl:TransitiveProperty rdf:ID="containsTransitive">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-  </owl:TransitiveProperty>
-  <owl:TransitiveProperty rdf:about="#precedesTransitive">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-  </owl:TransitiveProperty>
-  <owl:FunctionalProperty rdf:about="#key">
-    <rdfs:domain rdf:resource="#MapEntry"/>
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-  </owl:FunctionalProperty>
-  <owl:FunctionalProperty rdf:about="#valueData">
-    <rdfs:domain rdf:resource="#MapEntry"/>
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
-  </owl:FunctionalProperty>
-  <owl:FunctionalProperty rdf:about="#keyData">
-    <rdfs:domain rdf:resource="#MapEntry"/>
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
-  </owl:FunctionalProperty>
-  <owl:InverseFunctionalProperty rdf:about="#contains">
-    <rdfs:subPropertyOf rdf:resource="#hasDescendant"/>
-    <rdfs:subPropertyOf rdf:resource="#containsTransitive"/>
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-  </owl:InverseFunctionalProperty>
-  <owl:InverseFunctionalProperty rdf:about="#entry">
-    <rdfs:subPropertyOf rdf:resource="#contains"/>
-    <rdfs:range rdf:resource="#MapEntry"/>
-    <rdfs:domain rdf:resource="#Map"/>
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-  </owl:InverseFunctionalProperty>
-  <owl:AnnotationProperty rdf:ID="isAbstract"/>
-  <owl:AnnotationProperty rdf:ID="image">
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
-  </owl:AnnotationProperty>
-</rdf:RDF>
+	xmlns:komma="http://enilink.net/vocab/komma#"
+	xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+	xmlns:owl="http://www.w3.org/2002/07/owl#"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xml:base="http://enilink.net/vocab/komma">
+<owl:Ontology rdf:about=""/>
+<owl:Class rdf:about="#Connection"/>
+<rdf:Description rdf:about="#KeyValueMap">
+	<komma:isAbstract rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</komma:isAbstract>
+	<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="node408">
+			<owl:allValuesFrom>
+				<owl:Class rdf:nodeID="node409">
+					<owl:intersectionOf>
+						<rdf:Description rdf:nodeID="node410">
+							<rdf:first>
+								<owl:Restriction rdf:nodeID="node411">
+									<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+									<owl:onProperty rdf:resource="#key"/>
+								</owl:Restriction>
+							</rdf:first>
+							<rdf:rest>
+								<rdf:Description rdf:nodeID="node412">
+									<rdf:first>
+										<owl:Restriction rdf:nodeID="node413">
+											<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+											<owl:onProperty rdf:resource="#value"/>
+										</owl:Restriction>
+									</rdf:first>
+									<rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+								</rdf:Description>
+							</rdf:rest>
+						</rdf:Description>
+					</owl:intersectionOf>
+				</owl:Class>
+			</owl:allValuesFrom>
+			<owl:onProperty rdf:resource="#entry"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf rdf:resource="#Map"/>
+</rdf:Description>
+<rdf:Description rdf:about="#LiteralKeyMap">
+	<komma:isAbstract rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</komma:isAbstract>
+	<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="node445">
+			<owl:allValuesFrom>
+				<owl:Class rdf:nodeID="node446">
+					<owl:intersectionOf>
+						<rdf:Description rdf:nodeID="node447">
+							<rdf:first>
+								<owl:Restriction rdf:nodeID="node448">
+									<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+									<owl:onProperty rdf:resource="#value"/>
+								</owl:Restriction>
+							</rdf:first>
+							<rdf:rest>
+								<rdf:Description rdf:nodeID="node449">
+									<rdf:first>
+										<owl:Restriction rdf:nodeID="node450">
+											<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+											<owl:onProperty rdf:resource="#keyData"/>
+										</owl:Restriction>
+									</rdf:first>
+									<rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+								</rdf:Description>
+							</rdf:rest>
+						</rdf:Description>
+					</owl:intersectionOf>
+				</owl:Class>
+			</owl:allValuesFrom>
+			<owl:onProperty rdf:resource="#entry"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf rdf:resource="#Map"/>
+</rdf:Description>
+<rdf:Description rdf:about="#LiteralKeyValueMap">
+	<komma:isAbstract rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</komma:isAbstract>
+	<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="node401">
+			<owl:allValuesFrom>
+				<owl:Class rdf:nodeID="node402">
+					<owl:intersectionOf>
+						<rdf:Description rdf:nodeID="node403">
+							<rdf:first>
+								<owl:Restriction rdf:nodeID="node404">
+									<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+									<owl:onProperty rdf:resource="#keyData"/>
+								</owl:Restriction>
+							</rdf:first>
+							<rdf:rest>
+								<rdf:Description rdf:nodeID="node405">
+									<rdf:first>
+										<owl:Restriction rdf:nodeID="node406">
+											<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+											<owl:onProperty rdf:resource="#valueData"/>
+										</owl:Restriction>
+									</rdf:first>
+									<rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+								</rdf:Description>
+							</rdf:rest>
+						</rdf:Description>
+					</owl:intersectionOf>
+				</owl:Class>
+			</owl:allValuesFrom>
+			<owl:onProperty rdf:resource="#entry"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf rdf:resource="#Map"/>
+</rdf:Description>
+<rdf:Description rdf:about="#LiteralValueMap">
+	<komma:isAbstract rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</komma:isAbstract>
+	<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="node439">
+			<owl:allValuesFrom>
+				<owl:Class rdf:nodeID="node440">
+					<owl:intersectionOf>
+						<rdf:Description rdf:nodeID="node441">
+							<rdf:first>
+								<owl:Restriction rdf:nodeID="node442">
+									<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+									<owl:onProperty rdf:resource="#key"/>
+								</owl:Restriction>
+							</rdf:first>
+							<rdf:rest>
+								<rdf:Description rdf:nodeID="node443">
+									<rdf:first>
+										<owl:Restriction rdf:nodeID="node444">
+											<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+											<owl:onProperty rdf:resource="#valueData"/>
+										</owl:Restriction>
+									</rdf:first>
+									<rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+								</rdf:Description>
+							</rdf:rest>
+						</rdf:Description>
+					</owl:intersectionOf>
+				</owl:Class>
+			</owl:allValuesFrom>
+			<owl:onProperty rdf:resource="#entry"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf>
+		<rdf:Description rdf:about="#Map">
+			<komma:isAbstract rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</komma:isAbstract>
+			<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+			<rdfs:subClassOf>
+				<owl:Restriction rdf:nodeID="node407">
+					<owl:allValuesFrom rdf:resource="#MapEntry"/>
+					<owl:onProperty rdf:resource="#entry"/>
+				</owl:Restriction>
+			</rdfs:subClassOf>
+			<rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+		</rdf:Description>
+	</rdfs:subClassOf>
+</rdf:Description>
+<rdf:Description rdf:about="#MapEntry">
+	<komma:isAbstract rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</komma:isAbstract>
+	<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+	<rdfs:subClassOf>
+		<owl:Class rdf:nodeID="node414">
+			<owl:unionOf>
+				<rdf:Description rdf:nodeID="node415">
+					<rdf:first>
+						<owl:Class rdf:nodeID="node416">
+							<owl:intersectionOf>
+								<rdf:Description rdf:nodeID="node417">
+									<rdf:first>
+										<owl:Restriction rdf:nodeID="node418">
+											<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+											<owl:onProperty rdf:resource="#value"/>
+										</owl:Restriction>
+									</rdf:first>
+									<rdf:rest>
+										<rdf:Description rdf:nodeID="node419">
+											<rdf:first>
+												<owl:Restriction rdf:nodeID="node420">
+													<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+													<owl:onProperty rdf:resource="#keyData"/>
+												</owl:Restriction>
+											</rdf:first>
+											<rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+										</rdf:Description>
+									</rdf:rest>
+								</rdf:Description>
+							</owl:intersectionOf>
+						</owl:Class>
+					</rdf:first>
+					<rdf:rest>
+						<rdf:Description rdf:nodeID="node421">
+							<rdf:first>
+								<owl:Class rdf:nodeID="node422">
+									<owl:intersectionOf>
+										<rdf:Description rdf:nodeID="node423">
+											<rdf:first>
+												<owl:Restriction rdf:nodeID="node424">
+													<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+													<owl:onProperty rdf:resource="#keyData"/>
+												</owl:Restriction>
+											</rdf:first>
+											<rdf:rest>
+												<rdf:Description rdf:nodeID="node425">
+													<rdf:first>
+														<owl:Restriction rdf:nodeID="node426">
+															<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+															<owl:onProperty rdf:resource="#valueData"/>
+														</owl:Restriction>
+													</rdf:first>
+													<rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+												</rdf:Description>
+											</rdf:rest>
+										</rdf:Description>
+									</owl:intersectionOf>
+								</owl:Class>
+							</rdf:first>
+							<rdf:rest>
+								<rdf:Description rdf:nodeID="node427">
+									<rdf:first>
+										<owl:Class rdf:nodeID="node428">
+											<owl:unionOf>
+												<rdf:Description rdf:nodeID="node429">
+													<rdf:first>
+														<owl:Restriction rdf:nodeID="node430">
+															<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+															<owl:onProperty rdf:resource="#key"/>
+														</owl:Restriction>
+													</rdf:first>
+													<rdf:rest>
+														<rdf:Description rdf:nodeID="node431">
+															<rdf:first>
+																<owl:Restriction rdf:nodeID="node432">
+																	<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+																	<owl:onProperty rdf:resource="#value"/>
+																</owl:Restriction>
+															</rdf:first>
+															<rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+														</rdf:Description>
+													</rdf:rest>
+												</rdf:Description>
+											</owl:unionOf>
+										</owl:Class>
+									</rdf:first>
+									<rdf:rest>
+										<rdf:Description rdf:nodeID="node433">
+											<rdf:first>
+												<owl:Class rdf:nodeID="node434">
+													<owl:unionOf>
+														<rdf:Description rdf:nodeID="node435">
+															<rdf:first>
+																<owl:Restriction rdf:nodeID="node436">
+																	<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+																	<owl:onProperty rdf:resource="#key"/>
+																</owl:Restriction>
+															</rdf:first>
+															<rdf:rest>
+																<rdf:Description rdf:nodeID="node437">
+																	<rdf:first>
+																		<owl:Restriction rdf:nodeID="node438">
+																			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+																			<owl:onProperty rdf:resource="#valueData"/>
+																		</owl:Restriction>
+																	</rdf:first>
+																	<rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+																</rdf:Description>
+															</rdf:rest>
+														</rdf:Description>
+													</owl:unionOf>
+												</owl:Class>
+											</rdf:first>
+											<rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+										</rdf:Description>
+									</rdf:rest>
+								</rdf:Description>
+							</rdf:rest>
+						</rdf:Description>
+					</rdf:rest>
+				</rdf:Description>
+			</owl:unionOf>
+		</owl:Class>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</rdf:Description>
+<owl:ObjectProperty rdf:about="#child">
+	<rdfs:subPropertyOf rdf:resource="#descendant"/>
+</owl:ObjectProperty>
+<owl:InverseFunctionalProperty rdf:about="#contains">
+	<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+	<rdfs:subPropertyOf rdf:resource="#child"/>
+	<rdfs:subPropertyOf>
+		<owl:ObjectProperty rdf:about="#containsTransitive">
+			<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+		</owl:ObjectProperty>
+	</rdfs:subPropertyOf>
+</owl:InverseFunctionalProperty>
+<owl:ObjectProperty rdf:about="#descendant">
+	<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+	<rdfs:subPropertyOf rdf:resource="#relatedTo"/>
+</owl:ObjectProperty>
+<owl:InverseFunctionalProperty rdf:about="#entry">
+	<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+	<rdfs:domain rdf:resource="#Map"/>
+	<rdfs:range rdf:resource="#MapEntry"/>
+	<rdfs:subPropertyOf rdf:resource="#contains"/>
+</owl:InverseFunctionalProperty>
+<owl:AnnotationProperty rdf:about="#image">
+	<rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
+</owl:AnnotationProperty>
+<owl:AnnotationProperty rdf:about="#isAbstract"/>
+<owl:FunctionalProperty rdf:about="#key">
+	<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+	<rdfs:domain rdf:resource="#MapEntry"/>
+</owl:FunctionalProperty>
+<owl:DatatypeProperty rdf:about="#keyData">
+	<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+	<rdfs:domain rdf:resource="#MapEntry"/>
+</owl:DatatypeProperty>
+<owl:ObjectProperty rdf:about="#orderedContains">
+	<rdfs:subPropertyOf rdf:resource="#contains"/>
+</owl:ObjectProperty>
+<owl:ObjectProperty rdf:about="#precedes">
+	<rdfs:subPropertyOf>
+		<owl:ObjectProperty rdf:about="#precedesTransitive">
+			<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+		</owl:ObjectProperty>
+	</rdfs:subPropertyOf>
+</owl:ObjectProperty>
+<owl:ObjectProperty rdf:about="#relatedTo"/>
+<owl:ObjectProperty rdf:about="#value">
+	<rdfs:domain rdf:resource="#MapEntry"/>
+</owl:ObjectProperty>
+<owl:DatatypeProperty rdf:about="#valueData">
+	<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+	<rdfs:domain rdf:resource="#MapEntry"/>
+</owl:DatatypeProperty>
+<owl:Class rdf:about="http://www.w3.org/2002/07/owl#Thing"/>
 
-<!-- Created with TopBraid -->
+</rdf:RDF>
