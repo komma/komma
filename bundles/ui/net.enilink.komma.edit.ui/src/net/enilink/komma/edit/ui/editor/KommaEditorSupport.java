@@ -30,6 +30,7 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.EditingDomainCommandStack;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
@@ -1112,7 +1113,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 			class DefaultItemProviderAdapterFactory extends
 					ReflectiveItemProviderAdapterFactory {
 				public DefaultItemProviderAdapterFactory() {
-					super(KommaEditUIPlugin.getPlugin());
+					super(KommaEditPlugin.getPlugin());
 				}
 
 				@Override
