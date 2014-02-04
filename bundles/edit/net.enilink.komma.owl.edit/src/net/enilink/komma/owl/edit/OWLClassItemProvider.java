@@ -10,20 +10,39 @@
  *******************************************************************************/
 package net.enilink.komma.owl.edit;
 
+import java.util.Arrays;
 import java.util.Collection;
 
+import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.em.concepts.IClass;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.parser.manchester.ManchesterSyntaxGenerator;
 import net.enilink.komma.rdfs.edit.RDFSClassItemProvider;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.em.concepts.IClass;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdfs.RDFS;
 
 public class OWLClassItemProvider extends RDFSClassItemProvider {
 	public OWLClassItemProvider(OWLItemProviderAdapterFactory adapterFactory,
 			IResourceLocator resourceLocator, Collection<IClass> supportedTypes) {
 		super(adapterFactory, resourceLocator, supportedTypes);
+	}
+
+	@Override
+	protected void collectNewChildDescriptors(
+			ICollector<Object> newChildDescriptors, Object object) {
+		if (object instanceof IClass) {
+			IEntityManager em = ((IEntity) object).getEntityManager();
+			newChildDescriptors.add(createChildParameter(
+					em.find(RDFS.PROPERTY_SUBCLASSOF),
+					new ChildDescriptor(Arrays.asList(em.find(OWL.TYPE_CLASS,
+							IClass.class)), true)));
+		}
+		newChildDescriptors.done();
 	}
 
 	@Override
