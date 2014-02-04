@@ -617,7 +617,8 @@ public class SetCommand extends AbstractOverrideableCommand {
 
 			// Make sure the container is not being put into a contained
 			// object.
-			if (result && resolvedProperty instanceof ObjectProperty
+			if (result && value != null
+					&& resolvedProperty instanceof ObjectProperty
 					&& resolvedProperty.isContainment()) {
 				// use seen to prevent infinite loops due to invalid usage
 				// of komma:contains

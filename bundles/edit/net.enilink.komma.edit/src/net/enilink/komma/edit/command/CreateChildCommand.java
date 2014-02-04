@@ -44,7 +44,7 @@ import net.enilink.komma.core.IReference;
  * the <code>newChildDescriptor</code> argument to {@link #create create()} --
  * they must be, so that the user can specify which he actually wishes to
  * create. As a result, this command essentially just creates and executes the
- * appropriate lower-level EMF command, and delegates matters of appearance
+ * appropriate lower-level command, and delegates matters of appearance
  * (text, icon, result) to the appropriate item provider, so that it may be
  * handled correctly for the given model.
  * 

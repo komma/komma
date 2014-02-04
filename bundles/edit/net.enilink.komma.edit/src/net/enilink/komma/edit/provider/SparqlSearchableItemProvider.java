@@ -22,7 +22,7 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 	}
 
 	protected String getQueryFindPatterns(Object parent) {
-		return "?parent komma:hasDescendant ?s . ";
+		return "?parent komma:descendant ?s . ";
 	}
 
 	protected void setQueryParameters(IQuery<?> query, Object parent) {
