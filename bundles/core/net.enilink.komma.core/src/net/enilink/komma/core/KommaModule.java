@@ -222,6 +222,8 @@ public class KommaModule {
 
 	private Set<URI> writableGraphs = new LinkedHashSet<URI>();
 
+	private Set<INamespace> namespaces = new HashSet<INamespace>();
+
 	public KommaModule() {
 		cl = new CombinedClassLoader(getClass().getClassLoader());
 	}
@@ -335,6 +337,19 @@ public class KommaModule {
 	}
 
 	/**
+	 * Adds a prefix for a namespace.
+	 * 
+	 * @param prefix
+	 *            The prefix.
+	 * @param name
+	 *            The namespace URI that the prefix maps to.
+	 */
+	public KommaModule addNamespace(String prefix, URI uri) {
+		namespaces.add(new Namespace(prefix, uri));
+		return this;
+	}
+
+	/**
 	 * Adds a readable graph this module. This limits the readable scope to this
 	 * and other readable graphs.
 	 * 
@@ -427,6 +442,10 @@ public class KommaModule {
 		return unmodifiableSet(datatypes);
 	}
 
+	public Set<INamespace> getNamespaces() {
+		return unmodifiableSet(namespaces);
+	}
+
 	public Set<URI> getReadableGraphs() {
 		return unmodifiableSet(readableGraphs);
 	}
@@ -484,6 +503,7 @@ public class KommaModule {
 		if (includeGraphs) {
 			readableGraphs.addAll(module.writableGraphs);
 			readableGraphs.addAll(module.readableGraphs);
+			namespaces.addAll(module.namespaces);
 		}
 		if (!cl.equals(module.cl)) {
 			cl.addAlternative(module.cl);
