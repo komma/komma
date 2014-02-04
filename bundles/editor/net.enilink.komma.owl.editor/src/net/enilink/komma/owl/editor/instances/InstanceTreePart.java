@@ -20,8 +20,8 @@ import net.enilink.komma.model.IObject;
 public class InstanceTreePart extends InstancesPart {
 	static String QUERY_INSTANCES = ISparqlConstants.PREFIX
 	// +
-	// "CONSTRUCT {?r a <komma:Result> . ?r a ?t} WHERE {?r a ?c FILTER NOT EXISTS {[a ?c; komma:contains ?r]} OPTIONAL {?r a ?t FILTER isIRI(?t)}}";
-			+ "SELECT DISTINCT ?r WHERE {?r a ?c FILTER NOT EXISTS {[ a ?c; komma:contains ?r ]}}";
+	// "CONSTRUCT {?r a <komma:Result> . ?r a ?t} WHERE {?r a ?c FILTER NOT EXISTS {[a ?c; komma:child ?r]} OPTIONAL {?r a ?t FILTER isIRI(?t)}}";
+			+ "SELECT DISTINCT ?r WHERE {?r a ?c FILTER NOT EXISTS {[ a ?c; komma:child ?r ]}}";
 
 	class ContentProvider extends LazyAdapterFactoryContentProvider implements
 			ISearchableItemProvider {
@@ -34,7 +34,7 @@ public class InstanceTreePart extends InstancesPart {
 			SparqlSearchableItemProvider searchableProvider = new SparqlSearchableItemProvider() {
 				@Override
 				protected String getQueryFindPatterns(Object parent) {
-					return "?instance a ?parent . ?instance komma:containsTransitive ?s . ";
+					return "?instance a ?parent . ?instance komma:descendant ?s . ";
 				}
 			};
 			return searchableProvider.find(expression, currentInput, 20);

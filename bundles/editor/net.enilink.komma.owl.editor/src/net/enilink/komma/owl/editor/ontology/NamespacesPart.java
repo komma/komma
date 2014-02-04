@@ -143,7 +143,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		public NamespaceEditingSupport(TableViewer viewer, ColumnType columnType) {
 			super(viewer);
 			this.columnType = columnType;
-			this.cellEditor = new TextCellEditor(viewer.getTable(), SWT.NONE);
+			this.cellEditor = new TextCellEditor(viewer.getTable(), SWT.SINGLE);
 		}
 
 		@Override
