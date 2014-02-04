@@ -24,6 +24,7 @@ import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Namespace;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.edit.provider.IItemColorProvider;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
@@ -173,6 +174,9 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 			final IEntityManager em = model.getManager();
 			switch (columnType) {
 			case Prefix:
+				if (value.equals(((INamespace) element).getPrefix())) {
+					return;
+				}
 				for (INamespace existing : em.getNamespaces()) {
 					if (value.equals(existing.getPrefix())) {
 						return;
@@ -182,13 +186,20 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 						new Namespace((String) value, namespace.getURI())));
 				break;
 			case Namespace:
+				URI uri = URIImpl.createURI(value.toString());
+				if (uri.equals(((INamespace) element).getURI())) {
+					return;
+				}
+				for (INamespace existing : em.getNamespaces()) {
+					if (uri.equals(existing.getURI())) {
+						return;
+					}
+				}
 				execute(new ModifyNamespaceCommand(model, namespace,
-						new Namespace(namespace.getPrefix(),
-								URIImpl.createURI((String) value))));
+						new Namespace(namespace.getPrefix(), uri)));
 			}
 
 		}
-
 	}
 
 	private boolean execute(ModifyNamespaceCommand command) {

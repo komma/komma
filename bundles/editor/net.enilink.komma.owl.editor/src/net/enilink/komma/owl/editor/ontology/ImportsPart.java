@@ -298,10 +298,6 @@ public class ImportsPart extends AbstractEditingDomainPart {
 			@Override
 			public String getText(Object element) {
 				if (element instanceof ModelDescription) {
-					String prefix = ((ModelDescription) element).getPrefix();
-					if (prefix != null) {
-						return prefix;
-					}
 					return ((ModelDescription) element).getUri();
 				}
 				return super.getText(element);
