@@ -144,8 +144,6 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 
 								@Override
 								public Void visitNamespace(INamespace namespace) {
-									// dm.setNamespace(namespace.getPrefix(),
-									// namespace.getURI());
 									namespaces.add(namespace);
 									return null;
 								}
@@ -169,23 +167,26 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 						}
 					}
 				});
-
 				// BlockingIterator ensures that add method does not return
 				// until endRDF of the above handler is called
 				dm.add(new BlockingIterator<IStatement>(queue, finished),
 						getURI());
-				// add namespaces as model meta-data
-				for (INamespace ns : namespaces) {
-					net.enilink.komma.model.concepts.Namespace modelNs = getEntityManager()
-							.create(net.enilink.komma.model.concepts.Namespace.class);
-					modelNs.setPrefix(ns.getPrefix());
-					modelNs.setURI(ns.getURI());
-					getModelNamespaces().add(modelNs);
-				}
 				if (exception[0] != null) {
 					throw exception[0];
 				}
 				dm.getTransaction().commit();
+
+				// add namespaces as model meta-data
+				for (INamespace ns : namespaces) {
+					// prevent addition of redundant prefix/uri combinations
+					if (!ns.getURI().equals(dm.getNamespace(ns.getPrefix()))) {
+						net.enilink.komma.model.concepts.Namespace newNs = getEntityManager()
+								.create(net.enilink.komma.model.concepts.Namespace.class);
+						newNs.setPrefix(ns.getPrefix());
+						newNs.setURI(ns.getURI());
+						getModelNamespaces().add(newNs);
+					}
+				}
 			}
 		} catch (Throwable e) {
 			if (e instanceof KommaException) {
@@ -201,7 +202,6 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 			}
 			dm.close();
 		}
-
 		setModelLoaded(true);
 	}
 

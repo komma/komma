@@ -20,7 +20,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -143,7 +145,6 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 								getModelNamespaces())) {
 							if (prefix.equals(ns.getPrefix())) {
 								getModelNamespaces().remove(ns);
-
 								fireNotifications(Arrays
 										.asList(new NamespaceNotification(
 												prefix, ns.getURI(), null)));
@@ -155,13 +156,22 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 
 					@Override
 					public void setNamespace(String prefix, URI uri) {
+						if (prefix == null || prefix.isEmpty()) {
+							return;
+						}
 						URI oldUri = null;
-						for (Namespace ns : new ArrayList<>(
-								getModelNamespaces())) {
-							if (prefix.equals(ns.getPrefix())) {
-								ns.setPrefix(prefix);
-								oldUri = ns.getURI();
-								break;
+						// prevent addition of redundant prefix/uri combinations
+						if (uri.equals(super.getNamespace(prefix))) {
+							oldUri = uri;
+						}
+						if (oldUri == null) {
+							for (Namespace ns : new ArrayList<>(
+									getModelNamespaces())) {
+								if (prefix.equals(ns.getPrefix())) {
+									ns.setPrefix(prefix);
+									oldUri = ns.getURI();
+									break;
+								}
 							}
 						}
 						if (oldUri == null) {
@@ -179,10 +189,10 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 
 					@Override
 					public IExtendedIterator<INamespace> getNamespaces() {
+						Set<URI> uris = new HashSet<>();
 						Map<String, INamespace> prefixMap = new LinkedHashMap<>();
 						for (INamespace ns : WrappedIterator.create(
-								new ArrayList<INamespace>(getModelNamespaces())
-										.iterator()).andThen(
+								getAllModelNamespaces().iterator()).andThen(
 								super.getNamespaces().mapWith(
 								// mark inherited namespaces as derived
 										new IMap<INamespace, INamespace>() {
@@ -193,7 +203,8 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 																.getURI(), true);
 											}
 										}))) {
-							if (!prefixMap.containsKey(ns.getPrefix())) {
+							if (!prefixMap.containsKey(ns.getPrefix())
+									&& uris.add(ns.getURI())) {
 								prefixMap.put(
 										ns.getPrefix(),
 										new net.enilink.komma.core.Namespace(ns
@@ -203,6 +214,19 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 						}
 						return WrappedIterator.create(prefixMap.values()
 								.iterator());
+					}
+
+					List<INamespace> getAllModelNamespaces() {
+						List<INamespace> nsList = new ArrayList<INamespace>(
+								getModelNamespaces());
+						KommaModule module = theState.module;
+						if (module != null) {
+							for (INamespace ns : module.getNamespaces()) {
+								nsList.add(new net.enilink.komma.core.Namespace(
+										ns.getPrefix(), ns.getURI(), true));
+							}
+						}
+						return nsList;
 					}
 
 					@Override
@@ -236,10 +260,12 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 					}
 
 					protected void cacheNamespaces() {
-						for (INamespace ns : new ArrayList<>(
-								getModelNamespaces())) {
-							uriToPrefix.put(ns.getURI(), ns.getPrefix());
-							prefixToUri.put(ns.getPrefix(), ns.getURI());
+						for (INamespace ns : getAllModelNamespaces()) {
+							if (!uriToPrefix.containsKey(ns.getURI())
+									&& !prefixToUri.containsKey(ns.getPrefix())) {
+								uriToPrefix.put(ns.getURI(), ns.getPrefix());
+								prefixToUri.put(ns.getPrefix(), ns.getURI());
+							}
 						}
 					}
 				};
@@ -371,6 +397,11 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			KommaModule modelSetModule = getModelSet().getModule();
 			if (modelSetModule != null) {
 				module.includeModule(modelSetModule);
+			}
+
+			// record namespace declarations
+			for (Namespace ns : getModelNamespaces()) {
+				module.addNamespace(ns.getPrefix(), ns.getURI());
 			}
 
 			String modelUri = getURI().toString();
