@@ -18,13 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CompositeCommand;
 import net.enilink.komma.common.command.ICommand;
@@ -32,6 +26,9 @@ import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.edit.command.AddCommand;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.command.CreateChildCommand;
@@ -47,8 +44,12 @@ import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.IReference;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdfs.RDFS;
+
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 public class RDFSClassItemProvider extends ReflectiveItemProvider {
 	public RDFSClassItemProvider(RDFSItemProviderAdapterFactory adapterFactory,
@@ -84,13 +85,11 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 	protected void collectNewChildDescriptors(
 			ICollector<Object> newChildDescriptors, Object object) {
 		if (object instanceof IClass) {
+			IEntityManager em = ((IEntity) object).getEntityManager();
 			newChildDescriptors.add(createChildParameter(
-					((IEntity) object).getEntityManager().find(
-							RDFS.PROPERTY_SUBCLASSOF),
-					new ChildDescriptor(Arrays
-							.asList((IClass) ((IEntity) object)
-									.getEntityManager().find(OWL.TYPE_CLASS)),
-							true)));
+					em.find(RDFS.PROPERTY_SUBCLASSOF),
+					new ChildDescriptor(Arrays.asList(em.find(RDFS.TYPE_CLASS,
+							IClass.class)), true)));
 		}
 		newChildDescriptors.done();
 	}
