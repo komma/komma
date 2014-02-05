@@ -81,16 +81,6 @@ public class ExtendedCompositeCommand extends CompositeCommand {
 	}
 
 	/**
-	 * Creates an instance with the given list.
-	 * 
-	 * @param commandList
-	 *            the list of commands.
-	 */
-	public ExtendedCompositeCommand(List<ICommand> commandList) {
-		super();
-	}
-
-	/**
 	 * Creates instance with the given label and list.
 	 * 
 	 * @param label
