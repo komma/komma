@@ -16,6 +16,7 @@
  */
 package net.enilink.komma.edit.ui.action;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 
 import net.enilink.komma.common.command.ICommand;
@@ -35,6 +36,15 @@ import org.eclipse.ui.IWorkbenchPart;
  * A cut action is implemented by creating a {@link CutToClipboardCommand}.
  */
 public class CutAction extends CommandActionHandler {
+	static Method CUT_METHOD;
+	static {
+		try {
+			CUT_METHOD = Text.class.getMethod("cut");
+		} catch (Exception e) {
+			// ignore
+		}
+	}
+
 	public CutAction(IWorkbenchPage page, IEditingDomain domain) {
 		super(page, domain, KommaEditUIPlugin.INSTANCE
 				.getString("_UI_Cut_menu_item"));
@@ -48,8 +58,13 @@ public class CutAction extends CommandActionHandler {
 	@Override
 	protected void doRun(IProgressMonitor progressMonitor) {
 		Display display = Display.getCurrent();
-		if (display != null && display.getFocusControl() instanceof Text) {
-			((Text) display.getFocusControl()).cut();
+		if (CUT_METHOD != null && display != null
+				&& display.getFocusControl() instanceof Text) {
+			try {
+				CUT_METHOD.invoke(display.getFocusControl());
+			} catch (Exception e) {
+				// ignore
+			}
 		} else {
 			super.doRun(progressMonitor);
 		}

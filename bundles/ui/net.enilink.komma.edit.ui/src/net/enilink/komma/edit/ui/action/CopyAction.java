@@ -16,6 +16,7 @@
  */
 package net.enilink.komma.edit.ui.action;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -35,7 +36,6 @@ import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Display;
@@ -47,6 +47,25 @@ import org.eclipse.ui.IWorkbenchPart;
  * A copy action is implemented by creating a {@link CopyToClipboardCommand}.
  */
 public class CopyAction extends CommandActionHandler {
+	static Class<?> CLIPBOARD_CLASS;
+	static {
+		try {
+			CLIPBOARD_CLASS = Transfer.class.getClassLoader().loadClass(
+					Transfer.class.getPackage().getName() + ".Clipboard");
+		} catch (ClassNotFoundException e) {
+			// ignore
+		}
+	}
+
+	static Method COPY_METHOD;
+	static {
+		try {
+			COPY_METHOD = Text.class.getMethod("copy");
+		} catch (Exception e) {
+			// ignore
+		}
+	}
+
 	public CopyAction(IWorkbenchPage page, IEditingDomain domain) {
 		super(page, domain, KommaEditUIPlugin.INSTANCE
 				.getString("_UI_Copy_menu_item"));
@@ -60,8 +79,13 @@ public class CopyAction extends CommandActionHandler {
 	@Override
 	protected void doRun(IProgressMonitor progressMonitor) {
 		Display display = Display.getCurrent();
-		if (display != null && display.getFocusControl() instanceof Text) {
-			((Text) display.getFocusControl()).copy();
+		if (COPY_METHOD != null && display != null
+				&& display.getFocusControl() instanceof Text) {
+			try {
+				COPY_METHOD.invoke(display.getFocusControl());
+			} catch (Exception e) {
+				// ignore
+			}
 		} else {
 			super.doRun(progressMonitor);
 		}
@@ -92,11 +116,26 @@ public class CopyAction extends CommandActionHandler {
 									sb.append(System.lineSeparator());
 								}
 							}
-							Clipboard clipboard = new Clipboard(null);
-							clipboard.setContents(
-									new Object[] { sb.toString() },
-									new Transfer[] { TextTransfer.getInstance() });
-							clipboard.dispose();
+							if (CLIPBOARD_CLASS != null) {
+								try {
+									Object clipboard = CLIPBOARD_CLASS
+											.getConstructor(Display.class)
+											.newInstance((Display) null);
+									CLIPBOARD_CLASS
+											.getMethod("setContents",
+													Object[].class,
+													Transfer.class)
+											.invoke(clipboard,
+													new Object[] { sb
+															.toString() },
+													new Transfer[] { TextTransfer
+															.getInstance() });
+									CLIPBOARD_CLASS.getMethod("dispose")
+											.invoke(clipboard);
+								} catch (Exception e) {
+									// clipboard class not found
+								}
+							}
 						}
 						return CommandResult.newOKCommandResult();
 					}

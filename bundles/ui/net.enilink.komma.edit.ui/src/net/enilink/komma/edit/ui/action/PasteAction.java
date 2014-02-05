@@ -16,6 +16,8 @@
  */
 package net.enilink.komma.edit.ui.action;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 
 import net.enilink.komma.common.command.ICommand;
@@ -36,6 +38,15 @@ import org.eclipse.ui.IWorkbenchPart;
  * .
  */
 public class PasteAction extends CommandActionHandler {
+	static Method PASTE_METHOD;
+	static {
+		try {
+			PASTE_METHOD = Text.class.getMethod("paste");
+		} catch (Exception e) {
+			// ignore
+		}
+	}
+
 	public PasteAction(IWorkbenchPage page, IEditingDomain domain) {
 		super(page, domain, KommaEditUIPlugin.INSTANCE
 				.getString("_UI_Paste_menu_item"));
@@ -49,8 +60,13 @@ public class PasteAction extends CommandActionHandler {
 	@Override
 	protected void doRun(IProgressMonitor progressMonitor) {
 		Display display = Display.getCurrent();
-		if (display != null && display.getFocusControl() instanceof Text) {
-			((Text) display.getFocusControl()).paste();
+		if (PASTE_METHOD != null && display != null
+				&& display.getFocusControl() instanceof Text) {
+			try {
+				PASTE_METHOD.invoke(display.getFocusControl());
+			} catch (Exception e) {
+				// ignore
+			}
 		} else {
 			super.doRun(progressMonitor);
 		}
