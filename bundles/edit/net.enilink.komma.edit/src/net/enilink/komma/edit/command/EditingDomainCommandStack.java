@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 
 import net.enilink.komma.common.command.AbstractCommand.INoChangeRecording;
+import net.enilink.komma.common.command.AbstractCommand.INonDirtying;
 import net.enilink.komma.common.command.BasicCommandStack;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -34,8 +35,9 @@ public class EditingDomainCommandStack extends BasicCommandStack {
 	@Override
 	public IStatus execute(ICommand command, IProgressMonitor monitor,
 			IAdaptable info) throws ExecutionException {
-		if (command != null && command.canExecute()
-				&& !(command instanceof INoChangeRecording)) {
+		if (command != null
+				&& command.canExecute()
+				&& !(command instanceof INoChangeRecording || command instanceof INonDirtying)) {
 			command = new RecordingWrapperCommand(domain, command);
 		}
 		return super.execute(command, monitor, info);
