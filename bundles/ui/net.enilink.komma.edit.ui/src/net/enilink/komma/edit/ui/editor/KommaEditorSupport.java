@@ -1192,7 +1192,9 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 								// Try to select the affected objects.
 								ICommand mostRecentCommand = ((ICommandStack) event
 										.getSource()).getMostRecentCommand();
-								if (mostRecentCommand != null) {
+								if (mostRecentCommand != null
+										&& !mostRecentCommand
+												.getAffectedObjects().isEmpty()) {
 									editorSelectionProvider
 											.setSelectionToViewer(mostRecentCommand
 													.getAffectedObjects());

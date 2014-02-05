@@ -1,5 +1,16 @@
 package net.enilink.komma.edit.ui.views;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import net.enilink.commons.ui.editor.EditorForm;
+import net.enilink.commons.ui.editor.IEditorPart;
+import net.enilink.komma.core.IValue;
+import net.enilink.komma.edit.domain.IEditingDomainProvider;
+import net.enilink.komma.edit.ui.util.PartListener2Adapter;
+import net.enilink.komma.model.IModel;
+
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
@@ -7,21 +18,17 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.IContributedContentsView;
 import org.eclipse.ui.part.ViewPart;
-
-import net.enilink.commons.ui.editor.EditorForm;
-import net.enilink.commons.ui.editor.IEditorPart;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
-import net.enilink.komma.edit.ui.util.PartListener2Adapter;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.core.IValue;
 
 public class AbstractEditingDomainView extends ViewPart implements
 		IContributedContentsView {
@@ -152,6 +159,8 @@ public class AbstractEditingDomainView extends ViewPart implements
 
 	private boolean setInputOnActivate;
 
+	private List<String> redirectedActionIds = new ArrayList<>();
+
 	@Override
 	public void createPartControl(Composite parent) {
 		parent.setLayout(new FillLayout());
@@ -200,6 +209,17 @@ public class AbstractEditingDomainView extends ViewPart implements
 		this.listener = new Listener();
 		getSite().getPage().addPartListener(listener);
 		getSite().getPage().addSelectionListener(listener);
+
+		// redirect to editor actions
+		List<ActionFactory> actionFactories = Arrays.asList(
+				ActionFactory.DELETE, ActionFactory.CUT, ActionFactory.COPY,
+				ActionFactory.PASTE, ActionFactory.UNDO, ActionFactory.REDO);
+		IActionBars myBars = getViewSite().getActionBars();
+		for (ActionFactory af : actionFactories) {
+			if (myBars.getGlobalActionHandler(af.getId()) == null) {
+				redirectedActionIds.add(af.getId());
+			}
+		}
 	}
 
 	protected Object delegatedGetAdapter(Class<?> adapter) {
@@ -300,6 +320,20 @@ public class AbstractEditingDomainView extends ViewPart implements
 			changed |= this.model != model || this.model != null
 					&& !this.model.equals(model);
 			this.model = model;
+		}
+
+		if (changed) {
+			// redirect unbound global actions to editor actions
+			IActionBars myBars = getViewSite().getActionBars();
+			if (part != null && part.getSite() instanceof IEditorSite) {
+				IActionBars editorBars = ((IEditorSite) part.getSite())
+						.getActionBars();
+				for (String id : redirectedActionIds) {
+					myBars.setGlobalActionHandler(id,
+							editorBars.getGlobalActionHandler(id));
+				}
+			}
+			myBars.updateActionBars();
 		}
 
 		if (changed && editPart != null) {

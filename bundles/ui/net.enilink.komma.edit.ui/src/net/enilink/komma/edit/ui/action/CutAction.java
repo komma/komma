@@ -18,14 +18,18 @@ package net.enilink.komma.edit.ui.action;
 
 import java.util.Collection;
 
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
-
 import net.enilink.komma.common.command.ICommand;
+import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.edit.command.CutToClipboardCommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 
 /**
  * A cut action is implemented by creating a {@link CutToClipboardCommand}.
@@ -37,12 +41,24 @@ public class CutAction extends CommandActionHandler {
 	}
 
 	public CutAction(IWorkbenchPage page) {
-		super(page, null, KommaEditUIPlugin.INSTANCE.getString("_UI_Cut_menu_item"));
+		super(page, null, KommaEditUIPlugin.INSTANCE
+				.getString("_UI_Cut_menu_item"));
+	}
+
+	@Override
+	protected void doRun(IProgressMonitor progressMonitor) {
+		Display display = Display.getCurrent();
+		if (display != null && display.getFocusControl() instanceof Text) {
+			((Text) display.getFocusControl()).cut();
+		} else {
+			super.doRun(progressMonitor);
+		}
 	}
 
 	@Override
 	public ICommand createCommand(Collection<?> selection) {
-		return CutToClipboardCommand.create(domain, selection);
+		ICommand cmd = CutToClipboardCommand.create(domain, selection);
+		return cmd.canExecute() ? cmd : IdentityCommand.INSTANCE;
 	}
 
 	public void setWorkbenchPart(IWorkbenchPart workbenchPart) {

@@ -16,16 +16,32 @@
  */
 package net.enilink.komma.edit.ui.action;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
-
+import net.enilink.komma.common.command.AbstractCommand;
+import net.enilink.komma.common.command.CommandResult;
+import net.enilink.komma.common.command.ExtendedCompositeCommand;
 import net.enilink.komma.common.command.ICommand;
+import net.enilink.komma.common.command.IdentityCommand;
+import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.edit.command.CopyToClipboardCommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
+
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 
 /**
  * A copy action is implemented by creating a {@link CopyToClipboardCommand}.
@@ -37,12 +53,55 @@ public class CopyAction extends CommandActionHandler {
 	}
 
 	public CopyAction(IWorkbenchPage page) {
-		super(page, null, KommaEditUIPlugin.INSTANCE.getString("_UI_Copy_menu_item"));
+		super(page, null, KommaEditUIPlugin.INSTANCE
+				.getString("_UI_Copy_menu_item"));
 	}
 
 	@Override
-	public ICommand createCommand(Collection<?> selection) {
-		return CopyToClipboardCommand.create(domain, selection);
+	protected void doRun(IProgressMonitor progressMonitor) {
+		Display display = Display.getCurrent();
+		if (display != null && display.getFocusControl() instanceof Text) {
+			((Text) display.getFocusControl()).copy();
+		} else {
+			super.doRun(progressMonitor);
+		}
+	}
+
+	static class ExtendedCopyCommand extends ExtendedCompositeCommand implements
+			AbstractCommand.INonDirtying {
+		ExtendedCopyCommand(String label, List<ICommand> commandList) {
+			super(label, commandList);
+		}
+	}
+
+	@Override
+	public ICommand createCommand(final Collection<?> selection) {
+		ICommand cmd = CopyToClipboardCommand.create(domain, selection);
+		return cmd.canExecute() ? new ExtendedCopyCommand(cmd.getLabel(),
+				Arrays.asList(new SimpleCommand() {
+					@Override
+					protected CommandResult doExecuteWithResult(
+							IProgressMonitor progressMonitor, IAdaptable info)
+							throws ExecutionException {
+						if (Display.getCurrent() != null) {
+							StringBuilder sb = new StringBuilder();
+							for (Iterator<?> it = selection.iterator(); it
+									.hasNext();) {
+								sb.append(it.next().toString());
+								if (it.hasNext()) {
+									sb.append(System.lineSeparator());
+								}
+							}
+							Clipboard clipboard = new Clipboard(null);
+							clipboard.setContents(
+									new Object[] { sb.toString() },
+									new Transfer[] { TextTransfer.getInstance() });
+							clipboard.dispose();
+						}
+						return CommandResult.newOKCommandResult();
+					}
+				}, cmd))
+				: IdentityCommand.INSTANCE;
 	}
 
 	public void setWorkbenchPart(IWorkbenchPart workbenchPart) {
