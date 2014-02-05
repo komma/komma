@@ -37,6 +37,7 @@ import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 import net.enilink.komma.edit.ui.provider.reflective.ObjectComparator;
 import net.enilink.komma.edit.ui.util.EditUIUtil;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
+import net.enilink.komma.em.concepts.IOntology;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
@@ -461,16 +462,23 @@ public class ImportsPart extends AbstractEditingDomainPart {
 		return importedOntologyUris;
 	}
 
+	@Override
 	public boolean setEditorInput(Object input) {
-		Ontology currentOntology = ontology;
+		IOntology ontology = null;
 		if (input instanceof IModel) {
 			ontology = ((IModel) input).getOntology();
 		} else if (input instanceof IObject) {
 			ontology = ((IObject) input).getModel().getOntology();
-		} else {
-			ontology = null;
 		}
-		if (currentOntology != ontology) {
+		if (ontology != null) {
+			return setOntology(ontology);
+		}
+		return false;
+	}
+
+	protected boolean setOntology(IOntology ontology) {
+		if (this.ontology != ontology) {
+			this.ontology = ontology;
 			setStale(true);
 			return true;
 		}
@@ -478,7 +486,11 @@ public class ImportsPart extends AbstractEditingDomainPart {
 	}
 
 	public void setInput(Object input) {
-		setEditorInput(input);
+		if (input == null) {
+			setOntology(null);
+		} else {
+			setEditorInput(input);
+		}
 	}
 
 	@Override
