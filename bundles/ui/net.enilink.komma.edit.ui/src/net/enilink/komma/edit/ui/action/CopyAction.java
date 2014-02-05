@@ -48,11 +48,14 @@ import org.eclipse.ui.IWorkbenchPart;
  */
 public class CopyAction extends CommandActionHandler {
 	static Class<?> CLIPBOARD_CLASS;
+	static Method SETCONTENTS_METHOD;
 	static {
 		try {
 			CLIPBOARD_CLASS = Transfer.class.getClassLoader().loadClass(
 					Transfer.class.getPackage().getName() + ".Clipboard");
-		} catch (ClassNotFoundException e) {
+			SETCONTENTS_METHOD = CLIPBOARD_CLASS.getMethod("setContents",
+					Object[].class, Transfer[].class);
+		} catch (Exception e) {
 			// ignore
 		}
 	}
@@ -121,15 +124,10 @@ public class CopyAction extends CommandActionHandler {
 									Object clipboard = CLIPBOARD_CLASS
 											.getConstructor(Display.class)
 											.newInstance((Display) null);
-									CLIPBOARD_CLASS
-											.getMethod("setContents",
-													Object[].class,
-													Transfer.class)
-											.invoke(clipboard,
-													new Object[] { sb
-															.toString() },
-													new Transfer[] { TextTransfer
-															.getInstance() });
+									SETCONTENTS_METHOD.invoke(clipboard,
+											new Object[] { sb.toString() },
+											new Transfer[] { TextTransfer
+													.getInstance() });
 									CLIPBOARD_CLASS.getMethod("dispose")
 											.invoke(clipboard);
 								} catch (Exception e) {
@@ -139,8 +137,7 @@ public class CopyAction extends CommandActionHandler {
 						}
 						return CommandResult.newOKCommandResult();
 					}
-				}, cmd))
-				: IdentityCommand.INSTANCE;
+				}, cmd)) : IdentityCommand.INSTANCE;
 	}
 
 	public void setWorkbenchPart(IWorkbenchPart workbenchPart) {
