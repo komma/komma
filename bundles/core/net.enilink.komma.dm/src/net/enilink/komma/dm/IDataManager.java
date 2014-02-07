@@ -24,7 +24,7 @@ public interface IDataManager extends AutoCloseable {
 	 * @param readContexts
 	 *            The context(s) where to check if data is already existing
 	 *            before adding.
-	 * @param contexts
+	 * @param addContexts
 	 *            The context(s) where to add the data.
 	 * @throws KommaException
 	 *             thrown if there is an error while adding the statements
@@ -69,11 +69,32 @@ public interface IDataManager extends AutoCloseable {
 	 *            Controls if inferred statements should be included to compute
 	 *            the results or not.
 	 * @param contexts
-	 *            The context(s) where to get or modify the data.
+	 *            The context(s) where to read and modify data.
 	 * @return {@link IDataManagerQuery}.
 	 */
 	<R> IDataManagerQuery<R> createQuery(String query, String baseURI,
 			boolean includeInferred, IReference... contexts);
+
+	/**
+	 * Creates an {@link IDataManagerUpdate} to evaluate the update string.
+	 * 
+	 * @param update
+	 *            RDF update in the configured language - default SPARQL.
+	 * @param baseURI
+	 *            base URI for relative URIs or <code>null</code> if the update
+	 *            does not contain relative URIs
+	 * @param includeInferred
+	 *            Controls if inferred statements should be included to compute
+	 *            the results or not.
+	 * @param readContexts
+	 *            The context(s) where to read existing data.
+	 * @param modifyContexts
+	 *            The context(s) where to modify the data.
+	 * @return {@link IDataManagerUpdate}.
+	 */
+	IDataManagerUpdate createUpdate(String update, String baseURI,
+			boolean includeInferred, IReference[] readContexts,
+			IReference... modifyContexts);
 
 	/**
 	 * Creates an {@link IDataManagerUpdate} to evaluate the update string.
