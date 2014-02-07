@@ -63,6 +63,14 @@ public abstract class DelegatingDataManager implements IDataManager {
 				contexts);
 	}
 
+	@Override
+	public IDataManagerUpdate createUpdate(String update, String baseURI,
+			boolean includeInferred, IReference[] readContexts,
+			IReference... modifyContexts) {
+		return getDelegate().createUpdate(update, baseURI, includeInferred,
+				readContexts, modifyContexts);
+	}
+
 	abstract public IDataManager getDelegate();
 
 	@Override

@@ -476,7 +476,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		log.debug("Update: {}", update);
 
 		IUpdate result = new Update(this, dm.createUpdate(update, baseURI,
-				includeInferred, readContexts));
+				includeInferred, readContexts, modifyContexts));
 		injector.injectMembers(result);
 		return result;
 	}
