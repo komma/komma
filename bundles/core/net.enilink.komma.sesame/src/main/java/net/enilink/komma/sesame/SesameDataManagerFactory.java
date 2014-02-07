@@ -19,7 +19,7 @@ public class SesameDataManagerFactory implements IDataManagerFactory {
 
 	@Inject
 	protected Repository repository;
-	
+
 	@Inject(optional = true)
 	protected IDialect dialect;
 
@@ -27,7 +27,7 @@ public class SesameDataManagerFactory implements IDataManagerFactory {
 	public IDataManager get() {
 		return injector.getInstance(SesameRepositoryDataManager.class);
 	}
-	
+
 	@Override
 	public IDialect getDialect() {
 		if (dialect == null) {

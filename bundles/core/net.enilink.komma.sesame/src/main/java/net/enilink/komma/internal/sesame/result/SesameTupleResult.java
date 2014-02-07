@@ -28,8 +28,8 @@ public class SesameTupleResult extends
 
 	@Override
 	protected IBindings<IValue> convert(BindingSet element) throws Exception {
-		LinkedHashBindings<IValue> result = new LinkedHashBindings<IValue>(element.size());
-
+		LinkedHashBindings<IValue> result = new LinkedHashBindings<IValue>(
+				element.size());
 		for (String name : getBindingNames()) {
 			IValue value = valueConverter.fromSesame(element.getValue(name));
 			if (value != null) {

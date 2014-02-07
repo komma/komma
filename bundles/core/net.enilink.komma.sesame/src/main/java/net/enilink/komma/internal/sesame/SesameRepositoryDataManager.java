@@ -1,9 +1,7 @@
 package net.enilink.komma.internal.sesame;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 import net.enilink.commons.iterator.Filter;
@@ -35,7 +33,6 @@ import org.openrdf.query.Operation;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
-import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -44,8 +41,6 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 public class SesameRepositoryDataManager implements IDataManager {
-	private static final URI[] EMPTY_URIS = new URI[0];
-
 	@Inject
 	protected IDataChangeSupport changeSupport;
 
@@ -80,8 +75,8 @@ public class SesameRepositoryDataManager implements IDataManager {
 	@Override
 	public IDataManager add(Iterable<? extends IStatement> statements,
 			IReference[] readContexts, IReference... addContexts) {
-		URI[] readCtx = toURI(readContexts);
-		URI[] addCtx = toURI(addContexts);
+		URI[] readCtx = valueConverter.toSesameURI(readContexts);
+		URI[] addCtx = valueConverter.toSesameURI(addContexts);
 		try {
 			Iterator<? extends IStatement> it = statements.iterator();
 
@@ -90,8 +85,9 @@ public class SesameRepositoryDataManager implements IDataManager {
 			while (it.hasNext()) {
 				IStatement stmt = it.next();
 
-				Resource subject = getResource(stmt.getSubject());
-				URI predicate = (URI) getResource(stmt.getPredicate());
+				Resource subject = valueConverter.toSesame(stmt.getSubject());
+				URI predicate = (URI) valueConverter.toSesame(stmt
+						.getPredicate());
 				Value object = valueConverter.toSesame((IValue) stmt
 						.getObject());
 
@@ -238,16 +234,11 @@ public class SesameRepositoryDataManager implements IDataManager {
 		return sb.toString();
 	}
 
-	protected void setDataset(Operation operation, IReference[] contexts) {
-		if (contexts.length > 0) {
-			DatasetImpl ds = new DatasetImpl();
-			for (URI graph : toURI(contexts)) {
-				ds.addDefaultGraph(graph);
-				if (graph != null) {
-					ds.addNamedGraph(graph);
-				}
-			}
-			operation.setDataset(ds);
+	protected void setDataset(Operation operation, IReference[] readContexts,
+			IReference... modifyContexts) {
+		if (readContexts.length > 0 || modifyContexts.length > 0) {
+			operation.setDataset(valueConverter.createDataset(readContexts,
+					modifyContexts));
 		}
 	}
 
@@ -274,15 +265,29 @@ public class SesameRepositoryDataManager implements IDataManager {
 	@Override
 	public IDataManagerUpdate createUpdate(final String update, String baseURI,
 			final boolean includeInferred, final IReference... contexts) {
-		try {
-			Update updateOp = getConnection().prepareUpdate(
-					QueryLanguage.SPARQL, update);
-			setDataset(updateOp, contexts);
-			updateOp.setIncludeInferred(includeInferred);
-			return new SesameUpdate(updateOp);
-		} catch (Exception e) {
-			throw new KommaException(e);
+		return createUpdate(update, baseURI, includeInferred, contexts,
+				contexts);
+	}
+
+	@Override
+	public IDataManagerUpdate createUpdate(String update, String baseURI,
+			boolean includeInferred, IReference[] readContexts,
+			IReference... modifyContexts) {
+		if (changeSupport.isEnabled(this)) {
+			return new SesameUpdate(this, update, baseURI, includeInferred,
+					readContexts, modifyContexts);
+		} else {
+			try {
+				Update updateOp = getConnection().prepareUpdate(
+						QueryLanguage.SPARQL, update);
+				setDataset(updateOp, readContexts, modifyContexts);
+				updateOp.setIncludeInferred(includeInferred);
+				return new SesameUpdateRemote(updateOp);
+			} catch (Exception e) {
+				throw new KommaException(e);
+			}
 		}
+
 	}
 
 	protected RepositoryConnection getConnection() {
@@ -353,34 +358,6 @@ public class SesameRepositoryDataManager implements IDataManager {
 		}
 	}
 
-	protected Resource getResource(IReference reference) {
-		Value value = valueConverter.toSesame(reference);
-		if (reference != null && !(value instanceof Resource)) {
-			throw new KommaException("Cannot convert object '" + reference
-					+ "' of type '" + reference.getClass().getName()
-					+ "' to Sesame resource.");
-		}
-		return (Resource) value;
-	}
-
-	protected URI[] toURI(IReference... references) {
-		if (references.length == 0) {
-			return EMPTY_URIS;
-		}
-		List<URI> uris = new ArrayList<URI>(references.length);
-		for (IReference ref : references) {
-			if (ref == null) {
-				uris.add(null);
-			} else {
-				Resource resource = getResource(ref);
-				if (resource instanceof URI) {
-					uris.add((URI) resource);
-				}
-			}
-		}
-		return uris.toArray(new URI[uris.size()]);
-	}
-
 	@Override
 	public ITransaction getTransaction() {
 		return transaction;
@@ -394,7 +371,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 					(Resource) valueConverter.toSesame(subject),
 					(URI) valueConverter.toSesame(predicate),
 					valueConverter.toSesame(object), includeInferred,
-					toURI(contexts));
+					valueConverter.toSesameURI(contexts));
 		} catch (Exception e) {
 			throw new KommaException(e);
 		}
@@ -411,10 +388,10 @@ public class SesameRepositoryDataManager implements IDataManager {
 			IReference... contexts) {
 		try {
 			SesameGraphResult result = new SesameGraphResult(getConnection()
-					.getStatements((Resource) valueConverter.toSesame(subject),
+					.getStatements(valueConverter.toSesame(subject),
 							(URI) valueConverter.toSesame(predicate),
 							valueConverter.toSesame(object), includeInferred,
-							toURI(contexts)));
+							valueConverter.toSesameURI(contexts)));
 			injector.injectMembers(result);
 			return result;
 		} catch (Exception e) {
@@ -444,7 +421,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 	public IDataManager remove(
 			Iterable<? extends IStatementPattern> statements,
 			IReference... contexts) {
-		URI[] removeContexts = toURI(contexts);
+		URI[] removeContexts = valueConverter.toSesameURI(contexts);
 		try {
 			RepositoryConnection conn = getConnection();
 			boolean trackChanges = changeSupport.isEnabled(this);
@@ -462,8 +439,10 @@ public class SesameRepositoryDataManager implements IDataManager {
 						}
 					}
 				} else {
-					Resource subject = getResource(stmt.getSubject());
-					URI predicate = (URI) getResource(stmt.getPredicate());
+					Resource subject = valueConverter.toSesame(stmt
+							.getSubject());
+					URI predicate = (URI) valueConverter.toSesame(stmt
+							.getPredicate());
 					Value object = valueConverter.toSesame((IValue) stmt
 							.getObject());
 					if (trackChanges) {
