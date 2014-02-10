@@ -186,12 +186,12 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 						.getType(Annotation[].class), new Type[0]));
 
 		gen.invoke(Methods.PROPERTYSETFACTORY_CREATEPROPERTYSET);
-		gen.dup();
-
 		if (setter == null) {
 			// this property set is readonly
 			gen.invoke(Methods.PROPERTYSETS_UNMODIFIABLE);
 		}
+		// create return value
+		gen.dup();
 
 		// store property set in field
 		gen.loadThis();
