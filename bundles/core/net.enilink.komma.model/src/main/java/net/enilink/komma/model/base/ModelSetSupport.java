@@ -30,7 +30,6 @@ import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.adapter.IAdapterSet;
 import net.enilink.komma.common.notify.FilterUtil;
 import net.enilink.komma.common.notify.INotification;
-import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationSupport;
 import net.enilink.komma.core.EntityVar;

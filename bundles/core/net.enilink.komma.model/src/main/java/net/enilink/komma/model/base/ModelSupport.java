@@ -191,6 +191,8 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 					public IExtendedIterator<INamespace> getNamespaces() {
 						Set<URI> uris = new HashSet<>();
 						Map<String, INamespace> prefixMap = new LinkedHashMap<>();
+						prefixMap.put("", new net.enilink.komma.core.Namespace(
+								"", getURI().appendLocalPart("")));
 						for (INamespace ns : WrappedIterator.create(
 								getAllModelNamespaces().iterator()).andThen(
 								super.getNamespaces().mapWith(

@@ -179,7 +179,9 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 				// add namespaces as model meta-data
 				for (INamespace ns : namespaces) {
 					// prevent addition of redundant prefix/uri combinations
-					if (!ns.getURI().equals(dm.getNamespace(ns.getPrefix()))) {
+					if (ns.getPrefix().length() > 0
+							&& !ns.getURI().equals(
+									dm.getNamespace(ns.getPrefix()))) {
 						net.enilink.komma.model.concepts.Namespace newNs = getEntityManager()
 								.create(net.enilink.komma.model.concepts.Namespace.class);
 						newNs.setPrefix(ns.getPrefix());
