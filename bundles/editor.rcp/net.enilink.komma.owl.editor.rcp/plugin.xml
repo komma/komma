@@ -18,7 +18,7 @@
             id="net.enilink.komma.owl.editor.OWLEditor"
             name="%_UI_OWLEditor_label"
             icon="icons/full/obj16/OWLEditor.png"
-            extensions="owl,rdf,ttl,n3"
+            extensions="owl,rdf,ttl,n3,nt,trix"
             class="net.enilink.komma.owl.editor.rcp.OWLEditor"
             contributorClass="net.enilink.komma.owl.editor.OWLActionBarContributor">
       </editor>
