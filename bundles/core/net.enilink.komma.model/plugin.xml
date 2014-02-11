@@ -73,6 +73,10 @@
                default="application/rdf+xml"
                name="mimeType">
          </property>
+         <property
+               default="true"
+               name="hasWriter">
+         </property>
       </content-type>
       <content-type
             default-charset="US-ASCII"
@@ -83,6 +87,10 @@
          <property
                default="text/plain"
                name="mimeType">
+         </property>
+         <property
+               default="true"
+               name="hasWriter">
          </property>
       </content-type>
       <content-type
@@ -95,6 +103,10 @@
                default="application/x-turtle"
                name="mimeType">
          </property>
+         <property
+               default="true"
+               name="hasWriter">
+         </property>
       </content-type>
       <content-type
             default-charset="UTF-8"
@@ -105,6 +117,10 @@
          <property
                default="text/rdf+n3"
                name="mimeType">
+         </property>
+         <property
+               default="true"
+               name="hasWriter">
          </property>
       </content-type>
       <content-type
@@ -117,6 +133,10 @@
                default="application/x-trig"
                name="mimeType">
          </property>
+         <property
+               default="true"
+               name="hasWriter">
+         </property>
       </content-type>
       <content-type
             default-charset="UTF-8"
@@ -127,6 +147,10 @@
          <property
                default="application/xhtml+xml"
                name="mimeType">
+         </property>
+         <property
+               default="false"
+               name="hasWriter">
          </property>
       </content-type>
    </extension>
