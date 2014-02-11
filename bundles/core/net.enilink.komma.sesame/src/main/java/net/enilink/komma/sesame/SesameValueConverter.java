@@ -35,7 +35,7 @@ public class SesameValueConverter {
 	private static final org.openrdf.model.URI[] EMPTY_URIS = new org.openrdf.model.URI[0];
 
 	protected ValueFactory valueFactory;
-	protected Map<String, BNode> bnodeMap = new HashMap<>();
+	protected final Map<String, BNode> bnodeMap = new HashMap<>();
 
 	@Inject
 	public SesameValueConverter(ValueFactory valueFactory) {
@@ -123,7 +123,7 @@ public class SesameValueConverter {
 					if (id.startsWith("new-")) {
 						// convert newly created blank nodes with magic prefix
 						// "new-"
-						synchronized (SesameValueConverter.this) {
+						synchronized (bnodeMap) {
 							BNode bnode = bnodeMap.get(id);
 							if (bnode == null) {
 								bnode = valueFactory.createBNode();
@@ -182,5 +182,11 @@ public class SesameValueConverter {
 			}
 		}
 		return uris.toArray(new org.openrdf.model.URI[uris.size()]);
+	}
+
+	public void reset() {
+		synchronized (bnodeMap) {
+			bnodeMap.clear();
+		}
 	}
 }

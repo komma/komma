@@ -107,8 +107,11 @@ public class SesameRepositoryDataManager implements IDataManager {
 					conn.add(subject, predicate, object, addCtx);
 				}
 			}
-			if (changeSupport.isEnabled(this) && !getTransaction().isActive()) {
-				changeSupport.commit(this);
+			if (!getTransaction().isActive()) {
+				clearNodeMappings();
+				if (changeSupport.isEnabled(this)) {
+					changeSupport.commit(this);
+				}
 			}
 		} catch (Exception e) {
 			throw new KommaException(e);
@@ -517,5 +520,12 @@ public class SesameRepositoryDataManager implements IDataManager {
 			throw new KommaException(e);
 		}
 		return this;
+	}
+
+	/**
+	 * Clear cache of generated blank nodes.
+	 */
+	void clearNodeMappings() {
+		valueConverter.reset();
 	}
 }
