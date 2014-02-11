@@ -132,7 +132,6 @@ public class ModelSetWorkbenchSynchronizer implements IResourceChangeListener {
 	/**
 	 * Dispose of the synchronizer. Called when no longer needed.
 	 * 
-	 * 
 	 * @since 1.0.0
 	 */
 	public void dispose() {
@@ -141,7 +140,7 @@ public class ModelSetWorkbenchSynchronizer implements IResourceChangeListener {
 
 	/**
 	 * The project is going away so we need to cleanup ourself and the
-	 * ResourceSet.
+	 * model set.
 	 */
 	protected void release() {
 		if (KommaWorkbenchPlugin.isActivated()) {

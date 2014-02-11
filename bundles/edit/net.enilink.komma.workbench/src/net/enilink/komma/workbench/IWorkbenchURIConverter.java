@@ -22,7 +22,7 @@ import net.enilink.komma.model.IURIConverter;
 
 /**
  * Implementers of this interface are WorkbenchURI converters. Workbench URI
- * converters handle references to files in the project's containers. T
+ * converters handle references to files in the project's containers.
  * 
  * @since 1.0.0
  */

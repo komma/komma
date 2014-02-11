@@ -85,6 +85,14 @@ public class KommaWorkbenchContextBase {
 	 */
 	public void dispose() {
 		project = null;
+		if (uriConverter instanceof AutoCloseable) {
+			try {
+				((AutoCloseable) uriConverter).close();
+			} catch (Exception e) {
+				// ignore
+			}
+			uriConverter = null;
+		}
 	}
 
 	/**
