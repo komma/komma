@@ -75,7 +75,7 @@ public class NewOntologyWizard extends BasicNewFileResourceWizard {
 		try {
 			setDefaultPageImageDescriptor(ImageDescriptor
 					.createFromURL(new URL(OWLEditorPlugin.INSTANCE.getImage(
-							"full/obj16/OWLFile").toString()))); //$NON-NLS-1$
+							"full/wizban/newont_wiz").toString()))); //$NON-NLS-1$
 		} catch (Throwable ignored) {
 		}
 	}
