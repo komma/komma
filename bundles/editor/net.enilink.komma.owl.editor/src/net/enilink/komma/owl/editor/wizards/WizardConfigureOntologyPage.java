@@ -65,8 +65,8 @@ public class WizardConfigureOntologyPage extends WizardNewFileCreationPage {
 	protected Combo formatField;
 	protected ComboViewer formatViewer;
 
-	protected Button namespaceDefault;
-	protected Text namespaceField;
+	protected Button uriUseDefault;
+	protected Text uriField;
 
 	protected WizardConfigureOntologyPage(String pageName,
 			IStructuredSelection selection) {
@@ -75,21 +75,20 @@ public class WizardConfigureOntologyPage extends WizardNewFileCreationPage {
 
 	/**
 	 * The "advanced" section is not used for the link options but rather for
-	 * additional settings for the ontology creation (namespace and format).
+	 * additional settings for the ontology creation (URI and format).
 	 */
 	@Override
 	public void createAdvancedControls(Composite parent) {
 		Composite formatGroup = new Composite(parent, SWT.NONE);
-		GridLayout formatlayout = new GridLayout();
+		GridLayout formatlayout = new GridLayout(2, false);
 		formatlayout.marginWidth = 0;
-		formatlayout.marginHeight = 0;
 		formatGroup.setLayout(formatlayout);
 		formatGroup
 				.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 		formatGroup.setFont(parent.getFont());
 
 		Label formatLabel = new Label(formatGroup, SWT.NONE);
-		formatLabel.setText("Select the file format: ");
+		formatLabel.setText("File format:");
 
 		formatField = new Combo(formatGroup, SWT.BORDER);
 		formatViewer = new ComboViewer(formatField);
@@ -117,8 +116,10 @@ public class WizardConfigureOntologyPage extends WizardNewFileCreationPage {
 			}
 		});
 
-		// set this here, doing it in the constructor is too late
+		// set the default extension here, as this is called from super()
 		setFileExtension("rdf");
+
+		// get the list of writeable content-types from the plugin registry
 		QualifiedName mimeType = new QualifiedName(ModelPlugin.PLUGIN_ID,
 				"mimeType");
 		QualifiedName hasWriter = new QualifiedName(ModelPlugin.PLUGIN_ID,
@@ -130,10 +131,11 @@ public class WizardConfigureOntologyPage extends WizardNewFileCreationPage {
 			IContentDescription desc = contentType.getDefaultDescription();
 			// use those registered from the model plugin w/ mimeType property
 			if (desc.getProperty(mimeType) != null
-					&& Boolean.parseBoolean((String) desc.getProperty(hasWriter))) {
+					&& "true".equalsIgnoreCase(String.valueOf(desc
+							.getProperty(hasWriter)))) {
 				supportedTypes.add(contentType);
 				if (contentType.isAssociatedWith("dummy." + getFileExtension())) {
-					// default-select entry for the given extension (see above)
+					// preselect entry for the default extension (see above)
 					defaultSelection = contentType;
 				}
 			}
@@ -156,45 +158,42 @@ public class WizardConfigureOntologyPage extends WizardNewFileCreationPage {
 					}
 				});
 
-		Composite namespaceGroup = new Composite(parent, SWT.NONE);
-		GridLayout namespaceLayout = new GridLayout();
-		namespaceLayout.marginWidth = 0;
-		namespaceLayout.marginHeight = 0;
-		namespaceGroup.setLayout(namespaceLayout);
-		namespaceGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
-				false));
-		namespaceGroup.setFont(parent.getFont());
+		Composite uriGroup = new Composite(parent, SWT.NONE);
+		GridLayout uriLayout = new GridLayout();
+		uriLayout.marginWidth = 0;
+		uriGroup.setLayout(uriLayout);
+		uriGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		uriGroup.setFont(parent.getFont());
 
-		Label namespaceLabel = new Label(namespaceGroup, SWT.NONE);
-		namespaceLabel.setText("Enter the namespace for your new Ontology: ");
+		Label uriLabel = new Label(uriGroup, SWT.NONE);
+		uriLabel.setText("Enter the URI you wish to use:");
 
-		namespaceField = new Text(namespaceGroup, SWT.BORDER);
-		namespaceField.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
-				false));
+		uriField = new Text(uriGroup, SWT.BORDER);
+		uriField.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
-		// check box for default namespace (platform:/resource/$path)
-		namespaceDefault = new Button(namespaceGroup, SWT.CHECK);
-		namespaceDefault.setSelection(true);
-		namespaceDefault.setText("Use a default namespace");
-		namespaceDefault.addSelectionListener(new SelectionAdapter() {
+		// checkbox to use default URI (platform:/resource/$path)
+		uriUseDefault = new Button(uriGroup, SWT.CHECK);
+		uriUseDefault.setSelection(true);
+		uriUseDefault.setText("Use a default URI");
+		uriUseDefault.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				// enable/disable(+reset) namespace text input
-				if (namespaceDefault.getSelection()) {
-					namespaceField.setEnabled(false);
-					updateNamespace();
+				// enable/disable(+reset) URI text input
+				if (uriUseDefault.getSelection()) {
+					uriField.setEnabled(false);
+					updateURI();
 				} else {
-					namespaceField.setEnabled(true);
+					uriField.setEnabled(true);
 				}
 
 			}
 		});
-		namespaceDefault.notifyListeners(SWT.Selection, new Event());
+		uriUseDefault.notifyListeners(SWT.Selection, new Event());
 	}
 
-	/** Return the selected namespace. */
-	public URI getNamespace() {
-		return URIImpl.createURI(namespaceField.getText());
+	/** Return the selected URI. */
+	public URI getURI() {
+		return URIImpl.createURI(uriField.getText());
 	}
 
 	/** Return the selected format (content-type). */
@@ -212,35 +211,35 @@ public class WizardConfigureOntologyPage extends WizardNewFileCreationPage {
 		QualifiedName mimeType = new QualifiedName(ModelPlugin.PLUGIN_ID,
 				"mimeType");
 		IDataAndNamespacesVisitor<Void> visitor = ModelUtil.writeData(baos,
-				getNamespace().toString(), //
+				getURI().toString(), //
 				getFormat().getDefaultDescription().getProperty(mimeType)
 						.toString(), //
 				getFormat().getDefaultCharset());
 		visitor.visitBegin();
-		visitor.visitNamespace(new Namespace("", getNamespace().trimFragment()
+		visitor.visitNamespace(new Namespace("", getURI().trimFragment()
 				.appendLocalPart("")));
-		visitor.visitStatement(new Statement(getNamespace().trimFragment(),
+		visitor.visitStatement(new Statement(getURI().trimFragment(),
 				RDF.PROPERTY_TYPE, OWL.TYPE_ONTOLOGY));
 		visitor.visitEnd();
 		return new ByteArrayInputStream(baos.toByteArray());
 	}
 
-	/** Also trigger modification of the namespace, if appropriate. */
+	/** Also trigger modification of the URI, if appropriate. */
 	@Override
 	public void handleEvent(Event event) {
 		super.handleEvent(event);
-		updateNamespace();
+		updateURI();
 	}
 
 	/**
-	 * Update the namespace field upon changes to the filename or format when
-	 * the "use default" option is selected.
+	 * Update the URI field upon changes to the filename or format when the
+	 * "use default" option is selected.
 	 */
-	protected void updateNamespace() {
-		if (namespaceDefault != null && namespaceDefault.getSelection()
-				&& namespaceField != null && !getFileName().isEmpty()) {
+	protected void updateURI() {
+		if (uriUseDefault != null && uriUseDefault.getSelection()
+				&& uriField != null && !getFileName().isEmpty()) {
 			IPath targetPath = getContainerFullPath().append(getFileName());
-			namespaceField.setText(URIImpl.createPlatformResourceURI(
+			uriField.setText(URIImpl.createPlatformResourceURI(
 					targetPath.toString(), true).toString());
 		}
 	}
@@ -270,9 +269,9 @@ public class WizardConfigureOntologyPage extends WizardNewFileCreationPage {
 			return false;
 		}
 
-		// format selection and namespace setting needed
-		return (formatField.getSelectionIndex() != -1 && !namespaceField
-				.getText().isEmpty());
+		// format selection and non-empty URI are needed
+		return (formatField.getSelectionIndex() != -1 && !uriField.getText()
+				.isEmpty());
 	}
 
 	/**
