@@ -71,6 +71,10 @@ public abstract class ItemProviderAdapterFactory<T> extends AdapterFactory
 
 	@Override
 	public Object adapt(Object object, Object type) {
+		if (type instanceof Class<?>
+				&& ((Class<?>) type).isAssignableFrom(object.getClass())) {
+			return object;
+		}
 		return doAdapt(object, this);
 	}
 

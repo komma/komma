@@ -30,7 +30,6 @@ public abstract class AdapterFactory implements IAdapterFactory, IDisposable {
 				&& ((Class<?>) type).isAssignableFrom(object.getClass())) {
 			return object;
 		}
-
 		Object objectReference = object instanceof IReferenceable ? ((IReferenceable) object)
 				.getReference() : object;
 		List<Object> adapters = object2adapters.get(objectReference);
