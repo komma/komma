@@ -16,13 +16,9 @@ import net.enilink.komma.edit.ui.provider.LazyAdapterFactoryContentProvider;
 import net.enilink.komma.em.concepts.IClass;
 import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.komma.model.IObject;
+import net.enilink.vocab.rdf.RDF;
 
 public class InstanceTreePart extends InstancesPart {
-	static String QUERY_INSTANCES = ISparqlConstants.PREFIX
-	// +
-	// "CONSTRUCT {?r a <komma:Result> . ?r a ?t} WHERE {?r a ?c FILTER NOT EXISTS {[a ?c; komma:child ?r]} OPTIONAL {?r a ?t FILTER isIRI(?t)}}";
-			+ "SELECT DISTINCT ?r WHERE {?r a ?c FILTER NOT EXISTS {[ a ?c; komma:child ?r ]}}";
-
 	class ContentProvider extends LazyAdapterFactoryContentProvider implements
 			ISearchableItemProvider {
 		public ContentProvider(IAdapterFactory adapterFactory) {
@@ -34,7 +30,12 @@ public class InstanceTreePart extends InstancesPart {
 			SparqlSearchableItemProvider searchableProvider = new SparqlSearchableItemProvider() {
 				@Override
 				protected String getQueryFindPatterns(Object parent) {
-					return "?instance a ?parent . ?instance komma:descendant ?s . ";
+					if (RDF.TYPE_PROPERTY.equals(currentInput)
+							|| currentInput.getRdfsSubClassOf().contains(
+									RDF.TYPE_PROPERTY)) {
+						return "?s rdfs:subPropertyOf [ a ?parent ] . ";
+					}
+					return "[ a ?parent; komma:child ] . ";
 				}
 			};
 			return searchableProvider.find(expression, currentInput, 20);
@@ -59,6 +60,19 @@ public class InstanceTreePart extends InstancesPart {
 				.setContentProvider(new ContentProvider(getAdapterFactory()));
 	}
 
+	protected String instancesQuery() {
+		StringBuilder sb = new StringBuilder(ISparqlConstants.PREFIX)
+				.append("SELECT DISTINCT ?r WHERE { ?r a ?c FILTER NOT EXISTS { ");
+		if (RDF.TYPE_PROPERTY.equals(currentInput)
+				|| currentInput.getRdfsSubClassOf().contains(RDF.TYPE_PROPERTY)) {
+			sb.append("?other a ?c . ?r rdfs:subPropertyOf ?other FILTER (?r != ?other)");
+		} else {
+			sb.append("?other a ?c; komma:child ?r FILTER (?r != ?other)");
+		}
+		sb.append(" }} ORDER BY ?r");
+		return sb.toString();
+	}
+
 	@Override
 	protected void setInputToViewer(StructuredViewer viewer, IClass input) {
 		currentInput = input;
@@ -66,9 +80,8 @@ public class InstanceTreePart extends InstancesPart {
 			viewer.setInput(null);
 		} else {
 			List<IObject> instances = input.getEntityManager()
-					.createQuery(QUERY_INSTANCES).setParameter("c", input)
+					.createQuery(instancesQuery()).setParameter("c", input)
 					.evaluate(IObject.class).toList();
-
 			viewer.setInput(instances.toArray());
 		}
 	}
