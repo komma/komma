@@ -4,7 +4,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Rcp
 Bundle-SymbolicName: net.enilink.komma.edit.ui.rcp;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui,
  org.eclipse.ui.ide,
