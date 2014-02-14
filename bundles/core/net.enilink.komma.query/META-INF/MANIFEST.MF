@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Query
 Bundle-SymbolicName: net.enilink.komma.query
 Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Vendor: Fraunhofer IWU
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: net.enilink.komma.parser;visibility:=reexport,
  org.parboiled
 Export-Package: net.enilink.komma.query
