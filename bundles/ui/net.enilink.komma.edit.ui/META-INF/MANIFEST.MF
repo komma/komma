@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
 Bundle-SymbolicName: net.enilink.komma.edit.ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: .
 Bundle-Activator: net.enilink.komma.edit.ui.KommaEditUIPlugin$Implementation
