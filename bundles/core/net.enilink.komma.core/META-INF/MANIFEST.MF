@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Runtime Plug-in
 Bundle-SymbolicName: net.enilink.komma.core
 Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: net.enilink.commons.iterator,
  net.enilink.composition;visibility:=reexport,
