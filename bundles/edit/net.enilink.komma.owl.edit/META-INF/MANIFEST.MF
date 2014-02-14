@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Edit
 Bundle-SymbolicName: net.enilink.komma.owl.edit;singleton:=true
 Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.commands,
@@ -10,6 +11,5 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.edit,
  net.enilink.komma.rdfs.edit
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Activator: net.enilink.komma.owl.edit.OWLEditPlugin$Implementation
 Export-Package: net.enilink.komma.owl.edit
