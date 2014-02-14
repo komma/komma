@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Knowledge Management Architecture
 Bundle-SymbolicName: net.enilink.komma.em;singleton:=true
 Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Activator: net.enilink.komma.em.KommaEM$Implementation
 Bundle-Localization: plugin
 Bundle-ActivationPolicy: lazy
