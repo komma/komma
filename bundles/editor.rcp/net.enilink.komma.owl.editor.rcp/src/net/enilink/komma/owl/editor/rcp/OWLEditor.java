@@ -204,11 +204,11 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 						new ModelSetModule(module)).getInstance(
 						IModelSetFactory.class);
 				modelSet = factory
-						.createModelSet(
-								URIImpl.createURI(MODELS.NAMESPACE +
-								// "MemoryModelSet" //
-										"OwlimModelSet" //
-								),
+						.createModelSet(MODELS.NAMESPACE_URI
+								.appendLocalPart("MemoryModelSet"),
+								// uses automatically OWLIM if available
+								MODELS.NAMESPACE_URI
+										.appendLocalPart("OwlimModelSet"),
 								URIImpl.createURI(MODELS.NAMESPACE
 										+ "ProjectModelSet"));
 				if (modelSet instanceof IProjectModelSet && project != null) {
