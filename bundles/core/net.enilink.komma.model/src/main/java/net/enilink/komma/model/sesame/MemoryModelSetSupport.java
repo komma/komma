@@ -22,13 +22,14 @@ import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.em.KommaEM;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.MODELS;
-import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.sesame.SesameModule;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
+import org.openrdf.model.Resource;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -50,13 +51,19 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 		MemoryStore store = new MemoryStore();
 		SailRepository repository = new SailRepository(store);
 		repository.initialize();
+		addBasicKnowledge(repository);
+		// add RDFS inferencer after base knowledge was imported into the
+		// repository
+		return new SailRepository(Boolean.FALSE.equals(getInference()) ? store
+				: new ForwardChainingRDFSInferencer(store));
+	}
 
-		String[] bundles = { "net.enilink.vocab.owl",
-				"net.enilink.vocab.rdfs" };
+	protected void addBasicKnowledge(Repository repository)
+			throws RepositoryException {
+		String[] bundles = { "net.enilink.vocab.owl", "net.enilink.vocab.rdfs" };
 
 		if (AbstractKommaPlugin.IS_ECLIPSE_RUNNING) {
 			RepositoryConnection conn = null;
-
 			try {
 				conn = repository.getConnection();
 				for (String name : bundles) {
@@ -74,8 +81,12 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 								.trimSegments(1);
 						for (Map.Entry<Object, Object> entry : properties
 								.entrySet()) {
-							// String namespaces = entry.getValue().toString();
 							String file = entry.getKey().toString();
+							if (!importRdfAndRdfsVocabulary()
+									&& file.contains("rdfs")) {
+								// skip RDF and RDFS schema
+								continue;
+							}
 
 							URIImpl fileUri = URIImpl.createFileURI(file);
 							fileUri = fileUri.resolve(baseUri);
@@ -85,7 +96,14 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 							if (resolvedUrl != null) {
 								in = resolvedUrl.openStream();
 								if (in != null && in.available() > 0) {
-									conn.add(in, "", RDFFormat.RDFXML);
+									URI defaultGraph = getDefaultGraph();
+									Resource[] contexts = defaultGraph == null ? new Resource[0]
+											: new Resource[] { repository
+													.getValueFactory()
+													.createURI(
+															defaultGraph
+																	.toString()) };
+									conn.add(in, "", RDFFormat.RDFXML, contexts);
 								}
 								if (in != null) {
 									in.close();
@@ -105,17 +123,15 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 					try {
 						conn.close();
 					} catch (RepositoryException e) {
-						ModelPlugin.log(e);
+						KommaEM.INSTANCE.log(e);
 					}
 				}
 			}
-
 		}
+	}
 
-		// add RDFS inferencer after base knowledge was imported into the
-		// repository
-		return new SailRepository(Boolean.FALSE.equals(getInference()) ? store
-				: new ForwardChainingRDFSInferencer(store));
+	protected boolean importRdfAndRdfsVocabulary() {
+		return true;
 	}
 
 	@Iri(MODELS.NAMESPACE + "inference")
