@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Sesame Plugin
 Bundle-SymbolicName: net.enilink.komma.sesame
 Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: net.enilink.komma.core,
  net.enilink.komma.dm,
