@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Sesame
 Bundle-SymbolicName: net.enilink.composition.properties
 Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: net.enilink.composition.properties,
  net.enilink.composition.properties.annotations,
