@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Sparql
 Bundle-SymbolicName: net.enilink.komma.parser
 Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Bundle-Vendor: Fraunhofer IWU
 Import-Package: org.parboiled,
  org.parboiled.annotations,
  org.parboiled.buffers,
