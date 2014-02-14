@@ -14,7 +14,7 @@
       label="KOMMA - Core"
       version="1.0.0.qualifier"
       provider-name="Fraunhofer IWU"
-      license-feature="net.enilink.komma.license"
+      license-feature="net.enilink.komma.license.feature"
       license-feature-version="1.0.0.qualifier">
 
    <description>
@@ -205,19 +205,6 @@ http://www.eclipse.org/legal/epl-v10.html
 
    <plugin
          id="net.enilink.komma.dm"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.ontotext.owlim.lite"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="net.enilink.komma.owlim"
          download-size="0"
          install-size="0"
          version="0.0.0"
