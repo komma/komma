@@ -65,32 +65,30 @@ public class CommonsLoggingPlugin extends Plugin {
 			} else {
 				System.out
 						.println("no log4j.properties found in workspace; using default from classpath");
-				System.out.println("workspace location: "
-						+ file.getAbsolutePath());
 			}
 		}
+		if ("true".equals(System
+				.getProperty("net.enilink.commons.logging.captureSystemOut"))) {
+			// redirect system output output to log.info()
+			PrintStream printStreamSystemOut = new PrintStream(System.out) {
+				private Logger log = LoggerFactory.getLogger(System.class);
 
-		// redirect system output output to log.info()
-		PrintStream printStreamSystemOut = new PrintStream(System.out) {
-			private Logger log = LoggerFactory.getLogger(System.class);
+				public void print(String message) {
+					log.info(message);
+				}
+			};
+			System.setOut(printStreamSystemOut);
 
-			public void print(String message) {
-				log.info(message);
-			}
-		};
+			// redirect system error output to log.error()
+			PrintStream printStreamSystemErr = new PrintStream(System.err) {
+				private Logger log = LoggerFactory.getLogger(System.class);
 
-		System.setOut(printStreamSystemOut);
-
-		// redirect system error output to log.error()
-		PrintStream printStreamSystemErr = new PrintStream(System.err) {
-			private Logger log = LoggerFactory.getLogger(System.class);
-
-			public void print(String message) {
-				log.error(message);
-			}
-		};
-
-		System.setErr(printStreamSystemErr);
+				public void print(String message) {
+					log.error(message);
+				}
+			};
+			System.setErr(printStreamSystemErr);
+		}
 	}
 
 	/*
