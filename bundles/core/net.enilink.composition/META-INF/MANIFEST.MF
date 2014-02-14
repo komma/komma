@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Composition
 Bundle-SymbolicName: net.enilink.composition
 Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Eclipse-BuddyPolicy: dependent
 Export-Package: net.enilink.composition,
