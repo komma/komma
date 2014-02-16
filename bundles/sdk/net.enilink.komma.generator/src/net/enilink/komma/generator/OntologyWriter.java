@@ -79,9 +79,9 @@ public class OntologyWriter extends OrganizedRDFWriter {
 	@Override
 	public Void visitBegin() {
 		super.visitBegin();
-		visitNamespace(new Namespace("rdf", RDF.NAMESPACE));
-		visitNamespace(new Namespace("rdfs", RDFS.NAMESPACE));
-		visitNamespace(new Namespace("owl", OWL.NAMESPACE));
+		visitNamespace(new Namespace("rdf", RDF.NAMESPACE_URI));
+		visitNamespace(new Namespace("rdfs", RDFS.NAMESPACE_URI));
+		visitNamespace(new Namespace("owl", OWL.NAMESPACE_URI));
 		return null;
 	}
 
