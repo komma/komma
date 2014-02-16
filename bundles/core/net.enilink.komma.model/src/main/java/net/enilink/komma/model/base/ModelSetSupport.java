@@ -577,7 +577,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	public IObject getObject(URI uri, boolean loadOnDemand) {
 		IModel model = getModel(uri.trimFragment(), loadOnDemand);
 		if (model != null) {
-			return model.getObject(uri.localPart());
+			return model.getManager().find(uri, IObject.class);
 		} else {
 			return null;
 		}

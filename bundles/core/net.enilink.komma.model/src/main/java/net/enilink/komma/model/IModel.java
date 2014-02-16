@@ -205,15 +205,13 @@ public interface IModel {
 	IObject resolve(IReference reference);
 
 	/**
-	 * Returns the resolved object for the given URI {@link URI#fragment
-	 * fragment}.
+	 * Returns the resolved URI for the given local part.
 	 * 
 	 * @param localPart
-	 *            the fragment to resolve.
-	 * @return the resolved object for the given fragment, or <code>null</code>
-	 *         if it can't be resolved.
+	 *            the local part to resolve.
+	 * @return the resolved URI for the given local part.
 	 */
-	IObject getObject(String localPart);
+	URI resolveURI(String localPart);
 
 	/**
 	 * Loads the model from the input stream using the specified options.

@@ -495,8 +495,8 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	}
 
 	@Override
-	public IObject getObject(String localPart) {
-		return (IObject) getManager().find(getURI().appendFragment(localPart));
+	public URI resolveURI(String localPart) {
+		return getManager().getNamespace("").appendLocalPart(localPart);
 	}
 
 	/*
