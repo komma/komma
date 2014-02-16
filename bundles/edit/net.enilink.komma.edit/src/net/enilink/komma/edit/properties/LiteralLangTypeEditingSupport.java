@@ -13,6 +13,7 @@ import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.Literal;
+import net.enilink.komma.core.URI;
 
 public class LiteralLangTypeEditingSupport extends ResourceEditingSupport {
 	public LiteralLangTypeEditingSupport(IAdapterFactory adapterFactory) {
@@ -30,8 +31,13 @@ public class LiteralLangTypeEditingSupport extends ResourceEditingSupport {
 			Object value) {
 		if (value instanceof ILiteral) {
 			String lang = ((ILiteral) value).getLanguage();
-			return lang != null ? "@" + lang : getLabel(((ILiteral) value)
-					.getDatatype());
+			if (lang != null) {
+				return "@" + lang;
+			}
+			URI type = ((ILiteral) value).getDatatype();
+			if (type != null) {
+				return getLabel(subject.getEntityManager().find(type));
+			}
 		}
 		return "";
 	}
