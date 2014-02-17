@@ -4,18 +4,22 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import net.enilink.commons.ui.editor.EditorForm;
 import net.enilink.commons.ui.editor.IEditorPart;
 import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.edit.command.EditingDomainCommandStack;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
+import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.provider.ComposedAdapterFactory;
 import net.enilink.komma.edit.ui.editor.IPropertySheetPageSupport;
-import net.enilink.komma.edit.ui.editor.KommaEditorSupport;
-import net.enilink.komma.edit.ui.editor.KommaFormEditor;
+import net.enilink.komma.edit.ui.editor.KommaMultiPageEditor;
+import net.enilink.komma.edit.ui.editor.KommaMultiPageEditorSupport;
 import net.enilink.komma.edit.ui.rcp.editor.TabbedPropertySheetPageSupport;
 import net.enilink.komma.edit.ui.views.IViewerMenuSupport;
+import net.enilink.komma.edit.ui.views.SelectionProviderAdapter;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelSetFactory;
@@ -24,7 +28,6 @@ import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
 import net.enilink.komma.owl.editor.classes.ClassesPart;
-import net.enilink.komma.owl.editor.internal.KommaFormPage;
 import net.enilink.komma.owl.editor.ontology.OntologyPart;
 import net.enilink.komma.owl.editor.properties.DatatypePropertiesPart;
 import net.enilink.komma.owl.editor.properties.ObjectPropertiesPart;
@@ -35,23 +38,25 @@ import net.enilink.komma.workbench.ProjectModelSetSupport;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.dialogs.SaveAsDialog;
-import org.eclipse.ui.forms.IManagedForm;
-import org.eclipse.ui.forms.editor.FormEditor;
-import org.eclipse.ui.forms.editor.IFormPage;
-import org.eclipse.ui.forms.widgets.ScrolledForm;
 
 import com.google.inject.Guice;
 
 /**
  * A basic OWL editor.
  */
-public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
+public class OWLEditor extends KommaMultiPageEditor implements
+		IViewerMenuSupport {
 	static protected class Shared {
 		IModelSet modelSet;
 		Set<Object> openEditors = Collections
@@ -62,63 +67,88 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 	protected static QualifiedName PROPERTY_SHARED = new QualifiedName(
 			OWLEditor.class.getName(), "shared");
 
-	static class EditorPartPage extends KommaFormPage {
-		IEditorPart editorPart;
-
-		EditorPartPage(FormEditor editor, String id, String title,
-				IEditorPart editorPart) {
-			super(editor, id, title);
-			this.editorPart = editorPart;
-		}
-
-		protected void createFormContent(IManagedForm managedForm) {
-			ScrolledForm form = managedForm.getForm();
-			form.setText(getTitle());
-
-			getEditorForm().addPart(editorPart);
-
-			Composite body = form.getBody();
-			body.setLayout(new FillLayout());
-
-			editorPart.initialize(getEditorForm());
-			editorPart.createContents(body);
-			editorPart.setInput(getEditor().getAdapter(IModel.class));
-			editorPart.refresh();
-		}
-	}
-
-	protected IFormPage ontologyPage;
-	protected IFormPage classesPage;
-	protected IFormPage objectPropertiesPage;
-	protected IFormPage otherPropertiesPage;
-	protected IFormPage datatypePropertiesPage;
+	protected EditorForm form;
+	protected SelectionProviderAdapter formSelectionProvider = new SelectionProviderAdapter();
 
 	protected IProject project;
 	protected Shared shared;
 
-	public OWLEditor() {
-		ontologyPage = new EditorPartPage(this, "ontology", "Ontology",
-				new OntologyPart());
-		classesPage = new EditorPartPage(this, "classes", "Classes",
-				new ClassesPart());
-		objectPropertiesPage = new EditorPartPage(this, "objectProperties",
-				"ObjectProperties", new ObjectPropertiesPart());
-		otherPropertiesPage = new EditorPartPage(this, "otherProperties",
-				"other Properties", new OtherPropertiesPart());
-		datatypePropertiesPage = new EditorPartPage(this, "datatypeProperties",
-				"DatatypeProperties", new DatatypePropertiesPart());
+	protected void addPage(String label, IEditorPart editPart) {
+		Composite control = form.getWidgetFactory().createComposite(
+				form.getBody());
+		control.setLayout(new FillLayout());
+		control.setData("editPart", editPart);
+
+		editPart.initialize(form);
+		editPart.createContents(control);
+		editPart.setInput(getEditorSupport().getModel());
+		editPart.refresh();
+		setPageText(addPage(control), label);
 	}
 
-	protected void addPages() {
+	@Override
+	protected void createPages() {
+		final boolean[] internalChange = { false };
+		form = new EditorForm(getContainer()) {
+			@Override
+			public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+				if (IEditingDomainProvider.class.equals(adapter)) {
+					return OWLEditor.this;
+				} else if (IViewerMenuSupport.class.equals(adapter)) {
+					return OWLEditor.this;
+				}
+				return super.getAdapter(adapter);
+			}
+
+			@Override
+			public void fireSelectionChanged(IEditorPart firingPart,
+					ISelection selection) {
+				try {
+					internalChange[0] = true;
+					formSelectionProvider.setSelection(selection);
+				} finally {
+					internalChange[0] = false;
+				}
+			}
+		};
+		formSelectionProvider
+				.addSelectionChangedListener(new ISelectionChangedListener() {
+					@Override
+					public void selectionChanged(SelectionChangedEvent event) {
+						if (internalChange[0]) {
+							return;
+						}
+						Object selected = ((IStructuredSelection) event
+								.getSelection()).getFirstElement();
+						// allow arbitrary selections to be adapted to IValue
+						// objects
+						if (selected != null && !(selected instanceof IValue)) {
+							Object adapter = Platform.getAdapterManager()
+									.getAdapter(selected, IValue.class);
+							if (adapter != null) {
+								selected = adapter;
+							}
+						}
+						if (selected != null) {
+							IEditorPart editPart = (IEditorPart) getControl(
+									getActivePage()).getData("editPart");
+							if (editPart != null
+									&& editPart.setEditorInput(selected)) {
+								form.refreshStale();
+							}
+						}
+					}
+				});
+
 		try {
 			// Creates the model from the editor input
 			getEditorSupport().createModel();
 
-			addPage(ontologyPage);
-			addPage(classesPage);
-			addPage(objectPropertiesPage);
-			addPage(datatypePropertiesPage);
-			addPage(otherPropertiesPage);
+			addPage("Ontology", new OntologyPart());
+			addPage("Classes", new ClassesPart());
+			addPage("ObjectProperties", new ObjectPropertiesPart());
+			addPage("other Properties", new OtherPropertiesPart());
+			addPage("DatatypeProperties", new DatatypePropertiesPart());
 
 			getSite().getShell().getDisplay().asyncExec(new Runnable() {
 				public void run() {
@@ -131,11 +161,18 @@ public class OWLEditor extends KommaFormEditor implements IViewerMenuSupport {
 	}
 
 	@Override
-	protected KommaEditorSupport<? extends KommaFormEditor> createEditorSupport() {
-		return new KommaEditorSupport<KommaFormEditor>(this) {
+	protected KommaMultiPageEditorSupport<? extends KommaMultiPageEditor> createEditorSupport() {
+		return new KommaMultiPageEditorSupport<KommaMultiPageEditor>(this) {
 			{
 				saveAllModels = false;
 				disposeModelSet = false;
+			}
+
+			@Override
+			public void handlePageChange(Object activeEditor) {
+				super.handlePageChange(activeEditor);
+				editorSelectionProvider
+						.setSelectionProvider(formSelectionProvider);
 			}
 
 			@Override

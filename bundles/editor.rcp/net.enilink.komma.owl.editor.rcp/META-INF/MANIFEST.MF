@@ -22,7 +22,6 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.edit.ui.rcp
 Import-Package: com.google.inject,
  net.enilink.komma.owl.editor,
- net.enilink.komma.owl.editor.internal,
  net.enilink.komma.owl.editor.classes,
  net.enilink.komma.owl.editor.ontology,
  net.enilink.komma.owl.editor.properties
