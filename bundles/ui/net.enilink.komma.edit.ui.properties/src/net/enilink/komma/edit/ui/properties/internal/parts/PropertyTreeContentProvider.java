@@ -36,7 +36,12 @@ import net.enilink.komma.core.IStatement;
 
 public class PropertyTreeContentProvider extends ModelContentProvider implements
 		ITreeContentProvider {
-	private boolean includeInferred = true;
+	private PropertyNode.Options options = new PropertyNode.Options();
+	{
+		options.includeInferred = true;
+	}
+
+	private boolean includeInverse = false;
 
 	/**
 	 * Current top-level object
@@ -160,38 +165,43 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 	public Object[] getElements(Object inputElement) {
 		if (inputElement instanceof IResource) {
 			String SELECT_PROPERTIES = ISparqlConstants.PREFIX //
-					+ "SELECT DISTINCT ?property ?invProperty " //
+					+ "SELECT DISTINCT ?property "
+					+ (includeInverse ? "?invProperty " : "") //
 					+ "WHERE { " //
 					+ "{ ?resource ?property ?object }" //
-					+ " UNION { ?subject ?invProperty ?resource FILTER (?subject != ?resource) }" //
-					+ "} ORDER BY ?property ?invProperty";
+					+ (includeInverse ? " UNION { ?subject ?invProperty ?resource FILTER (?subject != ?resource) }"
+							: "")//
+					+ "} ORDER BY ?property "
+					+ (includeInverse ? "?invProperty" : "");
 
 			IQuery<?> query = ((IEntity) inputElement).getEntityManager()
-					.createQuery(SELECT_PROPERTIES, includeInferred)
+					.createQuery(SELECT_PROPERTIES, options.includeInferred)
 					.setParameter("resource", (IEntity) inputElement);
 
 			query.bindResultType("property", IProperty.class);
 			query.bindResultType("invProperty", IProperty.class);
 
-			@SuppressWarnings("unchecked")
-			IExtendedIterator<IBindings<IProperty>> result = (IExtendedIterator<IBindings<IProperty>>) query
-					.evaluate();
+			@SuppressWarnings("rawtypes")
+			IExtendedIterator<IBindings> result = (IExtendedIterator<IBindings>) query
+					.evaluate(IBindings.class);
 			Map<Key, PropertyNode> nodes = new LinkedHashMap<Key, PropertyNode>();
 			List<IProperty> invProperties = new ArrayList<IProperty>();
-			for (IBindings<IProperty> bindings : result) {
-				IProperty property = bindings.get("property");
+			for (IBindings<?> bindings : result) {
+				IProperty property = (IProperty) bindings.get("property");
 				if (property != null) {
 					createNode(nodes, (IResource) inputElement, property, false);
 				}
-				IProperty invProperty = bindings.get("invProperty");
-				if (invProperty != null) {
-					invProperties.add(invProperty);
+				if (includeInverse) {
+					IProperty invProperty = (IProperty) bindings
+							.get("invProperty");
+					if (invProperty != null) {
+						invProperties.add(invProperty);
+					}
 				}
 			}
 			for (IProperty invProperty : invProperties) {
 				createNode(nodes, (IResource) inputElement, invProperty, true);
 			}
-
 			return nodes.values().toArray();
 		}
 		return getChildren(inputElement);
@@ -203,8 +213,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 				inverse);
 		PropertyNode node = resourcePredicateToNode.get(key);
 		if (node == null) {
-			node = new PropertyNode(resource, property, inverse,
-					includeInferred);
+			node = new PropertyNode(resource, property, inverse, options);
 			resourcePredicateToNode.put(key, node);
 		} else {
 			node.refreshChildren();
@@ -289,7 +298,11 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 	}
 
 	public void setIncludeInferred(boolean includeInferred) {
-		this.includeInferred = includeInferred;
+		options.includeInferred = includeInferred;
+	}
+
+	public void setIncludeInverse(boolean includeInverse) {
+		this.includeInverse = includeInverse;
 	}
 
 	@Override

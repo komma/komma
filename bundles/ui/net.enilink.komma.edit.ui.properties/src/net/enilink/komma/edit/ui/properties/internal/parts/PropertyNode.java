@@ -18,21 +18,27 @@ import java.util.List;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.UniqueExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
-import net.enilink.vocab.rdf.RDF;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.concepts.IResource;
+import net.enilink.vocab.rdf.RDF;
 
 /**
  * Tree node that represents the values of a given property for a given resource
  * as its children.
  */
 public class PropertyNode extends StatementNode {
+	private static Options DEFAULT_OPTIONS = new Options();
+
+	public static class Options {
+		public boolean includeInferred;
+	}
+
 	private boolean createNewStatementOnEdit;
 	private Boolean hasMultipleStatements;
 
-	private boolean includeInferred;
+	private Options options;
 
 	private IStatement statement;
 
@@ -42,11 +48,11 @@ public class PropertyNode extends StatementNode {
 	IStatement[] statements;
 
 	public PropertyNode(IResource resource, IProperty property,
-			boolean inverse, boolean includeInferred) {
+			boolean inverse, Options options) {
 		super(inverse);
 		this.resource = resource;
 		this.property = property;
-		this.includeInferred = includeInferred;
+		this.options = options != null ? options : DEFAULT_OPTIONS;
 	}
 
 	/**
@@ -65,9 +71,8 @@ public class PropertyNode extends StatementNode {
 			// this way, the expanded view is consistent with the collapsed one
 			if (stmtAry.length > 1
 					&& RDF.PROPERTY_TYPE.equals(stmtAry[0].getPredicate())
-					&& net.enilink.vocab.owl.OWL.TYPE_THING
-							.equals(stmtAry[0].getObject())
-					&& !stmtAry[1].isInferred()) {
+					&& net.enilink.vocab.owl.OWL.TYPE_THING.equals(stmtAry[0]
+							.getObject()) && !stmtAry[1].isInferred()) {
 				IStatement typeThingStmt = stmtAry[0];
 				stmtAry[0] = stmtAry[1];
 				stmtAry[1] = typeThingStmt;
@@ -142,8 +147,9 @@ public class PropertyNode extends StatementNode {
 					.<IStatement> emptyList().iterator());
 		}
 		return UniqueExtendedIterator.create(inverse ? resource
-				.getInversePropertyStatements(property, true, includeInferred)
-				: resource.getPropertyStatements(property, includeInferred));
+				.getInversePropertyStatements(property, true,
+						options.includeInferred) : resource
+				.getPropertyStatements(property, options.includeInferred));
 	}
 
 	/**

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xml:space="preserve"
+   version="1.1"
+   overflow="visible"
+   viewBox="0 0 160.95 160.95"
+   id="svg3064"
+   inkscape:version="0.48.3.1 r9886"
+   width="100%"
+   height="100%"
+   sodipodi:docname="hide_inferred.svg"
+   style="overflow:visible"
+   inkscape:export-filename="/home/ken/Desktop/Semantic Web cube.png"
+   inkscape:export-xdpi="8.7922153"
+   inkscape:export-ydpi="8.7922153"><defs
+   id="defs3084">
+    
+  
+      
+      
+      
+    </defs><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="1920"
+   inkscape:window-height="1124"
+   id="namedview3082"
+   showgrid="false"
+   inkscape:snap-bbox="true"
+   inkscape:snap-page="true"
+   inkscape:zoom="1.4662665"
+   inkscape:cx="-50.90325"
+   inkscape:cy="80.4765"
+   inkscape:window-x="0"
+   inkscape:window-y="24"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="svg3064" />
+  <title
+   id="title3066">Semantic Web cube</title>
+  <desc
+   id="desc3068">A cube whose top part is slightly peeled off</desc>
+  <metadata
+   id="metadata3070">
+	<rdf:RDF>
+		<cc:Work
+   rdf:about="">
+	        <dc:title>Semantic Web cube</dc:title>
+	        <dc:format>image/svg+xml</dc:format>
+			<rdfs:seeAlso
+   rdf:resource="http://www.w3.org/2007/10/sw-logos.html" />
+	        <dc:date>2007-11-01</dc:date>
+			<cc:license
+   rdf:resource="http://www.w3.org/Consortium/Legal/2002/copyright-documents-20021231" />
+			<cc:morePermissions
+   rdf:resource="http://www.w3.org/2007/10/sw-logos.html#LogoWithoutW3C" />
+			<cc:attributionURL
+   rdf:reource="http://www.w3.org/2001/sw/" />
+			<dc:description>A cube whose top part is slightly peeled off</dc:description>
+		<dc:type
+   rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work>
+	</rdf:RDF>
+  </metadata>
+
+  
+<text
+   xml:space="preserve"
+   style="font-size:168.26217651px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000080;fill-opacity:1;stroke:none;font-family:Droid Sans;-inkscape-font-specification:Droid Sans Bold"
+   x="-3.6150038"
+   y="139.79399"
+   id="text3891"
+   sodipodi:linespacing="125%"><tspan
+     sodipodi:role="line"
+     id="tspan3893"
+     x="-3.6150038"
+     y="139.79399">⊨ </tspan></text>
+<path
+   style="fill:none;stroke:#000000;stroke-width:8;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+   d="M 0,-3.0517578e-6 160.95,160.95"
+   id="path3098"
+   inkscape:connector-curvature="0" /></svg>

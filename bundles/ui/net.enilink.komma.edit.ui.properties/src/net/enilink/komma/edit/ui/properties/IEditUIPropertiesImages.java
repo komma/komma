@@ -24,4 +24,7 @@ public interface IEditUIPropertiesImages {
 	static String REMOVE = "full/clcl16/delete.png";
 	static String EDIT = "full/clcl16/edit.png";
 	static String REFRESH = "full/clcl16/refresh.png";
+	static String HIDE_BUILTINS = "full/clcl16/hide_builtins.png";
+	static String HIDE_INFERRED = "full/clcl16/hide_inferred.png";
+	static String HIDE_INVERSE = "full/clcl16/hide_inverse.png";
 }

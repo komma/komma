@@ -6,7 +6,6 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: net.enilink.komma.edit.ui.properties,
- net.enilink.komma.edit.ui.properties.internal.context;x-friends:="net.enilink.komma.edit.ui.properties.tabbed",
  net.enilink.komma.edit.ui.properties.internal.parts;x-friends:="net.enilink.komma.edit.ui.properties.tabbed",
  net.enilink.komma.edit.ui.properties.internal.wizards;x-friends:="net.enilink.komma.edit.ui.properties.tabbed"
 Import-Package: com.google.inject,

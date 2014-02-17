@@ -28,7 +28,6 @@ import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.edit.properties.PropertyEditingHelper;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
-import net.enilink.komma.edit.ui.properties.internal.context.IPropertiesContext;
 import net.enilink.komma.edit.ui.properties.internal.wizards.EditPropertyWizard;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
@@ -50,10 +49,10 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
@@ -69,7 +68,6 @@ import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -86,10 +84,10 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 
-public class PropertyTreePart extends AbstractEditingDomainPart implements
-		IPropertyChangeListener {
+public class PropertyTreePart extends AbstractEditingDomainPart {
 	enum ColumnType {
 		PROPERTY, VALUE, LITERAL_LANG_TYPE, INFERRED
 	}
@@ -122,38 +120,6 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 		}
 	}
 
-	class AnonymousFilter extends ViewerFilter {
-		private boolean excludeAnonymous = true;
-
-		@Override
-		public boolean select(Viewer viewer, Object parentElement,
-				Object element) {
-			if (!excludeAnonymous) {
-				return true;
-
-			} else {
-				IStatement statement = null;
-				if (element instanceof StatementNode) {
-					statement = ((StatementNode) element).getStatement();
-				}
-
-				if (statement != null) {
-					Object obj = statement.getObject();
-					if (obj instanceof IObject) {
-						if (((IObject) obj).getURI() == null) {
-							return false;
-						}
-					}
-				}
-				return true;
-			}
-		}
-
-		public void setExcludeAnonymous(boolean showAnonymous) {
-			this.excludeAnonymous = showAnonymous;
-		}
-	}
-
 	class ChangeUriButtonListener extends SelectionAdapter {
 		@Override
 		public void widgetSelected(SelectionEvent e) {
@@ -165,11 +131,9 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 					uri = resource.getURI().namespace()
 							.appendFragment(uriText.getText());
 				}
-
 				try {
 					getEditingDomain().getCommandStack().execute(
 							new SimpleCommand() {
-
 								@Override
 								protected CommandResult doExecuteWithResult(
 										IProgressMonitor progressMonitor,
@@ -183,7 +147,9 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 								}
 							}, null, null);
 				} catch (ExecutionException e1) {
-					e1.printStackTrace();
+					MessageDialog.openError(getShell(),
+							"Error while renaming resource",
+							e1.getLocalizedMessage());
 				}
 			}
 		}
@@ -479,13 +445,10 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	}
 
 	private IAdapterFactory adapterFactory;
-	private AnonymousFilter anonymousFilter;
 
 	private Button changeUri;
 
 	private PropertyTreeContentProvider contentProvider;
-
-	private IPropertiesContext context;
 
 	private List<ValueEditingSupport> editingSupports;
 
@@ -501,7 +464,18 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 	private List<Object> cachedExpandedElements = Collections.emptyList();
 
+	private boolean hideInferred = false;
+
+	private boolean hideInverse = true;
+
 	private IAction addPropertyAction = new Action("Add property") {
+		{
+			setImageDescriptor(ExtendedImageRegistry.getInstance()
+					.getImageDescriptor(
+							KommaEditUIPropertiesPlugin.INSTANCE
+									.getImage(IEditUIPropertiesImages.ADD)));
+		}
+
 		@Override
 		public void run() {
 			ITreeSelection selection = (ITreeSelection) treeViewer
@@ -527,7 +501,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 				}
 			}
 
-			PropertyNode node = new PropertyNode(subject, null, false, true);
+			PropertyNode node = new PropertyNode(subject, null, false, null);
 			treeViewer.insert(
 					path.getSegmentCount() > 0 ? path : treeViewer.getInput(),
 					node, 0);
@@ -537,6 +511,13 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	};
 
 	private IAction addPropertyValueAction = new Action("Add value") {
+		{
+			setImageDescriptor(ExtendedImageRegistry.getInstance()
+					.getImageDescriptor(
+							KommaEditUIPropertiesPlugin.INSTANCE
+									.getImage(IEditUIPropertiesImages.ADD)));
+		}
+
 		@Override
 		public void run() {
 			ITreeSelection selection = (ITreeSelection) treeViewer
@@ -561,15 +542,74 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	public void createContents(Composite parent) {
 		parent.setLayout(new GridLayout(1, false));
 		getWidgetFactory().paintBordersFor(parent);
-
-		context = (IPropertiesContext) getForm().getAdapter(
-				IPropertiesContext.class);
-		if (context != null) {
-			context.addPropertyChangeListener(this);
-		}
-
+		createActions(parent);
 		createToolbar(parent);
 		createTree(parent);
+	}
+
+	public void createActions(Composite parent) {
+		IToolBarManager toolBarManager = (IToolBarManager) getForm()
+				.getAdapter(IToolBarManager.class);
+		ToolBarManager ownManager = null;
+		if (toolBarManager == null) {
+			toolBarManager = ownManager = new ToolBarManager(SWT.HORIZONTAL);
+			ToolBar toolBar = ownManager.createControl(parent);
+			getWidgetFactory().adapt(toolBar);
+			toolBar.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true,
+					false));
+		}
+
+		IAction refreshAction = new Action("Refresh") {
+			@Override
+			public void run() {
+				refresh();
+			}
+		};
+		refreshAction.setImageDescriptor(ExtendedImageRegistry.getInstance()
+				.getImageDescriptor(
+						KommaEditUIPropertiesPlugin.INSTANCE
+								.getImage(IEditUIPropertiesImages.REFRESH)));
+		toolBarManager.add(refreshAction);
+
+		final IAction hideInferredAction = new Action("Hide inferred",
+				Action.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				hideInferred = !hideInferred;
+				setChecked(hideInferred);
+				refresh();
+			}
+		};
+		hideInferredAction
+				.setImageDescriptor(ExtendedImageRegistry
+						.getInstance()
+						.getImageDescriptor(
+								KommaEditUIPropertiesPlugin.INSTANCE
+										.getImage(IEditUIPropertiesImages.HIDE_INFERRED)));
+		hideInferredAction.setChecked(hideInferred);
+		toolBarManager.add(hideInferredAction);
+
+		final IAction hideInverseAction = new Action("Hide inverse",
+				Action.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				hideInverse = !hideInverse;
+				setChecked(hideInverse);
+				refresh();
+			}
+		};
+		hideInverseAction
+				.setImageDescriptor(ExtendedImageRegistry
+						.getInstance()
+						.getImageDescriptor(
+								KommaEditUIPropertiesPlugin.INSTANCE
+										.getImage(IEditUIPropertiesImages.HIDE_INVERSE)));
+		hideInverseAction.setChecked(hideInverse);
+		toolBarManager.add(hideInverseAction);
+
+		if (ownManager != null) {
+			ownManager.update(true);
+		}
 	}
 
 	private void createToolbar(Composite parent) {
@@ -584,7 +624,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 		itemShowFull.setEnabled(true);
 
 		changeUri = getWidgetFactory().createButton(toolBar, "OK", SWT.NONE);
-		changeUri.setToolTipText("Change the URI of the selected entity");
+		changeUri.setToolTipText("Change the URI of this resource");
 		changeUri.addSelectionListener(new ChangeUriButtonListener());
 		changeUri.setEnabled(false);
 
@@ -599,32 +639,31 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 			}
 		});
 
-		Button itemAdd = getWidgetFactory().createButton(toolBar, "Add",
-				SWT.NONE);
+		Button itemAdd = getWidgetFactory().createButton(toolBar, "", SWT.NONE);
 		itemAdd.setImage(ExtendedImageRegistry.getInstance().getImage(
 				KommaEditUIPropertiesPlugin.INSTANCE
-						.getImage(IEditUIPropertiesImages.INDIVIDUAL_ADD)));
-		itemAdd.setToolTipText("Add property value");
+						.getImage(IEditUIPropertiesImages.ADD)));
+		itemAdd.setToolTipText("Add value with wizard");
 		itemAdd.addSelectionListener(new AddButtonListener());
 		itemAdd.setLayoutData(new GridData());
 
-		Button itemRemove = getWidgetFactory().createButton(toolBar, "Remove",
-				SWT.NONE);
-		itemRemove.setImage(ExtendedImageRegistry.getInstance().getImage(
-				KommaEditUIPropertiesPlugin.INSTANCE
-						.getImage(IEditUIPropertiesImages.INDIVIDUAL_REMOVE)));
-		itemRemove.setToolTipText("Remove property balue");
-		itemRemove.addSelectionListener(new RemoveButtonListener());
-		itemRemove.setLayoutData(new GridData());
-
-		Button itemEdit = getWidgetFactory().createButton(toolBar, "Edit",
-				SWT.NONE);
+		Button itemEdit = getWidgetFactory()
+				.createButton(toolBar, "", SWT.NONE);
 		itemEdit.setImage(ExtendedImageRegistry.getInstance().getImage(
 				KommaEditUIPropertiesPlugin.INSTANCE
 						.getImage(IEditUIPropertiesImages.CHECKED)));
-		itemEdit.setToolTipText("Edit property value");
+		itemEdit.setToolTipText("Edit value in dialog");
 		itemEdit.addSelectionListener(new EditButtonListener());
 		itemEdit.setLayoutData(new GridData());
+
+		Button itemRemove = getWidgetFactory().createButton(toolBar, "",
+				SWT.NONE);
+		itemRemove.setImage(ExtendedImageRegistry.getInstance().getImage(
+				KommaEditUIPropertiesPlugin.INSTANCE
+						.getImage(IEditUIPropertiesImages.REMOVE)));
+		itemRemove.setToolTipText("Remove value");
+		itemRemove.addSelectionListener(new RemoveButtonListener());
+		itemRemove.setLayoutData(new GridData());
 	}
 
 	private void createTree(Composite parent) {
@@ -732,12 +771,6 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 
 		Menu menu = menuManager.createContextMenu(treeViewer.getTree());
 		treeViewer.getTree().setMenu(menu);
-
-		if (context != null) {
-			anonymousFilter = new AnonymousFilter();
-			anonymousFilter.setExcludeAnonymous(context.excludeAnonymous());
-			treeViewer.setFilters(new ViewerFilter[] { anonymousFilter });
-		}
 	}
 
 	// support for RAP
@@ -754,23 +787,14 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 	@Override
 	public void initialize(IEditorForm form) {
 		super.initialize(form);
-
 		this.contentProvider = new PropertyTreeContentProvider();
 	}
 
 	@Override
-	public void propertyChange(PropertyChangeEvent event) {
-		if ("excludeAnonymous".equals(event.getProperty())) {
-			anonymousFilter.setExcludeAnonymous(context.excludeAnonymous());
-			refresh();
-		} else if ("excludeInference".equals(event.getProperty())) {
-			contentProvider.setIncludeInferred(!context.excludeInferred());
-			refresh();
-		}
-	}
-
-	@Override
 	public void refresh() {
+		contentProvider.setIncludeInferred(!hideInferred);
+		contentProvider.setIncludeInverse(!hideInverse);
+
 		IAdapterFactory newAdapterFactory = getAdapterFactory();
 		if (adapterFactory == null || !adapterFactory.equals(newAdapterFactory)) {
 			adapterFactory = newAdapterFactory;
@@ -781,7 +805,6 @@ public class PropertyTreePart extends AbstractEditingDomainPart implements
 			}
 			// createContextMenuFor(treeViewer);
 		}
-
 		cachedExpandedElements = Arrays
 				.asList(treeViewer.getExpandedElements());
 
