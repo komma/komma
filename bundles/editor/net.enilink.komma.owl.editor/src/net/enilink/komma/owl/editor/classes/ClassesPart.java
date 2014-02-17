@@ -10,11 +10,17 @@
  *******************************************************************************/
 package net.enilink.komma.owl.editor.classes;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
@@ -27,6 +33,7 @@ import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
 import net.enilink.komma.em.concepts.IClass;
 import net.enilink.komma.em.concepts.IResource;
+import net.enilink.komma.em.util.KommaUtil;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
 import net.enilink.vocab.owl.OWL;
@@ -58,6 +65,7 @@ public class ClassesPart extends AbstractEditingDomainPart {
 	protected IModel model;
 	private IAdapterFactory adapterFactory;
 	Action deleteItemAction, addItemAction;
+	protected boolean hideBuiltins = true;
 
 	@Override
 	public void createContents(Composite parent) {
@@ -141,6 +149,23 @@ public class ClassesPart extends AbstractEditingDomainPart {
 						KommaEditUIPropertiesPlugin.INSTANCE
 								.getImage(IEditUIPropertiesImages.REFRESH)));
 		toolBarManager.add(refreshAction);
+
+		final IAction hideAction = new Action("Hide built-in classes", Action.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				hideBuiltins = !hideBuiltins;
+				setChecked(hideBuiltins);
+				refresh();
+			}
+		};
+		hideAction
+				.setImageDescriptor(ExtendedImageRegistry
+						.getInstance()
+						.getImageDescriptor(
+								KommaEditUIPropertiesPlugin.INSTANCE
+										.getImage(IEditUIPropertiesImages.HIDE_BUILTINS)));
+		hideAction.setChecked(hideBuiltins);
+		toolBarManager.add(hideAction);
 
 		if (ownManager != null) {
 			ownManager.update(true);
@@ -243,10 +268,36 @@ public class ClassesPart extends AbstractEditingDomainPart {
 				adapterFactory = newAdapterFactory;
 				treeViewer
 						.setContentProvider(new LazyAdapterFactoryContentProvider(
-								getAdapterFactory()));
-				// treeViewer
-				// .setContentProvider(new AdapterFactoryContentProvider(
-				// getAdapterFactory()));
+								getAdapterFactory()) {
+							@Override
+							public Object[] getChildren(Object element) {
+								if (hideBuiltins
+										&& RDFS.TYPE_RESOURCE.equals(element)) {
+									List<Object> children = new ArrayList<>(
+											Arrays.asList(super
+													.getChildren(element)));
+									for (Iterator<?> it = children.iterator(); it
+											.hasNext();) {
+										Object child = it.next();
+										if (child instanceof IReference) {
+											URI uri = ((IReference) child)
+													.getURI();
+											if (uri != null
+													&& !(RDFS.TYPE_RESOURCE
+															.equals(uri) || OWL.TYPE_THING
+															.equals(uri))
+													&& KommaUtil.isW3cNamespace(uri
+															.namespace())) {
+												it.remove();
+											}
+										}
+									}
+									return children.toArray();
+								}
+								return super.getChildren(element);
+							}
+
+						});
 				treeViewer
 						.setLabelProvider(new AdapterFactoryLabelProvider.ColorProvider(
 								getAdapterFactory(), treeViewer));

@@ -59,6 +59,8 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 	protected IModel model;
 	protected IAdapterFactory adapterFactory;
 
+	protected boolean hideBuiltins = true;
+
 	abstract protected String getName();
 
 	abstract protected URI getPropertyType();
@@ -146,6 +148,23 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 						KommaEditUIPropertiesPlugin.INSTANCE
 								.getImage(IEditUIPropertiesImages.REFRESH)));
 		toolBarManager.add(refreshAction);
+
+		final IAction hideAction = new Action("Hide built-in properties", Action.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				hideBuiltins = !hideBuiltins;
+				setChecked(hideBuiltins);
+				refresh();
+			}
+		};
+		hideAction
+				.setImageDescriptor(ExtendedImageRegistry
+						.getInstance()
+						.getImageDescriptor(
+								KommaEditUIPropertiesPlugin.INSTANCE
+										.getImage(IEditUIPropertiesImages.HIDE_BUILTINS)));
+		hideAction.setChecked(hideBuiltins);
+		toolBarManager.add(hideAction);
 
 		if (ownManager != null) {
 			ownManager.update(true);
@@ -242,6 +261,10 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 		setStale(true);
 	}
 
+	protected Object[] filterElements(Object parent, Object[] elements) {
+		return elements;
+	}
+
 	@Override
 	public void refresh() {
 		if (model != null) {
@@ -255,9 +278,11 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 							@Override
 							public Object[] getElements(Object object) {
 								if (object instanceof Object[]) {
-									return (Object[]) object;
+									return filterElements(object,
+											(Object[]) object);
 								}
-								return super.getElements(object);
+								return filterElements(object,
+										super.getElements(object));
 							}
 						});
 				treeViewer
