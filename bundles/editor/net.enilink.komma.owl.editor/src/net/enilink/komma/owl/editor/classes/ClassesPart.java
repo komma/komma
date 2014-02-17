@@ -150,7 +150,8 @@ public class ClassesPart extends AbstractEditingDomainPart {
 								.getImage(IEditUIPropertiesImages.REFRESH)));
 		toolBarManager.add(refreshAction);
 
-		final IAction hideAction = new Action("Hide built-in classes", Action.AS_CHECK_BOX) {
+		final IAction hideAction = new Action("Hide built-in classes",
+				Action.AS_CHECK_BOX) {
 			@Override
 			public void run() {
 				hideBuiltins = !hideBuiltins;
@@ -272,7 +273,8 @@ public class ClassesPart extends AbstractEditingDomainPart {
 							@Override
 							public Object[] getChildren(Object element) {
 								if (hideBuiltins
-										&& RDFS.TYPE_RESOURCE.equals(element)) {
+										&& (RDFS.TYPE_RESOURCE.equals(element) || OWL.TYPE_THING
+												.equals(element))) {
 									List<Object> children = new ArrayList<>(
 											Arrays.asList(super
 													.getChildren(element)));
