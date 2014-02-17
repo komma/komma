@@ -123,7 +123,8 @@ import com.google.inject.Injector;
  */
 public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		IEditingDomainProvider, IMenuListener, IAdaptable {
-	class EditorSelectionProvider extends PostSelectionProviderAdapter {
+	protected class EditorSelectionProvider extends
+			PostSelectionProviderAdapter {
 		/**
 		 * This keeps track of the selection of the editor as a whole.
 		 * 
@@ -218,19 +219,15 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		public void setSelectionToViewer(Collection<?> collection) {
 			final Collection<?> theSelection = collection;
 			// Make sure it's okay.
-			//
 			if (theSelection != null && !theSelection.isEmpty()) {
 				// I don't know if this should be run this deferred
 				// because we might have to give the editor a chance to process
-				// the
-				// viewer update events
+				// the viewer update events
 				// and hence to update the views first.
 				Runnable runnable = new Runnable() {
 					public void run() {
 						// Try to select the items in the current content viewer
-						// of
-						// the editor.
-						//
+						// of the editor.
 						if (getSelectionProvider() != null) {
 							((ISelectionProvider) getSelectionProvider())
 									.setSelection(new StructuredSelection(

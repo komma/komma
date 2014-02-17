@@ -27,10 +27,8 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 	/**
 	 * This creates a model editor.
 	 * 
-	 * @generated
 	 */
 	public KommaMultiPageEditor() {
-		super();
 		editorSupport = createEditorSupport();
 	}
 
@@ -38,12 +36,18 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 
 	@Override
 	public void dispose() {
+		super.dispose();
 		if (editorSupport != null) {
-			editorSupport.dispose();
+			// trick to dispose editor support after action bars are disposed
+			final KommaEditorSupport<?> support = editorSupport;
+			getSite().getShell().getDisplay().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					support.dispose();
+				}
+			});
 			editorSupport = null;
 		}
-
-		super.dispose();
 	}
 
 	/**
@@ -83,11 +87,9 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 	@Override
 	public Object getAdapter(Class key) {
 		Object adapter = editorSupport.getAdapter(key);
-
 		if (adapter != null) {
 			return adapter;
 		}
-
 		return super.getAdapter(key);
 	}
 
@@ -106,6 +108,9 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 	 * and for supporting {@link org.eclipse.emf.edit.ui.action.CommandAction}.
 	 */
 	public IEditingDomain getEditingDomain() {
+		if (editorSupport == null) {
+			return null;
+		}
 		return editorSupport.getEditingDomain();
 	}
 
@@ -142,14 +147,16 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 	 * This is for implementing {@link IEditorPart} and simply tests the command
 	 * stack.
 	 */
-	@Override
 	public boolean isDirty() {
-		return editorSupport.isDirty();
+		return editorSupport != null && editorSupport.isDirty();
 	}
 
+	/**
+	 * This always returns true because it is not currently supported.
+	 */
 	@Override
 	public boolean isSaveAsAllowed() {
-		return editorSupport.isSaveAsAllowed();
+		return editorSupport != null && editorSupport.isSaveAsAllowed();
 	}
 
 	/**
