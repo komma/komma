@@ -18,9 +18,23 @@
             id="net.enilink.komma.owl.editor.OWLEditor"
             name="%_UI_OWLEditor_label"
             icon="icons/full/obj16/OWLEditor.png"
-            extensions="owl,rdf,ttl,n3,nt,trix"
             class="net.enilink.komma.owl.editor.rcp.OWLEditor"
             contributorClass="net.enilink.komma.owl.editor.OWLActionBarContributor">
+         <contentTypeBinding
+               contentTypeId="net.enilink.komma.contenttype.n3">
+         </contentTypeBinding>
+         <contentTypeBinding
+               contentTypeId="net.enilink.komma.contenttype.ntriples">
+         </contentTypeBinding>
+         <contentTypeBinding
+               contentTypeId="net.enilink.komma.contenttype.rdfxml">
+         </contentTypeBinding>
+         <contentTypeBinding
+               contentTypeId="net.enilink.komma.contenttype.trix">
+         </contentTypeBinding>
+         <contentTypeBinding
+               contentTypeId="net.enilink.komma.contenttype.turtle">
+         </contentTypeBinding>
       </editor>
 </extension>
 
