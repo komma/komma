@@ -501,7 +501,23 @@ public class ImportsPart extends AbstractEditingDomainPart {
 			importsViewer.setContentProvider(new AdapterFactoryContentProvider(
 					getAdapterFactory()));
 			importsViewer.setLabelProvider(new AdapterFactoryLabelProvider(
-					getAdapterFactory()));
+					getAdapterFactory()) {
+				@Override
+				public String getText(Object object) {
+					if (object instanceof IReference) {
+						URI uri = ((IReference) object).getURI();
+						if (uri != null) {
+							String label = null;
+							if (object instanceof IResource) {
+								label = ((IResource) object).getRdfsLabel();
+							}
+							return uri.toString()
+									+ (label != null ? " [" + label + "]" : "");
+						}
+					}
+					return super.getText(object);
+				}
+			});
 			createContextMenuFor(importsViewer);
 		}
 		importsViewer.setInput(ontology);
