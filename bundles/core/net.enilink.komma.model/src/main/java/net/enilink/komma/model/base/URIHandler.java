@@ -159,9 +159,12 @@ public class URIHandler implements IURIHandler {
 			if (response != null) {
 				response.put(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY,
 						urlConnection.getLastModified());
-				response.put(IURIConverter.RESPONSE_MIME_TYPE_PROPERTY,
-						urlConnection.getContentType().replaceAll(";.*$", "")
-								.trim());
+				if (urlConnection.getContentType() != null) {
+					response.put(
+							IURIConverter.RESPONSE_MIME_TYPE_PROPERTY,
+							urlConnection.getContentType()
+									.replaceAll(";.*$", "").trim());
+				}
 			}
 			return result;
 		} catch (RuntimeException exception) {

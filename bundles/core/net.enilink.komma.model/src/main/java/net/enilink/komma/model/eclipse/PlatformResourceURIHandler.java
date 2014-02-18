@@ -370,7 +370,7 @@ public class PlatformResourceURIHandler extends URIHandler {
 
 	@Override
 	public boolean canHandle(URI uri) {
-		return uri.isPlatformResource();
+		return uri.isPlatform();
 	}
 
 	/**
