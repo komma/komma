@@ -329,22 +329,25 @@ public class URIHandler implements IURIHandler {
 						httpURLConnection.getResponseCode();
 					}
 				}
-				if (requestedAttributes
-						.contains(IURIConverter.ATTRIBUTE_TIME_STAMP)) {
+				if (requestedAttributes == null
+						|| requestedAttributes
+								.contains(IURIConverter.ATTRIBUTE_TIME_STAMP)) {
 					if (urlConnection.getHeaderField("last-modified") != null) {
 						result.put(IURIConverter.ATTRIBUTE_TIME_STAMP,
 								urlConnection.getLastModified());
 					}
 				}
-				if (requestedAttributes
-						.contains(IURIConverter.ATTRIBUTE_LENGTH)) {
+				if (requestedAttributes == null
+						|| requestedAttributes
+								.contains(IURIConverter.ATTRIBUTE_LENGTH)) {
 					if (urlConnection.getHeaderField("content-length") != null) {
 						result.put(IURIConverter.ATTRIBUTE_LENGTH,
 								urlConnection.getContentLength());
 					}
 				}
-				if (requestedAttributes
-						.contains(IURIConverter.ATTRIBUTE_MIME_TYPE)) {
+				if (requestedAttributes == null
+						|| requestedAttributes
+								.contains(IURIConverter.ATTRIBUTE_MIME_TYPE)) {
 					String contentType = urlConnection.getContentType();
 					if (contentType != null) {
 						result.put(IURIConverter.ATTRIBUTE_MIME_TYPE,
