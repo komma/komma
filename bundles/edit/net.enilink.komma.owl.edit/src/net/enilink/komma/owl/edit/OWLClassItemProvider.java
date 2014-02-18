@@ -37,10 +37,12 @@ public class OWLClassItemProvider extends RDFSClassItemProvider {
 			ICollector<Object> newChildDescriptors, Object object) {
 		if (object instanceof IClass) {
 			IEntityManager em = ((IEntity) object).getEntityManager();
-			newChildDescriptors.add(createChildParameter(
-					em.find(RDFS.PROPERTY_SUBCLASSOF),
-					new ChildDescriptor(Arrays.asList(em.find(OWL.TYPE_CLASS,
-							IClass.class)), true)));
+			for (IReference type : Arrays.asList(OWL.TYPE_CLASS,
+					RDFS.TYPE_CLASS)) {
+				newChildDescriptors.add(createChildParameter(em
+						.find(RDFS.PROPERTY_SUBCLASSOF), new ChildDescriptor(
+						Arrays.asList(em.find(type, IClass.class)), true)));
+			}
 		}
 		newChildDescriptors.done();
 	}
