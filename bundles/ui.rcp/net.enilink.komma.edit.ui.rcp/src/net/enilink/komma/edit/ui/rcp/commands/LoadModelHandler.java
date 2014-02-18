@@ -16,46 +16,33 @@
  */
 package net.enilink.komma.edit.ui.rcp.commands;
 
+import net.enilink.komma.common.ui.rcp.dialogs.ResourceDialog;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.ui.KommaEditUIPlugin;
+import net.enilink.komma.edit.ui.commands.AbstractHandler;
+import net.enilink.komma.edit.ui.rcp.KommaEditUIRCP;
+import net.enilink.komma.edit.ui.util.EditUIUtil;
+import net.enilink.komma.model.IModel;
+
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-
-import net.enilink.komma.common.ui.rcp.dialogs.ResourceDialog;
-import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.ui.KommaEditUIPlugin;
-import net.enilink.komma.edit.ui.commands.AbstractHandler;
-import net.enilink.komma.edit.ui.rcp.KommaEditUIRCP;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.core.URIImpl;
 
 /**
  * An command handler to load a model into an editing domain's model set.
  */
 public class LoadModelHandler extends AbstractHandler {
-	// protected IEditingDomain domain;
-	//
-	// public LoadModelHandler(IWorkbenchPage page, IEditingDomain domain) {
-	// this(page);
-	// this.domain = domain;
-	// }
-	//
-	// public LoadModelHandler(IWorkbenchPage page) {
-	// super(page);
-	// setText(KommaEditUIPlugin.INSTANCE.getString("_UI_LoadResource_menu_item"));
-	// setDescription(KommaEditUIPlugin.INSTANCE
-	// .getString("_UI_LoadResource_menu_item_description"));
-	// }
-
 	@Override
 	public void execute(ExecutionEvent event, IProgressMonitor monitor)
 			throws ExecutionException {
 		LoadModelDialog loadResourceDialog = new LoadModelDialog(PlatformUI
 				.getWorkbench().getActiveWorkbenchWindow().getShell(),
 				getEditingDomainChecked(event));
-
 		loadResourceDialog.open();
 	}
 
@@ -76,7 +63,7 @@ public class LoadModelHandler extends AbstractHandler {
 		@Override
 		protected boolean processResources() {
 			if (domain != null) {
-				for (URIImpl uri : getURIs()) {
+				for (URI uri : getURIs()) {
 					try {
 						if (!processModel(domain.getModelSet().getModel(uri,
 								true))) {
@@ -90,7 +77,18 @@ public class LoadModelHandler extends AbstractHandler {
 			return true;
 		}
 
-		protected boolean processModel(IModel model) {
+		protected boolean processModel(final IModel model) {
+			// try to open model in editor
+			getShell().getDisplay().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						EditUIUtil.openEditor(model.getOntology());
+					} catch (PartInitException e) {
+						KommaEditUIPlugin.INSTANCE.log(e);
+					}
+				}
+			});
 			return true;
 		}
 	}
