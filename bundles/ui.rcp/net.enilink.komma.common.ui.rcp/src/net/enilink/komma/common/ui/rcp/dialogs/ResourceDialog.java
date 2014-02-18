@@ -21,6 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import net.enilink.komma.common.AbstractKommaPlugin;
+import net.enilink.komma.common.ui.CommonUIPlugin;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
@@ -37,10 +42,6 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
-import net.enilink.komma.common.AbstractKommaPlugin;
-import net.enilink.komma.common.ui.CommonUIPlugin;
-import net.enilink.komma.core.URIImpl;
 
 /**
  * Instances of this class allow a user to specify one or more URIs identifying
@@ -347,8 +348,8 @@ public class ResourceDialog extends Dialog {
 	/**
 	 * Returns the list of space-separated URIs from the URI text field.
 	 */
-	public List<URIImpl> getURIs() {
-		List<URIImpl> uris = new ArrayList<URIImpl>();
+	public List<URI> getURIs() {
+		List<URI> uris = new ArrayList<>();
 		for (StringTokenizer stringTokenizer = new StringTokenizer(getURIText()); stringTokenizer
 				.hasMoreTokens();) {
 			String uri = stringTokenizer.nextToken();
