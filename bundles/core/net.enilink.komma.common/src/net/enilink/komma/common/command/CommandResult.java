@@ -178,7 +178,7 @@ public final class CommandResult {
 	/**
 	 * The values returned by the execute, undo or redo of an operation.
 	 * 
-	 * @return the return value; may be <code>null</code>
+	 * @return the return values as list
 	 */
 	public Collection<?> getReturnValues() {
 		Object returnValue = getReturnValue();

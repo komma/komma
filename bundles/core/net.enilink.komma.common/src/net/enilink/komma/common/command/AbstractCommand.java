@@ -16,8 +16,12 @@
  */
 package net.enilink.komma.common.command;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+
+import net.enilink.komma.common.CommonPlugin;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.AbstractOperation;
@@ -27,8 +31,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
-
-import net.enilink.komma.common.CommonPlugin;
 
 /**
  * An abstract implementation of a basic command. Each derived class
@@ -190,8 +192,17 @@ public abstract class AbstractCommand extends AbstractOperation implements
 	@Override
 	public Collection<?> getAffectedObjects() {
 		CommandResult result = getCommandResult();
-		return result != null ? result.getReturnValues() : Collections
-				.emptyList();
+		if (result == null) {
+			return Collections.emptyList();
+		} else {
+			List<Object> objects = new ArrayList<>();
+			for (Object value : result.getReturnValues()) {
+				if (value != null) {
+					objects.add(value);
+				}
+			}
+			return objects;
+		}
 	}
 
 	@Override
