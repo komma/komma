@@ -37,7 +37,8 @@ import org.openrdf.rio.RDFHandlerException;
  * <p>
  * The abbreviations used are <a
  * href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-typed-nodes"
- * >typed node elements</a>, <a href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-empty-property-elements"
+ * >typed node elements</a>, <a href=
+ * "http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-empty-property-elements"
  * >empty property elements</a> and <a href=
  * "http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-node-property-elements"
  * >striped syntax</a>. Note that these abbreviations require that statements
@@ -100,7 +101,8 @@ import org.openrdf.rio.RDFHandlerException;
  * 
  * @author Peter Mika (pmika@cs.vu.nl)
  */
-public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flushable {
+public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable,
+		Flushable {
 
 	/*-----------*
 	 * Variables *
@@ -133,7 +135,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * OutputStream.
 	 * 
 	 * @param out
-	 *        The OutputStream to write the RDF/XML document to.
+	 *            The OutputStream to write the RDF/XML document to.
 	 */
 	public RDFXMLPrettyWriter(OutputStream out) {
 		super(out);
@@ -143,7 +145,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * Creates a new RDFXMLPrintWriter that will write to the supplied Writer.
 	 * 
 	 * @param out
-	 *        The Writer to write the RDF/XML document to.
+	 *            The Writer to write the RDF/XML document to.
 	 */
 	public RDFXMLPrettyWriter(Writer out) {
 		super(out);
@@ -154,9 +156,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 *---------*/
 
 	@Override
-	protected void writeHeader()
-		throws IOException
-	{
+	protected void writeHeader() throws IOException {
 		// This export format needs the RDF Schema namespace to be defined:
 		setNamespace("rdfs", RDFS.NAMESPACE, false);
 
@@ -169,28 +169,22 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		try {
 			if (baseURI == null) {
 				relativeURI = null;
-			}
-			else if (baseURI.charAt(baseURI.length() - 1) == '/') {
+			} else if (baseURI.charAt(baseURI.length() - 1) == '/') {
 				relativeURI = new java.net.URI(baseURI);
-			}
-			else {
+			} else {
 				String ns = new URIImpl(baseURI).getNamespace();
 				if (ns.charAt(ns.length() - 1) == '/') {
 					relativeURI = new java.net.URI(ns);
-				}
-				else {
+				} else {
 					relativeURI = null;
 				}
 			}
-		}
-		catch (URISyntaxException e) {
+		} catch (URISyntaxException e) {
 			relativeURI = null;
 		}
 	}
 
-	public void flush()
-		throws IOException
-	{
+	public void flush() throws IOException {
 		if (writingStarted) {
 			if (!headerWritten) {
 				writeHeader();
@@ -202,33 +196,26 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		}
 	}
 
-	public void close()
-		throws IOException
-	{
+	public void close() throws IOException {
 		try {
 			if (writingStarted) {
 				endRDF();
 			}
-		}
-		catch (RDFHandlerException e) {
+		} catch (RDFHandlerException e) {
 			if (e.getCause() instanceof IOException) {
-				throw (IOException)e.getCause();
-			}
-			else {
+				throw (IOException) e.getCause();
+			} else {
 				IOException ioe = new IOException(e.getMessage());
 				ioe.initCause(e);
 				throw ioe;
 			}
-		}
-		finally {
+		} finally {
 			writer.close();
 		}
 	}
 
 	@Override
-	protected void flushPendingStatements()
-		throws IOException
-	{
+	protected void flushPendingStatements() throws IOException {
 		if (!nodeStack.isEmpty()) {
 			popStacks(null);
 		}
@@ -240,9 +227,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * 
 	 * @param newSubject
 	 */
-	private void popStacks(Resource newSubject)
-		throws IOException
-	{
+	private void popStacks(Resource newSubject) throws IOException {
 		// Write start tags for the part of the stacks that are not yet
 		// written
 		for (int i = 0; i < nodeStack.size() - 1; i++) {
@@ -254,7 +239,8 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 					URI predicate = predicateStack.get(i - 1);
 
-					writeStartTag(predicate.getNamespace(), predicate.getLocalName());
+					writeStartTag(predicate.getNamespace(),
+							predicate.getLocalName());
 					writeNewLine();
 				}
 
@@ -272,21 +258,21 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			writeIndents(nodeStack.size() * 2);
 			writeNodeEmptyTag(topNode);
 			writeNewLine();
-		}
-		else {
+		} else {
 			URI topPredicate = predicateStack.pop();
 
 			if (!topNode.hasType()) {
 				// we can use an abbreviated predicate
 				writeIndents(nodeStack.size() * 2 - 1);
 				writeAbbreviatedPredicate(topPredicate, topNode.getValue());
-			}
-			else {
-				// we cannot use an abbreviated predicate because the type needs to
+			} else {
+				// we cannot use an abbreviated predicate because the type needs
+				// to
 				// written out as well
 
 				writeIndents(nodeStack.size() * 2 - 1);
-				writeStartTag(topPredicate.getNamespace(), topPredicate.getLocalName());
+				writeStartTag(topPredicate.getNamespace(),
+						topPredicate.getLocalName());
 				writeNewLine();
 
 				// write out an empty subject
@@ -295,7 +281,8 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 				writeNewLine();
 
 				writeIndents(nodeStack.size() * 2 - 1);
-				writeEndTag(topPredicate.getNamespace(), topPredicate.getLocalName());
+				writeEndTag(topPredicate.getNamespace(),
+						topPredicate.getLocalName());
 				writeNewLine();
 			}
 		}
@@ -306,8 +293,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 			if (nextElement.getValue().equals(newSubject)) {
 				break;
-			}
-			else {
+			} else {
 				nodeStack.pop();
 
 				// We have already written out the subject/object,
@@ -321,7 +307,8 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 					writeIndents(predicateStack.size() + nodeStack.size());
 
-					writeEndTag(nextPredicate.getNamespace(), nextPredicate.getLocalName());
+					writeEndTag(nextPredicate.getNamespace(),
+							nextPredicate.getLocalName());
 
 					writeNewLine();
 				}
@@ -330,11 +317,10 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	}
 
 	@Override
-	public void handleStatement(Statement st)
-		throws RDFHandlerException
-	{
+	public void handleStatement(Statement st) throws RDFHandlerException {
 		if (!writingStarted) {
-			throw new RuntimeException("Document writing has not yet been started");
+			throw new RuntimeException(
+					"Document writing has not yet been started");
 		}
 
 		Resource subj = st.getSubject();
@@ -346,7 +332,8 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 				writeHeader();
 			}
 
-			if (!nodeStack.isEmpty() && !subj.equals(nodeStack.peek().getValue())) {
+			if (!nodeStack.isEmpty()
+					&& !subj.equals(nodeStack.peek().getValue())) {
 				// Different subject than we had before, empty the stack
 				// until we find it
 				popStacks(subj);
@@ -362,52 +349,50 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			// Stack now contains at least one element
 			Node topSubject = nodeStack.peek();
 
-			// Check if current statement is a type statement and use a typed node
+			// Check if current statement is a type statement and use a typed
+			// node
 			// element is possible
 			// FIXME: verify that an XML namespace-qualified name can be created
 			// for the type URI
-			if (pred.equals(RDF.TYPE) && obj instanceof URI && !topSubject.hasType() && !topSubject.isWritten())
-			{
+			if (pred.equals(RDF.TYPE) && obj instanceof URI
+					&& !topSubject.hasType() && !topSubject.isWritten()) {
 				// Use typed node element
-				topSubject.setType((URI)obj);
-			}
-			else {
+				topSubject.setType((URI) obj);
+			} else {
 				// Push predicate and object
 				predicateStack.push(pred);
 				nodeStack.push(new Node(obj));
 			}
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new RDFHandlerException(e);
 		}
 	}
 
 	/**
 	 * Write out the opening tag of the subject or object of a statement up to
-	 * (but not including) the end of the tag. Used both in writeStartSubject and
-	 * writeEmptySubject.
+	 * (but not including) the end of the tag. Used both in writeStartSubject
+	 * and writeEmptySubject.
 	 */
-	private void writeNodeStartOfStartTag(Node node)
-		throws IOException
-	{
+	private void writeNodeStartOfStartTag(Node node) throws IOException {
 		Value value = node.getValue();
 
 		if (node.hasType()) {
 			// We can use abbreviated syntax
-			writeStartOfStartTag(node.getType().getNamespace(), node.getType().getLocalName());
-		}
-		else {
+			writeStartOfStartTag(node.getType().getNamespace(), node.getType()
+					.getLocalName());
+		} else {
 			// We cannot use abbreviated syntax
 			writeStartOfStartTag(RDF.NAMESPACE, "Description");
 		}
 
 		if (value instanceof URI) {
-			URI uri = (URI)value;
-			writeAttribute(RDF.NAMESPACE, "about", relativize(uri.stringValue()));
-		}
-		else {
-			BNode bNode = (BNode)value;
-			writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
+			URI uri = (URI) value;
+			writeAttribute(RDF.NAMESPACE, "about",
+					relativize(uri.stringValue()));
+		} else {
+			BNode bNode = (BNode) value;
+			writeAttribute(RDF.NAMESPACE, "nodeID",
+					startWithLetter(bNode.getID()));
 		}
 	}
 
@@ -419,7 +404,8 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			if (stringValue.length() == baseURI.length()) {
 				return "";
 			}
-			if (stringValue.length() > baseURI.length() && '#' == stringValue.charAt(baseURI.length())) {
+			if (stringValue.length() > baseURI.length()
+					&& '#' == stringValue.charAt(baseURI.length())) {
 				return stringValue.substring(baseURI.length());
 			}
 		}
@@ -428,10 +414,10 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		}
 		try {
 			if (stringValue.startsWith(relativeURI.toString())) {
-				return relativeURI.relativize(new java.net.URI(stringValue)).toString();
+				return relativeURI.relativize(new java.net.URI(stringValue))
+						.toString();
 			}
-		}
-		catch (URISyntaxException e) {
+		} catch (URISyntaxException e) {
 			// can't create a relative URI
 		}
 		return stringValue;
@@ -440,9 +426,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	/**
 	 * Write out the opening tag of the subject or object of a statement.
 	 */
-	private void writeNodeStartTag(Node node)
-		throws IOException
-	{
+	private void writeNodeStartTag(Node node) throws IOException {
 		writeNodeStartOfStartTag(node);
 		writeEndOfStartTag();
 		writeNewLine();
@@ -451,13 +435,11 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	/**
 	 * Write out the closing tag for the subject or object of a statement.
 	 */
-	private void writeNodeEndTag(Node node)
-		throws IOException
-	{
+	private void writeNodeEndTag(Node node) throws IOException {
 		if (node.getType() != null) {
-			writeEndTag(node.getType().getNamespace(), node.getType().getLocalName());
-		}
-		else {
+			writeEndTag(node.getType().getNamespace(), node.getType()
+					.getLocalName());
+		} else {
 			writeEndTag(RDF.NAMESPACE, "Description");
 		}
 		writeNewLine();
@@ -466,9 +448,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	/**
 	 * Write out an empty tag for the subject or object of a statement.
 	 */
-	private void writeNodeEmptyTag(Node node)
-		throws IOException
-	{
+	private void writeNodeEmptyTag(Node node) throws IOException {
 		writeNodeStartOfStartTag(node);
 		writeEndOfEmptyTag();
 	}
@@ -477,26 +457,25 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * Write out an empty property element.
 	 */
 	private void writeAbbreviatedPredicate(URI pred, Value obj)
-		throws IOException
-	{
+			throws IOException {
 		writeStartOfStartTag(pred.getNamespace(), pred.getLocalName());
 
 		if (obj instanceof Resource) {
-			Resource objRes = (Resource)obj;
+			Resource objRes = (Resource) obj;
 
 			if (objRes instanceof URI) {
-				URI uri = (URI)objRes;
-				writeAttribute(RDF.NAMESPACE, "resource", relativize(uri.stringValue()));
-			}
-			else {
-				BNode bNode = (BNode)objRes;
-				writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
+				URI uri = (URI) objRes;
+				writeAttribute(RDF.NAMESPACE, "resource",
+						relativize(uri.stringValue()));
+			} else {
+				BNode bNode = (BNode) objRes;
+				writeAttribute(RDF.NAMESPACE, "nodeID",
+						startWithLetter(bNode.getID()));
 			}
 
 			writeEndOfEmptyTag();
-		}
-		else if (obj instanceof Literal) {
-			Literal objLit = (Literal)obj;
+		} else if (obj instanceof Literal) {
+			Literal objLit = (Literal) obj;
 
 			// language attribute
 			if (objLit.getLanguage() != null) {
@@ -512,9 +491,9 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 				if (isXmlLiteral) {
 					writeAttribute(RDF.NAMESPACE, "parseType", "Literal");
-				}
-				else {
-					writeAttribute(RDF.NAMESPACE, "datatype", datatype.toString());
+				} else {
+					writeAttribute(RDF.NAMESPACE, "datatype",
+							datatype.toString());
 				}
 			}
 
@@ -524,8 +503,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			if (isXmlLiteral) {
 				// Write XML literal as plain XML
 				writer.write(objLit.getLabel());
-			}
-			else {
+			} else {
 				writeCharacterData(objLit.getLabel());
 			}
 
@@ -536,8 +514,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	}
 
 	protected void writeStartTag(String namespace, String localName)
-		throws IOException
-	{
+			throws IOException {
 		writeStartOfStartTag(namespace, localName);
 		writeEndOfStartTag();
 	}
@@ -545,9 +522,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	/**
 	 * Writes <tt>n</tt> indents.
 	 */
-	protected void writeIndents(int n)
-		throws IOException
-	{
+	protected void writeIndents(int n) throws IOException {
 		for (int i = 0; i < n; i++) {
 			writeIndent();
 		}

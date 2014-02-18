@@ -220,11 +220,8 @@ public class RDFXMLWriter implements RDFWriter {
 	}
 
 	protected String startWithLetter(String nodeID) {
-		if (nodeID.length() > 0 && Character.isDigit(nodeID.charAt(0))) {
-			return "b" + nodeID;
-		} else {
-			return nodeID;
-		}
+		return nodeID.length() > 0 && Character.isDigit(nodeID.charAt(0)) ? "b"
+				+ nodeID : nodeID;
 	}
 
 	public void handleStatement(Statement st) throws RDFHandlerException {
