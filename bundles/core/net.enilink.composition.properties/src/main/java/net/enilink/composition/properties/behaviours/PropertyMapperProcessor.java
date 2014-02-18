@@ -54,6 +54,7 @@ import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.PropertySetOwner;
 import net.enilink.composition.properties.traits.Refreshable;
+import net.enilink.composition.properties.util.UnmodifiablePropertySet;
 
 import com.google.inject.Inject;
 
@@ -100,12 +101,32 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 	private void loadPropertySet(PropertyDescriptor pd,
 			BehaviourMethodGenerator gen) {
+		loadPropertySet(pd, gen, false);
+	}
+
+	private void loadPropertySet(PropertyDescriptor pd,
+			BehaviourMethodGenerator gen, boolean forceModifiable) {
 		gen.loadThis();
 		gen.invokeVirtual(
 				gen.getMethod().getOwner().getType(),
 				new org.objectweb.asm.commons.Method("_$get" + pd.getName(),
 						Type.getMethodDescriptor(Type
 								.getType(PropertySet.class))));
+
+		// when forceModifiable is requested, check if the resulting property is
+		// unmodifiable and call its getDelegate()-method if it is
+		if (forceModifiable) {
+			gen.dup();
+			gen.instanceOf(Type.getType(UnmodifiablePropertySet.class));
+			Label notInstanceOf = gen.newLabel();
+			gen.ifZCmp(IFEQ, notInstanceOf);
+
+			// it is unmodifiable, call getDelegate()
+			gen.checkCast(Type.getType(UnmodifiablePropertySet.class));
+			gen.invoke(Methods.UNMODIFIABLEPROPERTYSET_GET_DELEGATE);
+
+			gen.mark(notInstanceOf);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -315,7 +336,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 			BehaviourMethodGenerator gen) throws Exception {
 		Class<?> type = pd.getPropertyType();
 		if (type.isPrimitive()) {
-			loadPropertySet(pd, gen);
+			loadPropertySet(pd, gen, true);
 			persistValue(type, gen);
 		} else {
 			gen.dup();
@@ -323,7 +344,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 			Label isNull = gen.newLabel();
 			gen.ifNull(isNull);
 
-			loadPropertySet(pd, gen);
+			loadPropertySet(pd, gen, true);
 			persistValue(type, gen);
 
 			Label end = gen.newLabel();
@@ -378,8 +399,8 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 			gen.dup();
 			Label isNull = gen.newLabel();
 			gen.ifNull(isNull);
-			// load own property set
-			loadPropertySet(pd, gen);
+			// load own property set (force it to be modifiable)
+			loadPropertySet(pd, gen, true);
 			gen.swap();
 			// copy values
 			gen.invoke(Methods.PROPERTYSET_GET_ALL);
