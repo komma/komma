@@ -428,7 +428,7 @@ public class ModelUtil {
 	}
 
 	public static <V extends IDataVisitor<?>> void readData(InputStream in,
-			String baseURI, String mimeType, boolean preserveBNodeIDs,
+			String baseURI, String mimeType, final boolean preserveBNodeIDs,
 			final V dataVisitor) {
 		if (mimeType == null && !in.markSupported()) {
 			in = new BufferedInputStream(in);
@@ -436,7 +436,17 @@ public class ModelUtil {
 		ValueFactory valueFactory = new ValueFactoryImpl() {
 			@Override
 			public synchronized BNode createBNode() {
-				return createBNode(BlankNode.generateId("new-").substring(2));
+				return super.createBNode(BlankNode.generateId("new-")
+						.substring(2));
+			}
+
+			@Override
+			public synchronized BNode createBNode(String nodeID) {
+				if (preserveBNodeIDs) {
+					return super.createBNode(nodeID);
+				} else {
+					return super.createBNode("new-" + nodeID);
+				}
 			}
 		};
 		final SesameValueConverter valueConverter = new SesameValueConverter(
