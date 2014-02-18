@@ -77,6 +77,31 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		Prefix, Namespace
 	}
 
+	static class NewNamespace implements INamespace {
+		String prefix;
+		URI uri;
+
+		NewNamespace(String prefix, URI uri) {
+			this.prefix = prefix;
+			this.uri = uri;
+		}
+
+		@Override
+		public String getPrefix() {
+			return prefix;
+		}
+
+		@Override
+		public URI getURI() {
+			return uri;
+		}
+
+		@Override
+		public boolean isDerived() {
+			return false;
+		}
+	}
+
 	static class ModifyNamespaceCommand extends SimpleCommand implements
 			INoChangeRecording {
 		final IModel model;
@@ -182,11 +207,23 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 						return;
 					}
 				}
+				if (namespace.getURI().isRelative()) {
+					if (namespace instanceof NewNamespace) {
+						((NewNamespace) namespace).prefix = (String) value;
+						namespaceViewer.refresh(namespace);
+					}
+					return;
+				}
 				execute(new ModifyNamespaceCommand(model, namespace,
 						new Namespace((String) value, namespace.getURI())));
 				break;
 			case Namespace:
-				URI uri = URIImpl.createURI(value.toString());
+				URI uri;
+				try {
+					uri = URIImpl.createURI(value.toString());
+				} catch (Exception e) {
+					return;
+				}
 				if (uri.equals(((INamespace) element).getURI())) {
 					return;
 				}
@@ -195,8 +232,13 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 						return;
 					}
 				}
-				execute(new ModifyNamespaceCommand(model, namespace,
-						new Namespace(namespace.getPrefix(), uri)));
+				if (!uri.isRelative()) {
+					execute(new ModifyNamespaceCommand(model, namespace,
+							new Namespace(namespace.getPrefix(), uri)));
+				} else if (namespace instanceof NewNamespace) {
+					((NewNamespace) namespace).uri = uri;
+					namespaceViewer.refresh(namespace);
+				}
 			}
 
 		}
@@ -373,7 +415,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 	}
 
 	void addItem() {
-		INamespace newNs = new Namespace("", URIImpl.createURI("http://"));
+		INamespace newNs = new NewNamespace("", URIImpl.createURI(""));
 		namespaceViewer.add(newNs);
 		namespaceViewer.setSelection(new StructuredSelection(newNs), true);
 	}

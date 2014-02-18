@@ -74,6 +74,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.PartInitException;
@@ -308,7 +309,21 @@ public class ImportsPart extends AbstractEditingDomainPart {
 
 		SelectionDialog dialog = new SelectionDialog(getShell()) {
 			protected void okPressed() {
-				setSelectionResult(list.getSelection().toArray());
+				// allow for textual input of URI
+				if (list.getSelection().isEmpty()) {
+					String input = ((Text) list.getPatternControl()).getText();
+					try {
+						URI uri = URIImpl.createURI(input);
+						if (!uri.isRelative()) {
+							setSelectionResult(new Object[] { new ModelDescription(
+									null, uri.toString()) });
+						}
+					} catch (IllegalArgumentException e) {
+						// ignore
+					}
+				} else {
+					setSelectionResult(list.getSelection().toArray());
+				}
 				super.okPressed();
 			}
 
