@@ -40,6 +40,7 @@ import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.INotifier;
 import net.enilink.komma.common.notify.NotificationFilter;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.provider.IItemPropertySource;
@@ -430,18 +431,22 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 						Object oldElement = widget.getData();
 						// ensure that old and new element are contained within
 						// the same model or in no model at all
-						if (oldElement == null
-								|| element instanceof IModelAware
+						if (element instanceof IModelAware
 								&& oldElement instanceof IModelAware
-								&& ((IModelAware) element).getModel().equals(
-										((IModelAware) oldElement).getModel())
-								|| !(element instanceof IModelAware || oldElement instanceof IModelAware)) {
-							if (notification.isContentRefresh()) {
-								structuredViewer.refresh(element,
-										notification.isLabelUpdate());
-							} else if (notification.isLabelUpdate()) {
-								structuredViewer.update(element, null);
+								&& !((IModelAware) element).getModel().equals(
+										((IModelAware) oldElement).getModel())) {
+							if (element instanceof IReference) {
+								element = ((IModelAware) oldElement).getModel()
+										.resolve((IReference) element);
+							} else {
+								element = oldElement;
 							}
+						}
+						if (notification.isContentRefresh()) {
+							structuredViewer.refresh(element,
+									notification.isLabelUpdate());
+						} else if (notification.isLabelUpdate()) {
+							structuredViewer.update(element, null);
 						}
 					}
 				} else {
