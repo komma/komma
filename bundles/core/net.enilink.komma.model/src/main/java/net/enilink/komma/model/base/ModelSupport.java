@@ -22,8 +22,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -107,8 +109,19 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	 * Represents the transient state of this resource
 	 */
 	static class State {
-		private KommaModule module;
-		protected IEntityManager manager;
+		KommaModule module;
+		KommaModule moduleClosure;
+		Set<URI> importedModels;
+		IEntityManager manager;
+
+		void reset() {
+			module = null;
+			moduleClosure = null;
+			importedModels = null;
+			if (manager != null) {
+				manager.close();
+			}
+		}
 	}
 
 	protected EntityVar<State> state;
@@ -130,13 +143,14 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 
 					@Override
 					protected IEntityManager initialValue() {
-						return getModelSet()
-								.getEntityManagerFactory()
+						return getModelSet().getEntityManagerFactory()
 								// allow interception of call to
 								// getModule()
-								.createChildFactory(theState.manager, null,
-										getBehaviourDelegate().getModule())
-								.create();
+								.createChildFactory(
+										theState.manager,
+										null,
+										getBehaviourDelegate()
+												.getModuleClosure()).create();
 					}
 
 					@Override
@@ -221,7 +235,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 					List<INamespace> getAllModelNamespaces() {
 						List<INamespace> nsList = new ArrayList<INamespace>(
 								getModelNamespaces());
-						KommaModule module = theState.module;
+						KommaModule module = theState.moduleClosure;
 						if (module != null) {
 							for (INamespace ns : module.getNamespaces()) {
 								nsList.add(new net.enilink.komma.core.Namespace(
@@ -387,10 +401,84 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	}
 
 	@Override
+	public Set<URI> getImports() {
+		Set<URI> importedModels = state().importedModels;
+		if (importedModels == null) {
+			importedModels = new HashSet<>();
+			try {
+				IDataManager dm = getModelSet().getDataManagerFactory().get();
+				try {
+					// retrieve imported ontologies while filtering those which
+					// are likely already contained within this model
+					IExtendedIterator<IReference> imports = dm
+							.createQuery(
+									ISparqlConstants.PREFIX
+											+ " SELECT ?import WHERE { ?ontology owl:imports ?import FILTER NOT EXISTS { ?import a owl:Ontology } }",
+									getURI().toString(), false, getURI())
+							.evaluate().mapWith(new IMap<Object, IReference>() {
+								@Override
+								public IReference map(Object value) {
+									return (IReference) ((IBindings<?>) value)
+											.get("import");
+								}
+							});
+					while (imports.hasNext()) {
+						URI uri = imports.next().getURI();
+						if (uri != null) {
+							importedModels.add(uri);
+						}
+					}
+				} catch (Throwable e) {
+					throw e;
+				} finally {
+					dm.close();
+				}
+			} catch (Throwable e) {
+				throw new KommaException(e);
+			}
+			state().importedModels = importedModels;
+		}
+		return importedModels;
+	}
+
+	@Override
+	public synchronized KommaModule getModuleClosure() {
+		KommaModule moduleClosure = state().moduleClosure;
+		if (moduleClosure == null) {
+			moduleClosure = new KommaModule();
+			moduleClosure.addWritableGraph(getURI());
+
+			Set<URI> seen = new HashSet<>();
+			Queue<IModel> queue = new LinkedList<>();
+			queue.add(getBehaviourDelegate());
+			while (!queue.isEmpty()) {
+				IModel model = queue.remove();
+				moduleClosure.includeModule(((IModel.Internal) model)
+						.getModule());
+				for (URI imported : model.getImports()) {
+					try {
+						if (seen.add(imported)) {
+							queue.add(getModelSet().getModel(imported, true));
+						}
+					} catch (Throwable e) {
+						getErrors().add(
+								new DiagnosticWrappedException(getURI()
+										.toString(), new RuntimeException(
+										"Error while loading import: "
+												+ imported)));
+					}
+				}
+			}
+		}
+		return moduleClosure;
+	}
+
+	@Override
 	public synchronized KommaModule getModule() {
 		KommaModule module = state().module;
 		if (module == null) {
 			module = new KommaModule(ModelSupport.class.getClassLoader());
+			module.addWritableGraph(getURI());
 
 			// add support for IObject interface
 			module.addConcept(IObject.class);
@@ -428,7 +516,6 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 					}
 				}
 			}
-
 			// support for registering KommaModules via Guice
 			try {
 				for (KommaModule extensionModule : injector.getInstance(Key
@@ -439,56 +526,6 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			} catch (ConfigurationException ce) {
 				// no bound modules found - ignore
 			}
-
-			try {
-				IDataManager dm = getModelSet().getDataManagerFactory().get();
-				try {
-					// retrieve imported ontologies while filtering those which
-					// are likely already contained within this model
-					IExtendedIterator<IReference> imports = dm
-							.createQuery(
-									ISparqlConstants.PREFIX
-											+ " SELECT ?import WHERE { ?ontology owl:imports ?import FILTER NOT EXISTS { ?import a owl:Ontology } }",
-									getURI().toString(), false, getURI())
-							.evaluate().mapWith(new IMap<Object, IReference>() {
-								@Override
-								public IReference map(Object value) {
-									return (IReference) ((IBindings<?>) value)
-											.get("import");
-								}
-							});
-					while (imports.hasNext()) {
-						IReference imported = imports.next();
-						if (((IReference) imported).getURI() == null) {
-							continue;
-						}
-						URI importedUri = imported.getURI();
-						try {
-							IModel model = getModelSet().getModel(importedUri,
-									true);
-							KommaModule importedModule = ((IModel.Internal) model)
-									.getModule();
-							if (importedModule != null) {
-								module.includeModule(importedModule);
-							}
-						} catch (Throwable e) {
-							getErrors().add(
-									new DiagnosticWrappedException(getURI()
-											.toString(), new RuntimeException(
-											"Error while loading import: "
-													+ importedUri)));
-						}
-					}
-				} catch (Throwable e) {
-					throw e;
-				} finally {
-					dm.close();
-				}
-			} catch (Throwable e) {
-				throw new KommaException(e);
-			}
-
-			module.addWritableGraph(getURI());
 			state().module = module;
 		}
 		return module;
@@ -913,9 +950,6 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 
 	@Override
 	public synchronized void unloadManager() {
-		state().module = null;
-		if (state().manager != null) {
-			state().manager.close();
-		}
+		state().reset();
 	}
 }

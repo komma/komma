@@ -29,13 +29,6 @@ import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.core.URI;
 
 public class FileURIHandler extends URIHandler {
-	/**
-	 * Creates an instance.
-	 */
-	public FileURIHandler() {
-		super();
-	}
-
 	@Override
 	public boolean canHandle(URI uri) {
 		return uri.isFile();
@@ -69,7 +62,8 @@ public class FileURIHandler extends URIHandler {
 					super.close();
 				} finally {
 					if (response != null) {
-						response.put(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY,
+						response.put(
+								IURIConverter.RESPONSE_TIME_STAMP_PROPERTY,
 								file.lastModified());
 					}
 				}
@@ -147,7 +141,8 @@ public class FileURIHandler extends URIHandler {
 			if (requestedAttributes == null
 					|| requestedAttributes
 							.contains(IURIConverter.ATTRIBUTE_DIRECTORY)) {
-				result.put(IURIConverter.ATTRIBUTE_DIRECTORY, file.isDirectory());
+				result.put(IURIConverter.ATTRIBUTE_DIRECTORY,
+						file.isDirectory());
 			}
 		}
 		return result;

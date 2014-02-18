@@ -18,25 +18,24 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
+import net.enilink.komma.core.URI;
+import net.enilink.komma.model.base.ContentHandler;
+import net.enilink.komma.model.base.URIHandler;
+
 import org.eclipse.core.runtime.content.IContentDescriber;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
-
-import net.enilink.komma.model.base.ContentHandler;
-import net.enilink.komma.model.base.URIHandler;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
 
 /**
  * A handler for describing the contents of URIs.
  * <p>
  * A content handler is used primarily by a {@link IURIConverter URI converter}
- * which provides support for {@link IURIConverter#contentDescription(URIImpl, Map)
+ * which provides support for {@link IURIConverter#contentDescription(URI, Map)
  * describing} the contents of a URI by virtue of having a
  * {@link IURIConverter#getContentHandlers() list} of content handlers that it
- * consults to determine whether the handler {@link #canHandle(URIImpl) can handle}
+ * consults to determine whether the handler {@link #canHandle(URI) can handle}
  * the given URI and if so that it uses as a delegate for computing the
- * {@link #contentDescription(URIImpl, InputStream, Map, Map) content description}.
+ * {@link #contentDescription(URI, InputStream, Map, Map) content description}.
  * </p>
  * 
  * @see URIHandler
@@ -107,7 +106,7 @@ public interface IContentHandler {
 
 	/**
 	 * An option used to specify the {@link Set} of properties being requested
-	 * when computing a {@link #contentDescription(URIImpl, InputStream, Map, Map)
+	 * when computing a {@link #contentDescription(URI, InputStream, Map, Map)
 	 * content description}.
 	 * 
 	 * @see #VALIDITY_PROPERTY
@@ -118,12 +117,12 @@ public interface IContentHandler {
 	String OPTION_REQUESTED_PROPERTIES = "REQUESTED_PROPERTIES";
 
 	/**
-	 * A {@link #contentDescription(URIImpl, InputStream, Map, Map) content
+	 * A {@link #contentDescription(URI, InputStream, Map, Map) content
 	 * description} property indicating the {@link Validity validity} of the
 	 * content. The value will be one of {@link Validity#INVALID},
 	 * {@link Validity#INDETERMINATE}, or {@link Validity#VALID}. This property
 	 * will always be present in a
-	 * {@link #contentDescription(URIImpl, InputStream, Map, Map) content
+	 * {@link #contentDescription(URI, InputStream, Map, Map) content
 	 * description}.
 	 * 
 	 * @see Validity
@@ -135,7 +134,7 @@ public interface IContentHandler {
 
 	/**
 	 * A value specifying the validity of a
-	 * {@link ContentHandler#contentDescription(URIImpl, InputStream, Map, Map)
+	 * {@link ContentHandler#contentDescription(URI, InputStream, Map, Map)
 	 * content description}. The {@link ContentHandler#VALIDITY_PROPERTY
 	 * validity property} will have a value of this type, i.., either
 	 * {@link Validity#INVALID}, {@link Validity#INDETERMINATE}, or
@@ -161,7 +160,7 @@ public interface IContentHandler {
 	}
 
 	/**
-	 * A {@link #contentDescription(URIImpl, InputStream, Map, Map) content
+	 * A {@link #contentDescription(URI, InputStream, Map, Map) content
 	 * description} property describing the content's type identity. The value
 	 * will be an arbitrary string. The content type is often used to
 	 * {@link IModel.Factory.Registry#getContentTypeToFactoryMap() determine}
@@ -169,7 +168,7 @@ public interface IContentHandler {
 	 * 
 	 * @see IContentType#getId()
 	 * @see IModel.Factory.Registry#getContentTypeToFactoryMap()
-	 * @see IModel.Factory.Registry#getFactory(URIImpl, String)
+	 * @see IModel.Factory.Registry#getFactory(URI, String)
 	 */
 	String CONTENT_TYPE_PROPERTY = "net.enilink.komma.model:contentType";
 
@@ -177,13 +176,13 @@ public interface IContentHandler {
 	 * A constant used to indicate that a {@link #CONTENT_TYPE_PROPERTY content
 	 * type} needs to be computed.
 	 * 
-	 * @see IModelSet#createModel(URIImpl, String)
-	 * @see IModel.Factory.Registry#getFactory(URIImpl, String)
+	 * @see IModelSet#createModel(URI, String)
+	 * @see IModel.Factory.Registry#getFactory(URI, String)
 	 */
 	String UNSPECIFIED_CONTENT_TYPE = "";
 
 	/**
-	 * A {@link #contentDescription(URIImpl, InputStream, Map, Map) content
+	 * A {@link #contentDescription(URI, InputStream, Map, Map) content
 	 * description} property describing the character set encoding used by the
 	 * bytes of the content. The value will be a string denoting a character
 	 * set.
@@ -193,7 +192,7 @@ public interface IContentHandler {
 	String CHARSET_PROPERTY = "org.eclipse.core.runtime:charset";
 
 	/**
-	 * A {@link #contentDescription(URIImpl, InputStream, Map, Map) content
+	 * A {@link #contentDescription(URI, InputStream, Map, Map) content
 	 * description} property describing the byte order mark at the beginning of
 	 * the contents. The value will be of type {@link ByteOrderMark}.
 	 * 
@@ -203,7 +202,7 @@ public interface IContentHandler {
 
 	/**
 	 * A value specifying the byte order mark of a
-	 * {@link ContentHandler#contentDescription(URIImpl, InputStream, Map, Map)
+	 * {@link ContentHandler#contentDescription(URI, InputStream, Map, Map)
 	 * content description}. The {@link ContentHandler#BYTE_ORDER_MARK_PROPERTY
 	 * byte order mark property} will have a value of this type, i.., either
 	 * {@link #UTF_8}, {@link #UTF_16BE}, or {@link #UTF_16LE}.
@@ -316,7 +315,7 @@ public interface IContentHandler {
 	}
 
 	/**
-	 * An unmodifiable {@link #contentDescription(URIImpl, InputStream, Map, Map)
+	 * An unmodifiable {@link #contentDescription(URI, InputStream, Map, Map)
 	 * content description} indicating that the content is invalid.
 	 */
 	Map<String, Object> INVALID_CONTENT_DESCRIPTION = Collections

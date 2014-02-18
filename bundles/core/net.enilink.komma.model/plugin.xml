@@ -159,5 +159,9 @@
       <contentHandler
             class="net.enilink.komma.model.eclipse.PlatformContentHandler">
       </contentHandler>
+      <contentHandler
+            class="net.enilink.komma.model.base.ContentHandler"
+            priority="1000">
+      </contentHandler>
    </extension>
 </plugin>

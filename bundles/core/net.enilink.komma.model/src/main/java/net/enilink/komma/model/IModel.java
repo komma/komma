@@ -94,6 +94,11 @@ public interface IModel {
 	void delete(Map<?, ?> options) throws IOException;
 
 	/**
+	 * Returns all directly imported models.
+	 */
+	Set<URI> getImports();
+
+	/**
 	 * Returns the {@link IEntityManager} manager which is responsible for
 	 * loading and modifying the ontology's contents
 	 * 
@@ -565,7 +570,15 @@ public interface IModel {
 		 */
 		boolean isLoading();
 
+		/**
+		 * Returns a module for this model.
+		 */
 		KommaModule getModule();
+
+		/**
+		 * Returns a module that includes all imported model modules.
+		 */
+		KommaModule getModuleClosure();
 	}
 
 	/**

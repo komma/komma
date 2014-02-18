@@ -227,7 +227,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 				.getDataManagerFactory().get();
 		try {
 			// only include possibly used namespaces
-			Set<URI> readableGraphs = getModule().getReadableGraphs();
+			Set<URI> readableGraphs = getModuleClosure().getReadableGraphs();
 			for (INamespace namespace : getManager().getNamespaces()) {
 				if (KommaUtil.isW3cNamespace(namespace.getURI())
 						|| readableGraphs.contains(namespace.getURI()

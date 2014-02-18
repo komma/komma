@@ -368,13 +368,6 @@ public class PlatformResourceURIHandler extends URIHandler {
 		}
 	}
 
-	/**
-	 * Creates an instance.
-	 */
-	public PlatformResourceURIHandler() {
-		super();
-	}
-
 	@Override
 	public boolean canHandle(URI uri) {
 		return uri.isPlatformResource();

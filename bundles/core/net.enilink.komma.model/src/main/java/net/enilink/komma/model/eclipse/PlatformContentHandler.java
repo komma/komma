@@ -24,6 +24,11 @@ import net.enilink.komma.model.base.ContentHandler;
 import net.enilink.komma.core.URI;
 
 public class PlatformContentHandler extends ContentHandler {
+	@Override
+	public boolean canHandle(URI uri) {
+		return uri.isPlatform();
+	}
+	
 	/**
 	 * Returns the property name converted to a qualified name.
 	 * 
@@ -36,8 +41,8 @@ public class PlatformContentHandler extends ContentHandler {
 		if (index == -1) {
 			return new QualifiedName(null, property);
 		} else {
-			return new QualifiedName(property.substring(0, index), property
-					.substring(index + 1));
+			return new QualifiedName(property.substring(0, index),
+					property.substring(index + 1));
 		}
 	}
 
@@ -92,8 +97,8 @@ public class PlatformContentHandler extends ContentHandler {
 			return INVALID_CONTENT_DESCRIPTION;
 		} else {
 			Map<String, Object> result = createContentDescription(ContentHandler.Validity.VALID);
-			result.put(IContentHandler.CONTENT_TYPE_PROPERTY, contentDescription
-					.getContentType().getId());
+			result.put(IContentHandler.CONTENT_TYPE_PROPERTY,
+					contentDescription.getContentType().getId());
 			Set<String> requestedProperties = getRequestedProperties(options);
 			if (requestedProperties != null) {
 				for (String property : requestedProperties) {

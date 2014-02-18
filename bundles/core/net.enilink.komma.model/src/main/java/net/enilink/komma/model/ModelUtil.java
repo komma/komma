@@ -10,12 +10,34 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import net.enilink.komma.common.util.BasicDiagnostic;
+import net.enilink.komma.common.util.Diagnostic;
+import net.enilink.komma.core.BlankNode;
+import net.enilink.komma.core.ILiteral;
+import net.enilink.komma.core.INamespace;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.Namespace;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
+import net.enilink.komma.core.visitor.IDataVisitor;
+import net.enilink.komma.model.sesame.RDFXMLPrettyWriter;
+import net.enilink.komma.sesame.SesameValueConverter;
+import net.enilink.vocab.rdf.Property;
+import net.enilink.vocab.rdfs.Class;
+import net.enilink.vocab.rdfs.Resource;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
@@ -35,25 +57,6 @@ import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.rio.Rio;
-
-import net.enilink.vocab.rdf.Property;
-import net.enilink.vocab.rdfs.Class;
-import net.enilink.vocab.rdfs.Resource;
-import net.enilink.komma.common.util.BasicDiagnostic;
-import net.enilink.komma.common.util.Diagnostic;
-import net.enilink.komma.model.sesame.RDFXMLPrettyWriter;
-import net.enilink.komma.core.BlankNode;
-import net.enilink.komma.core.ILiteral;
-import net.enilink.komma.core.INamespace;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.core.Namespace;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
-import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
-import net.enilink.komma.core.visitor.IDataVisitor;
-import net.enilink.komma.sesame.SesameValueConverter;
 
 public class ModelUtil {
 	/**
@@ -347,9 +350,8 @@ public class ModelUtil {
 		return null;
 	}
 
-	public static IContentDescription determineContentDescription(
-			URI resourceUri, IURIConverter uriConverter, Map<?, ?> options)
-			throws IOException {
+	public static IContentDescription determineContentDescription(URI uri,
+			IURIConverter uriConverter, Map<?, ?> options) throws IOException {
 		IContentTypeManager contentTypeManager = Platform
 				.getContentTypeManager();
 		if (contentTypeManager == null) {
@@ -361,8 +363,7 @@ public class ModelUtil {
 		IContentDescription contentDescription = null;
 		try {
 			String contentTypeId = (String) uriConverter.contentDescription(
-					resourceUri, options).get(
-					IContentHandler.CONTENT_TYPE_PROPERTY);
+					uri, options).get(IContentHandler.CONTENT_TYPE_PROPERTY);
 			IContentType contentType = null;
 			if (contentTypeId != null) {
 				contentType = contentTypeManager.getContentType(contentTypeId);
@@ -375,7 +376,7 @@ public class ModelUtil {
 		}
 		if (contentDescription == null) {
 			// use file name with extension as fall back
-			URI normalizedUri = uriConverter.normalize(resourceUri);
+			URI normalizedUri = uriConverter.normalize(uri);
 			// simply use the filename to detect the correct RDF format
 			String lastSegment = normalizedUri.lastSegment();
 			if (lastSegment != null) {
@@ -388,6 +389,31 @@ public class ModelUtil {
 							.getDefaultDescription();
 					if (desc.getProperty(mimeType) != null) {
 						contentDescription = desc;
+						break;
+					}
+				}
+			}
+		}
+		if (contentDescription == null) {
+			Map<Object, Object> optionsExt = new HashMap<>(options);
+			optionsExt.put(
+					IURIConverter.OPTION_REQUESTED_ATTRIBUTES,
+					new HashSet<>(Arrays
+							.asList(IURIConverter.ATTRIBUTE_MIME_TYPE)));
+			// try to determine the Eclipse content-type based on the MIME-type
+			Map<String, ?> attributes = uriConverter.getAttributes(uri,
+					optionsExt);
+			Object mimeType = attributes.get(IURIConverter.ATTRIBUTE_MIME_TYPE);
+			if (mimeType != null) {
+				QualifiedName mimeTypeQName = new QualifiedName(
+						ModelPlugin.PLUGIN_ID, "mimeType");
+				for (IContentType contentType : contentTypeManager
+						.getAllContentTypes()) {
+					if (mimeType.equals(contentType.getDefaultDescription()
+							.getProperty(mimeTypeQName))) {
+						contentDescription = contentType
+								.getDefaultDescription();
+						break;
 					}
 				}
 			}

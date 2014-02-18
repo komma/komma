@@ -17,11 +17,11 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import org.xml.sax.ContentHandler;
-
+import net.enilink.komma.core.URI;
 import net.enilink.komma.model.base.IURIMapRuleSet;
 import net.enilink.komma.model.base.URIHandler;
-import net.enilink.komma.core.URI;
+
+import org.xml.sax.ContentHandler;
 
 /**
  * A converter to normalize a URI or to produce an input or output stream for a
@@ -68,6 +68,14 @@ public interface IURIConverter {
 	String RESPONSE_TIME_STAMP_PROPERTY = "TIME_STAMP";
 
 	/**
+	 * A property of the {@link #OPTION_RESPONSE response option} used to yield
+	 * the {@link #ATTRIBUTE_MIME_TYPE MIME-type} associated with the creation
+	 * of an {@link #createInputStream(URI, Map) input} or an
+	 * {@link #createOutputStream(URI, Map) output} stream.
+	 */
+	String RESPONSE_MIME_TYPE_PROPERTY = "MIME_TYPE";
+
+	/**
 	 * Returns the normalized form of the URI.
 	 * <p>
 	 * This may, in theory, do absolutely anything. Default behaviour includes
@@ -79,7 +87,7 @@ public interface IURIConverter {
 	 *  ./WhateverDirectory/Whatever.file 
 	 *    -&gt; 
 	 *  file:./WhateverDirectory/Whatever.file
-	 *</pre>
+	 * </pre>
 	 * 
 	 * and assuming <code>"platform:/resource"</code> protocol for a relative
 	 * URI with an {@link URI#hasAbsolutePath absolute path}:
@@ -88,7 +96,7 @@ public interface IURIConverter {
 	 *  /WhateverRelocatableProject/Whatever.file 
 	 *    -&gt; 
 	 *  platform:/resource/WhateverRelocatableProject/Whatever.file
-	 *</pre>
+	 * </pre>
 	 * 
 	 * </p>
 	 * <p>
@@ -122,19 +130,19 @@ public interface IURIConverter {
 	 * 
 	 * <pre>
 	 *  http://www.example.com/ -&gt; platform:/resource/example/
-	 *</pre>
+	 * </pre>
 	 * 
 	 * then the URI
 	 * 
 	 * <pre>
 	 *  http://www.example.com/a/b/c.d
-	 *</pre>
+	 * </pre>
 	 * 
 	 * will map to
 	 * 
 	 * <pre>
 	 *  platform:/resource/example/a/b/c.d
-	 *</pre>
+	 * </pre>
 	 * 
 	 * A matching instance mapping is considered first. If there isn't one, the
 	 * folder mappings are considered starting with the
@@ -297,6 +305,12 @@ public interface IURIConverter {
 	boolean exists(URI uri, Map<?, ?> options);
 
 	/**
+	 * The MIME-type {@link #getAttributes(URI, Map) attribute} of the contents
+	 * of a URI as String value.
+	 */
+	String ATTRIBUTE_MIME_TYPE = "mimeType";
+
+	/**
 	 * The time stamp {@link #getAttributes(URI, Map) attribute} representing
 	 * the last time the contents of a URI were modified. The value is
 	 * represented as Long that encodes the number of milliseconds since the
@@ -352,9 +366,9 @@ public interface IURIConverter {
 	 * represented as a Boolean value.
 	 */
 	String ATTRIBUTE_DIRECTORY = "directory";
-	
+
 	/**
-	 * An option passed to a {@link Set Set<String>} to
+	 * An option passed as a {@link Set Set<String>} to
 	 * {@link #getAttributes(URI, Map)} to indicate the specific attributes to
 	 * be fetched.
 	 */

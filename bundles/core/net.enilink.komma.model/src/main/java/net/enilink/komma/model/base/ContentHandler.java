@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.ITextContentDescriber;
 
 import net.enilink.komma.model.IContentHandler;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 
@@ -233,22 +234,25 @@ public class ContentHandler implements IContentHandler {
 				}
 				options.put(IContentHandler.OPTION_REQUESTED_PROPERTIES,
 						requestedProperties);
-				result = contentHandler.contentDescription(URIImpl.createURI("*"),
-						inputStream, options, new HashMap<Object, Object>());
+				result = contentHandler.contentDescription(
+						URIImpl.createURI("*"), inputStream, options,
+						new HashMap<Object, Object>());
 				for (Map.Entry<String, ?> property : result.entrySet()) {
 					QualifiedName qualifiedName = requestedPropertyToQualifiedNameMap
 							.get(property.getKey());
 					if (qualifiedName != null) {
-						description.setProperty(qualifiedName,
-								getDescriptionValue(qualifiedName, property
-										.getValue()));
+						description.setProperty(
+								qualifiedName,
+								getDescriptionValue(qualifiedName,
+										property.getValue()));
 					}
 				}
 			} else {
 				options.put(IContentHandler.OPTION_REQUESTED_PROPERTIES,
 						Collections.emptySet());
-				result = contentHandler.contentDescription(URIImpl.createURI("*"),
-						inputStream, options, new HashMap<Object, Object>());
+				result = contentHandler.contentDescription(
+						URIImpl.createURI("*"), inputStream, options,
+						new HashMap<Object, Object>());
 			}
 			return ((IContentHandler.Validity) result
 					.get(IContentHandler.VALIDITY_PROPERTY)).ordinal();
@@ -277,7 +281,8 @@ public class ContentHandler implements IContentHandler {
 		 */
 		protected IContentHandler createContentHandler(
 				Map<String, String> parameters) {
-			return null;
+			return ModelPlugin.getDefault().getContentHandlerRegistry()
+					.getContentHandlers().iterator().next();
 		}
 
 		/**
@@ -294,6 +299,13 @@ public class ContentHandler implements IContentHandler {
 		 * space separate list of suffixes.
 		 */
 		protected static final String EXTENSIONS = "extensions";
+
+		/**
+		 * The key in the
+		 * {@link #getParameters(IConfigurationElement, String, Object)
+		 * parameters map} representing the mime-type.
+		 */
+		protected static final String MIME_TYPE = "mimeType";
 
 		/**
 		 * Returns the map of parameters as fetched from the given configuration
@@ -318,13 +330,22 @@ public class ContentHandler implements IContentHandler {
 				@SuppressWarnings("unchecked")
 				Map<String, String> dataMap = (Map<String, String>) data;
 				parameters.putAll(dataMap);
-				parameters.put(CONTENT_TYPE_ID, configurationElement
-						.getAttribute("id"));
-				String fileExtensions = configurationElement
-						.getAttribute("file-extensions");
-				if (fileExtensions != null) {
-					parameters
-							.put(EXTENSIONS, fileExtensions.replace(',', ' '));
+			}
+			parameters.put(CONTENT_TYPE_ID,
+					configurationElement.getAttribute("id"));
+			String fileExtensions = configurationElement
+					.getAttribute("file-extensions");
+			if (fileExtensions != null) {
+				parameters.put(EXTENSIONS, fileExtensions.replace(',', ' '));
+			}
+			for (IConfigurationElement child : configurationElement
+					.getChildren()) {
+				if ("property".equals(child.getName())
+						&& "mimeType".equals(child.getAttribute("name"))) {
+					String mimeType = child.getAttribute("default");
+					if (mimeType != null) {
+						parameters.put(MIME_TYPE, mimeType);
+					}
 				}
 			}
 			return parameters;

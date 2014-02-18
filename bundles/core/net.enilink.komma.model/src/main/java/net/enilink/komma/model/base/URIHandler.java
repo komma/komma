@@ -128,10 +128,9 @@ public class URIHandler implements IURIHandler {
 							try {
 								super.close();
 							} finally {
-								response
-										.put(
-												IURIConverter.RESPONSE_TIME_STAMP_PROPERTY,
-												urlConnection.getLastModified());
+								response.put(
+										IURIConverter.RESPONSE_TIME_STAMP_PROPERTY,
+										urlConnection.getLastModified());
 							}
 						}
 					};
@@ -160,6 +159,9 @@ public class URIHandler implements IURIHandler {
 			if (response != null) {
 				response.put(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY,
 						urlConnection.getLastModified());
+				response.put(IURIConverter.RESPONSE_MIME_TYPE_PROPERTY,
+						urlConnection.getContentType().replaceAll(";.*$", "")
+								.trim());
 			}
 			return result;
 		} catch (RuntimeException exception) {
@@ -314,24 +316,11 @@ public class URIHandler implements IURIHandler {
 
 			if (requestedAttributes == null
 					|| requestedAttributes
-							.contains(IURIConverter.ATTRIBUTE_TIME_STAMP)) {
-				if (urlConnection == null) {
-					urlConnection = url.openConnection();
-					if (urlConnection instanceof HttpURLConnection) {
-						HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
-						httpURLConnection.setRequestMethod("HEAD");
-						httpURLConnection.getResponseCode();
-					}
-				}
-				if (urlConnection.getHeaderField("last-modified") != null) {
-					result.put(IURIConverter.ATTRIBUTE_TIME_STAMP,
-							urlConnection.getLastModified());
-				}
-			}
-
-			if (requestedAttributes == null
+							.contains(IURIConverter.ATTRIBUTE_TIME_STAMP)
 					|| requestedAttributes
-							.contains(IURIConverter.ATTRIBUTE_LENGTH)) {
+							.contains(IURIConverter.ATTRIBUTE_LENGTH)
+					|| requestedAttributes
+							.contains(IURIConverter.ATTRIBUTE_MIME_TYPE)) {
 				if (urlConnection == null) {
 					urlConnection = url.openConnection();
 					if (urlConnection instanceof HttpURLConnection) {
@@ -340,9 +329,27 @@ public class URIHandler implements IURIHandler {
 						httpURLConnection.getResponseCode();
 					}
 				}
-				if (urlConnection.getHeaderField("content-length") != null) {
-					result.put(IURIConverter.ATTRIBUTE_LENGTH, urlConnection
-							.getContentLength());
+				if (requestedAttributes
+						.contains(IURIConverter.ATTRIBUTE_TIME_STAMP)) {
+					if (urlConnection.getHeaderField("last-modified") != null) {
+						result.put(IURIConverter.ATTRIBUTE_TIME_STAMP,
+								urlConnection.getLastModified());
+					}
+				}
+				if (requestedAttributes
+						.contains(IURIConverter.ATTRIBUTE_LENGTH)) {
+					if (urlConnection.getHeaderField("content-length") != null) {
+						result.put(IURIConverter.ATTRIBUTE_LENGTH,
+								urlConnection.getContentLength());
+					}
+				}
+				if (requestedAttributes
+						.contains(IURIConverter.ATTRIBUTE_MIME_TYPE)) {
+					String contentType = urlConnection.getContentType();
+					if (contentType != null) {
+						result.put(IURIConverter.ATTRIBUTE_MIME_TYPE,
+								contentType.replaceAll(";.*$", "").trim());
+					}
 				}
 			}
 		} catch (IOException exception) {
