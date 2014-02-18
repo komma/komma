@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import net.enilink.komma.common.AbstractKommaPlugin;
@@ -34,6 +35,7 @@ import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.base.ExtensibleURIConverter;
 
 import org.eclipse.core.resources.IFile;
@@ -44,6 +46,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
@@ -141,6 +144,12 @@ public class EditUIUtil {
 			}
 			IEditorDescriptor editorDesc = getDefaultEditor(normalizedURI
 					.toString());
+			if (editorDesc == null) {
+				editorDesc = getDefaultEditor(uri,
+						resource instanceof IObject ? ((IObject) resource)
+								.getModel().getModelSet().getURIConverter()
+								: null);
+			}
 			if (editorDesc != null) {
 				IWorkbenchPage page = PlatformUI.getWorkbench()
 						.getActiveWorkbenchWindow().getActivePage();
@@ -185,44 +194,13 @@ public class EditUIUtil {
 				: null;
 	}
 
-	/**
-	 * Returns the default editor for a given contents and file name.
-	 * <p>
-	 * If a file name is not provided, the entire content type registry will be
-	 * queried. For performance reasons, it is highly recommended to provide a
-	 * file name if available.
-	 * 
-	 * @param contents
-	 *            an input stream
-	 * @param fileName
-	 *            the file name associated to the contents, or <code>null</code>
-	 * @return the descriptor of the default editor, or <code>null</code> if not
-	 *         found
-	 */
-	public static IEditorDescriptor getDefaultEditor(InputStream contents,
-			String fileName) {
-		if (contents != null) {
-			try {
-				return getDefaultEditor(
-						fileName,
-						Platform.getContentTypeManager().findContentTypesFor(
-								contents, fileName));
-			} catch (IOException e) {
-				KommaEditUIPlugin.INSTANCE.log(e);
-			}
-		}
-		return getDefaultEditor(fileName);
-	}
-
 	private static IEditorDescriptor getDefaultEditor(String fileName,
-			IContentType[] contentTypes) {
+			IContentType... contentTypes) {
 		IEditorRegistry editorRegistry = PlatformUI.getWorkbench()
 				.getEditorRegistry();
-
 		if (contentTypes.length == 0) {
 			return editorRegistry.getDefaultEditor(fileName, null);
 		}
-
 		IEditorDescriptor result = null;
 		for (int i = 0; result == null && i < contentTypes.length; i++) {
 			result = editorRegistry.getDefaultEditor(fileName, contentTypes[i]);
@@ -250,20 +228,24 @@ public class EditUIUtil {
 	public static IEditorDescriptor getDefaultEditor(URI uri,
 			IURIConverter uriConverter) {
 		String fileName = URIImpl.decode(uri.lastSegment());
+		if (!fileName.matches(".*\\.[^.]+$")) {
+			fileName = null;
+		}
 		if (uriConverter == null) {
 			uriConverter = new ExtensibleURIConverter();
 		}
-		InputStream stream = null;
-
 		try {
-			stream = uriConverter.createInputStream(uri);
-			return getDefaultEditor(stream, fileName);
+			IContentDescription contentDescription = ModelUtil
+					.determineContentDescription(uri, uriConverter,
+							Collections.emptyMap());
+			if (contentDescription != null) {
+				return getDefaultEditor(fileName,
+						contentDescription.getContentType());
+			}
 		} catch (IOException e) {
 			KommaEditUIPlugin.INSTANCE.log(e);
-			return getDefaultEditor(fileName);
-		} finally {
-			close(stream);
 		}
+		return getDefaultEditor(fileName);
 	}
 
 	private static void close(InputStream stream) {

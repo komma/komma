@@ -32,6 +32,7 @@ import org.eclipse.ui.IWorkbenchPart;
 
 import net.enilink.vocab.owl.OWL;
 import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.common.command.AbortExecutionException;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CommandWrapper;
 import net.enilink.komma.common.command.ICommand;
@@ -116,7 +117,7 @@ public class CreateChildAction extends StaticSelectionCommandAction {
 			WizardDialog wizardDialog = new WizardDialog(Display.getCurrent()
 					.getActiveShell(), newWizard);
 			if (wizardDialog.open() != Window.OK) {
-				return CommandResult.newCancelledCommandResult();
+				throw new AbortExecutionException();
 			}
 
 			return super.doExecuteWithResult(progressMonitor, info);
