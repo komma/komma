@@ -14,6 +14,7 @@
       label="KOMMA - Core"
       version="1.0.0.qualifier"
       provider-name="Fraunhofer IWU"
+      plugin="net.enilink.komma.core"
       license-feature="net.enilink.komma.license.feature"
       license-feature-version="1.0.0.qualifier">
 
