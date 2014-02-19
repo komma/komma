@@ -143,8 +143,6 @@ public abstract class AbstractActionHandler extends Action implements
 	 *            The workbench page associated with this action handler
 	 */
 	protected AbstractActionHandler(final IWorkbenchPage workbenchPage) {
-		super();
-
 		this.workbenchPage = workbenchPage;
 		if (workbenchPage != null) {
 			this.partListener = new PartListenerAdapter() {
@@ -153,7 +151,7 @@ public abstract class AbstractActionHandler extends Action implements
 				 */
 				public void partActivated(IWorkbenchPart part) {
 					setWorkbenchPart(part);
-					if (part != null && contributedToPart(part))
+					if (part != null && contributedToPart(part) && !isDisposed())
 						refresh();
 				}
 
