@@ -11,17 +11,19 @@
 package net.enilink.komma.sparql.ui.views;
 
 import java.util.Collection;
-
-import org.eclipse.swt.widgets.Composite;
+import java.util.Set;
 
 import net.enilink.commons.ui.editor.EditorWidgetFactory;
+import net.enilink.komma.core.INamespace;
 
-public interface IResultViewer {
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.widgets.Composite;
+
+public interface IResultViewer extends ISelectionProvider {
 	void createContents(EditorWidgetFactory widgetFactory, Composite parent);
 
 	String getName();
 
-	void setData(String[] colNames, Collection<Object[]> data);
-
-	Collection<?> getSelection();
+	void setData(Set<INamespace> namespaces, String[] colNames,
+			Collection<Object[]> data);
 }

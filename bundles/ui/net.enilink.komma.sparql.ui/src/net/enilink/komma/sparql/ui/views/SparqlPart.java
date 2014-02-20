@@ -12,10 +12,41 @@ package net.enilink.komma.sparql.ui.views;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.commons.ui.editor.AbstractEditorPart;
+import net.enilink.commons.ui.editor.EditorWidgetFactory;
+import net.enilink.commons.ui.editor.PageBook;
+import net.enilink.commons.ui.jface.viewers.CComboViewer;
+import net.enilink.commons.ui.progress.ProgressDistributor;
+import net.enilink.commons.ui.progress.UiProgressMonitorWrapper;
+import net.enilink.commons.util.Pair;
+import net.enilink.commons.util.extensions.RegistryReader;
+import net.enilink.komma.common.ui.assist.ContentProposals;
+import net.enilink.komma.core.IBindings;
+import net.enilink.komma.core.IBooleanResult;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.core.IGraphResult;
+import net.enilink.komma.core.INamespace;
+import net.enilink.komma.core.IQuery;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.ITupleResult;
+import net.enilink.komma.core.IUnitOfWork;
+import net.enilink.komma.edit.assist.ParboiledProposalProvider;
+import net.enilink.komma.edit.ui.assist.JFaceProposalProvider;
+import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IModelAware;
+import net.enilink.komma.parser.sparql.Sparql11Parser;
+import net.enilink.komma.query.SparqlBuilder;
+import net.enilink.komma.sparql.ui.SparqlUI;
+import net.enilink.komma.sparql.ui.assist.SparqlProposals;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -31,6 +62,8 @@ import org.eclipse.jface.wizard.ProgressMonitorPart;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -48,42 +81,6 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.parboiled.Parboiled;
 
-import net.enilink.commons.iterator.Filter;
-import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.commons.iterator.WrappedIterator;
-import net.enilink.commons.ui.editor.AbstractEditorPart;
-import net.enilink.commons.ui.editor.EditorWidgetFactory;
-import net.enilink.commons.ui.editor.PageBook;
-import net.enilink.commons.ui.jface.viewers.CComboViewer;
-import net.enilink.commons.ui.progress.ProgressDistributor;
-import net.enilink.commons.ui.progress.UiProgressMonitorWrapper;
-import net.enilink.commons.util.Pair;
-import net.enilink.commons.util.extensions.RegistryReader;
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.rdf.RDF;
-import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.komma.common.ui.assist.ContentProposals;
-import net.enilink.komma.edit.assist.ParboiledProposalProvider;
-import net.enilink.komma.edit.ui.assist.JFaceProposalProvider;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.IObject;
-import net.enilink.komma.model.ModelPlugin;
-import net.enilink.komma.model.ModelDescription;
-import net.enilink.komma.parser.sparql.Sparql11Parser;
-import net.enilink.komma.query.SparqlBuilder;
-import net.enilink.komma.core.IBindings;
-import net.enilink.komma.core.IBooleanResult;
-import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.IEntityManagerFactory;
-import net.enilink.komma.core.IGraphResult;
-import net.enilink.komma.core.INamespace;
-import net.enilink.komma.core.IQuery;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.ITupleResult;
-import net.enilink.komma.core.IUnitOfWork;
-import net.enilink.komma.sparql.ui.SparqlUI;
-import net.enilink.komma.sparql.ui.assist.SparqlProposals;
-
 class SparqlPart extends AbstractEditorPart {
 	private class LoadResultsJob extends FinishInUIJob {
 		ProgressDistributor progressDistributor;
@@ -91,23 +88,23 @@ class SparqlPart extends AbstractEditorPart {
 		List<Object[]> data;
 		IEntityManagerFactory managerFactory;
 		String sparql;
-		List<IObject> selectedObjects;
+		List<IEntity> selected;
+		Set<INamespace> namespaces;
 
 		private LoadResultsJob(IEntityManagerFactory managerFactory,
-				List<IObject> selectedObjects, String sparql) {
+				List<IEntity> selected, Set<INamespace> namespaces,
+				String sparql) {
 			super("Evaluating SPARQL"); //$NON-NLS-1$
 			this.managerFactory = managerFactory;
-			this.selectedObjects = selectedObjects;
-			if (this.selectedObjects == null) {
-				this.selectedObjects = Collections.emptyList();
-			}
+			this.selected = selected;
+			this.namespaces = namespaces;
 			this.sparql = sparql;
 		}
 
 		@Override
 		public void finishInUI(IStatus status) {
 			if (status.isOK()) {
-				resultArea.setData(columnNames, data);
+				resultArea.setData(namespaces, columnNames, data);
 			} else {
 				resultArea.setError(status);
 			}
@@ -130,16 +127,19 @@ class SparqlPart extends AbstractEditorPart {
 					IProgressMonitor.UNKNOWN);
 
 			Set<IModel> models = new HashSet<IModel>();
-			for (IObject selected : selectedObjects) {
-				if (selected instanceof IModel) {
-					models.add((IModel) selected);
-				} else {
-					models.add(selected.getModel());
+			for (IEntity entity : selected) {
+				if (entity instanceof IModel) {
+					models.add((IModel) entity);
+				} else if (entity instanceof IModelAware) {
+					models.add(((IModelAware) entity).getModel());
 				}
 			}
 			IUnitOfWork uow;
 			IEntityManager managerForQuery;
 			if (models.size() != 1) {
+				if (this.managerFactory == null) {
+					return Status.CANCEL_STATUS;
+				}
 				uow = this.managerFactory.getUnitOfWork();
 				uow.begin();
 				managerForQuery = this.managerFactory.get();
@@ -149,16 +149,15 @@ class SparqlPart extends AbstractEditorPart {
 				uow.begin();
 				managerForQuery = model.getManager();
 			}
-
 			try {
 				IQuery<?> query = managerForQuery.createQuery(sparql);
-				if (selectedObjects.size() > 0) {
+				if (selected.size() > 0) {
 					int i = 0;
-					for (Object selected : selectedObjects) {
+					for (Object entity : selected) {
 						if (i == 0) {
-							query.setParameter("selected", selected);
+							query.setParameter("selected", entity);
 						}
-						query.setParameter("selected" + (++i), selected);
+						query.setParameter("selected" + (++i), entity);
 					}
 				}
 				IExtendedIterator<?> result = query.evaluate();
@@ -204,7 +203,6 @@ class SparqlPart extends AbstractEditorPart {
 				uow.end();
 				progressDistributor.done();
 			}
-
 			return Status.OK_STATUS;
 		}
 	}
@@ -281,7 +279,6 @@ class SparqlPart extends AbstractEditorPart {
 						dataComposite);
 				tabsComposite.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT,
 						true, false));
-
 				createTabs(tabsComposite);
 			}
 
@@ -306,7 +303,6 @@ class SparqlPart extends AbstractEditorPart {
 
 		private void createTabs(Composite composite) {
 			composite.setLayout(new RowLayout());
-
 			for (final ResultViewerWrapper wrapper : resultViewers) {
 				wrapper.link = getWidgetFactory().createHyperlink(composite,
 						wrapper.viewer.getName(), SWT.NONE);
@@ -332,13 +328,11 @@ class SparqlPart extends AbstractEditorPart {
 					if (!"resultViewer".equals(element.getName())) {
 						return false;
 					}
-
 					String className = element.getAttribute("class");
 					if (className == null || className.trim().isEmpty()) {
 						logMissingAttribute(element, "class");
 						return true;
 					}
-
 					try {
 						Object viewerObj = element
 								.createExecutableExtension("class");
@@ -359,11 +353,11 @@ class SparqlPart extends AbstractEditorPart {
 			return resultViewers;
 		}
 
-		private void setData(String[] columnNames, Collection<Object[]> data) {
+		private void setData(Set<INamespace> namespaces, String[] columnNames,
+				Collection<Object[]> data) {
 			statusLine.setInfo(data.size());
-
 			for (ResultViewerWrapper wrapper : resultViewers) {
-				wrapper.setData(columnNames, data);
+				wrapper.setData(namespaces, columnNames, data);
 			}
 			if (resultViewerContent.getCurrentPage() == null
 					&& resultViewers.length > 0) {
@@ -379,6 +373,7 @@ class SparqlPart extends AbstractEditorPart {
 			Hyperlink link;
 
 			int limit;
+			Set<INamespace> namespaces;
 			String[] columnNames;
 			Collection<Object[]> data;
 
@@ -397,8 +392,10 @@ class SparqlPart extends AbstractEditorPart {
 				applyData();
 			}
 
-			void setData(String[] columnNames, Collection<Object[]> data) {
+			void setData(Set<INamespace> namespaces, String[] columnNames,
+					Collection<Object[]> data) {
 				dataChanged = true;
+				this.namespaces = namespaces;
 				this.columnNames = columnNames;
 				this.data = data;
 				applyData();
@@ -407,7 +404,7 @@ class SparqlPart extends AbstractEditorPart {
 			private void applyData() {
 				if (composite != null
 						&& resultViewerContent.getCurrentPage() == composite) {
-					viewer.setData(columnNames, data);
+					viewer.setData(namespaces, columnNames, data);
 					dataChanged = false;
 				}
 			}
@@ -416,7 +413,6 @@ class SparqlPart extends AbstractEditorPart {
 	}
 
 	ResultArea resultArea;
-	IEntityManagerFactory managerFactory;
 	Text queryText;
 
 	@Override
@@ -441,30 +437,36 @@ class SparqlPart extends AbstractEditorPart {
 		queryComposite.setLayout(new GridLayout(2, false));
 
 		// Selection-Field for namespaces
-		CCombo combo = getWidgetFactory().createCCombo(queryComposite);
+		final CCombo combo = getWidgetFactory().createCCombo(queryComposite);
 		GridData gridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 		combo.setLayoutData(gridData);
 
 		final CComboViewer comboViewer = new CComboViewer(combo);
 		comboViewer.setLabelProvider(new LabelProvider() {
-
 			@Override
 			public String getText(Object element) {
 				return ((Pair<?, ?>) element).getFirst() + ": <"
 						+ ((Pair<?, ?>) element).getSecond() + ">";
 			}
 		});
+		combo.addFocusListener(new FocusListener() {
+			@Override
+			public void focusLost(FocusEvent e) {
+			}
 
-		IEntityManager manager = managerFactory.get();
-		for (INamespace namespace : manager.getNamespaces()) {
-			comboViewer.add(new Pair<String, String>(namespace.getPrefix(),
-					namespace.getURI().toString()));
-		}
+			@Override
+			public void focusGained(FocusEvent e) {
+				combo.removeAll();
+				for (INamespace namespace : getContextNamespaces()) {
+					comboViewer.add(new Pair<String, String>(namespace
+							.getPrefix(), namespace.getURI().toString()));
+				}
+			}
+		});
 
 		Hyperlink addPrefixLink = getWidgetFactory().createHyperlink(
 				queryComposite, "Add", SWT.NONE);
 		addPrefixLink.addHyperlinkListener(new HyperlinkAdapter() {
-
 			@Override
 			public void linkActivated(HyperlinkEvent e) {
 				Pair<?, ?> prefix = (Pair<?, ?>) ((IStructuredSelection) comboViewer
@@ -482,16 +484,7 @@ class SparqlPart extends AbstractEditorPart {
 
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		queryText.setLayoutData(gridData);
-
-		// Add prefixes
-		queryText.append("PREFIX owl: <" + OWL.NAMESPACE + ">\n");
-		queryText.append("PREFIX rdf: <" + RDF.NAMESPACE + ">\n");
-		queryText.append("PREFIX rdfs: <" + RDFS.NAMESPACE + ">\n");
-		for (ModelDescription modelDescription : ModelPlugin.getBaseModels())
-			queryText.append("PREFIX " + modelDescription.getPrefix() + ": <"
-					+ modelDescription.getNamespace() + ">\n");
-
-		queryText.append("\nselect ?p ?o\nwhere {\n\t?selected ?p ?o\n}\n");
+		queryText.append("select ?p ?o\nwhere {\n\t?selected ?p ?o\n}\n");
 
 		MenuManager menuManager = new MenuManager();
 		menuManager.add(new Action("Format") {
@@ -532,9 +525,39 @@ class SparqlPart extends AbstractEditorPart {
 		sash.setWeights(new int[] { 40, 60 });
 	}
 
-	@Override
-	public void setInput(Object input) {
-		this.managerFactory = (IEntityManagerFactory) input;
+	protected Set<INamespace> getContextNamespaces() {
+		Set<IEntityManager> managers = new HashSet<>();
+		for (IEntity entity : getSelectedEntities()) {
+			managers.add(entity.getEntityManager());
+		}
+		Set<INamespace> namespaces = new HashSet<>();
+		if (managers.isEmpty()) {
+			IEntityManagerFactory managerFactory = (IEntityManagerFactory) getForm()
+					.getAdapter(IEntityManagerFactory.class);
+			if (managerFactory != null) {
+				try (IEntityManager manager = managerFactory.get()) {
+					namespaces.addAll(manager.getNamespaces().toList());
+				}
+			}
+		} else {
+			for (IEntityManager manager : managers) {
+				namespaces.addAll(manager.getNamespaces().toList());
+			}
+		}
+		return namespaces;
+	}
+
+	protected List<IEntity> getSelectedEntities() {
+		List<IEntity> selectedEntities = new ArrayList<>();
+		Object formInput = getForm().getInput();
+		if (formInput instanceof IStructuredSelection) {
+			for (Object selected : ((IStructuredSelection) formInput).toList()) {
+				if (selected instanceof IEntity) {
+					selectedEntities.add((IEntity) selected);
+				}
+			}
+		}
+		return selectedEntities;
 	}
 
 	public void loadResultData(String sparql) {
@@ -543,22 +566,27 @@ class SparqlPart extends AbstractEditorPart {
 		}
 		resultArea.startLoading();
 
-		List<IObject> selectedObjects = Collections.emptyList();
-		Object formInput = getForm().getInput();
-		if (formInput instanceof IStructuredSelection) {
-			@SuppressWarnings("unchecked")
-			List<IObject> selected = (List<IObject>) WrappedIterator
-					.create(((IStructuredSelection) formInput).toList()
-							.iterator()).filterKeep(new Filter<Object>() {
-						@Override
-						public boolean accept(Object o) {
-							return o instanceof IObject;
-						}
-					}).toList();
-			selectedObjects = selected;
+		// add common prefix declaration to query
+		Set<String> prefixes = new HashSet<>();
+		Matcher prefixMatcher = Pattern.compile("prefix\\s+([^:]+)\\s*:",
+				Pattern.CASE_INSENSITIVE).matcher(sparql);
+		while (prefixMatcher.find()) {
+			prefixes.add(prefixMatcher.group(1));
 		}
+		StringBuilder sb = new StringBuilder();
+		Set<INamespace> namespaces = getContextNamespaces();
+		for (INamespace namespace : namespaces) {
+			if (!prefixes.contains(namespace.getPrefix())) {
+				sb.append("PREFIX ").append(namespace.getPrefix())
+						.append(": <").append(namespace.getURI()).append(">\n");
+			}
+		}
+		sb.append(sparql);
 
-		loadJob = new LoadResultsJob(managerFactory, selectedObjects, sparql);
+		IEntityManagerFactory managerFactory = (IEntityManagerFactory) getForm()
+				.getAdapter(IEntityManagerFactory.class);
+		loadJob = new LoadResultsJob(managerFactory, getSelectedEntities(),
+				namespaces, sb.toString());
 		loadJob.setUser(true);
 		loadJob.schedule();
 	}

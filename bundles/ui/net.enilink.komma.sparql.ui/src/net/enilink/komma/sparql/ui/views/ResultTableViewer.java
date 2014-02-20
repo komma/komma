@@ -14,12 +14,22 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import net.enilink.commons.ui.editor.EditorWidgetFactory;
+import net.enilink.komma.core.INamespace;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.URI;
 
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ContentViewer;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -36,9 +46,69 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
-import net.enilink.commons.ui.editor.EditorWidgetFactory;
-
 public class ResultTableViewer implements IResultViewer {
+	static class DataRow {
+		Object[] data;
+		int rowNr;
+	}
+
+	class TableLabelProvider extends CellLabelProvider implements
+			ITableLabelProvider {
+		Map<URI, String> prefixMap = new HashMap<>();
+
+		public TableLabelProvider(Set<INamespace> namespaces) {
+			for (INamespace ns : namespaces) {
+				prefixMap.put(ns.getURI(), ns.getPrefix());
+			}
+		}
+
+		public Color getBackground(Object element, int columnIndex) {
+			if (element instanceof DataRow) {
+				if (((DataRow) element).rowNr % 2 == 0) {
+					return tableViewer.getControl().getDisplay()
+							.getSystemColor(SWT.COLOR_GRAY);
+				}
+			}
+			return null;
+		}
+
+		public Image getColumnImage(Object element, int columnIndex) {
+			return null;
+		}
+
+		public String getColumnText(Object element, int columnIndex) {
+			if (element instanceof DataRow) {
+				Object value = ((DataRow) element).data[columnIndex];
+				if (value instanceof IReference) {
+					URI uri = ((IReference) value).getURI();
+					if (uri != null) {
+						String prefix = prefixMap.get(uri.namespace());
+						if (prefix != null) {
+							return prefix.isEmpty() ? uri.localPart() : prefix
+									+ ":" + uri.localPart();
+						}
+					}
+				}
+				return String.valueOf(value);
+			}
+			return null;
+		}
+
+		public Color getForeground(Object element, int columnIndex) {
+			return null;
+		}
+
+		public void update(ViewerCell cell) {
+			Object element = cell.getElement();
+			int columnIndex = cell.getColumnIndex();
+
+			cell.setText(getColumnText(element, columnIndex));
+			cell.setImage(getColumnImage(element, columnIndex));
+			cell.setForeground(getForeground(element, columnIndex));
+			cell.setBackground(getBackground(element, columnIndex));
+		}
+	}
+
 	private final class TableViewerComparator extends ViewerComparator {
 		int sortDirection;
 		int sortColumn;
@@ -97,73 +167,63 @@ public class ResultTableViewer implements IResultViewer {
 		}
 	}
 
-	class TableLabelProvider extends CellLabelProvider implements
-			ITableLabelProvider {
-		public Image getColumnImage(Object element, int columnIndex) {
-			return null;
-		}
-
-		public String getColumnText(Object element, int columnIndex) {
-			if (element instanceof DataRow) {
-				Object value = ((DataRow) element).data[columnIndex];
-				return String.valueOf(value);
-			}
-			return null;
-		}
-
-		public void update(ViewerCell cell) {
-			Object element = cell.getElement();
-			int columnIndex = cell.getColumnIndex();
-
-			cell.setText(getColumnText(element, columnIndex));
-			cell.setImage(getColumnImage(element, columnIndex));
-			cell.setForeground(getForeground(element, columnIndex));
-			cell.setBackground(getBackground(element, columnIndex));
-		}
-
-		public Color getBackground(Object element, int columnIndex) {
-			if (element instanceof DataRow) {
-				if (((DataRow) element).rowNr % 2 == 0) {
-					return tableViewer.getControl().getDisplay()
-							.getSystemColor(SWT.COLOR_GRAY);
-				}
-			}
-			return null;
-		}
-
-		public Color getForeground(Object element, int columnIndex) {
-			return null;
-		}
-	}
-
-	class DataRow {
-		Object[] data;
-		int rowNr;
-	}
-
 	TableViewer tableViewer;
+
+	@Override
+	public void addSelectionChangedListener(ISelectionChangedListener listener) {
+		tableViewer.addSelectionChangedListener(listener);
+	}
 
 	@Override
 	public void createContents(EditorWidgetFactory widgetFactory,
 			Composite parent) {
 		parent.setLayout(new GridLayout(1, false));
-
 		Table table = widgetFactory.createTable(parent, SWT.V_SCROLL
-				| SWT.H_SCROLL | SWT.FULL_SELECTION);
+				| SWT.H_SCROLL);
 		table.setHeaderVisible(true);
 		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
 		tableViewer = new TableViewer(table);
-		tableViewer.setLabelProvider(new TableLabelProvider());
+		tableViewer.setContentProvider(new IStructuredContentProvider() {
+			@Override
+			public void inputChanged(Viewer viewer, Object oldInput,
+					Object newInput) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void dispose() {
+			}
+
+			@Override
+			public Object[] getElements(Object inputElement) {
+				if (inputElement instanceof Object[]) {
+					return (Object[]) inputElement;
+				}
+				return new Object[0];
+			}
+		});
 	}
 
 	@Override
 	public String getName() {
-		return "Tabelle";
+		return "List";
 	}
 
 	@Override
-	public void setData(String[] columnNames, Collection<Object[]> data) {
+	public ISelection getSelection() {
+		return tableViewer.getSelection();
+	}
+
+	@Override
+	public void removeSelectionChangedListener(
+			ISelectionChangedListener listener) {
+		tableViewer.removeSelectionChangedListener(listener);
+	}
+
+	@Override
+	public void setData(Set<INamespace> namespaces, String[] columnNames,
+			Collection<Object[]> data) {
 		Collection<DataRow> dataRows = new ArrayList<DataRow>(data.size());
 		int rowNr = 0;
 		for (Object[] result : data) {
@@ -172,7 +232,6 @@ public class ResultTableViewer implements IResultViewer {
 			row.rowNr = rowNr++;
 			dataRows.add(row);
 		}
-
 		tableViewer.getTable().removeAll();
 		for (TableColumn column : tableViewer.getTable().getColumns()) {
 			column.dispose();
@@ -181,56 +240,41 @@ public class ResultTableViewer implements IResultViewer {
 			TableColumn column = new TableColumn(tableViewer.getTable(),
 					SWT.LEFT);
 			column.setText(columnName);
-		}
-		tableViewer.add(dataRows.toArray(new Object[dataRows.size()]));
-		packColumns();
-
-		if (tableViewer != null) {
-			for (TableColumn column : tableViewer.getTable().getColumns()) {
-				column.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(SelectionEvent e) {
-						TableColumn oldColumn = tableViewer.getTable()
-								.getSortColumn();
-						if (e.widget instanceof TableColumn) {
-							TableColumn newColumn = (TableColumn) e.widget;
-
-							int sortDirection = oldColumn != newColumn ? SWT.UP
-									: (tableViewer.getTable()
-											.getSortDirection() == SWT.UP ? SWT.DOWN
-											: SWT.UP);
-							tableViewer.getTable().setSortDirection(
-									sortDirection);
-							tableViewer.getTable().setSortColumn(newColumn);
-							int index = 0;
-							for (TableColumn column : tableViewer.getTable()
-									.getColumns()) {
-								if (column == newColumn)
-									break;
-								index++;
-							}
-							tableViewer
-									.setComparator(new TableViewerComparator(
-											Collator.getInstance(),
-											sortDirection, index));
-						} else {
-							return;
+			column.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					TableColumn oldColumn = tableViewer.getTable()
+							.getSortColumn();
+					if (e.widget instanceof TableColumn) {
+						TableColumn newColumn = (TableColumn) e.widget;
+						int sortDirection = oldColumn != newColumn ? SWT.UP
+								: (tableViewer.getTable().getSortDirection() == SWT.UP ? SWT.DOWN
+										: SWT.UP);
+						tableViewer.getTable().setSortDirection(sortDirection);
+						tableViewer.getTable().setSortColumn(newColumn);
+						int index = 0;
+						for (TableColumn column : tableViewer.getTable()
+								.getColumns()) {
+							if (column == newColumn)
+								break;
+							index++;
 						}
+						tableViewer.setComparator(new TableViewerComparator(
+								Collator.getInstance(), sortDirection, index));
+					} else {
+						return;
 					}
-				});
-			}
+				}
+			});
 		}
-	}
-
-	private void packColumns() {
-		if (tableViewer != null) {
-			for (TableColumn column : tableViewer.getTable().getColumns()) {
-				column.pack();
-			}
+		tableViewer.setLabelProvider(new TableLabelProvider(namespaces));
+		tableViewer.setInput(dataRows.toArray(new Object[dataRows.size()]));
+		for (TableColumn column : tableViewer.getTable().getColumns()) {
+			column.pack();
 		}
 	}
 
 	@Override
-	public Collection<?> getSelection() {
-		return ((IStructuredSelection) tableViewer.getSelection()).toList();
+	public void setSelection(ISelection selection) {
+		tableViewer.setSelection(selection);
 	}
 }

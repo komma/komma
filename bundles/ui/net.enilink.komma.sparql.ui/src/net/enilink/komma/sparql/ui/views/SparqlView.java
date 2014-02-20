@@ -10,7 +10,17 @@
  *******************************************************************************/
 package net.enilink.komma.sparql.ui.views;
 
-import java.util.HashMap;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+
+import net.enilink.commons.ui.editor.EditorForm;
+import net.enilink.commons.ui.editor.EditorWidgetFactory;
+import net.enilink.commons.ui.editor.IEditorForm;
+import net.enilink.commons.ui.editor.IEditorPart;
+import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.edit.domain.IEditingDomainProvider;
+import net.enilink.komma.edit.ui.util.PartListener2Adapter;
+import net.enilink.komma.model.IModelSet;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -25,7 +35,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.ISelectionListener;
@@ -36,51 +45,34 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
-import net.enilink.commons.ui.editor.EditorForm;
-import net.enilink.commons.ui.editor.EditorWidgetFactory;
-import net.enilink.commons.ui.editor.IEditorForm;
-import net.enilink.commons.ui.editor.IEditorPart;
-import net.enilink.commons.ui.editor.PageBook;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
-import net.enilink.komma.edit.ui.util.PartListener2Adapter;
-import net.enilink.komma.model.IModelSet;
-
 /**
+ * View for executing SPARQL queries.
  * 
- * @author Ken Wenzel
  */
 public class SparqlView extends ViewPart {
-	static final String NO_TYPE = ""; //$NON-NLS-1$
+	Reference<IEditingDomainProvider> provider;
 
 	EditorWidgetFactory widgetFactory;
 
 	IPartListener2 partListener;
 
-	PageBook pageBook;
+	QueryPart queryPart;
 
-	HashMap<IModelSet, QueryPage> modelSetToQueryPage = new HashMap<IModelSet, QueryPage>();
-
-	class QueryPage {
-		IModelSet modelSet;
+	class QueryPart {
 		ISelectionService selectionService;
 		EditorForm editorForm;
 
 		CTabFolder tabFolder;
 		CTabItem plusTab;
 
-		QueryPage(IModelSet modelSet, ISelectionService selectionService) {
-			this.modelSet = modelSet;
+		QueryPart(ISelectionService selectionService) {
 			this.selectionService = selectionService;
 		}
 
 		void addQueryTab() {
 			plusTab.dispose();
-
 			SparqlPart newPart = new SparqlPart();
-			newPart.setInput(((IModelSet.Internal) modelSet)
-					.getEntityManagerFactory());
 			createTab(editorForm, tabFolder, newPart);
-
 			plusTab = createPlusTab();
 		}
 
@@ -90,14 +82,23 @@ public class SparqlView extends ViewPart {
 			return plusTab;
 		}
 
-		void createContents() {
-			Composite page = pageBook.createPage(this);
-
-			page.setLayout(new FillLayout());
-
-			editorForm = new EditorForm(page, widgetFactory);
-
-			tabFolder = widgetFactory.createTabFolder(page, SWT.TOP);
+		void createContents(Composite parent) {
+			parent.setLayout(new FillLayout());
+			editorForm = new EditorForm(parent, widgetFactory) {
+				public Object getAdapter(
+						@SuppressWarnings("rawtypes") Class adapter) {
+					if (IEntityManagerFactory.class.equals(adapter)
+							&& provider != null) {
+						IEditingDomainProvider p = provider.get();
+						return p != null && p.getEditingDomain() != null ? ((IModelSet.Internal) p
+								.getEditingDomain().getModelSet())
+								.getEntityManagerFactory() : null;
+					}
+					return null;
+				};
+			};
+			tabFolder = widgetFactory.createTabFolder(editorForm.getBody(),
+					SWT.TOP);
 			tabFolder.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseDoubleClick(MouseEvent e) {
@@ -122,24 +123,18 @@ public class SparqlView extends ViewPart {
 					setSelection(selection);
 				}
 			};
-
 			if (selectionService != null) {
 				selectionService.addSelectionListener(listener);
 			}
-
 			tabFolder.addDisposeListener(new DisposeListener() {
 				@Override
 				public void widgetDisposed(DisposeEvent e) {
 					editorForm.dispose();
-
 					if (selectionService != null) {
 						selectionService.removeSelectionListener(listener);
 					}
 				}
 			});
-		}
-
-		void activate() {
 		}
 
 		void setSelection(ISelection selection) {
@@ -185,21 +180,15 @@ public class SparqlView extends ViewPart {
 			});
 			tabFolder.setSelection(tabItem);
 		}
-
-		void deactivate() {
-
-		}
-
 	}
 
 	@Override
 	public void createPartControl(Composite parent) {
-		parent.setLayout(new FillLayout());
-
 		widgetFactory = new EditorWidgetFactory(parent.getDisplay());
 		widgetFactory.adapt(parent);
-
-		pageBook = widgetFactory.createPageBook(parent, SWT.NONE);
+		queryPart = new QueryPart(getSite().getWorkbenchWindow()
+				.getSelectionService());
+		queryPart.createContents(parent);
 	}
 
 	@Override
@@ -209,7 +198,7 @@ public class SparqlView extends ViewPart {
 			widgetFactory = null;
 		}
 		if (partListener != null) {
-			getViewSite().getPage().removePartListener(partListener);
+			getSite().getPage().removePartListener(partListener);
 			partListener = null;
 		}
 		super.dispose();
@@ -223,39 +212,12 @@ public class SparqlView extends ViewPart {
 			provider = (IEditingDomainProvider) part
 					.getAdapter(IEditingDomainProvider.class);
 		}
-
 		if (provider != null) {
-			final IModelSet modelSet = provider.getEditingDomain()
-					.getModelSet();
-			QueryPage queryPage = null;
-			if (modelSet != null) {
-				queryPage = modelSetToQueryPage.get(modelSet);
-				if (queryPage == null) {
-					queryPage = new QueryPage(modelSet, part.getSite()
-							.getWorkbenchWindow().getSelectionService());
-
-					queryPage.createContents();
-
-					modelSetToQueryPage.put(modelSet, queryPage);
-				}
-			}
-
-			Control page = pageBook.getCurrentPage();
-			if (page != null && page.getData("queryPage") != null
-					&& page.getData("queryPage") != queryPage) {
-				((QueryPage) page.getData("queryPage")).deactivate();
-			}
-
-			if (queryPage == null) {
-				pageBook.showEmptyPage();
-			} else {
-				ISelectionProvider selectionProvider = part.getSite()
-						.getSelectionProvider();
-				if (selectionProvider != null) {
-					queryPage.setSelection(selectionProvider.getSelection());
-				}
-				queryPage.activate();
-				pageBook.showPage(queryPage);
+			this.provider = new WeakReference<>(provider);
+			ISelectionProvider selectionProvider = part.getSite()
+					.getSelectionProvider();
+			if (selectionProvider != null) {
+				queryPart.setSelection(selectionProvider.getSelection());
 			}
 		}
 	}
@@ -263,7 +225,6 @@ public class SparqlView extends ViewPart {
 	@Override
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
 		super.init(site, memento);
-
 		this.partListener = new PartListener2Adapter() {
 			@Override
 			public void partActivated(IWorkbenchPartReference partRef) {
@@ -284,11 +245,5 @@ public class SparqlView extends ViewPart {
 
 	@Override
 	public void setFocus() {
-
 	}
-
-	public void setInput(Object input) {
-
-	}
-
 }
