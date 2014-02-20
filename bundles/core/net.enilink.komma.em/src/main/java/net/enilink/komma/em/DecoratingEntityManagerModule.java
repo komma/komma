@@ -39,7 +39,6 @@ public class DecoratingEntityManagerModule extends AbstractModule {
 	}
 
 	@Provides
-	@Singleton
 	protected IEntityManager provideEntityManager(final Injector injector,
 			final UnitOfWork uow) {
 		Binding<IEntityManager> binding = injector.getExistingBinding(Key.get(

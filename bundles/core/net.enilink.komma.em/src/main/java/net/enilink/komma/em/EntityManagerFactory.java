@@ -62,9 +62,6 @@ class EntityManagerFactory implements IEntityManagerFactory {
 	@Inject(optional = true)
 	IDataManagerFactory dmFactory;
 
-	@Inject(optional = true)
-	Provider<IEntityManager> emProvider;
-
 	Injector injector;
 
 	private IEntityManagerFactory parent = null;
@@ -167,9 +164,6 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 	@Override
 	public IEntityManager get() {
-		if (emProvider != null) {
-			return emProvider.get();
-		}
 		return getManagerInjector().getInstance(IEntityManager.class);
 	}
 
