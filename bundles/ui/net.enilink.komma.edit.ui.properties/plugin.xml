@@ -4,6 +4,7 @@
    <extension
          point="org.eclipse.ui.views">
       <view
+            category="net.enilink.komma.rdf"
             class="net.enilink.komma.edit.ui.properties.internal.parts.PropertyTreeView"
             icon="icons/full/view16/rdf_16x16.png"
             id="net.enilink.komma.edit.ui.properties.views.PropertyTreeView"
