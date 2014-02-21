@@ -17,6 +17,7 @@
          point="org.eclipse.ui.views">
       <view
             allowMultiple="true"
+            category="net.enilink.komma.rdf"
             class="net.enilink.komma.sparql.ui.views.SparqlView"
             icon="icons/list.png"
             id="net.enilink.komma.sparql.ui.views.SparqlView"
