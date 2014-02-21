@@ -481,18 +481,19 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 
 		public List<IItemPropertyDescriptor> getPropertyDescriptors(
 				Object thisObject) {
-			List<IItemPropertyDescriptor> list = itemDelegator
-					.getPropertyDescriptors(nestedPropertySource);
-			if (list != null) {
-				List<IItemPropertyDescriptor> result = new ArrayList<IItemPropertyDescriptor>(
-						list.size());
-				for (IItemPropertyDescriptor itemPropertyDescriptor : list) {
-					result.add(createPropertyDescriptorDecorator(
-							nestedPropertySource, itemPropertyDescriptor));
+			if (nestedPropertySource != null) {
+				List<IItemPropertyDescriptor> list = itemDelegator
+						.getPropertyDescriptors(nestedPropertySource);
+				if (list != null) {
+					List<IItemPropertyDescriptor> result = new ArrayList<IItemPropertyDescriptor>(
+							list.size());
+					for (IItemPropertyDescriptor itemPropertyDescriptor : list) {
+						result.add(createPropertyDescriptorDecorator(
+								nestedPropertySource, itemPropertyDescriptor));
+					}
+					return result;
 				}
-				return result;
 			}
-
 			return Collections.emptyList();
 		}
 

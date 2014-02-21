@@ -183,14 +183,14 @@ public class ItemProviderAdapter extends
 	 * one or any number of children objects associated with it, depending on
 	 * its multiplicity. The objects associated with a multiplicity-many feature
 	 * are accessed and manipulated as an
-	 * {@link net.enilink.komma.rmf.common.util.EList}, typically
-	 * mirroring the actual values of that feature, with some or all in
-	 * wrappers, as necessary. The object associated with a multiplicity-1
-	 * feature is typically accessed and set directly, although a modifiable,
-	 * singleton list view is available. This class provides a number of
-	 * convenient methods for access by feature, as well as a method,
-	 * {@link #getChildren getChildren} that returns the complete collection of
-	 * children from all features as an unmodifiable list.
+	 * {@link net.enilink.komma.rmf.common.util.EList}, typically mirroring the
+	 * actual values of that feature, with some or all in wrappers, as
+	 * necessary. The object associated with a multiplicity-1 feature is
+	 * typically accessed and set directly, although a modifiable, singleton
+	 * list view is available. This class provides a number of convenient
+	 * methods for access by feature, as well as a method, {@link #getChildren
+	 * getChildren} that returns the complete collection of children from all
+	 * features as an unmodifiable list.
 	 */
 	protected static class ChildrenStore {
 		protected Map<IProperty, IList<Object>> map;
@@ -598,8 +598,7 @@ public class ItemProviderAdapter extends
 		 * 
 		 * @exception ClassCastException
 		 *                If the specified command does not implement
-		 *                {@link net.enilink.komma.common.command.ICommand}
-		 *                .
+		 *                {@link net.enilink.komma.common.command.ICommand} .
 		 */
 		public ResultAndAffectedObjectsWrappingCommandActionDelegate(
 				ICommandActionDelegate command) {
@@ -614,8 +613,7 @@ public class ItemProviderAdapter extends
 		 * 
 		 * @exception ClassCastException
 		 *                If the specified command does not implement
-		 *                {@link net.enilink.komma.common.command.ICommand}
-		 *                .
+		 *                {@link net.enilink.komma.common.command.ICommand} .
 		 */
 		public ResultAndAffectedObjectsWrappingCommandActionDelegate(
 				ICommandActionDelegate command,
@@ -765,9 +763,9 @@ public class ItemProviderAdapter extends
 	/**
 	 * This adds to <code>newChildDescriptors</code>, a collection of new child
 	 * descriptors. Typically,
-	 * {@link net.enilink.komma.edit.command.CommandParameter}s will be
-	 * used as descriptors. This implementation adds nothing to the collection,
-	 * but derived classes should override this method, invoking the superclass
+	 * {@link net.enilink.komma.edit.command.CommandParameter}s will be used as
+	 * descriptors. This implementation adds nothing to the collection, but
+	 * derived classes should override this method, invoking the superclass
 	 * implementation and then adding to the collection.
 	 */
 	protected void collectNewChildDescriptors(
@@ -820,9 +818,8 @@ public class ItemProviderAdapter extends
 	}
 
 	/**
-	 * Overwrite to return true for
-	 * {@link net.enilink.vocab.rdfs.Class}es that should be created as
-	 * named nodes.
+	 * Overwrite to return true for {@link net.enilink.vocab.rdfs.Class}es that
+	 * should be created as named nodes.
 	 */
 	protected boolean childRequiresName(IResource subject, IReference property,
 			net.enilink.vocab.rdfs.Class rangeClass) {
@@ -1134,10 +1131,11 @@ public class ItemProviderAdapter extends
 
 		if (property instanceof DatatypeProperty) {
 			value = new LiteralValueWrapperItemProvider(value, object,
-					property, index, adapterFactory, getResourceLocator());
+					property, index, getRootAdapterFactory(),
+					getResourceLocator());
 		} else if (!property.isContainment()) {
 			value = new DelegatingWrapperItemProvider(value, object, property,
-					index, adapterFactory);
+					index, getRootAdapterFactory());
 		}
 
 		return value;
@@ -1213,10 +1211,9 @@ public class ItemProviderAdapter extends
 	}
 
 	/**
-	 * This method factors an
-	 * {@link net.enilink.komma.edit.command.AddCommand} for a collection
-	 * of objects into one or more primitive add command, i.e., one per unique
-	 * feature.
+	 * This method factors an {@link net.enilink.komma.edit.command.AddCommand}
+	 * for a collection of objects into one or more primitive add command, i.e.,
+	 * one per unique feature.
 	 */
 	protected ICommand factorAddCommand(IEditingDomain domain,
 			CommandParameter commandParameter) {
@@ -1348,9 +1345,8 @@ public class ItemProviderAdapter extends
 	}
 
 	/**
-	 * This method factors a
-	 * {@link net.enilink.komma.edit.command.MoveCommand} to determine the
-	 * feature.
+	 * This method factors a {@link net.enilink.komma.edit.command.MoveCommand}
+	 * to determine the feature.
 	 */
 	protected ICommand factorMoveCommand(IEditingDomain domain,
 			CommandParameter commandParameter) {
@@ -1386,9 +1382,9 @@ public class ItemProviderAdapter extends
 
 	/**
 	 * This method factors a
-	 * {@link net.enilink.komma.edit.command.RemoveCommand} for a
-	 * collection of objects into one or more primitive remove commands, i.e.,
-	 * one per unique feature.
+	 * {@link net.enilink.komma.edit.command.RemoveCommand} for a collection of
+	 * objects into one or more primitive remove commands, i.e., one per unique
+	 * feature.
 	 */
 	protected ICommand factorRemoveCommand(IEditingDomain domain,
 			CommandParameter commandParameter) {
@@ -1864,9 +1860,8 @@ public class ItemProviderAdapter extends
 	 * IEditingDomainItemProvider.getNewChildDescriptors}, returning descriptors
 	 * for all the possible children that can be added to the specified
 	 * <code>object</code>. Usually, these descriptors will be instances of
-	 * {@link net.enilink.komma.edit.command.CommandParameter}s,
-	 * containing at least the child object and the feature under which it
-	 * should be added.
+	 * {@link net.enilink.komma.edit.command.CommandParameter}s, containing at
+	 * least the child object and the feature under which it should be added.
 	 * 
 	 * <p>
 	 * This implementation invokes {@link #collectNewChildDescriptors
@@ -2044,13 +2039,13 @@ public class ItemProviderAdapter extends
 	public List<IItemPropertyDescriptor> getPropertyDescriptors(Object object) {
 		if (itemPropertyDescriptors == null) {
 			itemPropertyDescriptors = new ArrayList<IItemPropertyDescriptor>();
-
 			if (object instanceof IResource) {
 				for (IProperty property : ((IResource) object)
 						.getRelevantProperties()) {
 					itemPropertyDescriptors.add(createItemPropertyDescriptor(
-							adapterFactory, this, ModelUtil.getLabel(property),
-							"", property, true, false, true, null, null, null));
+							getRootAdapterFactory(), this,
+							ModelUtil.getLabel(property), "", property, true,
+							false, true, null, null, null));
 				}
 			}
 		}
@@ -2230,8 +2225,7 @@ public class ItemProviderAdapter extends
 	 */
 	protected String getTypeText(IProperty property) {
 		StringBuilder rangeSb = new StringBuilder();
-		for (net.enilink.vocab.rdfs.Class rangeClass : property
-				.getRdfsRanges()) {
+		for (net.enilink.vocab.rdfs.Class rangeClass : property.getRdfsRanges()) {
 			if (rangeSb.length() > 0) {
 				rangeSb.append(", ");
 			}
@@ -2280,8 +2274,8 @@ public class ItemProviderAdapter extends
 	 * Returns a collection of any objects in the given command parameter's
 	 * {@link net.enilink.komma.edit.command.CommandParameter#getCollection
 	 * collection} and
-	 * {@link net.enilink.komma.edit.command.CommandParameter#getValue
-	 * value}, that implement {@link IWrapperItemProvider}.
+	 * {@link net.enilink.komma.edit.command.CommandParameter#getValue value},
+	 * that implement {@link IWrapperItemProvider}.
 	 */
 	protected Collection<? extends IWrapperItemProvider> getWrappedValues(
 			CommandParameter commandParameter) {
@@ -2519,11 +2513,10 @@ public class ItemProviderAdapter extends
 	 * original one is returned. For most commands, any objects in the
 	 * {@link net.enilink.komma.edit.command.CommandParameter#getCollection
 	 * collection} or in the
-	 * {@link net.enilink.komma.edit.command.CommandParameter#getValue
-	 * value} that implement {@link IWrapperItemProvider} will be
-	 * {@link #unwrap unwrapped}.
-	 * {@link net.enilink.komma.edit.command.DragAndDropCommand} is never
-	 * unwrapped.
+	 * {@link net.enilink.komma.edit.command.CommandParameter#getValue value}
+	 * that implement {@link IWrapperItemProvider} will be {@link #unwrap
+	 * unwrapped}. {@link net.enilink.komma.edit.command.DragAndDropCommand} is
+	 * never unwrapped.
 	 */
 	protected CommandParameter unwrapCommandValues(
 			CommandParameter commandParameter,
