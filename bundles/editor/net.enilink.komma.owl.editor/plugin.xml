@@ -16,59 +16,60 @@
 <extension
       point="org.eclipse.ui.views">
    <category
-         id="net.enilink.komma.owl.editor"
-         name="OWL Editor">
+         id="net.enilink.komma.owl"
+         name="OWL">
    </category>
    <view
-         category="net.enilink.komma.owl.editor"
+         category="net.enilink.komma.owl"
          class="net.enilink.komma.owl.editor.classes.ClassesView"
          icon="icons/full/obj16/Class.png"
          id="net.enilink.komma.owl.editor.views.ClassesView"
          name="Classes">
    </view>
    <view
-         category="net.enilink.komma.owl.editor"
+         category="net.enilink.komma.rdf"
          class="net.enilink.komma.owl.editor.instances.InstancesView"
          icon="icons/full/view16/instances.gif"
          id="net.enilink.komma.owl.editor.views.InstancesView"
          name="Instances">
    </view>
    <view
-         category="net.enilink.komma.owl.editor"
+         category="net.enilink.komma.owl"
          class="net.enilink.komma.owl.editor.ontology.ImportsView"
          icon="icons/full/view16/rdf_16x16.png"
          id="net.enilink.komma.owl.editor.views.ImportsView"
          name="Imports">
    </view>
    <view
-         category="net.enilink.komma.owl.editor"
+         category="net.enilink.komma.rdf"
          class="net.enilink.komma.owl.editor.ontology.NamespacesView"
          icon="icons/full/obj16/Namespace.png"
          id="net.enilink.komma.owl.editor.views.NamespacesView"
          name="Namespaces">
    </view>
    <view
-         category="net.enilink.komma.owl.editor"
+         category="net.enilink.komma.owl"
          class="net.enilink.komma.owl.editor.properties.OtherPropertiesView"
          icon="icons/full/obj16/Property.png"
          id="net.enilink.komma.owl.editor.views.OtherPropertiesView"
          name="Other Properties">
    </view>
    <view
-         category="net.enilink.komma.owl.editor"
+         category="net.enilink.komma.owl"
          class="net.enilink.komma.owl.editor.properties.ObjectPropertiesView"
          icon="icons/full/obj16/ObjectProperty.png"
          id="net.enilink.komma.owl.editor.views.ObjectPropertiesView"
          name="Object Properties">
    </view>
    <view
-         category="net.enilink.komma.owl.editor"
+         category="net.enilink.komma.owl"
          class="net.enilink.komma.owl.editor.properties.DatatypePropertiesView"
          icon="icons/full/obj16/DatatypeProperty.png"
          id="net.enilink.komma.owl.editor.views.DatatypePropertiesView"
          name="Datatype Properties">
    </view>
    <view
+         category="net.enilink.komma.rdf"
          class="net.enilink.komma.owl.editor.instances.InstanceTreeView"
          icon="icons/full/view16/tree.gif"
          id="net.enilink.komma.owl.editor.views.InstanceTreeView"
@@ -76,12 +77,17 @@
          restorable="true">
    </view>
    <view
+         category="net.enilink.komma.rdf"
          class="net.enilink.komma.owl.editor.instances.InstanceTableView"
          icon="icons/full/view16/table.gif"
          id="net.enilink.komma.owl.editor.views.InstanceTableView"
          name="Instance Table"
          restorable="true">
    </view>
+   <category
+         id="net.enilink.komma.rdf"
+         name="RDF">
+   </category>
 </extension>
 <extension
       point="org.eclipse.ui.perspectives">
