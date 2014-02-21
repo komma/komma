@@ -26,15 +26,15 @@
       <propertyTabs
             contributorId="net.enilink.komma.edit.ui">
          <propertyTab
-               afterTab=""
                category="properties"
-               id="formTab"
-               label="Form">
+               id="rdfTab"
+               label="RDF">
          </propertyTab>
          <propertyTab
+               afterTab=""
                category="properties"
-               id="detailsTab"
-               label="Details">
+               id="propertiesTab"
+               label="Default">
          </propertyTab>
       </propertyTabs>
    </extension>
@@ -53,9 +53,9 @@
           <propertySection
                 class="net.enilink.komma.edit.ui.properties.tabbed.internal.sections.DetailPropertiesSection"
                 id="detailsSection"
-                tab="detailsTab">
+                tab="rdfTab">
              <input
-                   type="net.enilink.komma.model.IObject">
+                   type="net.enilink.komma.core.IEntity">
              </input>
           </propertySection>
       </propertySections>
