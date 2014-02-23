@@ -295,7 +295,7 @@ public abstract class PropertySupport extends BehaviorBase implements
 					+ "		?subP rdfs:subPropertyOf ?p ."
 					+ "		?otherRestriction owl:onProperty ?subP ."
 					+ "		?o a ?otherRestriction ."
-					+ "		{ ?otherRestriction owl:allValuesFrom ?otherR } UNION { ?otherRestriction owl:someValuesFrom ?otherR } ."
+					+ "		{ ?otherRestriction owl:allValuesFrom ?otherR } ."
 					+ "		?otherR rdfs:subClassOf ?r . " //
 					+ "		FILTER (isIRI(?otherR) && (?subP != ?p || ?otherR != ?r))" //
 					+ "	}" //
