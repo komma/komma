@@ -80,6 +80,13 @@ public class ModelUtil {
 
 	/**
 	 * Compute a label for the given element.
+	 * 
+	 * @param element
+	 *            The target element for which the label should be computed
+	 * @param useLabelForVocab
+	 *            if <code>true</code> then the property rdfs:label is also used
+	 *            for classes, properties and built-in vocabulary, else the URI
+	 *            is used as label
 	 */
 	public static String getLabel(Object element, boolean useLabelForVocab) {
 		StringBuilder text = new StringBuilder();
@@ -206,11 +213,23 @@ public class ModelUtil {
 		}
 	}
 
+	/**
+	 * Compute a content description for a model URI.
+	 * 
+	 * @param uriConverter
+	 *            The URI converter which should be used
+	 * @param uri
+	 *            The model URI
+	 * @return A content description or <code>null</code>
+	 * 
+	 * @throws IOException
+	 *             If an error occurred while compution the content description
+	 */
 	public static IContentDescription contentDescription(
-			IURIConverter uriConverter, URI modelUri) throws IOException {
-		String contentTypeId = (String) uriConverter.contentDescription(
-				modelUri, null).get(IContentHandler.CONTENT_TYPE_PROPERTY);
-		if (contentTypeId != null) {
+			IURIConverter uriConverter, URI uri) throws IOException {
+		String contentTypeId = (String) uriConverter.contentDescription(uri,
+				null).get(IContentHandler.CONTENT_TYPE_PROPERTY);
+		if (contentTypeId != null && Platform.getContentTypeManager() != null) {
 			IContentType contentType = Platform.getContentTypeManager()
 					.getContentType(contentTypeId);
 			if (contentType != null) {
@@ -218,6 +237,50 @@ public class ModelUtil {
 			}
 		}
 		return null;
+	}
+
+	private static double priorityForMimeType(String mimeType) {
+		if ("text/plain".equals(mimeType)) {
+			return 0.5;
+		} else if ("text/html".equals(mimeType)) {
+			return 0.3;
+		}
+		return 1;
+	}
+
+	/**
+	 * Returns a map of supported MIME-types with associated priorities.
+	 * 
+	 * The key of this map is the MIME-type and the value is its priority in the
+	 * range [0, 1].
+	 * 
+	 * @return Map of MIME-types with associated priorities
+	 */
+	public static Map<String, Double> getSupportedMimeTypes() {
+		Map<String, Double> mimeTypes = new HashMap<>();
+		IContentTypeManager contentTypeManager = Platform
+				.getContentTypeManager();
+		if (contentTypeManager != null) {
+			QualifiedName mimeTypeQName = new QualifiedName(
+					ModelPlugin.PLUGIN_ID, "mimeType");
+			for (IContentType contentType : contentTypeManager
+					.getAllContentTypes()) {
+				Object mimeType = contentType.getDefaultDescription()
+						.getProperty(mimeTypeQName);
+				if (mimeType != null) {
+					mimeTypes.put(mimeType.toString(),
+							priorityForMimeType(mimeType.toString()));
+				}
+			}
+		} else {
+			for (RDFFormat format : RDFFormat.values()) {
+				for (String mimeType : format.getMIMETypes()) {
+					mimeTypes.put(mimeType.toString(),
+							priorityForMimeType(mimeType.toString()));
+				}
+			}
+		}
+		return mimeTypes;
 	}
 
 	private static RDFFormat determineFormat(String mimeType, InputStream in) {
@@ -284,6 +347,20 @@ public class ModelUtil {
 		return format;
 	}
 
+	/**
+	 * Look for an ontology within the given document.
+	 * 
+	 * @param in
+	 *            An input stream for the document content
+	 * @param baseURI
+	 *            A base URI for the resolution of relative URIs
+	 * @param mimeType
+	 *            The MIME-type of the document
+	 * @return The ontology URI or <code>null</code>
+	 * 
+	 * @throws Exception
+	 *             If an error occurs while searching for the ontology
+	 */
 	public static String findOntology(InputStream in, String baseURI,
 			String mimeType) throws Exception {
 		if (mimeType == null && !in.markSupported()) {
@@ -342,6 +419,14 @@ public class ModelUtil {
 		return ontology[0];
 	}
 
+	/**
+	 * Returns the MIME-type for the given content description.
+	 * 
+	 * @param contentDescription
+	 *            A content description
+	 * 
+	 * @return The associated MIME-type or <code>null</code>
+	 */
 	public static String mimeType(IContentDescription contentDescription) {
 		if (contentDescription != null) {
 			return (String) contentDescription.getProperty(new QualifiedName(
@@ -350,6 +435,20 @@ public class ModelUtil {
 		return null;
 	}
 
+	/**
+	 * Compute a content description for a model URI.
+	 * 
+	 * @param uriConverter
+	 *            The URI converter which should be used
+	 * @param uri
+	 *            The model URI
+	 * @param options
+	 *            Options for the URI converter
+	 * 
+	 * @return A content description or <code>null</code>
+	 * @throws IOException
+	 *             If an error occurred while compution the content description
+	 */
 	public static IContentDescription determineContentDescription(URI uri,
 			IURIConverter uriConverter, Map<?, ?> options) throws IOException {
 		IContentTypeManager contentTypeManager = Platform
@@ -421,12 +520,46 @@ public class ModelUtil {
 		return contentDescription;
 	}
 
+	/**
+	 * Read data from an input stream and forward it to a {@link IDataVisitor
+	 * data visitor}.
+	 * 
+	 * This method generates new blank node IDs and does NOT preserve the ones
+	 * from the document.
+	 * 
+	 * @param in
+	 *            An input stream for the document content
+	 * @param baseURI
+	 *            A base URI for the resolution of relative URIs
+	 * @param mimeType
+	 *            The MIME-type of the document
+	 * 
+	 * @param dataVisitor
+	 *            The data visitor which should consume the data
+	 */
 	public static <V extends IDataVisitor<?>> void readData(InputStream in,
 			String baseURI, String mimeType, final V dataVisitor) {
 		// generate unique BNode IDs by default
 		readData(in, baseURI, mimeType, false, dataVisitor);
 	}
 
+	/**
+	 * Read data from an input stream and forward it to a {@link IDataVisitor
+	 * data visitor}.
+	 * 
+	 * @param in
+	 *            An input stream for the document content
+	 * @param baseURI
+	 *            A base URI for the resolution of relative URIs
+	 * @param mimeType
+	 *            The MIME-type of the document
+	 * @param preserveBNodeIDs
+	 *            Control if blank node IDs should be preserved or new ones
+	 *            should be generated
+	 * 
+	 * @param dataVisitor
+	 *            The data visitor which should consume the data
+	 */
 	public static <V extends IDataVisitor<?>> void readData(InputStream in,
 			String baseURI, String mimeType, final boolean preserveBNodeIDs,
 			final V dataVisitor) {
@@ -530,6 +663,23 @@ public class ModelUtil {
 		}
 	}
 
+	/**
+	 * Return a {@link IDataVisitor data visitor} that can be used to write data
+	 * to an output stream.
+	 * 
+	 * @param out
+	 *            An output stream for the document content
+	 * @param baseURI
+	 *            A base URI for the resolution of relative URIs
+	 * @param mimeType
+	 *            The MIME-type of the document
+	 * @param charset
+	 *            The character set that should be used for writing the data or
+	 *            <code>null</code> for the default character set of the
+	 *            specified <code>mimeType</code>
+	 * 
+	 * @return The data visitor for writing the data
+	 */
 	public static IDataAndNamespacesVisitor<Void> writeData(OutputStream os,
 			String baseURI, String mimeType, String charset) {
 		try {

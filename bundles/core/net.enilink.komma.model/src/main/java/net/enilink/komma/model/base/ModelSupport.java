@@ -311,7 +311,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 							OWL.TYPE_ONTOLOGY));
 				}
 				if (prefix != null && prefix.trim().length() > 0) {
-					manager.setNamespace(prefix, uri);
+					manager.setNamespace(prefix, uri.appendLocalPart(""));
 				}
 				manager.add(new Statement(this, OWL.PROPERTY_IMPORTS, uri));
 				if (!isActive) {
@@ -445,7 +445,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	public synchronized KommaModule getModuleClosure() {
 		KommaModule moduleClosure = state().moduleClosure;
 		if (moduleClosure == null) {
-			moduleClosure = new KommaModule();
+			state().moduleClosure = moduleClosure = new KommaModule();
 			moduleClosure.addWritableGraph(getURI());
 
 			Set<URI> seen = new HashSet<>();
@@ -477,7 +477,8 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	public synchronized KommaModule getModule() {
 		KommaModule module = state().module;
 		if (module == null) {
-			module = new KommaModule(ModelSupport.class.getClassLoader());
+			state().module = module = new KommaModule(
+					ModelSupport.class.getClassLoader());
 			module.addWritableGraph(getURI());
 
 			// add support for IObject interface
@@ -526,7 +527,6 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			} catch (ConfigurationException ce) {
 				// no bound modules found - ignore
 			}
-			state().module = module;
 		}
 		return module;
 	}

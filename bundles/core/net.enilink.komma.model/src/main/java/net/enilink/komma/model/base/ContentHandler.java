@@ -22,12 +22,15 @@ import java.util.Set;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescriber;
 import org.eclipse.core.runtime.content.IContentDescription;
+import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.content.ITextContentDescriber;
 
 import net.enilink.komma.model.IContentHandler;
+import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
@@ -115,6 +118,25 @@ public class ContentHandler implements IContentHandler {
 				options)) {
 			result.put(IContentHandler.BYTE_ORDER_MARK_PROPERTY,
 					getByteOrderMark(uri, inputStream, options, context));
+		}
+		if (isRequestedProperty(IContentHandler.CONTENT_TYPE_PROPERTY, options)
+				&& Platform.getContentTypeManager() != null) {
+			Object mimeType = context.get(IURIConverter.ATTRIBUTE_MIME_TYPE);
+			if (mimeType != null) {
+				// try to determine the Eclipse content-type based on the
+				// MIME-type
+				QualifiedName mimeTypeQName = new QualifiedName(
+						ModelPlugin.PLUGIN_ID, "mimeType");
+				for (IContentType contentType : Platform
+						.getContentTypeManager().getAllContentTypes()) {
+					if (mimeType.equals(contentType.getDefaultDescription()
+							.getProperty(mimeTypeQName))) {
+						result.put(IContentHandler.CONTENT_TYPE_PROPERTY,
+								contentType.getId());
+						break;
+					}
+				}
+			}
 		}
 		return result;
 	}
@@ -310,8 +332,8 @@ public class ContentHandler implements IContentHandler {
 		/**
 		 * Returns the map of parameters as fetched from the given configuration
 		 * element's information. This implementation populates the
-		 * {@link #CONTENT_TYPE_ID content type identifier} and the
-		 * {@link #EXTENSIONS extensions}.
+		 * {@link #CONTENT_TYPE_ID content type identifier}, the
+		 * {@link #EXTENSIONS extensions} and the {@link #MIME_TYPE mime-type}.
 		 * 
 		 * @param configurationElement
 		 *            the configuration element of the content type.

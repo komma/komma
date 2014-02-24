@@ -336,7 +336,7 @@ public interface IContentHandler {
 	 * handler has computed the {@link #BYTE_ORDER_MARK_PROPERTY byte order mark
 	 * property}, the result can be cached so that it is not recomputed
 	 * repeatedly. Similarly, content handlers for XML content might cache the
-	 * {@link #CONTENT_TYPE_PROPERTY character set property}, and might even
+	 * {@link #CHARSET_PROPERTY character set property}, and might even
 	 * share a parsed XML representation so that each handle can analyze to
 	 * determine whether that XML is of the expected form for the content type.
 	 * 

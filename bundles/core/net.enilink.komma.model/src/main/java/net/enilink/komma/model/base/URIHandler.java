@@ -23,11 +23,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import net.enilink.komma.core.URI;
 import net.enilink.komma.model.IContentHandler;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.IURIHandler;
-import net.enilink.komma.core.URI;
+import net.enilink.komma.model.ModelUtil;
 
 /**
  * An implementation of a {@link IURIHandler URI handler}.
@@ -142,6 +143,19 @@ public class URIHandler implements IURIHandler {
 		}
 	}
 
+	protected String acceptHeader() {
+		StringBuilder accept = new StringBuilder();
+		for (Map.Entry<String, Double> mimeType : ModelUtil
+				.getSupportedMimeTypes().entrySet()) {
+			if (accept.length() > 0) {
+				accept.append(", ");
+			}
+			accept.append(mimeType.getKey()).append("; q=")
+					.append(String.format("%.2f", mimeType.getValue()));
+		}
+		return accept.toString();
+	}
+
 	/**
 	 * Creates an input stream for the URI, assuming it's a URL, and returns it.
 	 * 
@@ -154,7 +168,10 @@ public class URIHandler implements IURIHandler {
 		try {
 			URL url = new URL(uri.toString());
 			final URLConnection urlConnection = url.openConnection();
+			urlConnection.setRequestProperty("Accept", acceptHeader());
+
 			InputStream result = urlConnection.getInputStream();
+
 			Map<Object, Object> response = getResponse(options);
 			if (response != null) {
 				response.put(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY,
@@ -232,6 +249,8 @@ public class URIHandler implements IURIHandler {
 					} else {
 						inputStream.reset();
 					}
+					context.put(IURIConverter.ATTRIBUTE_MIME_TYPE, options
+							.get(IURIConverter.RESPONSE_MIME_TYPE_PROPERTY));
 					Map<String, ?> contentDescription = contentHandler
 							.contentDescription(uri, inputStream, options,
 									context);
@@ -271,6 +290,7 @@ public class URIHandler implements IURIHandler {
 		try {
 			URL url = new URL(uri.toString());
 			URLConnection urlConnection = url.openConnection();
+			urlConnection.setRequestProperty("Accept", acceptHeader());
 			if (urlConnection instanceof HttpURLConnection) {
 				HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
 				httpURLConnection.setRequestMethod("HEAD");
@@ -301,6 +321,7 @@ public class URIHandler implements IURIHandler {
 					|| requestedAttributes
 							.contains(IURIConverter.ATTRIBUTE_READ_ONLY)) {
 				urlConnection = url.openConnection();
+				urlConnection.setRequestProperty("Accept", acceptHeader());
 				if (urlConnection instanceof HttpURLConnection) {
 					HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
 					httpURLConnection.setRequestMethod("OPTIONS");
@@ -326,6 +347,7 @@ public class URIHandler implements IURIHandler {
 							.contains(IURIConverter.ATTRIBUTE_MIME_TYPE)) {
 				if (urlConnection == null) {
 					urlConnection = url.openConnection();
+					urlConnection.setRequestProperty("Accept", acceptHeader());
 					if (urlConnection instanceof HttpURLConnection) {
 						HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
 						httpURLConnection.setRequestMethod("HEAD");
