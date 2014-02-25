@@ -151,7 +151,7 @@ abstract public class MenuActionCollector<T> extends CollectorJob<T> {
 	}
 
 	@Override
-	public void done() {
+	protected void done() {
 		super.done();
 		synchronized (handlers) {
 			while (!handlers.isEmpty()) {

@@ -161,6 +161,7 @@ public class CreateChildrenActionContributor {
 					try {
 						domain.getModelSet().getUnitOfWork().begin();
 						domain.getNewChildDescriptors(object, null, this);
+						done();
 					} finally {
 						domain.getModelSet().getUnitOfWork().end();
 					}
@@ -174,7 +175,7 @@ public class CreateChildrenActionContributor {
 				}
 
 				@Override
-				public void done() {
+				protected void done() {
 					super.done();
 					deactivateCallback();
 				}
@@ -206,6 +207,7 @@ public class CreateChildrenActionContributor {
 					try {
 						domain.getModelSet().getUnitOfWork().begin();
 						domain.getNewChildDescriptors(null, object, this);
+						done();
 					} finally {
 						domain.getModelSet().getUnitOfWork().end();
 					}
@@ -219,7 +221,7 @@ public class CreateChildrenActionContributor {
 				}
 
 				@Override
-				public void done() {
+				protected void done() {
 					super.done();
 					deactivateCallback();
 				}
