@@ -91,7 +91,6 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 					new ChildDescriptor(Arrays.asList(em.find(RDFS.TYPE_CLASS,
 							IClass.class)), true)));
 		}
-		newChildDescriptors.done();
 	}
 
 	@Override

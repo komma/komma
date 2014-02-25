@@ -98,7 +98,6 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 							.asList((IClass) ((IObject) object).getModel()
 									.resolve(OWL.TYPE_OBJECTPROPERTY)), true)));
 		}
-		newChildDescriptors.done();
 	}
 
 	@Override
