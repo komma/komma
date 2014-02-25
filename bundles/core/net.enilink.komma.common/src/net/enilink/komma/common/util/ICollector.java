@@ -22,12 +22,6 @@ public interface ICollector<T> {
 	void add(Iterable<T> elements);
 
 	/**
-	 * The element collection is done. Clean up any temporary state.
-	 * 
-	 */
-	void done();
-
-	/**
 	 * Returns <code>true</code> if this collector is canceled.
 	 * 
 	 * @return <code>true</code> if collector is canceled, else
