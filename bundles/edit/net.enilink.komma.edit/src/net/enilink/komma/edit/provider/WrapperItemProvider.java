@@ -397,7 +397,6 @@ public class WrapperItemProvider implements IWrapperItemProvider {
 	public void getNewChildDescriptors(Object object,
 			IEditingDomain editingDomain, Object sibling,
 			ICollector<Object> descriptors) {
-		descriptors.done();
 	}
 
 	/**

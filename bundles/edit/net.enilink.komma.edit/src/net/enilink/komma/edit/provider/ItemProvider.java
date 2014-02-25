@@ -950,7 +950,6 @@ public class ItemProvider extends NotificationSupport<INotification> implements
 	public void getNewChildDescriptors(Object object,
 			IEditingDomain editingDomain, Object sibling,
 			ICollector<Object> descriptors) {
-		descriptors.done();
 	}
 
 	/**

@@ -459,8 +459,6 @@ public class AdapterFactoryItemDelegator implements IEditingDomainItemProvider,
 		if (editingDomainItemProvider != null) {
 			editingDomainItemProvider.getNewChildDescriptors(object,
 					editingDomain, sibling, descriptors);
-		} else {
-			descriptors.done();
 		}
 	}
 

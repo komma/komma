@@ -147,13 +147,11 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 				IEditingDomain editingDomain, Object sibling,
 				ICollector<Object> descriptors) {
 			if (!(object instanceof Instances)) {
-				descriptors.done();
 				return;
 			}
 
 			ChildDescriptor childDescription = new ChildDescriptor(null, true);
 			descriptors.add(new ChildParameter(null, null, childDescription));
-			descriptors.done();
 		}
 
 		@Override
@@ -307,7 +305,6 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 							.asList((IClass) ((IObject) object).getModel()
 									.resolve(OWL.TYPE_CLASS)), true)));
 		}
-		newChildDescriptors.done();
 	}
 
 	/**

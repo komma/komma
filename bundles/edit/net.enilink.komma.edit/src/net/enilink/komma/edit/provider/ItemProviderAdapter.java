@@ -1898,10 +1898,6 @@ public class ItemProviderAdapter extends
 				public boolean cancelled() {
 					return descriptors.cancelled();
 				}
-
-				@Override
-				public void done() {
-				}
 			}, object);
 
 			// Add child descriptors contributed by extenders.
@@ -1991,7 +1987,6 @@ public class ItemProviderAdapter extends
 			}
 			descriptors.add(newChildDescriptors);
 		}
-		descriptors.done();
 	}
 
 	/**

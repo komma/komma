@@ -544,7 +544,6 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 		}
 
 		if (object == null) {
-			descriptors.done();
 			return;
 		}
 
@@ -555,8 +554,6 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 		if (editingDomainItemProvider != null) {
 			editingDomainItemProvider.getNewChildDescriptors(object, this,
 					sibling, descriptors);
-		} else {
-			descriptors.done();
 		}
 	}
 

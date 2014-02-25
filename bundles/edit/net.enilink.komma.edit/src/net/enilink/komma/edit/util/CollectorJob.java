@@ -60,8 +60,11 @@ abstract public class CollectorJob<T> extends Job implements ICollector<T> {
 		return canceled;
 	}
 
-	@Override
-	public void done() {
+	/**
+	 * The element collection is done. Clean up any temporary state.
+	 * 
+	 */
+	protected void done() {
 		done = true;
 		handleObjects();
 	}

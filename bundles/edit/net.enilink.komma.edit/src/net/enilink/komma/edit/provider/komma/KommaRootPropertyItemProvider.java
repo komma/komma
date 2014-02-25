@@ -143,6 +143,5 @@ public class KommaRootPropertyItemProvider extends ReflectiveItemProvider {
 	@Override
 	protected void collectNewChildDescriptors(
 			ICollector<Object> newChildDescriptors, Object object) {
-		newChildDescriptors.done();
 	}
 }

@@ -395,8 +395,6 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 			((IEditingDomainItemProvider) delegateItemProvider)
 					.getNewChildDescriptors(getDelegateValue(), editingDomain,
 							sibling, descriptors);
-		} else {
-			descriptors.done();
 		}
 	}
 
