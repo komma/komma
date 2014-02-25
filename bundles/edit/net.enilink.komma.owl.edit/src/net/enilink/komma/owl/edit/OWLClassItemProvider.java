@@ -44,7 +44,6 @@ public class OWLClassItemProvider extends RDFSClassItemProvider {
 						Arrays.asList(em.find(type, IClass.class)), true)));
 			}
 		}
-		newChildDescriptors.done();
 	}
 
 	@Override

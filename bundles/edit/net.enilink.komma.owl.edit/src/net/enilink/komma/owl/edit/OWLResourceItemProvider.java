@@ -47,7 +47,6 @@ public class OWLResourceItemProvider extends ReflectiveItemProvider {
 	@Override
 	protected void collectNewChildDescriptors(
 			ICollector<Object> newChildDescriptors, Object object) {
-		newChildDescriptors.done();
 	}
 
 	protected void addViewerNotifications(
