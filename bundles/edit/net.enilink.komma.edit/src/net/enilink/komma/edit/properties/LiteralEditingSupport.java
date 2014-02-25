@@ -1,20 +1,21 @@
 package net.enilink.komma.edit.properties;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
-import net.enilink.komma.edit.KommaEditPlugin;
-import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.edit.KommaEditPlugin;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdfs.RDFS;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
+
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 public class LiteralEditingSupport implements IPropertyEditingSupport {
 	@Override
@@ -38,6 +39,14 @@ public class LiteralEditingSupport implements IPropertyEditingSupport {
 		return value != null ? value.toString() : "";
 	}
 
+	protected boolean isAbstractType(URI literalType) {
+		return OWL.TYPE_THING.equals(literalType)
+				|| RDFS.TYPE_RESOURCE.equals(literalType)
+				|| RDFS.TYPE_LITERAL.equals(literalType)
+				|| XMLSCHEMA.TYPE_ANYSIMPLETYPE.equals(literalType)
+				|| XMLSCHEMA.TYPE_ANYTYPE.equals(literalType);
+	}
+
 	@Override
 	public ICommand convertValueFromEditor(Object editorValue, IEntity subject,
 			IReference property, Object oldValue) {
@@ -54,13 +63,15 @@ public class LiteralEditingSupport implements IPropertyEditingSupport {
 				IExtendedIterator<? extends IReference> ranges = subject
 						.getEntityManager().find(property, IProperty.class)
 						.getNamedRanges(subject, false);
-				if (ranges.hasNext()) {
-					literalType = ranges.next().getURI();
+				while (ranges.hasNext() && literalType == null) {
+					URI type = ranges.next().getURI();
+					if (!isAbstractType(type)) {
+						literalType = type;
+					}
 				}
 				ranges.close();
 			}
-			if (OWL.TYPE_THING.equals(literalType)
-					|| RDFS.TYPE_LITERAL.equals(literalType)) {
+			if (isAbstractType(literalType)) {
 				literalType = null;
 			}
 			newLiteral = subject.getEntityManager().createLiteral(
