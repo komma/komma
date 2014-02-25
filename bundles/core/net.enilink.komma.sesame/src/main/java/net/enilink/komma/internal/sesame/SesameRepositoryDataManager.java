@@ -41,6 +41,8 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 public class SesameRepositoryDataManager implements IDataManager {
+	protected static final IReference[] NULL_CTX = { null };
+	
 	@Inject
 	protected IDataChangeSupport changeSupport;
 
@@ -75,6 +77,9 @@ public class SesameRepositoryDataManager implements IDataManager {
 	@Override
 	public IDataManager add(Iterable<? extends IStatement> statements,
 			IReference[] readContexts, IReference... addContexts) {
+		if (addContexts.length == 0) {
+			addContexts = NULL_CTX;
+		}
 		URI[] readCtx = valueConverter.toSesameURI(readContexts);
 		URI[] addCtx = valueConverter.toSesameURI(addContexts);
 		try {
@@ -424,6 +429,9 @@ public class SesameRepositoryDataManager implements IDataManager {
 	public IDataManager remove(
 			Iterable<? extends IStatementPattern> statements,
 			IReference... contexts) {
+		if (contexts.length == 0) {
+			contexts = NULL_CTX;
+		}
 		URI[] removeContexts = valueConverter.toSesameURI(contexts);
 		try {
 			RepositoryConnection conn = getConnection();

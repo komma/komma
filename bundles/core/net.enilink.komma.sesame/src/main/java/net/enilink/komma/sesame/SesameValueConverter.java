@@ -32,7 +32,8 @@ import org.openrdf.query.impl.MapBindingSet;
 import com.google.inject.Inject;
 
 public class SesameValueConverter {
-	private static final org.openrdf.model.URI[] EMPTY_URIS = new org.openrdf.model.URI[0];
+	private static final org.openrdf.model.URI[] EMPTY_URIS = {};
+	private static final org.openrdf.model.URI[] NULL_URI = { null };
 
 	protected ValueFactory valueFactory;
 	protected final Map<String, BNode> bnodeMap = new HashMap<>();
@@ -168,6 +169,8 @@ public class SesameValueConverter {
 	public org.openrdf.model.URI[] toSesameURI(IReference... references) {
 		if (references.length == 0) {
 			return EMPTY_URIS;
+		} else if (references.length == 1 && references[0] == null) {
+			return NULL_URI;
 		}
 		List<org.openrdf.model.URI> uris = new ArrayList<org.openrdf.model.URI>(
 				references.length);
