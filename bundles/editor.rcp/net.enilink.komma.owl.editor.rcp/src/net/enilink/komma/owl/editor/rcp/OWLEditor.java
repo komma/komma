@@ -147,8 +147,8 @@ public class OWLEditor extends KommaMultiPageEditor implements
 			addPage("Ontology", new OntologyPart());
 			addPage("Classes", new ClassesPart());
 			addPage("ObjectProperties", new ObjectPropertiesPart());
-			addPage("other Properties", new OtherPropertiesPart());
 			addPage("DatatypeProperties", new DatatypePropertiesPart());
+			addPage("other Properties", new OtherPropertiesPart());
 
 			getSite().getShell().getDisplay().asyncExec(new Runnable() {
 				public void run() {
