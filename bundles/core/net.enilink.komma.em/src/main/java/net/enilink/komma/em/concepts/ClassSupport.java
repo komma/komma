@@ -18,6 +18,7 @@ import net.enilink.komma.core.IResultDescriptor;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.em.results.ResultDescriptor;
+import net.enilink.vocab.komma.KOMMA;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdfs.RDFS;
 
@@ -307,6 +308,6 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 
 	@Override
 	public boolean isAbstract() {
-		return false;
+		return getAsSet(KOMMA.PROPERTY_ISABSTRACT).contains(Boolean.TRUE);
 	}
 }
