@@ -33,4 +33,5 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.commons.ui,
  org.parboiled
 Bundle-ActivationPolicy: lazy
-Import-Package: com.google.inject
+Import-Package: com.google.inject,
+ com.google.inject.binder

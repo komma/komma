@@ -268,7 +268,7 @@ public class AdapterFactoryLabelProvider implements ILabelProvider,
 	 * {@link IChangeNotifier}, a listener is added to it, so it's important to
 	 * call {@link #dispose()}.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setAdapterFactory(IAdapterFactory adapterFactory) {
 		if (this.adapterFactory instanceof INotifier) {
 			((INotifier) this.adapterFactory).removeListener(this);

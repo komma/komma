@@ -1,5 +1,11 @@
 package net.enilink.komma.edit.ui.editor;
 
+import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.edit.command.IInputCallback;
+import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
+import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.domain.IEditingDomainProvider;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IMenuListener;
@@ -12,9 +18,10 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
-import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Provides;
 
 /**
  * This is a base class for a multi-page model editor.
@@ -30,6 +37,24 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 	 */
 	public KommaMultiPageEditor() {
 		editorSupport = createEditorSupport();
+		Injector injector = createInjector();
+		if (injector != null) {
+			injector.injectMembers(editorSupport);
+		}
+	}
+
+	protected Injector createInjector() {
+		return Guice.createInjector(new AbstractModule() {
+			@Override
+			protected void configure() {
+				bind(IInputCallback.class).to(InputCallbackDialog.class);
+			}
+
+			@Provides
+			IAdapterFactory provideAdapterFactory() {
+				return editorSupport.getAdapterFactory();
+			}
+		});
 	}
 
 	protected abstract KommaMultiPageEditorSupport<? extends KommaMultiPageEditor> createEditorSupport();
