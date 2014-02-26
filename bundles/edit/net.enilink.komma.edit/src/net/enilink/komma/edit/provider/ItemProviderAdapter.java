@@ -36,6 +36,7 @@ import java.util.WeakHashMap;
 
 import net.enilink.komma.common.adapter.IAdapter;
 import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.common.command.AbortExecutionException;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CommandWrapper;
 import net.enilink.komma.common.command.CompositeCommand;
@@ -56,6 +57,7 @@ import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.AddCommand;
 import net.enilink.komma.edit.command.CommandParameter;
@@ -63,8 +65,8 @@ import net.enilink.komma.edit.command.CopyCommand;
 import net.enilink.komma.edit.command.CreateChildCommand;
 import net.enilink.komma.edit.command.CreateCopyCommand;
 import net.enilink.komma.edit.command.DragAndDropCommand;
-import net.enilink.komma.edit.command.IChildDescriptor;
 import net.enilink.komma.edit.command.ICommandActionDelegate;
+import net.enilink.komma.edit.command.IInputCallback;
 import net.enilink.komma.edit.command.InitializeCopyCommand;
 import net.enilink.komma.edit.command.MoveCommand;
 import net.enilink.komma.edit.command.RemoveCommand;
@@ -85,6 +87,9 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+
 /**
  * This adapter implementation provides a convenient reusable base for adapters
  * that will be used as item providers. Default implementations for the
@@ -100,10 +105,9 @@ public class ItemProviderAdapter extends
 		NotificationSupport<IViewerNotification> implements IDisposable,
 		CreateChildCommand.IHelper, IResourceLocator, IAdapter,
 		INotificationListener<INotification> {
-	public static class ChildDescriptor implements IChildDescriptor {
-		protected URI name;
-		protected boolean requiresName;
-		protected Object value;
+	public static class ChildDescriptor {
+		protected final boolean requiresName;
+		protected final Object value;
 
 		public ChildDescriptor(Object value) {
 			this(value, false);
@@ -114,65 +118,12 @@ public class ItemProviderAdapter extends
 			this.requiresName = requiresName;
 		}
 
-		public URI getName() {
-			return name;
-		}
-
 		public Object getValue() {
 			return value;
 		}
 
-		@Override
 		public boolean requiresName() {
 			return requiresName;
-		}
-
-		@Override
-		public void setName(URI name) {
-			this.name = name;
-		}
-
-		@Override
-		public boolean requiresType() {
-			return value == null;
-		}
-
-		@Override
-		public void setTypes(Collection<? extends Object> types) {
-			this.value = types;
-		}
-	}
-
-	public static class ChildParameter extends CommandParameter implements
-			IChildDescriptor {
-		public ChildParameter(Object owner, Object property, Object value) {
-			super(owner, property, value);
-		}
-
-		@Override
-		public boolean requiresName() {
-			return getValue() instanceof IChildDescriptor
-					&& ((IChildDescriptor) getValue()).requiresName();
-		}
-
-		@Override
-		public boolean requiresType() {
-			return getValue() instanceof IChildDescriptor
-					&& ((IChildDescriptor) getValue()).requiresType();
-		}
-
-		@Override
-		public void setName(URI name) {
-			if (getValue() instanceof IChildDescriptor) {
-				((IChildDescriptor) getValue()).setName(name);
-			}
-		}
-
-		@Override
-		public void setTypes(Collection<? extends Object> types) {
-			if (getValue() instanceof IChildDescriptor) {
-				((IChildDescriptor) getValue()).setTypes(types);
-			}
 		}
 	}
 
@@ -681,6 +632,9 @@ public class ItemProviderAdapter extends
 	 */
 	protected Boolean wrappingNeeded;
 
+	@Inject(optional = true)
+	protected Provider<IInputCallback> inputCallbackProvider;
+
 	/**
 	 * An instance is created from an adapter factory. The factory is used as a
 	 * key so that we always know which factory created this adapter.
@@ -851,13 +805,20 @@ public class ItemProviderAdapter extends
 			model = ((IObject) owner).getModel();
 		}
 
-		URI name = childDescriptor.getName();
-		if (name == null) {
+		URI name;
+		if (childDescriptor.requiresName() && inputCallbackProvider != null) {
+			IInputCallback input = inputCallbackProvider.get();
+			URI nameInput = URIImpl.createURI("input:name");
+			if (input.require(nameInput).ask(model)) {
+				name = (URI) input.get(nameInput);
+			} else {
+				throw new AbortExecutionException();
+			}
+		} else {
 			// generate a default URI
 			name = model.getURI().appendLocalPart(
 					"entity_" + UUID.randomUUID().toString());
 		}
-
 		return model.getManager().createNamed(name,
 				childTypes.toArray(new IReference[childTypes.size()]));
 	}
@@ -868,7 +829,7 @@ public class ItemProviderAdapter extends
 	 */
 	protected CommandParameter createChildParameter(Object property,
 			Object childDescription) {
-		return new ChildParameter(null, property, childDescription);
+		return new CommandParameter(null, property, childDescription);
 	}
 
 	/**

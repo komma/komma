@@ -24,6 +24,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+
 import net.enilink.commons.util.Pair;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
@@ -52,6 +55,9 @@ public abstract class ItemProviderAdapterFactory<T> extends AdapterFactory
 	protected ComposedAdapterFactory parentAdapterFactory;
 
 	protected Collection<Object> supportedTypes = new ArrayList<Object>();
+
+	@Inject
+	protected Injector injector;
 
 	public ItemProviderAdapterFactory(IResourceLocator resourceLocator,
 			URI... namespaceURIs) {
@@ -97,6 +103,9 @@ public abstract class ItemProviderAdapterFactory<T> extends AdapterFactory
 		Object provider;
 		if ((provider = providers.get(key)) == null) {
 			provider = createItemProvider(object, types, type);
+			if (provider != null && injector != null) {
+				injector.injectMembers(provider);
+			}
 			providers.put(key, provider);
 		}
 		return provider;

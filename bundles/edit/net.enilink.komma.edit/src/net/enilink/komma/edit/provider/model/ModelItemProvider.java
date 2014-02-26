@@ -151,7 +151,7 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 			}
 
 			ChildDescriptor childDescription = new ChildDescriptor(null, true);
-			descriptors.add(new ChildParameter(null, null, childDescription));
+			descriptors.add(createChildParameter(null, childDescription));
 		}
 
 		@Override
@@ -219,13 +219,13 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 					URIImpl.createURI(getResourceLocator().getImage(
 							"full/obj16/Classes.png").toString()), classes));
 
-//			List<IObject> properties = (List<IObject>) ((IModel) object)
-//					.getManager().createQuery(QUERY_PROPERTIES).evaluate()
-//					.toList();
-//			children.add(new ItemProvider(getRootAdapterFactory(),
-//					"Properties", URIImpl.createURI(getResourceLocator()
-//							.getImage("full/obj16/Properties.png").toString()),
-//					properties));
+			// List<IObject> properties = (List<IObject>) ((IModel) object)
+			// .getManager().createQuery(QUERY_PROPERTIES).evaluate()
+			// .toList();
+			// children.add(new ItemProvider(getRootAdapterFactory(),
+			// "Properties", URIImpl.createURI(getResourceLocator()
+			// .getImage("full/obj16/Properties.png").toString()),
+			// properties));
 		}
 
 		// List<IObject> instances = (List<IObject>) ((IModel) object)
