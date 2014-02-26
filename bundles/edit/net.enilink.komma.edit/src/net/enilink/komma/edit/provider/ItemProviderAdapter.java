@@ -82,6 +82,7 @@ import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.vocab.owl.DatatypeProperty;
+import net.enilink.vocab.owl.OWL;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -735,7 +736,7 @@ public class ItemProviderAdapter extends
 				if (((IResource) object).getApplicableCardinality(property)
 						.getSecond() > 0) {
 					Set<IClass> ranges = new HashSet<IClass>(property
-							.getNamedRanges((IResource) object, false).toList());
+							.getNamedRanges((IResource) object, true).toList());
 
 					IClass[] rangeArray = ranges.toArray(new IClass[ranges
 							.size()]);
@@ -789,12 +790,11 @@ public class ItemProviderAdapter extends
 		return new AddCommand(domain, owner, property, collection, index);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Object createChild(Object owner, Object property,
 			Object childDescription) {
 		ChildDescriptor childDescriptor = (ChildDescriptor) childDescription;
-
-		@SuppressWarnings("unchecked")
 		Collection<? extends IReference> childTypes = (Collection<? extends IReference>) childDescriptor
 				.getValue();
 
@@ -805,16 +805,41 @@ public class ItemProviderAdapter extends
 			model = ((IObject) owner).getModel();
 		}
 
-		URI name;
-		if (childDescriptor.requiresName() && inputCallbackProvider != null) {
+		URI parentType = childTypes.isEmpty() ? OWL.TYPE_THING : null;
+		if (parentType == null && childTypes.size() == 1) {
+			IClass firstType = model.getManager().find(
+					childTypes.iterator().next(), IClass.class);
+			if (firstType.isAbstract()) {
+				parentType = firstType.getURI();
+			}
+		}
+
+		URI name = null;
+		boolean requiresName = childDescriptor.requiresName();
+		if ((requiresName || parentType != null)
+				&& inputCallbackProvider != null) {
 			IInputCallback input = inputCallbackProvider.get();
 			URI nameInput = URIImpl.createURI("input:name");
-			if (input.require(nameInput).ask(model)) {
-				name = (URI) input.get(nameInput);
+			URI typeInput = URIImpl.createURI("input:type");
+			if (requiresName) {
+				input.require(nameInput);
+			}
+			if (parentType != null) {
+				input.require(typeInput, parentType);
+			}
+			if (input.ask(model)) {
+				if (requiresName) {
+					name = (URI) input.get(nameInput);
+				}
+				if (parentType != null) {
+					childTypes = (Collection<? extends IReference>) input
+							.get(typeInput);
+				}
 			} else {
 				throw new AbortExecutionException();
 			}
-		} else {
+		}
+		if (name == null) {
 			// generate a default URI
 			name = model.getURI().appendLocalPart(
 					"entity_" + UUID.randomUUID().toString());
