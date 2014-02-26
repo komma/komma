@@ -60,7 +60,7 @@ public class InstanceTablePart extends InstancesPart {
 			SparqlSearchableItemProvider searchableProvider = new SparqlSearchableItemProvider() {
 				@Override
 				protected String getQueryFindPatterns(Object parent) {
-					return "?instance a ?parent . ";
+					return "?s a ?parent . ";
 				}
 			};
 			return searchableProvider.find(expression, currentInput, 20);
