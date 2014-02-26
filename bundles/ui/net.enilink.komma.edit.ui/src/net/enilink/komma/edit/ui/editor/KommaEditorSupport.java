@@ -1140,6 +1140,11 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 				defaultAdapterFactory = new DefaultItemProviderAdapterFactory();
 				defaultAdapterFactory.setParentAdapterFactory(this);
 			}
+			
+			@Inject
+			protected void setInjector(Injector injector) {
+				injector.injectMembers(defaultAdapterFactory);
+			}
 
 			@Override
 			protected IAdapterFactory getDefaultAdapterFactory(Object type) {

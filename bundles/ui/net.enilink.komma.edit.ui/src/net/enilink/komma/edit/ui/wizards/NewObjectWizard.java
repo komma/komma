@@ -159,6 +159,9 @@ abstract public class NewObjectWizard extends Wizard {
 	}
 
 	public boolean canFinish() {
+		if (objectNamePage == null) {
+			return selectionPage.isPageComplete();
+		}
 		return objectNamePage.isPageComplete()
 				&& getContainer().getCurrentPage() == objectNamePage;
 	}
