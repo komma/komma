@@ -6,9 +6,4 @@ public class PropertyTreeView extends AbstractEditingDomainView {
 	public PropertyTreeView() {
 		setEditPart(new PropertyTreePart());
 	}
-
-	@Override
-	protected void installSelectionProvider() {
-		// do not install the selection provider
-	}
 }

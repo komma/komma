@@ -11,6 +11,14 @@
             name="RDF"
             restorable="true">
       </view>
+      <view
+            category="net.enilink.komma.rdf"
+            class="net.enilink.komma.edit.ui.properties.internal.parts.StatementView"
+            icon="icons/full/view16/rdf_16x16.png"
+            id="net.enilink.komma.edit.ui.properties.views.StatementView"
+            name="Statement"
+            restorable="true">
+      </view>
    </extension>
 
 </plugin>
