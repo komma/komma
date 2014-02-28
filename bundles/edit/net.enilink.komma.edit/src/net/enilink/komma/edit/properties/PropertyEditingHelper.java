@@ -12,6 +12,7 @@ import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.ITransaction;
+import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.edit.command.CommandParameter;
@@ -169,8 +170,8 @@ public abstract class PropertyEditingHelper {
 		}
 
 		ICommand newObjectCommand = null;
-		// if an already existing resource is supplied as value
-		if (value instanceof IResource) {
+		// if an already existing value is supplied as value
+		if (value instanceof IValue) {
 			newObjectCommand = new IdentityCommand(value);
 		} else {
 			// create value with external property editing support
