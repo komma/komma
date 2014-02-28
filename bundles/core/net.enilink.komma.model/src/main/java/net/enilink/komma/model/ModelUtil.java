@@ -116,8 +116,11 @@ public class ModelUtil {
 					if (prefix != null && prefix.length() > 0 && hasLocalPart) {
 						text.append(prefix).append(":");
 					}
-					text.append(hasLocalPart && prefix != null ? localPart
-							: uri.toString());
+					if (hasLocalPart && prefix != null) {
+						text.append(localPart);
+					} else {
+						text.append("<").append(uri).append(">");
+					}
 				} else {
 					text.append(resource.toString());
 				}
