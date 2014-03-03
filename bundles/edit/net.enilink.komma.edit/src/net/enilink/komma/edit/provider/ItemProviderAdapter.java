@@ -78,6 +78,7 @@ import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelAware;
+import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
@@ -619,6 +620,9 @@ public class ItemProviderAdapter extends
 	 */
 	protected List<IItemPropertyDescriptor> itemPropertyDescriptors;
 
+	protected volatile Set<IModelSet> trackedModelSets = Collections
+			.synchronizedSet(new HashSet<IModelSet>());
+
 	protected volatile Map<IReference, IEntity> targets;
 
 	/**
@@ -648,7 +652,6 @@ public class ItemProviderAdapter extends
 		if (!(target instanceof IEntity)) {
 			return;
 		}
-
 		if (targets == null) {
 			synchronized (this) {
 				if (targets == null) {
@@ -658,12 +661,12 @@ public class ItemProviderAdapter extends
 			}
 		}
 		targets.put(((IEntity) target).getReference(), (IEntity) target);
-
 		if (target instanceof IModelAware) {
-			((IModelAware) target)
-					.getModel()
-					.getModelSet()
-					.addSubjectListener(((IEntity) target).getReference(), this);
+			IModelSet modelSet = ((IModelAware) target).getModel()
+					.getModelSet();
+			if (trackedModelSets.add(modelSet)) {
+				modelSet.addListener(this);
+			}
 		}
 	}
 
@@ -1154,11 +1157,9 @@ public class ItemProviderAdapter extends
 		if (oldTargets != null) {
 			for (IEntity otherTarget : oldTargets.values()) {
 				if (otherTarget instanceof IModelAware) {
-					((IModelAware) otherTarget)
-							.getModel()
-							.getModelSet()
-							.removeSubjectListener(otherTarget.getReference(),
-									this);
+					for (IModelSet modelSet : new ArrayList<>(trackedModelSets)) {
+						modelSet.removeListener(this);
+					}
 				}
 			}
 		}
@@ -2420,6 +2421,8 @@ public class ItemProviderAdapter extends
 	}
 
 	public void removeTarget(Object target) {
+		// TODO remove listener from model set if there is
+		// no other target from the same one
 		if (targets != null) {
 			targets.remove(target);
 		}
