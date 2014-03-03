@@ -45,6 +45,17 @@ public interface IStatementPattern {
 	 *         objects are equal.
 	 */
 	boolean equals(Object other);
+	
+	/**
+	 * Compares a statement object to another statement object.
+	 * 
+	 * @param other
+	 *            The object to compare this statement to.
+	 * @return <tt>true</tt> if the other object is an instance of
+	 *         {@link Statement} and if their subjects, predicates and objects
+	 *         are equal.
+	 */
+	boolean equalsIgnoreContext(IStatementPattern other);
 
 	/**
 	 * Gets the context of this pattern.
