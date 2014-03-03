@@ -5,9 +5,10 @@
  */
 package net.enilink.komma.dm.internal.change;
 
+import java.util.Collections;
+
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.Statement;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.dm.change.IStatementChange;
@@ -16,21 +17,26 @@ import net.enilink.komma.dm.change.IStatementChange;
  * Command object for statements that are removed from the repository.
  * 
  */
-public class RemoveChange extends Statement implements IDataChange,
-		IStatementChange {
+public class RemoveChange implements IDataChange, IStatementChange {
+	protected final IStatement stmt;
+
 	public RemoveChange(IStatement stmt) {
-		super(stmt.getSubject(), stmt.getPredicate(), stmt.getObject(), stmt
-				.getContext(), stmt.isInferred());
+		this.stmt = stmt;
 	}
 
 	protected IReference[] getModifyContexts() {
-		IReference context = getContext();
+		IReference context = stmt.getContext();
 		return context == null ? new IReference[0]
 				: new IReference[] { context };
 	}
 
+	@Override
+	public IStatement getStatement() {
+		return stmt;
+	}
+
 	public void redo(IDataManager dm) {
-		dm.remove(this, getModifyContexts());
+		dm.remove(Collections.singleton(stmt), getModifyContexts());
 	}
 
 	@Override
@@ -40,7 +46,7 @@ public class RemoveChange extends Statement implements IDataChange,
 	}
 
 	public void undo(IDataManager dm) {
-		dm.add(this, getModifyContexts());
+		dm.add(Collections.singleton(stmt), getModifyContexts());
 	}
 
 	@Override

@@ -12,6 +12,8 @@ package net.enilink.komma.dm.change;
 
 import net.enilink.komma.core.IStatement;
 
-public interface IStatementChange extends IStatement {
+public interface IStatementChange {
 	boolean isAdd();
+
+	IStatement getStatement();
 }
