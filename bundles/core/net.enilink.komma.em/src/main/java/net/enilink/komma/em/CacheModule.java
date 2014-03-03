@@ -12,6 +12,17 @@ package net.enilink.komma.em;
 
 import java.util.List;
 
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.dm.change.DataChangeTracker;
+import net.enilink.komma.dm.change.IDataChange;
+import net.enilink.komma.dm.change.IDataChangeListener;
+import net.enilink.komma.dm.change.IDataChangeTracker;
+import net.enilink.komma.dm.change.IStatementChange;
+import net.enilink.komma.em.util.IClosable;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdf.RDF;
+
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -34,16 +45,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
-
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.rdf.RDF;
-import net.enilink.komma.dm.change.DataChangeTracker;
-import net.enilink.komma.dm.change.IDataChange;
-import net.enilink.komma.dm.change.IDataChangeListener;
-import net.enilink.komma.dm.change.IDataChangeTracker;
-import net.enilink.komma.dm.change.IStatementChange;
-import net.enilink.komma.em.util.IClosable;
-import net.enilink.komma.core.IEntity;
 
 public class CacheModule extends AbstractModule {
 	/**
@@ -177,19 +178,19 @@ public class CacheModule extends AbstractModule {
 			public void dataChanged(List<IDataChange> changes) {
 				for (IDataChange change : changes) {
 					if (change instanceof IStatementChange) {
-						IStatementChange stmtChange = (IStatementChange) change;
+						IStatement stmt = ((IStatementChange) change)
+								.getStatement();
 
 						// refresh existing subjects and objects
-						boolean subjectRefreshed = refresh(stmtChange
-								.getSubject());
-						refresh(stmtChange.getObject());
+						boolean subjectRefreshed = refresh(stmt.getSubject());
+						refresh(stmt.getObject());
 
 						// clear cache completely if owl:imports has
 						// changed
 						// TODO find a better approach instead of clearing the
 						// whole cache
-						if (stmtChange.getContext() != null
-								&& OWL.PROPERTY_IMPORTS.equals(stmtChange
+						if (stmt.getContext() != null
+								&& OWL.PROPERTY_IMPORTS.equals(stmt
 										.getPredicate())) {
 							entityCache.getRoot().removeChildren();
 							continue;
@@ -198,16 +199,16 @@ public class CacheModule extends AbstractModule {
 						// do only remove "properties" node from cache to ensure
 						// that the above refresh logic keeps working
 						entityCache.removeNode(Fqn.fromElements(
-								stmtChange.getSubject(), "properties"));
+								stmt.getSubject(), "properties"));
 						entityCache.removeNode(Fqn.fromElements(
-								stmtChange.getObject(), "properties"));
+								stmt.getObject(), "properties"));
 
 						// remove entity completely from cache if its type has
 						// been changed
 						if (subjectRefreshed
-								&& RDF.PROPERTY_TYPE.equals(stmtChange
-										.getPredicate())) {
-							entityCache.removeNode(Fqn.fromElements(stmtChange
+								&& RDF.PROPERTY_TYPE
+										.equals(stmt.getPredicate())) {
+							entityCache.removeNode(Fqn.fromElements(stmt
 									.getSubject()));
 						}
 					}
