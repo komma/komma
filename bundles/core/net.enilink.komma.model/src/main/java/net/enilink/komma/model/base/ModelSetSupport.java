@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import net.enilink.commons.util.extensions.RegistryFactoryHelper;
@@ -142,7 +141,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 
 		protected NotificationSupport<INotification> notificationSupport = new NotificationSupport<INotification>();
 
-		protected Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = new WeakHashMap<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>>();
+		protected Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = new HashMap<>();
 
 		protected Injector injector;
 
@@ -712,7 +711,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 				for (IDataChange change : changes) {
 					if (change instanceof IStatementChange) {
 						IReference context = ((IStatementChange) change)
-								.getContext();
+								.getStatement().getContext();
 						if (context != null) {
 							changedModels.add(context);
 						}
@@ -771,12 +770,9 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 								nsChange.getOldNS(), nsChange.getNewNS()));
 			} else {
 				IStatementChange stmtChange = (IStatementChange) change;
-				Object object = stmtChange.getObject();
 				notifications.add(new StatementNotification(
 						getBehaviourDelegate(), stmtChange.isAdd(), stmtChange
-								.getSubject(), stmtChange.getPredicate(),
-						object instanceof IReference ? (IReference) object
-								: object, stmtChange.getContext()));
+								.getStatement()));
 			}
 		}
 		return notifications;

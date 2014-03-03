@@ -11,8 +11,9 @@
 package net.enilink.komma.model.event;
 
 import net.enilink.komma.common.notify.INotification;
-import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.model.IModelSet;
 
 public interface IStatementNotification extends INotification {
 	IModelSet getModelSet();
@@ -24,6 +25,9 @@ public interface IStatementNotification extends INotification {
 	Object getObject();
 
 	IReference getContext();
+	
+	IStatement getStatement();
 
 	boolean isAdd();
+	
 }

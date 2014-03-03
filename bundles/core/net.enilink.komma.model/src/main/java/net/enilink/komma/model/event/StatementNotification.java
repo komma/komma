@@ -12,36 +12,34 @@ package net.enilink.komma.model.event;
 
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.Statement;
 import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IModelAware;
 import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.IObject;
 
 public class StatementNotification implements IStatementNotification {
-	private boolean add;
+	private IStatement stmt;
 
-	private IReference ctx;
+	private boolean add;
 
 	private IModelSet modelSet;
 
-	private Object obj;
-
-	private IReference pred;
-
-	private IReference subj;
-
-	public StatementNotification(boolean add, IReference subj, IReference pred,
-			Object obj) {
-		this(null, add, subj, pred, obj, null);
+	public StatementNotification(boolean add, IStatement stmt) {
+		this(null, add, stmt);
 	}
 
 	public StatementNotification(IModelSet modelSet, boolean add,
-			IReference subj, IReference pred, Object obj, IReference ctx) {
+			IStatement stmt) {
+		IReference subj = stmt.getSubject();
+		Object obj = stmt.getObject();
+		IReference ctx = stmt.getContext();
 		if (modelSet == null) {
 			IModel model;
-			if (subj instanceof IObject) {
-				model = ((IObject) subj).getModel();
-			} else if (obj instanceof IObject) {
-				model = ((IObject) obj).getModel();
+			if (subj instanceof IModelAware) {
+				model = ((IModelAware) subj).getModel();
+			} else if (obj instanceof IModelAware) {
+				model = ((IModelAware) obj).getModel();
 			} else {
 				throw new IllegalArgumentException(
 						"The argument modelSet may not be null.");
@@ -49,14 +47,13 @@ public class StatementNotification implements IStatementNotification {
 			modelSet = model.getModelSet();
 			if (ctx == null) {
 				ctx = model.getURI();
+				stmt = new Statement(subj, stmt.getPredicate(), obj, ctx,
+						stmt.isInferred());
 			}
 		}
+		this.stmt = stmt;
 		this.modelSet = modelSet;
 		this.add = add;
-		this.subj = subj;
-		this.pred = pred;
-		this.obj = obj;
-		this.ctx = ctx;
 	}
 
 	@Override
@@ -70,31 +67,11 @@ public class StatementNotification implements IStatementNotification {
 		StatementNotification other = (StatementNotification) obj;
 		if (add != other.add)
 			return false;
-		if (ctx == null) {
-			if (other.ctx != null)
-				return false;
-		} else if (!ctx.equals(other.ctx))
-			return false;
-		if (this.obj == null) {
-			if (other.obj != null)
-				return false;
-		} else if (!this.obj.equals(other.obj))
-			return false;
-		if (pred == null) {
-			if (other.pred != null)
-				return false;
-		} else if (!pred.equals(other.pred))
-			return false;
-		if (subj == null) {
-			if (other.subj != null)
-				return false;
-		} else if (!subj.equals(other.subj))
-			return false;
-		return true;
+		return stmt.equals(other.stmt);
 	}
 
 	public IReference getContext() {
-		return ctx;
+		return stmt.getContext();
 	}
 
 	public IModelSet getModelSet() {
@@ -102,15 +79,20 @@ public class StatementNotification implements IStatementNotification {
 	}
 
 	public Object getObject() {
-		return obj;
+		return stmt.getObject();
 	}
 
 	public IReference getPredicate() {
-		return pred;
+		return stmt.getPredicate();
 	}
 
 	public IReference getSubject() {
-		return subj;
+		return stmt.getSubject();
+	}
+
+	@Override
+	public IStatement getStatement() {
+		return stmt;
 	}
 
 	@Override
@@ -118,10 +100,7 @@ public class StatementNotification implements IStatementNotification {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (add ? 1231 : 1237);
-		result = prime * result + ((ctx == null) ? 0 : ctx.hashCode());
-		result = prime * result + ((obj == null) ? 0 : obj.hashCode());
-		result = prime * result + ((pred == null) ? 0 : pred.hashCode());
-		result = prime * result + ((subj == null) ? 0 : subj.hashCode());
+		result = prime * result + stmt.hashCode();
 		return result;
 	}
 
