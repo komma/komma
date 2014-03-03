@@ -1,15 +1,22 @@
 package net.enilink.komma.edit.ui.properties.internal.parts;
 
+import java.util.Collection;
+
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
+import net.enilink.komma.common.notify.INotification;
+import net.enilink.komma.common.notify.INotificationListener;
+import net.enilink.komma.common.notify.NotificationFilter;
 import net.enilink.komma.common.ui.assist.ContentProposals;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IStatementPattern;
 import net.enilink.komma.core.Literal;
 import net.enilink.komma.core.Statement;
+import net.enilink.komma.core.StatementPattern;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -22,7 +29,10 @@ import net.enilink.komma.edit.ui.assist.JFaceProposalProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainView;
+import net.enilink.komma.model.IModelAware;
+import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.ModelUtil;
+import net.enilink.komma.model.event.IStatementNotification;
 
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposal;
@@ -44,7 +54,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 public class StatementView extends AbstractEditingDomainView {
-	class StatementPart extends AbstractEditingDomainPart {
+	class StatementPart extends AbstractEditingDomainPart implements
+			INotificationListener<INotification> {
 		class MyPropertyEditingHelper extends PropertyEditingHelper {
 			MyPropertyEditingHelper(Type type) {
 				super(type);
@@ -82,6 +93,8 @@ public class StatementView extends AbstractEditingDomainView {
 				Type.PROPERTY);
 		MyPropertyEditingHelper valueHelper = new MyPropertyEditingHelper(
 				Type.VALUE);
+
+		IModelSet modelSet;
 
 		@Override
 		public void createContents(Composite parent) {
@@ -288,6 +301,7 @@ public class StatementView extends AbstractEditingDomainView {
 
 		@Override
 		public void refresh() {
+			addPattern = null;
 			IAdapterFactory newAdapterFactory = getAdapterFactory();
 			if (adapterFactory == null
 					|| !adapterFactory.equals(newAdapterFactory)) {
@@ -301,6 +315,7 @@ public class StatementView extends AbstractEditingDomainView {
 							adapterFactory);
 				}
 			}
+			updateListener();
 			if (labelProvider != null && stmt != null) {
 				sLabel.setText(ModelUtil.getLabel(stmt.getSubject()));
 				sLabel.setImage(labelProvider.getImage(stmt.getSubject()));
@@ -332,12 +347,79 @@ public class StatementView extends AbstractEditingDomainView {
 			super.refresh();
 		}
 
+		protected void updateListener() {
+			if (stmt != null && stmt.getSubject() instanceof IModelAware) {
+				IModelSet stmtModelSet = ((IModelAware) (stmt.getSubject()))
+						.getModel().getModelSet();
+				if (modelSet == null || !modelSet.equals(stmtModelSet)) {
+					if (modelSet != null) {
+						modelSet.removeListener(this);
+					}
+					stmtModelSet.addListener(this);
+					modelSet = stmtModelSet;
+				}
+			} else if (modelSet != null) {
+				modelSet.removeListener(this);
+				modelSet = null;
+			}
+		}
+
 		@Override
 		public void setDirty(boolean dirty) {
 			if (okButton != null) {
 				okButton.setEnabled(dirty);
 			}
 			super.setDirty(dirty);
+		}
+
+		@Override
+		public void dispose() {
+			if (modelSet != null) {
+				modelSet.removeListener(this);
+			}
+		}
+
+		protected IStatementPattern addPattern;
+
+		@Override
+		public void notifyChanged(
+				Collection<? extends INotification> notifications) {
+			if (stmt != null) {
+				for (INotification notification : notifications) {
+					IStatementNotification n = (IStatementNotification) notification;
+					if (!n.isAdd()) {
+						if (n.getStatement().equalsIgnoreContext(stmt)) {
+							addPattern = new StatementPattern(
+									stmt.getSubject(), stmt.getPredicate(),
+									null);
+						}
+					} else if (addPattern != null
+							&& n.getStatement()
+									.matchesIgnoreContext(addPattern)) {
+						stmt = resolve(
+								((IEntity) stmt.getSubject())
+										.getEntityManager(),
+								n.getStatement());
+						setStale(true);
+						getForm().refreshStale();
+						return;
+					}
+				}
+			}
+		}
+
+		protected IStatement resolve(IEntityManager em, IStatement stmt) {
+			Object obj = stmt.getObject();
+			if (obj instanceof IReference) {
+				obj = em.find((IReference) obj);
+			}
+			return new Statement(em.find(stmt.getSubject()), em.find(stmt
+					.getPredicate()), obj);
+		}
+
+		@Override
+		public NotificationFilter<INotification> getFilter() {
+			return NotificationFilter.instanceOf(IStatementNotification.class);
 		}
 	}
 
