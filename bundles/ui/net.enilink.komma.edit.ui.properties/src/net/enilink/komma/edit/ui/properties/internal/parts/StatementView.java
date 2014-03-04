@@ -99,7 +99,6 @@ public class StatementView extends AbstractEditingDomainView {
 		@Override
 		public void createContents(Composite parent) {
 			parent.setLayout(new GridLayout(2, true));
-
 			sLabel = getWidgetFactory().createCLabel(parent, "");
 			sLabel.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true,
 					false));
@@ -116,6 +115,12 @@ public class StatementView extends AbstractEditingDomainView {
 			pText = getWidgetFactory().createText(pComposite, "");
 			pText.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true,
 					false));
+			pText.addModifyListener(new ModifyListener() {
+				@Override
+				public void modifyText(ModifyEvent e) {
+					setDirty(true);
+				}
+			});
 			createProposalAdapter(pText, propertyHelper);
 
 			valueText = getWidgetFactory().createText(parent, "",
@@ -211,6 +216,8 @@ public class StatementView extends AbstractEditingDomainView {
 				}
 			});
 			getWidgetFactory().paintBordersFor(parent);
+			// disable controls
+			refresh();
 		}
 
 		protected ContentProposalAdapter createProposalAdapter(Text text,
@@ -237,7 +244,7 @@ public class StatementView extends AbstractEditingDomainView {
 
 		@Override
 		public boolean setEditorInput(Object input) {
-			if (input instanceof IStatement) {
+			if (input instanceof IStatement || input == null) {
 				this.stmt = (IStatement) input;
 				setStale(true);
 				return true;
@@ -249,37 +256,42 @@ public class StatementView extends AbstractEditingDomainView {
 			return false;
 		}
 
+		protected URI toURI(IEntityManager em, String pnameOrUri) {
+			if (pnameOrUri.matches("<.*>")) {
+				try {
+					return URIImpl.createURI(pnameOrUri.substring(1,
+							pnameOrUri.length() - 1));
+				} catch (IllegalArgumentException e) {
+					// should be shown in UI
+				}
+			} else {
+				String prefix = "";
+				int colon = pnameOrUri.indexOf(':');
+				if (colon >= 0) {
+					prefix = pnameOrUri.substring(0, colon);
+					pnameOrUri = pnameOrUri.substring(colon + 1,
+							pnameOrUri.length());
+				}
+				URI ns = em.getNamespace(prefix);
+				if (ns != null) {
+					return ns.appendLocalPart(pnameOrUri);
+				}
+			}
+			return null;
+		}
+
 		@Override
 		public void commit(boolean onSave) {
 			if (isDirty() && stmt != null) {
+				IEntityManager em = ((IEntity) stmt.getSubject())
+						.getEntityManager();
 				String lang = langText.getText().trim();
 				String type = typeText.getText().trim();
 				Object newValue = acceptedResourceProposal;
 				if (!lang.isEmpty()) {
 					newValue = new Literal(valueText.getText(), lang);
 				} else if (!type.isEmpty()) {
-					IEntityManager em = ((IEntity) stmt.getSubject())
-							.getEntityManager();
-					URI literalType = null;
-					if (type.matches("<.*>")) {
-						try {
-							literalType = URIImpl.createURI(type.substring(1,
-									type.length() - 1));
-						} catch (IllegalArgumentException e) {
-							// should be shown in UI
-						}
-					} else {
-						String prefix = "";
-						int colon = type.indexOf(':');
-						if (colon >= 0) {
-							prefix = type.substring(0, colon);
-							type = type.substring(colon + 1, type.length());
-						}
-						URI ns = em.getNamespace(prefix);
-						if (ns != null) {
-							literalType = ns.appendLocalPart(type);
-						}
-					}
+					URI literalType = toURI(em, type);
 					if (literalType != null) {
 						newValue = new Literal(valueText.getText(), literalType);
 					} else {
@@ -289,11 +301,17 @@ public class StatementView extends AbstractEditingDomainView {
 				if (newValue == null) {
 					newValue = valueText.getText();
 				}
-				CommandResult result = valueHelper.setValue(stmt, newValue);
-				if (result.getStatus().isOK()
-						&& result.getReturnValue() != null) {
-					stmt = new Statement(stmt.getSubject(),
-							stmt.getPredicate(), result.getReturnValue());
+				URI prop = toURI(em, pText.getText().trim());
+				if (prop != null) {
+					if (!prop.equals(stmt.getPredicate())) {
+						stmt = new Statement(stmt.getSubject(), prop, null);
+					}
+					CommandResult result = valueHelper.setValue(stmt, newValue);
+					if (result.getStatus().isOK()
+							&& result.getReturnValue() != null) {
+						stmt = new Statement(stmt.getSubject(),
+								stmt.getPredicate(), result.getReturnValue());
+					}
 				}
 			}
 			setDirty(false);
@@ -316,7 +334,10 @@ public class StatementView extends AbstractEditingDomainView {
 				}
 			}
 			updateListener();
-			if (labelProvider != null && stmt != null) {
+			boolean enabled = labelProvider != null && stmt != null;
+			valueText.setEnabled(enabled);
+			pText.setEnabled(enabled);
+			if (enabled) {
 				sLabel.setText(ModelUtil.getLabel(stmt.getSubject()));
 				sLabel.setImage(labelProvider.getImage(stmt.getSubject()));
 				if (stmt.getPredicate() != null) {
@@ -342,6 +363,9 @@ public class StatementView extends AbstractEditingDomainView {
 				}
 				langText.setEnabled(!(value instanceof IReference));
 				typeText.setEnabled(!(value instanceof IReference));
+			} else {
+				langText.setEnabled(false);
+				typeText.setEnabled(false);
 			}
 			acceptedResourceProposal = null;
 			super.refresh();
