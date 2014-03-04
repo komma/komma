@@ -69,7 +69,7 @@ public class CharacterConverter implements IConverter<Character> {
 	}
 
 	public ILiteral serialize(Character object) {
-		return lf.createLiteral(object, object.toString(), datatype, null);
+		return lf.createLiteral(object.toString(), datatype, null);
 	}
 
 }

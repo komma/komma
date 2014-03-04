@@ -68,6 +68,6 @@ public class PatternConverter implements IConverter<Pattern> {
 	}
 
 	public ILiteral serialize(Pattern object) {
-		return lf.createLiteral(object, object.toString(), datatype, null);
+		return lf.createLiteral(object.toString(), datatype, null);
 	}
 }

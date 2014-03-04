@@ -62,7 +62,7 @@ public class FloatConverter implements IConverter<Float> {
 	}
 
 	public ILiteral serialize(Float object) {
-		return lf.createLiteral(object, object.toString(), getDatatype(), null);
+		return lf.createLiteral(object.toString(), getDatatype(), null);
 	}
 
 }

@@ -125,8 +125,8 @@ public class LiteralConverter implements Cloneable {
 	@SuppressWarnings("unchecked")
 	public ILiteral createLiteral(Object object, URI datatype) {
 		if (object instanceof String) {
-			return literalFactory.createLiteral(object, (String) object,
-					datatype, null);
+			return literalFactory
+					.createLiteral((String) object, datatype, null);
 		}
 		IConverter<Object> converter = null;
 		if (null != datatype) {

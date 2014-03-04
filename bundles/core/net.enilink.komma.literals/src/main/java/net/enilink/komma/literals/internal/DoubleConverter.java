@@ -62,7 +62,7 @@ public class DoubleConverter implements IConverter<Double> {
 	}
 
 	public ILiteral serialize(Double object) {
-		return lf.createLiteral(object, object.toString(), getDatatype(), null);
+		return lf.createLiteral(object.toString(), getDatatype(), null);
 	}
 
 }

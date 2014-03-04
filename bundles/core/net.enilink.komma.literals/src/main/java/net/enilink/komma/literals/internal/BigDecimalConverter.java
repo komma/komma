@@ -64,6 +64,6 @@ public class BigDecimalConverter implements IConverter<BigDecimal> {
 	}
 
 	public ILiteral serialize(BigDecimal object) {
-		return lf.createLiteral(object, object.toString(), getDatatype(), null);
+		return lf.createLiteral(object.toString(), getDatatype(), null);
 	}
 }

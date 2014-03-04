@@ -75,6 +75,6 @@ public class StringConverter implements IConverter<Object> {
 	}
 
 	public ILiteral serialize(Object object) {
-		return lf.createLiteral(object, object.toString(), datatype, null);
+		return lf.createLiteral(object.toString(), datatype, null);
 	}
 }

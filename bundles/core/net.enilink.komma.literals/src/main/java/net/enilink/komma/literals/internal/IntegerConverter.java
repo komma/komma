@@ -62,7 +62,7 @@ public class IntegerConverter implements IConverter<Integer> {
 	}
 
 	public ILiteral serialize(Integer object) {
-		return lf.createLiteral(object, object.toString(), getDatatype(), null);
+		return lf.createLiteral(object.toString(), getDatatype(), null);
 	}
 
 }

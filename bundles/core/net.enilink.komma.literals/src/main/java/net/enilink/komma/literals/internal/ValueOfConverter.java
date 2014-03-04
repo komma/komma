@@ -99,7 +99,7 @@ public class ValueOfConverter<T> implements IConverter<T> {
 	}
 
 	public ILiteral serialize(T object) {
-		return lf.createLiteral(object, object.toString(), datatype, null);
+		return lf.createLiteral(object.toString(), datatype, null);
 	}
 
 }

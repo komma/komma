@@ -84,6 +84,6 @@ public class LocaleConverter implements IConverter<Locale> {
 
 	public ILiteral serialize(Locale object) {
 		String label = object.toString().toLowerCase().replace('_', '-');
-		return lf.createLiteral(object, label, datatype, null);
+		return lf.createLiteral(label, datatype, null);
 	}
 }

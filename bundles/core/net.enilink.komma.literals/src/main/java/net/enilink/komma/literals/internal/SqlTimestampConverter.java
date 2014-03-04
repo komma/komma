@@ -83,6 +83,6 @@ public class SqlTimestampConverter implements IConverter<Timestamp> {
 		BigDecimal fraction = BigDecimal.valueOf(object.getNanos(), 9);
 		xgc.setFractionalSecond(fraction);
 		String label = xgc.toXMLFormat();
-		return lf.createLiteral(object, label, datatype, null);
+		return lf.createLiteral(label, datatype, null);
 	}
 }

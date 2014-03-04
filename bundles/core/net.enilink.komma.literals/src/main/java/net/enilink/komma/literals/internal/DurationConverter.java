@@ -76,6 +76,6 @@ public class DurationConverter implements IConverter<Duration> {
 	}
 
 	public ILiteral serialize(Duration object) {
-		return lf.createLiteral(object, object.toString(), datatype, null);
+		return lf.createLiteral(object.toString(), datatype, null);
 	}
 }

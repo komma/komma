@@ -91,6 +91,6 @@ public class XMLGregorianCalendarConverter implements
 	}
 
 	public ILiteral serialize(XMLGregorianCalendar object) {
-		return lf.createLiteral(object, object.toString(), getDatatype(), null);
+		return lf.createLiteral(object.toString(), getDatatype(), null);
 	}
 }

@@ -79,6 +79,6 @@ public class DateConverter implements IConverter<Date> {
 		GregorianCalendar gc = new GregorianCalendar(0, 0, 0);
 		gc.setTime(object);
 		String label = factory.newXMLGregorianCalendar(gc).toXMLFormat();
-		return lf.createLiteral(object, label, datatype, null);
+		return lf.createLiteral(label, datatype, null);
 	}
 }

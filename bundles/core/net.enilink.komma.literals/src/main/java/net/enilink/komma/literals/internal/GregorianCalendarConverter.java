@@ -77,6 +77,6 @@ public class GregorianCalendarConverter implements
 
 	public ILiteral serialize(GregorianCalendar object) {
 		String label = factory.newXMLGregorianCalendar(object).toXMLFormat();
-		return lf.createLiteral(object, label, datatype, null);
+		return lf.createLiteral(label, datatype, null);
 	}
 }

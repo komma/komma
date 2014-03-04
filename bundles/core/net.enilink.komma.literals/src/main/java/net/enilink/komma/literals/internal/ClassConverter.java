@@ -75,6 +75,6 @@ public class ClassConverter implements IConverter<Class<?>> {
 	}
 
 	public ILiteral serialize(Class<?> object) {
-		return lf.createLiteral(object, object.getName(), datatype, null);
+		return lf.createLiteral(object.getName(), datatype, null);
 	}
 }

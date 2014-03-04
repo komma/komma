@@ -62,6 +62,6 @@ public class ByteConverter implements IConverter<Byte> {
 	}
 
 	public ILiteral serialize(Byte object) {
-		return lf.createLiteral(object, object.toString(), getDatatype(), null);
+		return lf.createLiteral(object.toString(), getDatatype(), null);
 	}
 }

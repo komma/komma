@@ -73,13 +73,13 @@ public class QNameConverter implements IConverter<QName> {
 
 	public ILiteral serialize(QName object) {
 		if (object.getPrefix().length() == 0)
-			return lf.createLiteral(object, object.toString(), getDatatype(),
+			return lf.createLiteral(object.toString(), getDatatype(),
 					null);
 		StringBuilder label = new StringBuilder();
 		label.append(object.getPrefix());
 		label.append(":");
 		label.append(object.getLocalPart());
-		return lf.createLiteral(object, label.toString(), getDatatype(), null);
+		return lf.createLiteral(label.toString(), getDatatype(), null);
 	}
 
 }
