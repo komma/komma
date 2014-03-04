@@ -311,7 +311,9 @@
 <owl:AnnotationProperty rdf:about="#image">
 	<rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
 </owl:AnnotationProperty>
-<owl:AnnotationProperty rdf:about="#isAbstract"/>
+<owl:AnnotationProperty rdf:about="#isAbstract">
+	<rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+</owl:AnnotationProperty>
 <owl:FunctionalProperty rdf:about="#key">
 	<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
 	<rdfs:domain rdf:resource="#MapEntry"/>
