@@ -3,14 +3,36 @@ package net.enilink.komma.owl.editor.instances;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IValue;
+import net.enilink.komma.core.Statement;
+import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.provider.ISearchableItemProvider;
+import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
+import net.enilink.komma.edit.ui.celleditor.PropertyCellEditingSupport;
+import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
+import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
+import net.enilink.komma.em.concepts.IClass;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
+import net.enilink.komma.em.util.ISparqlConstants;
+import net.enilink.komma.model.IObject;
+
 import org.eclipse.jface.viewers.AbstractTableViewer;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ContentViewer;
-import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILazyContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -19,19 +41,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-
-import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.common.adapter.IAdapterFactory;
-import net.enilink.komma.edit.provider.ISearchableItemProvider;
-import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
-import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
-import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
-import net.enilink.komma.em.concepts.IClass;
-import net.enilink.komma.em.concepts.IProperty;
-import net.enilink.komma.em.concepts.IResource;
-import net.enilink.komma.em.util.ISparqlConstants;
-import net.enilink.komma.model.IObject;
-import net.enilink.komma.core.IReference;
 
 public class InstanceTablePart extends InstancesPart {
 	static final int LIMIT = 1000;
@@ -138,6 +147,7 @@ public class InstanceTablePart extends InstancesPart {
 		}
 	}
 
+	protected LabelProvider labelProvider;
 	protected IClass currentInput;
 	protected List<IProperty> properties;
 	protected Comparator comparator = new Comparator();
@@ -145,7 +155,7 @@ public class InstanceTablePart extends InstancesPart {
 	@Override
 	protected StructuredViewer createViewer(Composite parent) {
 		Table table = getWidgetFactory().createTable(parent,
-				SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL);
+				SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL | SWT.FULL_SELECTION);
 		TableViewer viewer = new TableViewer(table);
 		viewer.getTable().setHeaderVisible(true);
 		viewer.setUseHashlookup(true);
@@ -156,7 +166,10 @@ public class InstanceTablePart extends InstancesPart {
 	protected void adapterFactoryChanged() {
 		getViewer()
 				.setContentProvider(new ContentProvider(getAdapterFactory()));
-		getViewer().setLabelProvider(new LabelProvider(getAdapterFactory()));
+		if (labelProvider != null) {
+			labelProvider.dispose();
+		}
+		labelProvider = new LabelProvider(getAdapterFactory());
 		createContextMenuFor(getViewer());
 	}
 
@@ -211,16 +224,46 @@ public class InstanceTablePart extends InstancesPart {
 							.toList());
 
 			int col = 0;
-			for (IProperty property : properties) {
-				TableColumn column = new TableColumn(tableViewer.getTable(),
-						SWT.LEFT);
-				column.setText(property == null ? "Instance"
-						: ((ILabelProvider) viewer.getLabelProvider())
-								.getText(property));
+			for (final IProperty property : properties) {
+				TableViewerColumn viewerColumn = new TableViewerColumn(
+						tableViewer, SWT.LEFT);
+				TableColumn column = viewerColumn.getColumn();
+				column.setText(property == null ? "Instance" : labelProvider
+						.getText(property));
 				column.setResizable(true);
 				column.setMoveable(true);
 				column.addSelectionListener(getSelectionAdapter(column, col++));
 				column.pack();
+				viewerColumn.setLabelProvider(new CellLabelProvider() {
+					@Override
+					public void update(ViewerCell cell) {
+						int columnIndex = cell.getColumnIndex();
+						cell.setText(labelProvider.getColumnText(
+								cell.getElement(), columnIndex));
+					}
+				});
+				if (property != null) {
+					viewerColumn
+							.setEditingSupport(new PropertyCellEditingSupport(
+									((ColumnViewer) viewer)) {
+								@Override
+								protected IStatement getStatement(Object element) {
+									List<IValue> values = ((IResource) element)
+											.getPropertyValues(property, false)
+											.toList();
+									return new Statement((IEntity) element,
+											property,
+											!values.isEmpty() ? values.get(0)
+													: null);
+								}
+
+								@Override
+								protected IEditingDomain getEditingDomain() {
+									return InstanceTablePart.this
+											.getEditingDomain();
+								}
+							});
+				}
 			}
 			List<IObject> instances = input.getEntityManager()
 					.createQuery(QUERY_INSTANCES).setParameter("c", input)
