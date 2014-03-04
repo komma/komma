@@ -41,7 +41,7 @@ public class ByteArrayConverter implements IConverter<byte[]> {
 
 	@Override
 	public ILiteral serialize(byte[] data) {
-		return lf.createLiteral(data, new String(Base64.encodeBase64(data)),
+		return lf.createLiteral(new String(Base64.encodeBase64(data)),
 				getDatatype(), null);
 	}
 

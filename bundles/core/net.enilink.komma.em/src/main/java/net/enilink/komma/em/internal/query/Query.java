@@ -217,7 +217,7 @@ public class Query<R> extends QueryBase<IQuery<R>> implements IQuery<R> {
 				value = ((IReferenceable) value).getReference();
 			}
 			doSetParameter(name, value instanceof IValue ? (IValue) value
-					: manager.createLiteral(value, null, null));
+					: manager.toValue(value));
 		}
 		return this;
 	}

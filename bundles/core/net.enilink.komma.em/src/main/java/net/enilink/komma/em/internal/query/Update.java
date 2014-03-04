@@ -70,7 +70,7 @@ public class Update implements IUpdate {
 				value = ((IReferenceable) value).getReference();
 			}
 			doSetParameter(name, value instanceof IValue ? (IValue) value
-					: manager.createLiteral(value, null, null));
+					: manager.toValue(value));
 		}
 		return this;
 	}

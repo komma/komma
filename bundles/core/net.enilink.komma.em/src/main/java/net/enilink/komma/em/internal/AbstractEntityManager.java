@@ -361,12 +361,12 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		}
 	}
 
-	public ILiteral createLiteral(Object value,
+	public ILiteral createLiteral(String label,
 			net.enilink.komma.core.URI datatype, String language) {
 		if (datatype == null && language != null) {
-			return new net.enilink.komma.core.Literal(value, language);
+			return new net.enilink.komma.core.Literal(label, language);
 		}
-		return literalConverter.createLiteral(value, datatype);
+		return literalConverter.createLiteral(label, datatype);
 	}
 
 	@SuppressWarnings("unchecked")
