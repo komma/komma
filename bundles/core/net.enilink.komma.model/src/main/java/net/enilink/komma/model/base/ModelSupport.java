@@ -463,9 +463,9 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 					} catch (Throwable e) {
 						getErrors().add(
 								new DiagnosticWrappedException(getURI()
-										.toString(), new RuntimeException(
+										.toString(), new KommaException(
 										"Error while loading import: "
-												+ imported)));
+												+ imported, e)));
 					}
 				}
 			}
