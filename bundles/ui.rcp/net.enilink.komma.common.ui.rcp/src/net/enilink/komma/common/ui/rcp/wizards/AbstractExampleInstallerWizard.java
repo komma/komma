@@ -72,7 +72,7 @@ import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.DiagnosticException;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * <p>
@@ -103,16 +103,16 @@ public abstract class AbstractExampleInstallerWizard extends Wizard implements
 		INewWizard, IShellProvider {
 	public static class ProjectDescriptor {
 		protected String name;
-		protected URIImpl contentURI;
+		protected URI contentURI;
 		protected String description;
 
 		protected IProject project;
 
-		public URIImpl getContentURI() {
+		public URI getContentURI() {
 			return contentURI;
 		}
 
-		public void setContentURI(URIImpl contentURI) {
+		public void setContentURI(URI contentURI) {
 			this.contentURI = contentURI;
 		}
 
@@ -134,8 +134,8 @@ public abstract class AbstractExampleInstallerWizard extends Wizard implements
 
 		public IProject getProject() {
 			if (project == null) {
-				project = ResourcesPlugin.getWorkspace().getRoot().getProject(
-						getName());
+				project = ResourcesPlugin.getWorkspace().getRoot()
+						.getProject(getName());
 			}
 			return project;
 		}
@@ -325,8 +325,7 @@ public abstract class AbstractExampleInstallerWizard extends Wizard implements
 				renameButton.setEnabled(exists);
 
 				String description = projectDescriptor.getDescription() != null ? projectDescriptor
-						.getDescription()
-						: "";
+						.getDescription() : "";
 				if (exists) {
 					String renameMessage = CommonUIPlugin.INSTANCE
 							.getString("_UI_ProjectRename_message");
@@ -397,8 +396,9 @@ public abstract class AbstractExampleInstallerWizard extends Wizard implements
 
 	@Override
 	public void addPages() {
-		projectPage = new ProjectPage("projectPage", CommonUIPlugin.INSTANCE
-				.getString("_UI_ProjectPage_title"), null);
+		projectPage = new ProjectPage("projectPage",
+				CommonUIPlugin.INSTANCE.getString("_UI_ProjectPage_title"),
+				null);
 		projectPage.setDescription(CommonUIPlugin.INSTANCE
 				.getString("_UI_ProjectPage_description"));
 		addPage(projectPage);
@@ -447,8 +447,9 @@ public abstract class AbstractExampleInstallerWizard extends Wizard implements
 			return true;
 		} catch (InterruptedException e) {
 			if (exceptionWrapper.getCause() != null) {
-				openErrorDialog(CommonUIPlugin.INSTANCE
-						.getString("_UI_InstallExampleError_message"),
+				openErrorDialog(
+						CommonUIPlugin.INSTANCE
+								.getString("_UI_InstallExampleError_message"),
 						exceptionWrapper.getCause());
 			}
 		} catch (InvocationTargetException e) {
@@ -546,16 +547,16 @@ public abstract class AbstractExampleInstallerWizard extends Wizard implements
 	}
 
 	protected void openErrorDialog(String message, Throwable throwable) {
-		DiagnosticDialog.open(getShell(), CommonUIPlugin.INSTANCE
-				.getString("_UI_Error_label"), message, BasicDiagnostic
-				.toDiagnostic(throwable));
+		DiagnosticDialog.open(getShell(),
+				CommonUIPlugin.INSTANCE.getString("_UI_Error_label"), message,
+				BasicDiagnostic.toDiagnostic(throwable));
 	}
 
 	protected void createProject(ProjectDescriptor projectDescriptor,
 			IProgressMonitor monitor) throws CoreException {
 		monitor.beginTask(CommonUIPlugin.INSTANCE.getString(
-				"_UI_CreateProject_message", new String[] { projectDescriptor
-						.getName() }), 3);
+				"_UI_CreateProject_message",
+				new String[] { projectDescriptor.getName() }), 3);
 
 		IProject project = projectDescriptor.getProject();
 		project.create(new SubProgressMonitor(monitor, 1));
@@ -576,7 +577,7 @@ public abstract class AbstractExampleInstallerWizard extends Wizard implements
 
 	protected ImportOperation createDirectoryImportOperation(
 			ProjectDescriptor projectDescriptor) throws Exception {
-		URIImpl contentURI = projectDescriptor.getContentURI();
+		URI contentURI = projectDescriptor.getContentURI();
 		if (contentURI.isPlatform()) {
 			contentURI = CommonPlugin.asLocalURI(contentURI);
 		}
@@ -598,13 +599,12 @@ public abstract class AbstractExampleInstallerWizard extends Wizard implements
 		}
 
 		throw new Exception(CommonUIPlugin.INSTANCE.getString(
-				"_UI_DirectoryError_message", new String[] { contentURI
-						.toString() }));
+				"_UI_DirectoryError_message", contentURI.toString()));
 	}
 
 	protected ImportOperation createFileImportOperation(
 			ProjectDescriptor projectDescriptor) throws Exception {
-		URIImpl contentURI = projectDescriptor.getContentURI();
+		URI contentURI = projectDescriptor.getContentURI();
 		if (contentURI.isPlatform()) {
 			contentURI = CommonPlugin.asLocalURI(contentURI);
 		}
@@ -619,9 +619,9 @@ public abstract class AbstractExampleInstallerWizard extends Wizard implements
 			}
 		}
 
-		throw new Exception(CommonUIPlugin.INSTANCE
-				.getString("_UI_FileError_message", new String[] { contentURI
-						.toString() }));
+		throw new Exception(
+				CommonUIPlugin.INSTANCE.getString("_UI_FileError_message",
+						new String[] { contentURI.toString() }));
 	}
 
 	protected boolean isZipFile(File file) {
@@ -675,8 +675,8 @@ public abstract class AbstractExampleInstallerWizard extends Wizard implements
 			throws PartInitException {
 		IEditorRegistry editorRegistry = getWorkbench().getEditorRegistry();
 		if (editorID == null || editorRegistry.findEditor(editorID) == null) {
-			editorID = getWorkbench().getEditorRegistry().getDefaultEditor(
-					file.getFullPath().toString()).getId();
+			editorID = getWorkbench().getEditorRegistry()
+					.getDefaultEditor(file.getFullPath().toString()).getId();
 		}
 
 		IWorkbenchPage page = getWorkbench().getActiveWorkbenchWindow()

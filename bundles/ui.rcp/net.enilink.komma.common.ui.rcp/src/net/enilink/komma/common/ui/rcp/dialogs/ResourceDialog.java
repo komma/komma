@@ -24,7 +24,7 @@ import java.util.StringTokenizer;
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.common.ui.CommonUIPlugin;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.Dialog;
@@ -253,7 +253,7 @@ public class ResourceDialog extends Dialog {
 					StringBuffer uris = new StringBuffer();
 
 					for (int i = 0, len = fileNames.length; i < len; i++) {
-						uris.append(URIImpl.createFileURI(
+						uris.append(URIs.createFileURI(
 								filterPath + File.separator + fileNames[i])
 								.toString());
 						uris.append("  ");
@@ -263,7 +263,7 @@ public class ResourceDialog extends Dialog {
 				} else {
 					String fileName = fileDialog.getFileName();
 					if (fileName != null) {
-						uriField.setText(URIImpl.createFileURI(
+						uriField.setText(URIs.createFileURI(
 								filterPath + File.separator + fileName)
 								.toString());
 					}
@@ -287,7 +287,7 @@ public class ResourceDialog extends Dialog {
 					IFile[] files = WorkspaceResourceDialog.openFileSelection(
 							getShell(), null, null, true, null, null);
 					for (int i = 0, len = files.length; i < len; i++) {
-						uris.append(URIImpl.createPlatformResourceURI(files[i]
+						uris.append(URIs.createPlatformResourceURI(files[i]
 								.getFullPath().toString(), true));
 						uris.append("  ");
 					}
@@ -310,7 +310,7 @@ public class ResourceDialog extends Dialog {
 
 					if (file != null) {
 						uriField
-								.setText(URIImpl.createPlatformResourceURI(
+								.setText(URIs.createPlatformResourceURI(
 										file.getFullPath().toString(), true)
 										.toString());
 					}
@@ -353,7 +353,7 @@ public class ResourceDialog extends Dialog {
 		for (StringTokenizer stringTokenizer = new StringTokenizer(getURIText()); stringTokenizer
 				.hasMoreTokens();) {
 			String uri = stringTokenizer.nextToken();
-			uris.add(URIImpl.createURI(uri));
+			uris.add(URIs.createURI(uri));
 		}
 		return uris;
 	}

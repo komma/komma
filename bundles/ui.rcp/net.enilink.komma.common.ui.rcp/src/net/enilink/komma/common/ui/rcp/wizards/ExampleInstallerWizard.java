@@ -19,6 +19,10 @@ package net.enilink.komma.common.ui.rcp.wizards;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.enilink.komma.common.ui.CommonUIPlugin;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIs;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
@@ -26,9 +30,6 @@ import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.osgi.framework.Bundle;
-
-import net.enilink.komma.common.ui.CommonUIPlugin;
-import net.enilink.komma.core.URIImpl;
 
 /**
  * <p>
@@ -99,9 +100,9 @@ public class ExampleInstallerWizard extends AbstractExampleInstallerWizard
 							AbstractExampleInstallerWizard.ProjectDescriptor projectDescriptor = new AbstractExampleInstallerWizard.ProjectDescriptor();
 							projectDescriptor.setName(projectName);
 
-							URIImpl uri = URIImpl.createURI(contentURI);
+							URI uri = URIs.createURI(contentURI);
 							if (uri.isRelative()) {
-								uri = URIImpl.createPlatformPluginURI(
+								uri = URIs.createPlatformPluginURI(
 										projectDescriptorElement
 												.getContributor().getName()
 												+ "/" + contentURI, true);
