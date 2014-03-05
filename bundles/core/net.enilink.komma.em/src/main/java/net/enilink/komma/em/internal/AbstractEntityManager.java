@@ -78,6 +78,7 @@ import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.InferencingCapability;
 import net.enilink.komma.core.Initializable;
 import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.Literal;
 import net.enilink.komma.core.LockModeType;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.StatementPattern;
@@ -361,12 +362,15 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		}
 	}
 
-	public ILiteral createLiteral(String label,
-			net.enilink.komma.core.URI datatype, String language) {
+	public ILiteral createLiteral(Object value, URI datatype) {
+		return literalConverter.createLiteral(value, datatype);
+	}
+
+	public ILiteral createLiteral(String label, URI datatype, String language) {
 		if (datatype == null && language != null) {
-			return new net.enilink.komma.core.Literal(label, language);
+			return new Literal(label, language);
 		}
-		return literalConverter.createLiteral(label, datatype);
+		return createLiteral(label, datatype);
 	}
 
 	@SuppressWarnings("unchecked")

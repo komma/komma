@@ -81,8 +81,12 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public ILiteral createLiteral(String label,
-			net.enilink.komma.core.URI datatype, String language) {
+	public ILiteral createLiteral(Object value, URI datatype) {
+		return getDelegate().createLiteral(value, datatype);
+	}
+
+	@Override
+	public ILiteral createLiteral(String label, URI datatype, String language) {
 		return getDelegate().createLiteral(label, datatype, language);
 	}
 
