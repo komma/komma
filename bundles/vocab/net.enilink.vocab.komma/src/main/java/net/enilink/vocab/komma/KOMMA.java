@@ -13,12 +13,12 @@ package net.enilink.vocab.komma;
 import net.enilink.composition.annotations.Iri;
 
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 @Iri("http://enilink.net/vocab/komma#")
 public interface KOMMA {
 	public static final String NAMESPACE = "http://enilink.net/vocab/komma#";
-	public static final URI NAMESPACE_URI = URIImpl.createURI(NAMESPACE);
+	public static final URI NAMESPACE_URI = URIs.createURI(NAMESPACE);
 
 	public static final URI TYPE_KEYVALUEMAP = NAMESPACE_URI.appendFragment("KeyValueMap");
 
