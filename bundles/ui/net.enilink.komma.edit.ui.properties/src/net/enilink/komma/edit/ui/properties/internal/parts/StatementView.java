@@ -17,6 +17,7 @@ import net.enilink.komma.core.IStatementPattern;
 import net.enilink.komma.core.Literal;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.StatementPattern;
+import net.enilink.komma.core.Statements;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -418,8 +419,8 @@ public class StatementView extends AbstractEditingDomainView {
 									null);
 						}
 					} else if (addPattern != null
-							&& n.getStatement()
-									.matchesIgnoreContext(addPattern)) {
+							&& Statements.matchesIgnoreContext(
+									n.getStatement(), addPattern)) {
 						stmt = resolve(
 								((IEntity) stmt.getSubject())
 										.getEntityManager(),
