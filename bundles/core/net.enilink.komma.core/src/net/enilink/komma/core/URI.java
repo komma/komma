@@ -12,6 +12,33 @@ package net.enilink.komma.core;
 
 import java.util.List;
 
+/**
+ * Interface for a Uniform Resource Identifier (URI), as specified by <a
+ * href="http://www.ietf.org/rfc/rfc2396.txt">RFC 2396</a>, with certain
+ * enhancements. A <code>URI</code> instance can be created by specifying values
+ * for its components, or by providing a single URI string, which is parsed into
+ * its components. Static factory methods whose names begin with "create" are
+ * used for both forms of object creation.
+ * 
+ * <p>
+ * Like <code>String</code>, <code>URI</code> implementations are immutable; a
+ * <code>URI</code> instance offers several by-value methods that return a new
+ * <code>URI</code> object based on its current state. Most useful, a relative
+ * <code>URI</code> can be {@link #resolve(URI) resolve}d against a base
+ * absolute <code>URI</code> -- the latter typically identifies the document in
+ * which the former appears. The inverse to this is {@link #deresolve(URI)
+ * deresolve}, which answers the question, "what relative URI will resolve,
+ * against the given base, to this absolute URI?"
+ * 
+ * <p>
+ * In the <a href="http://www.ietf.org/rfc/rfc2396.txt">RFC</a>, much attention
+ * is focused on a hierarchical naming system used widely to locate resources
+ * via common protocols such as HTTP, FTP, and Gopher, and to identify files on
+ * a local file system. Accordingly, implementations need functionality to
+ * handle such URIs, which can be identified via {@link #isHierarchical
+ * isHierarchical}.
+ * 
+ */
 public interface URI extends IReference {
 
 	/**
