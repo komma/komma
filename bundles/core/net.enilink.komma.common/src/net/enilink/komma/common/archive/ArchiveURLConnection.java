@@ -32,7 +32,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * A connection that can access an entry in an archive, and then recursively an
@@ -41,19 +41,19 @@ import net.enilink.komma.core.URIImpl;
  * 
  * <pre>
  *  archive:file:///c:/temp/example.zip!/org/example/nested.zip!/org/example/deeply-nested.html
- *</pre>
+ * </pre>
  * 
  * The general recursive pattern is
  * 
  * <pre>
  *  archive:$nestedURL${/!$archivePath$}+
- *</pre>
+ * </pre>
  * 
  * So the nested URL for the example above is
  * 
  * <pre>
  *  file:///c:/temp/example.zip
- *</pre>
+ * </pre>
  * 
  * <p>
  * Since the nested URL may itself contain archive schemes, the subsequence of
@@ -65,13 +65,13 @@ import net.enilink.komma.core.URIImpl;
  * 
  * <pre>
  *  archive:jar:file:///c:/temp/example.zip!/org/example/nested.zip!/org/example/deeply-nested.html
- *</pre>
+ * </pre>
  * 
  * the nested URL is correctly parsed to skip to the second archive separator as
  * 
  * <pre>
  *  jar:file:///c:/temp/example.zip!/org/example/nested.zip
- *</pre>
+ * </pre>
  * 
  * </p>
  * 
@@ -122,13 +122,13 @@ public class ArchiveURLConnection extends URLConnection {
 	 * 
 	 * <pre>
 	 *  archive:jar:file:///c:/temp/example.zip!/org/example/nested.zip!/org/example/deeply-nested.html
-	 *</pre>
+	 * </pre>
 	 * 
 	 * will be handled as if it were specified as
 	 * 
 	 * <pre>
 	 *  archive:file:///c:/temp/example.zip!/org/example/nested.zip!/org/example/deeply-nested.html
-	 *</pre>
+	 * </pre>
 	 * 
 	 * Override this only if you are reusing the logic of retrieving an input
 	 * stream into an archive and hence are likely to be overriding
@@ -149,7 +149,7 @@ public class ArchiveURLConnection extends URLConnection {
 	 * 
 	 * <pre>
 	 *  archive:file:///c:/temp/example.zip!/org/example/nested.html
-	 *</pre>
+	 * </pre>
 	 * 
 	 * @return whether to handle the special case of a nested URL with file:
 	 *         schema using a ZipFile.
@@ -242,7 +242,7 @@ public class ArchiveURLConnection extends URLConnection {
 		} else {
 			// The name to be used for the entry.
 			//
-			String entry = URIImpl.decode(nextArchiveSeparator < 0 ? urlString
+			String entry = URIs.decode(nextArchiveSeparator < 0 ? urlString
 					.substring(archiveSeparator + 2) : urlString.substring(
 					archiveSeparator + 2, nextArchiveSeparator));
 
@@ -257,7 +257,7 @@ public class ArchiveURLConnection extends URLConnection {
 			// get the stream,
 			// and wrap it so that closing it closes the zip file.
 			//
-			final ZipFile zipFile = new ZipFile(URIImpl.decode(nestedURL
+			final ZipFile zipFile = new ZipFile(URIs.decode(nestedURL
 					.substring(5)));
 			inputZipEntry = zipFile.getEntry(entry);
 			InputStream zipEntryInputStream = inputZipEntry == null ? null
@@ -281,7 +281,7 @@ public class ArchiveURLConnection extends URLConnection {
 
 			// The entry name to be matched.
 			//
-			String entry = URIImpl.decode(nextArchiveSeparator < 0 ? urlString
+			String entry = URIs.decode(nextArchiveSeparator < 0 ? urlString
 					.substring(archiveSeparator + 2) : urlString.substring(
 					archiveSeparator + 2, nextArchiveSeparator));
 
@@ -407,7 +407,7 @@ public class ArchiveURLConnection extends URLConnection {
 			for (;;) {
 				// The name that will be used as the archive entry.
 				//
-				String entry = URIImpl.decode(nextArchiveSeparator < 0 ? urlString
+				String entry = URIs.decode(nextArchiveSeparator < 0 ? urlString
 						.substring(archiveSeparator + 2) : urlString.substring(
 						archiveSeparator + 2, nextArchiveSeparator));
 
@@ -524,7 +524,7 @@ public class ArchiveURLConnection extends URLConnection {
 						// we'll hope that renaming it will be really efficient.
 						//
 						if (useRenameTo) {
-							File targetFile = new File(URIImpl.decode(nestedURL
+							File targetFile = new File(URIs.decode(nestedURL
 									.substring(5)));
 							if (deleteRequired && !targetFile.delete()) {
 								throw new IOException("cannot delete "

@@ -25,7 +25,7 @@ import java.util.Locale;
 
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
@@ -78,7 +78,7 @@ public final class CommonPlugin extends AbstractKommaPlugin {
 	/**
 	 * Use the platform, if available, to convert to a local URI.
 	 */
-	public static URIImpl asLocalURI(URIImpl uri) {
+	public static URI asLocalURI(URI uri) {
 		return plugin == null ? uri : Implementation.asLocalURI(uri);
 	}
 
@@ -112,7 +112,7 @@ public final class CommonPlugin extends AbstractKommaPlugin {
 		}
 		COLLATOR_GET_INSTANCE_METHOD = collatorGetInstanceMethod;
 	}
-	
+
 	/**
 	 * Returns a string comparator appropriate for collating strings for the
 	 * {@link Locale#getDefault() current locale}.
@@ -166,7 +166,7 @@ public final class CommonPlugin extends AbstractKommaPlugin {
 		/**
 		 * Use the platform to convert to a local URI.
 		 */
-		protected static URIImpl asLocalURI(URIImpl uri) {
+		protected static URI asLocalURI(URI uri) {
 			try {
 				String fragment = uri.fragment();
 				URL url = FileLocator.toFileURL(new URL(uri.trimFragment()
@@ -193,7 +193,7 @@ public final class CommonPlugin extends AbstractKommaPlugin {
 				// Platform.resolve() doesn't work if the project is encoded.
 				//
 				try {
-					uriWithoutFragmentToString = URIImpl
+					uriWithoutFragmentToString = URIs
 							.decode(uriWithoutFragmentToString);
 					url = FileLocator.resolve(new URL(
 							uriWithoutFragmentToString));
@@ -212,16 +212,15 @@ public final class CommonPlugin extends AbstractKommaPlugin {
 			return uri;
 		}
 
-		protected static URIImpl fix(URL url, String fragment)
-				throws IOException {
+		protected static URI fix(URL url, String fragment) throws IOException {
 			// Only file-scheme URIs will be re-encoded. If a URI was decoded in
 			// the workaround
 			// above, and Platform.resolve() didn't return a file-scheme URI,
 			// then this will return
 			// an decoded URI.
 			//
-			URIImpl result = "file".equalsIgnoreCase(url.getProtocol()) ? URIImpl
-					.createFileURI(URIImpl.decode(url.getFile())) : URIImpl
+			URI result = "file".equalsIgnoreCase(url.getProtocol()) ? URIs
+					.createFileURI(URIs.decode(url.getFile())) : URIs
 					.createURI(url.toString());
 			if (fragment != null) {
 				result = result.appendFragment(fragment);

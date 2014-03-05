@@ -29,7 +29,7 @@ import java.util.ResourceBundle;
 
 import net.enilink.komma.common.CommonPlugin;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * An abstract resource locator implementation comprising a
@@ -93,7 +93,7 @@ public abstract class DelegatingResourceLocator implements IResourceLocator {
 	 */
 	protected abstract IResourceLocator[] getDelegateResourceLocators();
 
-	private static final URI DOT = URIImpl.createURI(".");
+	private static final URI DOT = URIs.createURI(".");
 
 	/*
 	 * Javadoc copied from interface.
@@ -138,7 +138,7 @@ public abstract class DelegatingResourceLocator implements IResourceLocator {
 								.getResource((index == -1 ? className
 										: className.substring(index + 1))
 										+ ".class");
-						URIImpl uri = URIImpl.createURI(classURL.toString());
+						URI uri = URIs.createURI(classURL.toString());
 
 						// Trim off the segments corresponding to the package
 						// nesting.
@@ -152,7 +152,7 @@ public abstract class DelegatingResourceLocator implements IResourceLocator {
 						// For an archive URI, check for the plugin.properties
 						// in the archive.
 						//
-						if (URIImpl.isArchiveScheme(uri.scheme())) {
+						if (URIs.isArchiveScheme(uri.scheme())) {
 							try {
 								// If we can open an input stream, then the
 								// plugin.properties is there, and we have a
@@ -171,7 +171,7 @@ public abstract class DelegatingResourceLocator implements IResourceLocator {
 								// so we can look in the folder that contains
 								// it.
 								//
-								uri = URIImpl.createURI(uri.authority())
+								uri = URIs.createURI(uri.authority())
 										.trimSegments(1);
 							}
 						}
@@ -193,8 +193,8 @@ public abstract class DelegatingResourceLocator implements IResourceLocator {
 								// plugin.properties is in the folder, and we
 								// have a good base URL.
 								//
-								InputStream inputStream = new URL(uri
-										.toString()).openStream();
+								InputStream inputStream = new URL(
+										uri.toString()).openStream();
 								inputStream.close();
 								baseURL = new URL(DOT.resolve(uri).toString());
 							} catch (IOException exception) {
@@ -216,7 +216,7 @@ public abstract class DelegatingResourceLocator implements IResourceLocator {
 						}
 					} else {
 						baseURL = new URL(DOT.resolve(
-								URIImpl.createURI(pluginPropertiesURL.toString()))
+								URIs.createURI(pluginPropertiesURL.toString()))
 								.toString());
 					}
 				} catch (IOException exception) {
@@ -415,8 +415,7 @@ public abstract class DelegatingResourceLocator implements IResourceLocator {
 					//
 					try {
 						InputStream inputStream = new URL(getBaseURL()
-								.toString()
-								+ "plugin.properties").openStream();
+								.toString() + "plugin.properties").openStream();
 						bundle = untranslatedResourceBundle = resourceBundle = new PropertyResourceBundle(
 								inputStream);
 						inputStream.close();

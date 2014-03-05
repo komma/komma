@@ -94,15 +94,16 @@ public interface Diagnostic {
 	/**
 	 * A diagnostic indicating that everything is okay.
 	 */
-	Diagnostic OK_INSTANCE = new BasicDiagnostic(OK, "org.eclipse.emf.common",
-			0, net.enilink.komma.common.CommonPlugin.INSTANCE
+	Diagnostic OK_INSTANCE = new BasicDiagnostic(OK,
+			"net.enilink.komma.common", 0,
+			net.enilink.komma.common.CommonPlugin.INSTANCE
 					.getString("_UI_OK_diagnostic_0"), null);
 
 	/**
 	 * A diagnostic indicating that the diagnosis was canceled.
 	 */
 	Diagnostic CANCEL_INSTANCE = new BasicDiagnostic(CANCEL,
-			"org.eclipse.emf.common", 0,
+			"net.enilink.komma.common", 0,
 			net.enilink.komma.common.CommonPlugin.INSTANCE
 					.getString("_UI_Cancel_diagnostic_0"), null);
 }

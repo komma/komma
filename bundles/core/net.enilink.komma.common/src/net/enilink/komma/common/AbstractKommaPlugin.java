@@ -26,6 +26,14 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.jar.Manifest;
 
+import net.enilink.komma.common.internal.CommonStatusCodes;
+import net.enilink.komma.common.util.DelegatingResourceLocator;
+import net.enilink.komma.common.util.ILogger;
+import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.common.util.WrappedException;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIs;
+
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
@@ -33,13 +41,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.Bundle;
-
-import net.enilink.komma.common.internal.CommonStatusCodes;
-import net.enilink.komma.common.util.DelegatingResourceLocator;
-import net.enilink.komma.common.util.ILogger;
-import net.enilink.komma.common.util.IResourceLocator;
-import net.enilink.komma.common.util.WrappedException;
-import net.enilink.komma.core.URIImpl;
 
 /**
  * MF must run within an Eclipse workbench, within a headless Eclipse workspace,
@@ -386,7 +387,7 @@ public abstract class AbstractKommaPlugin extends DelegatingResourceLocator
 			int index = className.lastIndexOf(".");
 			URL classURL = theClass.getResource((index == -1 ? className
 					: className.substring(index + 1)) + ".class");
-			URIImpl uri = URIImpl.createURI(classURL.toString());
+			URI uri = URIs.createURI(classURL.toString());
 
 			// Trim off the segments corresponding to the package nesting.
 			//
@@ -400,7 +401,7 @@ public abstract class AbstractKommaPlugin extends DelegatingResourceLocator
 
 			// For an archive URI, check for the path in the archive.
 			//
-			if (URIImpl.isArchiveScheme(uri.scheme())) {
+			if (URIs.isArchiveScheme(uri.scheme())) {
 				try {
 					// If we can open an input stream, then the path is there,
 					// and we have a good URL.
@@ -415,7 +416,7 @@ public abstract class AbstractKommaPlugin extends DelegatingResourceLocator
 					// create a new URI for the folder location of the archive,
 					// so we can look in the folder that contains it.
 					//
-					uri = URIImpl.createURI(uri.authority()).trimSegments(1);
+					uri = URIs.createURI(uri.authority()).trimSegments(1);
 				}
 			}
 
