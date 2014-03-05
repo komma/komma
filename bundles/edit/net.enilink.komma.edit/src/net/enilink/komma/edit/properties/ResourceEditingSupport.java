@@ -42,7 +42,7 @@ import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.QueryFragment;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 public class ResourceEditingSupport implements IPropertyEditingSupport {
 	static class ConstructorParser extends BaseRdfParser {
@@ -450,7 +450,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 
 	protected URI toURI(IModel model, Object value) {
 		if (value instanceof IriRef) {
-			return URIImpl.createURI(((IriRef) value).getIri());
+			return URIs.createURI(((IriRef) value).getIri());
 		} else if (value instanceof QName) {
 			String prefix = ((QName) value).getPrefix();
 			String localPart = ((QName) value).getLocalPart();

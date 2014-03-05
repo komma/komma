@@ -21,19 +21,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
-
 import net.enilink.commons.util.extensions.RegistryReader;
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.edit.provider.ComposedAdapterFactory;
 import net.enilink.komma.edit.provider.IChildCreationExtender;
 import net.enilink.komma.internal.model.extensions.KommaRegistryReader;
 import net.enilink.komma.internal.model.extensions.KommaRegistryReader.PluginClassDescriptor;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Platform;
 
 /**
  * The <b>Plugin</b> for the model EMF.Edit library. EMF must run within an
@@ -98,11 +97,11 @@ public final class KommaEditPlugin extends AbstractKommaPlugin {
 				@Override
 				public ComposedAdapterFactory.IDescriptor delegatedGetDescriptor(
 						Collection<?> types) {
-					List<Object> stringTypes = new ArrayList<Object>(types
-							.size());
+					List<Object> stringTypes = new ArrayList<Object>(
+							types.size());
 					for (Object key : types) {
 						if (key instanceof URI) {
-							stringTypes.add(((URIImpl) key).toString());
+							stringTypes.add(((URI) key).toString());
 						} else if (key instanceof Class<?>) {
 							stringTypes.add(((Class<?>) key).getName());
 						} else {
@@ -119,8 +118,9 @@ public final class KommaEditPlugin extends AbstractKommaPlugin {
 				}
 			};
 			if (INSTANCE.getBundleResourceLocator() instanceof EclipsePlugin) {
-				RegistryReader registryReader = new KommaRegistryReader(Platform
-						.getExtensionRegistry(), INSTANCE.getSymbolicName(),
+				RegistryReader registryReader = new KommaRegistryReader(
+						Platform.getExtensionRegistry(),
+						INSTANCE.getSymbolicName(),
 						"itemProviderAdapterFactories") {
 					@Override
 					protected boolean readElement(
@@ -164,8 +164,7 @@ public final class KommaEditPlugin extends AbstractKommaPlugin {
 									key.add(supportedType);
 									if (add) {
 										composedAdapterFactoryDescriptorRegistry
-												.put(
-														key,
+												.put(key,
 														new PluginAdapterFactoryDescriptor(
 																element,
 																"class"));
@@ -216,9 +215,9 @@ public final class KommaEditPlugin extends AbstractKommaPlugin {
 				}
 			};
 			if (INSTANCE.getBundleResourceLocator() instanceof EclipsePlugin) {
-				RegistryReader registryReader = new RegistryReader(Platform
-						.getExtensionRegistry(), INSTANCE.getSymbolicName(),
-						"childCreationExtenders") {
+				RegistryReader registryReader = new RegistryReader(
+						Platform.getExtensionRegistry(),
+						INSTANCE.getSymbolicName(), "childCreationExtenders") {
 					@Override
 					protected boolean readElement(
 							IConfigurationElement element, boolean add) {
@@ -256,8 +255,7 @@ public final class KommaEditPlugin extends AbstractKommaPlugin {
 							if (add) {
 								if (collection == null) {
 									childCreationExtenderDescriptorRegistry
-											.put(
-													packageURI,
+											.put(packageURI,
 													collection = new ArrayList<IChildCreationExtender.Descriptor>());
 								}
 

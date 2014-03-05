@@ -57,7 +57,7 @@ import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.AddCommand;
 import net.enilink.komma.edit.command.CommandParameter;
@@ -822,8 +822,8 @@ public class ItemProviderAdapter extends
 		if ((requiresName || parentType != null)
 				&& inputCallbackProvider != null) {
 			IInputCallback input = inputCallbackProvider.get();
-			URI nameInput = URIImpl.createURI("input:name");
-			URI typeInput = URIImpl.createURI("input:type");
+			URI nameInput = URIs.createURI("input:name");
+			URI typeInput = URIs.createURI("input:type");
 			if (requiresName) {
 				input.require(nameInput);
 			}

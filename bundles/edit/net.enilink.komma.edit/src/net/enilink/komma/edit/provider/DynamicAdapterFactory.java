@@ -22,7 +22,7 @@ import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 public class DynamicAdapterFactory implements IAdapterFactory {
 	protected class AdapterCompositionModule extends AbstractModule {
@@ -97,7 +97,7 @@ public class DynamicAdapterFactory implements IAdapterFactory {
 			return new TypeFactory<URI>() {
 				@Override
 				public URI createType(String type) {
-					return URIImpl.createURI(type);
+					return URIs.createURI(type);
 				}
 
 				@Override

@@ -56,7 +56,7 @@ import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * This is the item provider adapter for a {@link IModel} object.
@@ -216,14 +216,14 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 					.getManager().find(RDFS.TYPE_RESOURCE));
 
 			children.add(new ItemProvider(getRootAdapterFactory(), "Classes",
-					URIImpl.createURI(getResourceLocator().getImage(
+					URIs.createURI(getResourceLocator().getImage(
 							"full/obj16/Classes.png").toString()), classes));
 
 			// List<IObject> properties = (List<IObject>) ((IModel) object)
 			// .getManager().createQuery(QUERY_PROPERTIES).evaluate()
 			// .toList();
 			// children.add(new ItemProvider(getRootAdapterFactory(),
-			// "Properties", URIImpl.createURI(getResourceLocator()
+			// "Properties", URIs.createURI(getResourceLocator()
 			// .getImage("full/obj16/Properties.png").toString()),
 			// properties));
 		}
@@ -232,7 +232,7 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 		// .getManager().createQuery(QUERY_INSTANCES)
 		// .setIncludeInferred(true).evaluate().toList();
 		// children.add(new Instances((IModel) object, getRootAdapterFactory(),
-		// URIImpl.createURI(getResourceLocator().getImage(
+		// URIs.createURI(getResourceLocator().getImage(
 		// "full/obj16/Instances.png").toString()), instances));
 
 		return children;
@@ -268,7 +268,7 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 		URI uri = (object instanceof IModel) ? ((IModel) object).getURI()
 				: ((IEntity) object).getURI();
 
-		Object image = URIImpl.createURI(getResourceLocator().getImage(
+		Object image = URIs.createURI(getResourceLocator().getImage(
 				"full/obj16/Model").toString()
 				+ "#" + uri.fileExtension());
 		return image;

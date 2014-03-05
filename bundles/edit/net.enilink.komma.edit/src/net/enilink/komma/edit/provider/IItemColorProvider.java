@@ -17,7 +17,7 @@
 package net.enilink.komma.edit.provider;
 
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * This is the interface implemented to provide a color for an item;
@@ -46,7 +46,7 @@ public interface IItemColorProvider
    *</pre>
    * 
    */
-  URI GRAYED_OUT_COLOR = URIImpl.createURI("color://hsb///0.5");
+  URI GRAYED_OUT_COLOR = URIs.createURI("color://hsb///0.5");
   
   /**
    * This does the same thing as IColorProvider.getForeground, 

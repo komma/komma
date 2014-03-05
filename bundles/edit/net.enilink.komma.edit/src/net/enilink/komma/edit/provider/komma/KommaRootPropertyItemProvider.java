@@ -24,7 +24,7 @@ import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.provider.ISearchableItemProvider;
 import net.enilink.komma.edit.provider.IViewerNotification;
 import net.enilink.komma.edit.provider.ReflectiveItemProvider;
@@ -125,7 +125,7 @@ public class KommaRootPropertyItemProvider extends ReflectiveItemProvider {
 		URI uri = (object instanceof IModel) ? ((IModel) object).getURI()
 				: ((IEntity) object).getURI();
 
-		Object image = URIImpl.createURI(getResourceLocator().getImage(
+		Object image = URIs.createURI(getResourceLocator().getImage(
 				"full/obj16/Model").toString()
 				+ "#" + uri.fileExtension());
 		return image;

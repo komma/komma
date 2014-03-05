@@ -14,7 +14,7 @@ import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -39,7 +39,7 @@ public abstract class PropertyEditingHelper {
 		PROPERTY, VALUE, LITERAL_LANG_TYPE
 	}
 
-	public URI NULL_URI = URIImpl.createURI("urn:null");
+	public URI NULL_URI = URIs.createURI("urn:null");
 
 	protected IAdapterFactory delegatingAdapterFactory = new IAdapterFactory() {
 		@Override

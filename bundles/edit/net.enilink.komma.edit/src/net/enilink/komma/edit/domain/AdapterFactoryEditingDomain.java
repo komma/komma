@@ -65,7 +65,7 @@ import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.model.change.ChangeRecorder;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IUnitOfWork;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * This class implements an editing domain by delegating to adapters that
@@ -495,17 +495,17 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 								}
 							})).getInstance(IModelSetFactory.class);
 
-			clipboardModelSet = factory.createModelSet(URIImpl
+			clipboardModelSet = factory.createModelSet(URIs
 					.createURI(MODELS.NAMESPACE + "MemoryModelSet" //
 					));
 		}
 
 		IModel model = clipboardModelSet.getModel(
-				URIImpl.createURI(CLIPBOARD_URI), false);
+				URIs.createURI(CLIPBOARD_URI), false);
 		if (model != null) {
 			return model;
 		}
-		return clipboardModelSet.createModel(URIImpl.createURI(CLIPBOARD_URI));
+		return clipboardModelSet.createModel(URIs.createURI(CLIPBOARD_URI));
 	}
 
 	/**

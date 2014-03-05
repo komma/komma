@@ -17,7 +17,7 @@
 package net.enilink.komma.edit.provider;
 
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 
 /**
@@ -42,7 +42,7 @@ public interface IItemFontProvider
    *  font:////normal
    *</pre>
    */
-  URI NORMAL_FONT = URIImpl.createURI("font:////normal");
+  URI NORMAL_FONT = URIs.createURI("font:////normal");
 
   /**
    * An instance object used to specify a bold version of the viewer's font:
@@ -50,7 +50,7 @@ public interface IItemFontProvider
    *  font:////bold
    *</pre>
    */
-  URI BOLD_FONT = URIImpl.createURI("font:////bold");
+  URI BOLD_FONT = URIs.createURI("font:////bold");
 
   /**
    * An instance object used to specify an italic version of the viwer's font:
@@ -58,7 +58,7 @@ public interface IItemFontProvider
    *  font:////italic
    *</pre>
    */
-  URI ITALIC_FONT = URIImpl.createURI("font:////italic");
+  URI ITALIC_FONT = URIs.createURI("font:////italic");
 
   /**
    * An instance object used to specify an bold italic version of the viwer's font:
@@ -66,7 +66,7 @@ public interface IItemFontProvider
    *  font:////bold+italic
    *</pre>
    */
-  URI BOLD_ITALIC_FONT = URIImpl.createURI("font:////bold+italic");
+  URI BOLD_ITALIC_FONT = URIs.createURI("font:////bold+italic");
 
   /**
    * This does the same thing as IFontProvider.getFont, 
