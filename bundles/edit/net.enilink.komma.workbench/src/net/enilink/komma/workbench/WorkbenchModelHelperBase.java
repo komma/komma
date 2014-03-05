@@ -35,7 +35,7 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.workbench.internal.KommaWorkbenchContextFactory;
 import net.enilink.komma.workbench.internal.KommaWorkbenchPlugin;
 
@@ -86,13 +86,11 @@ public class WorkbenchModelHelperBase {
 			if (isPlatformModelURI(uri)) {
 				// Need to get the path and remove the first two segments
 				// (/resource/project name/).
-				path = new Path(URIImpl.decode(uri.path()))
-						.removeFirstSegments(2);
+				path = new Path(URIs.decode(uri.path())).removeFirstSegments(2);
 			} else {
 				// Need to get the path and remove the first segment (/project
 				// name/).
-				path = new Path(URIImpl.decode(uri.path()))
-						.removeFirstSegments(1);
+				path = new Path(URIs.decode(uri.path())).removeFirstSegments(1);
 			}
 			return project.getFile(path);
 		} else
@@ -109,7 +107,7 @@ public class WorkbenchModelHelperBase {
 	 * 
 	 * @since 1.0.0
 	 */
-	public static IModel getExistingOrCreateResource(URIImpl uri, IModelSet set) {
+	public static IModel getExistingOrCreateResource(URI uri, IModelSet set) {
 		if (set != null) {
 			IModel model = set.getModel(uri, false);
 			if (model == null) {
@@ -265,7 +263,7 @@ public class WorkbenchModelHelperBase {
 	 * 
 	 * @since 1.0.0
 	 */
-	public static boolean hasContainerStructure(IProject project, URIImpl uri) {
+	public static boolean hasContainerStructure(IProject project, URI uri) {
 		if (project != null && uri != null) {
 			IPath path = new Path(uri.toString());
 			List<?> containers = getProjectURIConverterContainers(project);
@@ -305,7 +303,7 @@ public class WorkbenchModelHelperBase {
 		} else
 			return null;
 		IProject project = getWorkspace().getRoot().getProject(
-				URIImpl.decode(projectName));
+				URIs.decode(projectName));
 		if (project != null && project.isAccessible())
 			return project;
 		else
@@ -347,8 +345,8 @@ public class WorkbenchModelHelperBase {
 			int index = href.indexOf('#');
 			if (index > -1)
 				file = href.substring(0, index);
-			return ModelPlugin.getDefault().getURIMap().map(
-					URIImpl.createURI(file)) != null;
+			return ModelPlugin.getDefault().getURIMap()
+					.map(URIs.createURI(file)) != null;
 		}
 		return false;
 	}
@@ -396,10 +394,10 @@ public class WorkbenchModelHelperBase {
 	 * @return uri
 	 * @since 1.0.0
 	 */
-	public static URI getNonPlatformURI(URIImpl platformURI) {
+	public static URI getNonPlatformURI(URI platformURI) {
 		if (isPlatformModelURI(platformURI)) {
 			String uriString = primGetNonPlatformURIString(platformURI);
-			return URIImpl.createURI(uriString);
+			return URIs.createURI(uriString);
 		}
 		return platformURI;
 	}
@@ -412,7 +410,7 @@ public class WorkbenchModelHelperBase {
 	 * @return
 	 * @since 1.0.0
 	 */
-	public static String getNonPlatformURIString(URIImpl platformURI) {
+	public static String getNonPlatformURIString(URI platformURI) {
 		if (isPlatformModelURI(platformURI)) {
 			return primGetNonPlatformURIString(platformURI);
 		}
@@ -423,7 +421,7 @@ public class WorkbenchModelHelperBase {
 	 * Remove "platform:/resource/" from the front of the platformURI and return
 	 * the remaining String.
 	 */
-	private static String primGetNonPlatformURIString(URIImpl platformURI) {
+	private static String primGetNonPlatformURIString(URI platformURI) {
 		String uriString = platformURI.toString();
 		// "platform:/resource/" is 19 characters.
 		return uriString.substring(19, uriString.length());

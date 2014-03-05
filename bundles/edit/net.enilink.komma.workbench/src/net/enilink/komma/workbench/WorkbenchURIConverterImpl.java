@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.base.ExtensibleURIConverter;
 import net.enilink.komma.model.base.IURIMapRule;
@@ -159,7 +159,7 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 				|| ruleMap.containsKey(file.getFullPath())) {
 			return;
 		}
-		URI fileURI = URIImpl.createPlatformResourceURI(file.getFullPath()
+		URI fileURI = URIs.createPlatformResourceURI(file.getFullPath()
 				.toString(), true);
 		String ontology = null;
 		try {
