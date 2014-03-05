@@ -18,7 +18,7 @@ import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.owl.ObjectProperty;
 import net.enilink.vocab.owl.Ontology;
 import net.enilink.komma.rdfs.edit.RDFSItemProviderAdapterFactory;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.em.concepts.IClass;
 import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.concepts.IResource;
@@ -30,7 +30,7 @@ import net.enilink.komma.em.concepts.IResource;
 public class OWLItemProviderAdapterFactory extends
 		RDFSItemProviderAdapterFactory {
 	public OWLItemProviderAdapterFactory() {
-		super(OWLEditPlugin.INSTANCE, URIImpl.createURI(Class.class
+		super(OWLEditPlugin.INSTANCE, URIs.createURI(Class.class
 				.getPackage().getAnnotation(Iri.class).value()));
 	}
 
