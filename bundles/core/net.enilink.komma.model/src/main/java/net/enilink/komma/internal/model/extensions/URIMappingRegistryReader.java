@@ -13,19 +13,17 @@ package net.enilink.komma.internal.model.extensions;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.core.runtime.IConfigurationElement;
-
+import net.enilink.komma.core.URI;
 import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.base.IURIMapRuleSet;
 import net.enilink.komma.model.base.RegExURIMapRule;
-import net.enilink.komma.core.URIImpl;
+
+import org.eclipse.core.runtime.IConfigurationElement;
 
 /**
- * A plugin extension reader that populates the
- * {@link org.eclipse.emf.ecore.resource.URIConverter#URI_MAP global} mapping
- * registry. Clients are not expected to use this class directly.
+ * A plugin extension reader that populates the global mapping registry. Clients
+ * are not expected to use this class directly.
  */
-
 public class URIMappingRegistryReader extends KommaRegistryReader {
 	static final String TAG_MAPPING = "rule";
 	static final String ATT_PRIORITY = "priority";
@@ -33,8 +31,6 @@ public class URIMappingRegistryReader extends KommaRegistryReader {
 	static final String ATT_REPLACEMENT = "replacement";
 	static final String ATT_IFPATTERN = "ifPattern";
 	static final String ATT_UNLESSPATTERN = "unlessPattern";
-
-	protected Map<URIImpl, IConfigurationElement> map = new HashMap<URIImpl, IConfigurationElement>();
 
 	private IURIMapRuleSet uriMap;
 

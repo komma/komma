@@ -19,7 +19,7 @@ import java.util.Set;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 public class URIMapRuleSet implements IURIMapRuleSet {
 	Set<IURIMapRule> rules = Collections
@@ -60,7 +60,7 @@ public class URIMapRuleSet implements IURIMapRuleSet {
 		for (IURIMapRule rule : sortedRules) {
 			String replaced = rule.apply(uriString);
 			if (replaced != null) {
-				return URIImpl.createURI(replaced);
+				return URIs.createURI(replaced);
 			}
 		}
 		return uri;

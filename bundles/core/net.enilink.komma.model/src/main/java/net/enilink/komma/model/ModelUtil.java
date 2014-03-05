@@ -30,7 +30,7 @@ import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Namespace;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
 import net.enilink.komma.core.visitor.IDataVisitor;
 import net.enilink.komma.model.sesame.RDFXMLPrettyWriter;
@@ -395,8 +395,7 @@ public class ModelUtil {
 					throws RDFHandlerException {
 				if (prefx.length() == 0) {
 					// use empty prefix as fallback
-					ontology[0] = URIImpl.createURI(uri).trimFragment()
-							.toString();
+					ontology[0] = URIs.createURI(uri).trimFragment().toString();
 				}
 			}
 
@@ -614,7 +613,7 @@ public class ModelUtil {
 					throws RDFHandlerException {
 				if (handleNamespaces) {
 					((IDataAndNamespacesVisitor<?>) dataVisitor)
-							.visitNamespace(new Namespace(prefix, URIImpl
+							.visitNamespace(new Namespace(prefix, URIs
 									.createURI(uri)));
 				}
 			}

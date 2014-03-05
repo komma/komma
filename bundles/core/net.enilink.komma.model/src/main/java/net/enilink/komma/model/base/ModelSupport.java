@@ -48,7 +48,7 @@ import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.StatementPattern;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.em.ThreadLocalEntityManager;
 import net.enilink.komma.em.concepts.IOntology;
@@ -736,7 +736,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			throws IOException {
 		File temporaryFile = File.createTempFile("ResourceSaveHelper", null);
 		try {
-			URI temporaryFileURI = URIImpl.createFileURI(temporaryFile
+			URI temporaryFileURI = URIs.createFileURI(temporaryFile
 					.getPath());
 			IURIConverter uriConverter = getURIConverter();
 			OutputStream temporaryFileOutputStream = uriConverter

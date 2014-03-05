@@ -12,7 +12,7 @@ package net.enilink.komma.model;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 public class ModelDescription {
 	private String prefix;
@@ -37,7 +37,7 @@ public class ModelDescription {
 
 	public String getUri() {
 		String ns = getNamespace();
-		return ns != null ? URIImpl.createURI(ns).trimFragment().toString()
+		return ns != null ? URIs.createURI(ns).trimFragment().toString()
 				: null;
 	}
 

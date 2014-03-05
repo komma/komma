@@ -33,7 +33,7 @@ import net.enilink.komma.model.IContentHandler;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * An implementation of a content handler.
@@ -257,7 +257,7 @@ public class ContentHandler implements IContentHandler {
 				options.put(IContentHandler.OPTION_REQUESTED_PROPERTIES,
 						requestedProperties);
 				result = contentHandler.contentDescription(
-						URIImpl.createURI("*"), inputStream, options,
+						URIs.createURI("*"), inputStream, options,
 						new HashMap<Object, Object>());
 				for (Map.Entry<String, ?> property : result.entrySet()) {
 					QualifiedName qualifiedName = requestedPropertyToQualifiedNameMap
@@ -273,7 +273,7 @@ public class ContentHandler implements IContentHandler {
 				options.put(IContentHandler.OPTION_REQUESTED_PROPERTIES,
 						Collections.emptySet());
 				result = contentHandler.contentDescription(
-						URIImpl.createURI("*"), inputStream, options,
+						URIs.createURI("*"), inputStream, options,
 						new HashMap<Object, Object>());
 			}
 			return ((IContentHandler.Validity) result

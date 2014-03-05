@@ -21,7 +21,7 @@ import net.enilink.composition.annotations.Iri;
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.em.KommaEM;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.MODELS;
@@ -77,7 +77,7 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 						properties.load(in);
 						in.close();
 
-						URI baseUri = URIImpl.createURI(url.toString())
+						URI baseUri = URIs.createURI(url.toString())
 								.trimSegments(1);
 						for (Map.Entry<Object, Object> entry : properties
 								.entrySet()) {
@@ -88,7 +88,7 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 								continue;
 							}
 
-							URIImpl fileUri = URIImpl.createFileURI(file);
+							URI fileUri = URIs.createFileURI(file);
 							fileUri = fileUri.resolve(baseUri);
 
 							resolvedUrl = FileLocator.resolve(new URL(fileUri

@@ -37,7 +37,7 @@ import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.base.URIHandler;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 public class PlatformResourceURIHandler extends URIHandler {
 	/**
@@ -553,7 +553,7 @@ public class PlatformResourceURIHandler extends URIHandler {
 			URI rootContainerLocation = getPlatformResourceMap().get(
 					rootContainerName);
 			if (rootContainerLocation != null) {
-				return URIImpl.createURI(relativeName).resolve(
+				return URIs.createURI(relativeName).resolve(
 						rootContainerLocation);
 			}
 		}

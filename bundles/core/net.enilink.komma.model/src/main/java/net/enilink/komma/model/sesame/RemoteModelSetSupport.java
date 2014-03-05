@@ -19,7 +19,7 @@ import net.enilink.komma.core.InferencingCapability;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.dm.IDataManagerQuery;
@@ -101,8 +101,8 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 		protected IReference[] addNull(boolean includeInferred,
 				IReference[] contexts) {
 			if (includeInferred) {
-//				contexts = Arrays.copyOf(contexts, contexts.length + 1);
-//				contexts[contexts.length - 1] = null;
+				// contexts = Arrays.copyOf(contexts, contexts.length + 1);
+				// contexts[contexts.length - 1] = null;
 				contexts = new IReference[0];
 			}
 			return contexts;
@@ -213,8 +213,7 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 
 	protected void addBasicKnowledge(Repository repository)
 			throws RepositoryException {
-		String[] bundles = { "net.enilink.vocab.owl",
-				"net.enilink.vocab.rdfs" };
+		String[] bundles = { "net.enilink.vocab.owl", "net.enilink.vocab.rdfs" };
 
 		if (AbstractKommaPlugin.IS_ECLIPSE_RUNNING) {
 			RepositoryConnection conn = null;
@@ -231,7 +230,7 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 						properties.load(in);
 						in.close();
 
-						URI baseUri = URIImpl.createURI(url.toString())
+						URI baseUri = URIs.createURI(url.toString())
 								.trimSegments(1);
 						for (Map.Entry<Object, Object> entry : properties
 								.entrySet()) {
@@ -241,7 +240,7 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 								continue;
 							}
 
-							URIImpl fileUri = URIImpl.createFileURI(file);
+							URI fileUri = URIs.createFileURI(file);
 							fileUri = fileUri.resolve(baseUri);
 
 							resolvedUrl = FileLocator.resolve(new URL(fileUri
@@ -285,7 +284,7 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 
 	@Override
 	public URI getDefaultGraph() {
-		return URIImpl.createURI("komma:default");
+		return URIs.createURI("komma:default");
 	}
 
 	protected boolean skipRdfsOnImport() {

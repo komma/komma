@@ -32,7 +32,7 @@ import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.em.concepts.IClass;
 
 public class ModelTest {
@@ -57,7 +57,7 @@ public class ModelTest {
 
 	@Test
 	public void testNotifications() throws Exception {
-		IModel model = modelSet.createModel(URIImpl
+		IModel model = modelSet.createModel(URIs
 				.createURI("http://iwu.fraunhofer.de/test/model1"));
 		final boolean[] notified = new boolean[] { false };
 		final Object[] subject = new Object[1];
