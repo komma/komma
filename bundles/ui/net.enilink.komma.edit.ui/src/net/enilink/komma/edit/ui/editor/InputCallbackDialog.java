@@ -6,7 +6,7 @@ import java.util.List;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.command.IInputCallback;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
@@ -24,8 +24,8 @@ import org.eclipse.swt.widgets.Display;
 import com.google.inject.Inject;
 
 public class InputCallbackDialog implements IInputCallback {
-	final static URI NAME_INPUT = URIImpl.createURI("input:name");
-	final static URI TYPE_INPUT = URIImpl.createURI("input:type");
+	final static URI NAME_INPUT = URIs.createURI("input:name");
+	final static URI TYPE_INPUT = URIs.createURI("input:type");
 
 	protected IAdapterFactory adapterFactory;
 

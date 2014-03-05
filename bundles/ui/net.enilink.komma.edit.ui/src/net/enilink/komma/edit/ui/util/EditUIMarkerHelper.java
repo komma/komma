@@ -19,20 +19,20 @@ package net.enilink.komma.edit.ui.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
-
 import net.enilink.komma.common.ui.MarkerHelper;
 import net.enilink.komma.common.util.Diagnostic;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.validation.IValidator;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 
 /**
  * Extension of {@link MarkerHelper} that provides extra functionalities useful
@@ -51,7 +51,7 @@ public class EditUIMarkerHelper extends MarkerHelper {
 		} else if (datum instanceof IModel.IDiagnostic) {
 			String location = ((IModel.IDiagnostic) datum).getLocation();
 			if (location != null) {
-				return getFile(URIImpl.createURI(location));
+				return getFile(URIs.createURI(location));
 			}
 		}
 		return super.getFile(datum);
@@ -145,7 +145,7 @@ public class EditUIMarkerHelper extends MarkerHelper {
 			String uriAttribute = marker.getAttribute(IValidator.URI_ATTRIBUTE,
 					null);
 			if (uriAttribute != null) {
-				URI uri = URIImpl.createURI(uriAttribute);
+				URI uri = URIs.createURI(uriAttribute);
 				IObject iObject = editingDomain.getModelSet().getObject(uri,
 						true);
 				if (iObject != null) {
@@ -156,7 +156,7 @@ public class EditUIMarkerHelper extends MarkerHelper {
 					IValidator.RELATED_URIS_ATTRIBUTE, null);
 			if (relatedURIsAttribute != null) {
 				for (String relatedURI : relatedURIsAttribute.split(" ")) {
-					URI uri = URIImpl.createURI(URIImpl.decode(relatedURI));
+					URI uri = URIs.createURI(URIs.decode(relatedURI));
 					IObject iObject = editingDomain.getModelSet().getObject(
 							uri, true);
 					if (iObject != null) {

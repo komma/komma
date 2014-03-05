@@ -30,7 +30,7 @@ import net.enilink.komma.common.ui.URIEditorInput;
 import net.enilink.komma.common.util.UniqueExtensibleList;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
@@ -170,7 +170,7 @@ public class EditUIUtil {
 			if (editorInput instanceof URIEditorInput) {
 				result = ((URIEditorInput) editorInput).getURI().trimFragment();
 			} else {
-				result = URIImpl.createURI(editorInput.getName());
+				result = URIs.createURI(editorInput.getName());
 			}
 		}
 		return result;
@@ -227,7 +227,7 @@ public class EditUIUtil {
 	 */
 	public static IEditorDescriptor getDefaultEditor(URI uri,
 			IURIConverter uriConverter) {
-		String fileName = URIImpl.decode(uri.lastSegment());
+		String fileName = URIs.decode(uri.lastSegment());
 		if (!fileName.matches(".*\\.[^.]+$")) {
 			fileName = null;
 		}
@@ -353,7 +353,7 @@ public class EditUIUtil {
 	 */
 	public static IEditorDescriptor[] getEditors(URI uri,
 			IURIConverter uriConverter, boolean defaultsOnly) {
-		String fileName = URIImpl.decode(uri.lastSegment());
+		String fileName = URIs.decode(uri.lastSegment());
 		if (uriConverter == null) {
 			uriConverter = new ExtensibleURIConverter();
 		}

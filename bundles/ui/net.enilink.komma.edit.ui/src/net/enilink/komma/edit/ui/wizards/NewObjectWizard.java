@@ -24,7 +24,7 @@ import net.enilink.komma.parser.manchester.ManchesterSyntaxParser;
 import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.QName;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 abstract public class NewObjectWizard extends Wizard {
 	protected ObjectTypeSelectionPage selectionPage;
@@ -98,7 +98,7 @@ abstract public class NewObjectWizard extends Wizard {
 						} else {
 							if (result.resultValue instanceof IriRef) {
 								try {
-									name = URIImpl
+									name = URIs
 											.createURI(((IriRef) result.resultValue)
 													.getIri());
 									if (name.isRelative()) {

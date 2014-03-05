@@ -29,7 +29,7 @@ import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.EditingDomainCommandStack;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
@@ -450,7 +450,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 							if (delta.getKind() == IResourceDelta.REMOVED
 									|| delta.getKind() == IResourceDelta.CHANGED
 									&& delta.getFlags() != IResourceDelta.MARKERS) {
-								IModel model = modelSet.getModel(URIImpl
+								IModel model = modelSet.getModel(URIs
 										.createPlatformResourceURI(delta
 												.getFullPath().toString(),
 												false), false);
@@ -610,7 +610,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 							.addRule(
 									new SimpleURIMapRule(ontology, resourceURI
 											.toString()));
-					resourceURI = URIImpl.createURI(ontology);
+					resourceURI = URIs.createURI(ontology);
 				}
 			} catch (Exception e) {
 				KommaEditUIPlugin.INSTANCE.log(e);
@@ -637,7 +637,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 				.getClassLoader());
 		IModelSetFactory factory = Guice.createInjector(
 				new ModelSetModule(module)).getInstance(IModelSetFactory.class);
-		IModelSet modelSet = factory.createModelSet(URIImpl
+		IModelSet modelSet = factory.createModelSet(URIs
 				.createURI(MODELS.NAMESPACE +
 				// "MemoryModelSet" //
 						"OwlimModelSet" //
@@ -787,7 +787,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		if (path != null) {
 			IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
 			if (file != null) {
-				doSaveAs(URIImpl.createPlatformResourceURI(file.getFullPath()
+				doSaveAs(URIs.createPlatformResourceURI(file.getFullPath()
 						.toString(), true), EclipseUtil.createEditorInput(file));
 			}
 		}
@@ -976,7 +976,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 				String uriAttribute = marker.getAttribute(
 						IValidator.URI_ATTRIBUTE, null);
 				if (uriAttribute != null) {
-					URI uri = URIImpl.createURI(uriAttribute);
+					URI uri = URIs.createURI(uriAttribute);
 					IObject object = modelSet.getObject(uri, true);
 					if (object != null) {
 						editorSelectionProvider
@@ -1140,7 +1140,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 				defaultAdapterFactory = new DefaultItemProviderAdapterFactory();
 				defaultAdapterFactory.setParentAdapterFactory(this);
 			}
-			
+
 			@Inject
 			protected void setInjector(Injector injector) {
 				injector.injectMembers(defaultAdapterFactory);

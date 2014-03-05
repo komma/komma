@@ -60,7 +60,7 @@ import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.validation.Diagnostician;
 import net.enilink.komma.model.validation.IValidator;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 public class ValidateAction extends AbstractActionHandler {
 	public static final String DIAGNOSTIC_SOURCE = "net.enilink.komma";
@@ -117,9 +117,9 @@ public class ValidateAction extends AbstractActionHandler {
 						if (relatedURIs.length() != 0) {
 							relatedURIs.append(' ');
 						}
-						relatedURIs.append(URIImpl.encodeFragment(iObject
-								.getURI() == null ? "" : iObject.getURI()
-								.toString(), false));
+						relatedURIs.append(URIs.encodeFragment(
+								iObject.getURI() == null ? "" : iObject
+										.getURI().toString(), false));
 					}
 				}
 			}
@@ -230,7 +230,8 @@ public class ValidateAction extends AbstractActionHandler {
 	protected Diagnostician createDiagnostician(
 			final IAdapterFactory adapterFactory,
 			final IProgressMonitor progressMonitor) {
-		return new Diagnostician(ModelPlugin.getDefault().getValidatorRegistry()) {
+		return new Diagnostician(ModelPlugin.getDefault()
+				.getValidatorRegistry()) {
 			@Override
 			public String getObjectLabel(IResource object) {
 				if (adapterFactory != null) {
