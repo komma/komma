@@ -18,6 +18,20 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.commons.iterator.NiceIterator;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.IQuery;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IStatementPattern;
+import net.enilink.komma.core.IValue;
+import net.enilink.komma.core.Statements;
+import net.enilink.komma.edit.provider.ISearchableItemProvider;
+import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
+import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IObject;
+
 import org.eclipse.jface.viewers.AbstractTableViewer;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.IIndexableLazyContentProvider;
@@ -28,19 +42,6 @@ import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-
-import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.commons.iterator.NiceIterator;
-import net.enilink.komma.edit.provider.ISearchableItemProvider;
-import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.IObject;
-import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.IQuery;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.IStatementPattern;
-import net.enilink.komma.core.IValue;
 
 public class StatementPatternContentProvider extends ModelContentProvider
 		implements IStructuredContentProvider, ILazyContentProvider,
@@ -64,7 +65,7 @@ public class StatementPatternContentProvider extends ModelContentProvider
 	protected boolean addedStatement(IStatement stmt,
 			Collection<Runnable> runnables) {
 		for (IStatementPattern pattern : patterns) {
-			if (stmt.matchesIgnoreContext(pattern)) {
+			if (Statements.matchesIgnoreContext(stmt, pattern)) {
 				postRefresh(runnables);
 				return false;
 			}
@@ -257,7 +258,7 @@ public class StatementPatternContentProvider extends ModelContentProvider
 		// maybe broken if reasoner is used ...
 		// listener gets not notified if inferred statements are removed
 		for (IStatementPattern pattern : patterns) {
-			if (stmt.matchesIgnoreContext(pattern)) {
+			if (Statements.matchesIgnoreContext(stmt, pattern)) {
 				postRefresh(runnables);
 				return false;
 			}
