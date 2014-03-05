@@ -18,7 +18,7 @@ import net.enilink.komma.parser.sparql.tree.GraphNode;
 import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.QName;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * Parser for Manchester OWL Syntax
@@ -120,7 +120,7 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 			push(target);
 
 			source = target;
-			property = URIImpl.createURI(((Annotation) target).getPredicate()
+			property = URIs.createURI(((Annotation) target).getPredicate()
 					.toString());
 			target = ((Annotation) target).getObject();
 		}
