@@ -22,7 +22,7 @@ import com.google.inject.Injector;
 
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 public class KommaPropertySetFactory implements PropertySetFactory {
 	@Inject
@@ -31,14 +31,14 @@ public class KommaPropertySetFactory implements PropertySetFactory {
 	@Override
 	public <E> PropertySet<E> createPropertySet(Object bean, String uri,
 			Class<E> elementType, Annotation... annotations) {
-		URI predicate = URIImpl.createURI(uri);
+		URI predicate = URIs.createURI(uri);
 		URI rdfValueType = null;
 		boolean localized = false;
 		for (Annotation annotation : annotations) {
 			if (Localized.class.equals(annotation.annotationType())) {
 				localized = true;
 			} else if (Type.class.equals(annotation.annotationType())) {
-				rdfValueType = URIImpl.createURI(((Type) annotation).value());
+				rdfValueType = URIs.createURI(((Type) annotation).value());
 			}
 		}
 		PropertySet<E> propertySet;
