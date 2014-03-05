@@ -4,7 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Platform;
@@ -64,7 +64,7 @@ public class EclipseUtil {
 		if (FILE_CLASS != null) {
 			IFile file = (IFile) editorInput.getAdapter(FILE_CLASS);
 			if (file != null) {
-				return URIImpl.createPlatformResourceURI(file.getFullPath()
+				return URIs.createPlatformResourceURI(file.getFullPath()
 						.toString(), true);
 			}
 		}
@@ -72,7 +72,7 @@ public class EclipseUtil {
 			Object fileRevision = editorInput.getAdapter(FILE_REVISION_CLASS);
 			if (fileRevision != null) {
 				try {
-					return URIImpl
+					return URIs
 							.createURI(((java.net.URI) FILE_REVISION_GET_URI_METHOD
 									.invoke(fileRevision)).toString());
 				} catch (Throwable exception) {
@@ -87,7 +87,7 @@ public class EclipseUtil {
 			try {
 				Method getURI = editorInput.getClass().getMethod("getURI");
 				java.net.URI uri = (java.net.URI) getURI.invoke(editorInput);
-				return URIImpl.createURI(uri.toString()).trimFragment();
+				return URIs.createURI(uri.toString()).trimFragment();
 			} catch (Exception e) {
 				// Ignore
 			}

@@ -32,7 +32,7 @@ import org.osgi.framework.Bundle;
 
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * An implementation of an {@link org.eclipse.ui.IEditorInput} to wrap a
@@ -99,7 +99,7 @@ public class URIEditorInput implements IEditorInput, IPersistableElement {
 	public String getName() {
 		if (name == null) {
 			URI uri = getURI();
-			return URIImpl.decode(uri.isHierarchical()
+			return URIs.decode(uri.isHierarchical()
 					&& uri.lastSegment() != null ? uri.lastSegment() : uri
 					.toString());
 		} else {
@@ -166,7 +166,7 @@ public class URIEditorInput implements IEditorInput, IPersistableElement {
 	}
 
 	protected void loadState(IMemento memento) {
-		uri = URIImpl.createURI(memento.getString(URI_TAG));
+		uri = URIs.createURI(memento.getString(URI_TAG));
 		name = memento.getString(NAME_TAG);
 	}
 
