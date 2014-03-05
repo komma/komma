@@ -13,12 +13,12 @@ package net.enilink.vocab.owl;
 import net.enilink.composition.annotations.Iri;
 
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 @Iri("http://www.w3.org/2002/07/owl#")
 public interface OWL {
 	public static final String NAMESPACE = "http://www.w3.org/2002/07/owl#";
-	public static final URI NAMESPACE_URI = URIImpl.createURI(NAMESPACE);
+	public static final URI NAMESPACE_URI = URIs.createURI(NAMESPACE);
 	
 	public static final URI TYPE_ANNOTATION = NAMESPACE_URI.appendFragment("Annotation");
 	
