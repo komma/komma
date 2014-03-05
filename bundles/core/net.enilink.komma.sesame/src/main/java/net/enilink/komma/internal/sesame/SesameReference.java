@@ -15,7 +15,7 @@ import org.openrdf.model.URI;
 
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IReferenceable;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 public class SesameReference implements IReference {
 	private Resource resource;
@@ -25,7 +25,7 @@ public class SesameReference implements IReference {
 	public SesameReference(Resource resource) {
 		this.resource = resource;
 		if (resource instanceof URI) {
-			this.uri = URIImpl.createURI(((URI) resource).stringValue());
+			this.uri = URIs.createURI(((URI) resource).stringValue());
 		}
 	}
 

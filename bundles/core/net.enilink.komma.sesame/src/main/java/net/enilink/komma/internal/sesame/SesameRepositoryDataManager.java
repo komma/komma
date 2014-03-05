@@ -15,7 +15,7 @@ import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.InferencingCapability;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerQuery;
 import net.enilink.komma.dm.IDataManagerUpdate;
@@ -42,7 +42,7 @@ import com.google.inject.Injector;
 
 public class SesameRepositoryDataManager implements IDataManager {
 	protected static final IReference[] NULL_CTX = { null };
-	
+
 	@Inject
 	protected IDataChangeSupport changeSupport;
 
@@ -331,7 +331,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 		try {
 			String namespaceURI = getConnection().getNamespace(prefix);
 			if (namespaceURI != null) {
-				return net.enilink.komma.core.URIImpl.createURI(namespaceURI);
+				return net.enilink.komma.core.URIs.createURI(namespaceURI);
 			}
 			return null;
 		} catch (Exception e) {
@@ -349,7 +349,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 						throws Exception {
 					try {
 						return new net.enilink.komma.core.Namespace(
-								element.getPrefix(), URIImpl.createURI(element
+								element.getPrefix(), URIs.createURI(element
 										.getName()));
 					} catch (IllegalArgumentException e) {
 						return null;
@@ -492,10 +492,8 @@ public class SesameRepositoryDataManager implements IDataManager {
 			if (changeSupport.isEnabled(this)) {
 				String namespace = getConnection().getNamespace(prefix);
 				if (namespace != null) {
-					changeSupport
-							.removeNamespace(this, prefix,
-									net.enilink.komma.core.URIImpl
-											.createURI(namespace));
+					changeSupport.removeNamespace(this, prefix,
+							URIs.createURI(namespace));
 				}
 			}
 

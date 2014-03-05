@@ -3,7 +3,7 @@ package net.enilink.komma.internal.sesame;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.Literals;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 import org.openrdf.model.Literal;
 
@@ -21,7 +21,7 @@ public class SesameLiteral implements ILiteral {
 			return datatype;
 		}
 		if (literal.getDatatype() != null) {
-			return datatype = URIImpl.createURI(literal.getDatatype()
+			return datatype = URIs.createURI(literal.getDatatype()
 					.toString());
 		}
 		return null;
