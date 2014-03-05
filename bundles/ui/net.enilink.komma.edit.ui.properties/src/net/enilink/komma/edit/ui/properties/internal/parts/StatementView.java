@@ -19,7 +19,7 @@ import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.StatementPattern;
 import net.enilink.komma.core.Statements;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.properties.IPropertyEditingSupport;
 import net.enilink.komma.edit.properties.IResourceProposal;
@@ -260,7 +260,7 @@ public class StatementView extends AbstractEditingDomainView {
 		protected URI toURI(IEntityManager em, String pnameOrUri) {
 			if (pnameOrUri.matches("<.*>")) {
 				try {
-					return URIImpl.createURI(pnameOrUri.substring(1,
+					return URIs.createURI(pnameOrUri.substring(1,
 							pnameOrUri.length() - 1));
 				} catch (IllegalArgumentException e) {
 					// should be shown in UI

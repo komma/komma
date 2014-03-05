@@ -24,7 +24,7 @@ import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.properties.PropertyEditingHelper;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
@@ -128,7 +128,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart {
 			if (resource != null) {
 				final URI uri;
 				if (itemShowFull.getSelection()) {
-					uri = URIImpl.createURI(uriText.getText());
+					uri = URIs.createURI(uriText.getText());
 				} else {
 					uri = resource.getURI().namespace()
 							.appendFragment(uriText.getText());
