@@ -3,7 +3,7 @@ package net.enilink.komma.edit.ui.rcp.internal.editor;
 import net.enilink.komma.common.ui.ViewerPane;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.ui.celleditor.AdapterFactoryTreeEditor;
 import net.enilink.komma.edit.ui.editor.IPropertySheetPageSupport;
 import net.enilink.komma.edit.ui.editor.KommaMultiPageEditor;
@@ -75,11 +75,11 @@ public class BasicEditor extends KommaMultiPageEditor implements
 
 				IModelSet modelSet = factory
 						.createModelSet(
-								URIImpl.createURI(MODELS.NAMESPACE +
+								URIs.createURI(MODELS.NAMESPACE +
 								// "MemoryModelSet" //
 										"OwlimModelSet" //
 								),
-								URIImpl.createURI(MODELS.NAMESPACE
+								URIs.createURI(MODELS.NAMESPACE
 										+ "ProjectModelSet"));
 
 				if (modelSet instanceof IProjectModelSet
