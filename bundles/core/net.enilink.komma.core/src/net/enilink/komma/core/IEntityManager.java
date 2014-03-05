@@ -94,6 +94,19 @@ public interface IEntityManager extends AutoCloseable {
 	IEntity create(IReference... concepts);
 
 	/**
+	 * Converts a Java value to an {@link ILiteral} with the given
+	 * <code>datatype</code>.
+	 * 
+	 * @param value
+	 *            the Java value that should be converted to an literal
+	 * @param datatype
+	 *            the datatype of the new literal.
+	 * 
+	 * @return Object representing the literal.
+	 */
+	ILiteral createLiteral(Object value, URI datatype);
+
+	/**
 	 * Creates an ILiteral to hold a literal (label, type, language).
 	 * 
 	 * @param label
