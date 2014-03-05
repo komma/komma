@@ -1,10 +1,11 @@
 package net.enilink.komma.internal.sesame;
 
-import org.openrdf.model.Literal;
-
 import net.enilink.komma.core.ILiteral;
+import net.enilink.komma.core.Literals;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIImpl;
+
+import org.openrdf.model.Literal;
 
 public class SesameLiteral implements ILiteral {
 	protected URI datatype;
@@ -41,12 +42,17 @@ public class SesameLiteral implements ILiteral {
 	}
 
 	@Override
-	public Object getInstanceValue() {
-		return getLabel();
+	public boolean equals(Object obj) {
+		return Literals.equals(this, obj);
+	}
+
+	@Override
+	public int hashCode() {
+		return Literals.hashCode(this);
 	}
 
 	@Override
 	public String toString() {
-		return literal.toString();
+		return Literals.toString(this);
 	}
 }
