@@ -13,12 +13,12 @@ package net.enilink.vocab.rdfs;
 import net.enilink.composition.annotations.Iri;
 
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 @Iri("http://www.w3.org/2000/01/rdf-schema#")
 public interface RDFS {
 	public static final String NAMESPACE = "http://www.w3.org/2000/01/rdf-schema#";
-	public static final URI NAMESPACE_URI = URIImpl.createURI(NAMESPACE);
+	public static final URI NAMESPACE_URI = URIs.createURI(NAMESPACE);
 
 	public static final URI TYPE_RESOURCE = NAMESPACE_URI.appendFragment("Resource");
 

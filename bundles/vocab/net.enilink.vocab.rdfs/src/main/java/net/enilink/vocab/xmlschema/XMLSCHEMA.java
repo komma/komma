@@ -13,12 +13,12 @@ package net.enilink.vocab.xmlschema;
 import net.enilink.composition.annotations.Iri;
 
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 @Iri("http://www.w3.org/2001/XMLSchema#")
 public interface XMLSCHEMA {
 	public static final String NAMESPACE = "http://www.w3.org/2001/XMLSchema#";
-	public static final URI NAMESPACE_URI = URIImpl.createURI(NAMESPACE);
+	public static final URI NAMESPACE_URI = URIs.createURI(NAMESPACE);
 
 	public static final URI TYPE_ANYTYPE = NAMESPACE_URI.appendFragment("anyType");
 
