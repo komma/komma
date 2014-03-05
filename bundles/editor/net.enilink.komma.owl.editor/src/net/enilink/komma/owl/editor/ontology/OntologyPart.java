@@ -17,7 +17,7 @@ import net.enilink.commons.iterator.Filter;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.base.IURIMapRule;
@@ -95,7 +95,7 @@ public class OntologyPart extends AbstractEditingDomainPart {
 				String text = uriText.getText().trim();
 				if (!text.isEmpty()) {
 					try {
-						uri = URIImpl.createURI(uriText.getText().trim());
+						uri = URIs.createURI(uriText.getText().trim());
 						uriTextError.hide();
 					} catch (IllegalArgumentException iae) {
 						uriTextError.setDescriptionText("Invalid URI.");
@@ -118,7 +118,7 @@ public class OntologyPart extends AbstractEditingDomainPart {
 						getEditingDomain().getCommandStack().execute(
 								new SimpleCommand("Change model URI") {
 									URI oldUri = model.getURI();
-									URI newUri = URIImpl.createURI(uriText
+									URI newUri = URIs.createURI(uriText
 											.getText().trim());
 
 									IURIMapRuleSet ruleSet = model

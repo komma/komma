@@ -22,7 +22,7 @@ import java.util.List;
 import net.enilink.komma.core.Namespace;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
 import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelUtil;
@@ -193,7 +193,7 @@ public class WizardConfigureOntologyPage extends WizardNewFileCreationPage {
 
 	/** Return the selected URI. */
 	public URI getURI() {
-		return URIImpl.createURI(uriField.getText());
+		return URIs.createURI(uriField.getText());
 	}
 
 	/** Return the selected format (content-type). */
@@ -239,7 +239,7 @@ public class WizardConfigureOntologyPage extends WizardNewFileCreationPage {
 		if (uriUseDefault != null && uriUseDefault.getSelection()
 				&& uriField != null && !getFileName().isEmpty()) {
 			IPath targetPath = getContainerFullPath().append(getFileName());
-			uriField.setText(URIImpl.createPlatformResourceURI(
+			uriField.setText(URIs.createPlatformResourceURI(
 					targetPath.toString(), true).toString());
 		}
 	}

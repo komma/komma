@@ -27,7 +27,7 @@ import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.ui.dialogs.FilteredList;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
@@ -313,7 +313,7 @@ public class ImportsPart extends AbstractEditingDomainPart {
 				if (list.getSelection().isEmpty()) {
 					String input = ((Text) list.getPatternControl()).getText();
 					try {
-						URI uri = URIImpl.createURI(input);
+						URI uri = URIs.createURI(input);
 						if (!uri.isRelative()) {
 							setSelectionResult(new Object[] { new ModelDescription(
 									null, uri.toString()) });
@@ -359,7 +359,7 @@ public class ImportsPart extends AbstractEditingDomainPart {
 									for (Object element : selectedElements) {
 										ModelDescription modelDescription = (ModelDescription) element;
 										try {
-											model.addImport(URIImpl
+											model.addImport(URIs
 													.createURI(modelDescription
 															.getUri()),
 													modelDescription

@@ -25,7 +25,7 @@ import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Namespace;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.provider.IItemColorProvider;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
@@ -220,7 +220,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 			case Namespace:
 				URI uri;
 				try {
-					uri = URIImpl.createURI(value.toString());
+					uri = URIs.createURI(value.toString());
 				} catch (Exception e) {
 					return;
 				}
@@ -415,7 +415,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 	}
 
 	void addItem() {
-		INamespace newNs = new NewNamespace("", URIImpl.createURI(""));
+		INamespace newNs = new NewNamespace("", URIs.createURI(""));
 		namespaceViewer.add(newNs);
 		namespaceViewer.setSelection(new StructuredSelection(newNs), true);
 	}
