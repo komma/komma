@@ -1,11 +1,11 @@
 package net.enilink.vocab.foaf;
 
-import net.enilink.komma.core.URIImpl;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIs;
 
 public interface FOAF {
 	public static final String NAMESPACE = "http://xmlns.com/foaf/0.1/";
-	public static final URI NAMESPACE_URI = URIImpl.createURI(NAMESPACE);
+	public static final URI NAMESPACE_URI = URIs.createURI(NAMESPACE);
 
 	public static final URI TYPE_LABELPROPERTY = NAMESPACE_URI.appendLocalPart("LabelProperty");
 
