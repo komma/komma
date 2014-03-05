@@ -91,10 +91,8 @@ public class PropertyMapper {
 		String key = dc.getName() + "#" + field.getName();
 		if (properties.containsKey(key))
 			return (String) properties.get(key);
-		Iri rdf = field.getAnnotation(Iri.class);
-		if (rdf == null)
-			return null;
-		return rdf.value();
+		Iri iri = field.getAnnotation(Iri.class);
+		return iri == null ? null : iri.value();
 	}
 
 	public String findPredicate(PropertyDescriptor pd) {
@@ -104,10 +102,8 @@ public class PropertyMapper {
 		if (properties.containsKey(key))
 			return (String) properties.get(key);
 		Method getter = method;
-		Iri rdf = getter.getAnnotation(Iri.class);
-		if (rdf == null)
-			return null;
-		return rdf.value();
+		Iri iri = getter.getAnnotation(Iri.class);
+		return iri == null ? null : iri.value();
 	}
 
 	public Collection<PropertyDescriptor> findFunctionalProperties(Class<?> type) {
@@ -197,8 +193,6 @@ public class PropertyMapper {
 	private boolean isMappedGetter(Method method) {
 		if (method.getParameterTypes().length != 0)
 			return false;
-		if (getPropertyName(method) == null)
-			return false;
 		if (method.isAnnotationPresent(Iri.class))
 			return true;
 		if (properties.isEmpty())
@@ -219,17 +213,29 @@ public class PropertyMapper {
 		}
 	}
 
-	private String getPropertyName(Method method) {
+	private boolean isBeanGet(Method method) {
+		String name = method.getName();
+		return name.startsWith(GET_PREFIX) && name.length() > 3
+				&& Character.isUpperCase(name.charAt(3));
+	}
+
+	private boolean isBeanIs(Method method) {
 		String name = method.getName();
 		boolean bool = method.getReturnType() == boolean.class;
-		if (name.startsWith(GET_PREFIX) && name.length() > 3) {
+		return bool && name.startsWith(IS_PREFIX) && name.length() > 2
+				&& Character.isUpperCase(name.charAt(2));
+	}
+
+	private String getPropertyName(Method method) {
+		String name = method.getName();
+		if (isBeanGet(method)) {
 			// Simple getter
 			return decapitalize(name.substring(3));
-		} else if (bool && name.startsWith(IS_PREFIX) && name.length() > 2) {
+		} else if (isBeanIs(method)) {
 			// Boolean getter
 			return decapitalize(name.substring(2));
 		}
-		return null;
+		return name;
 	}
 
 	private static String decapitalize(String name) {
@@ -249,8 +255,12 @@ public class PropertyMapper {
 		try {
 			Class<?> dc = getter.getDeclaringClass();
 			Class<?> rt = getter.getReturnType();
-			String setter = SET_PREFIX + capitalize(property);
-			return dc.getDeclaredMethod(setter, rt);
+			if (isBeanGet(getter) || isBeanIs(getter)) {
+				String setter = SET_PREFIX + capitalize(property);
+				return dc.getDeclaredMethod(setter, rt);
+			} else {
+				return dc.getDeclaredMethod(getter.getName(), rt);
+			}
 		} catch (NoSuchMethodException exc) {
 			return null;
 		}

@@ -25,9 +25,9 @@ public class SimplePropertiesCompositionTestCase extends
 	@Iri("urn:test:Node")
 	public interface Node<T> {
 		@Iri("urn:test:parent")
-		T getParent();
+		Node<T> getParent();
 
-		void setParent(T parent);
+		void setParent(Node<T> parent);
 
 		@Iri("urn:test:children")
 		Set<T> getChildren();
@@ -35,9 +35,9 @@ public class SimplePropertiesCompositionTestCase extends
 		void setChildren(Set<T> children);
 
 		@Iri("urn:test:sibling")
-		T getSibling();
+		T sibling();
 
-		void setSibling(T sibling);
+		void sibling(T sibling);
 	}
 
 	@Override
@@ -51,11 +51,18 @@ public class SimplePropertiesCompositionTestCase extends
 	public void testSingle() throws Exception {
 		@SuppressWarnings("unchecked")
 		Node<String> node = objectFactory.createObject(Node.class);
+		Assert.assertEquals(node.sibling(), null);
+		node.sibling("a");
+		Assert.assertEquals(node.sibling(), "a");
 
-		Assert.assertEquals(node.getSibling(), null);
-
-		node.setSibling("a");
-		Assert.assertEquals(node.getSibling(), "a");
+		Assert.assertEquals(node.getParent(), null);
+		@SuppressWarnings("unchecked")
+		Node<String> parent = objectFactory.createObject(Node.class);
+		node.setParent(parent);
+		Assert.assertEquals(node.getParent(), parent);
+		// remove parent
+		node.setParent(null);
+		Assert.assertEquals(node.getParent(), null);
 	}
 
 	@Test
@@ -80,10 +87,10 @@ public class SimplePropertiesCompositionTestCase extends
 		@SuppressWarnings("unchecked")
 		Node<String> node = objectFactory.createObject(Node.class);
 
-		node.setSibling("a");
+		node.sibling("a");
 		String sibling = ((PropertySetOwner) node).<String> getPropertySet(
 				"urn:test:sibling").getSingle();
-		Assert.assertEquals(node.getSibling(), sibling);
+		Assert.assertEquals(node.sibling(), sibling);
 
 		node.getChildren().addAll(Arrays.asList("a", "b"));
 		Set<String> children = ((PropertySetOwner) node)
