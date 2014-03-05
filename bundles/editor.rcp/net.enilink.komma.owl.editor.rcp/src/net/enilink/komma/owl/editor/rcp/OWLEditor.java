@@ -9,7 +9,7 @@ import net.enilink.commons.ui.editor.IEditorPart;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.command.EditingDomainCommandStack;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
@@ -246,7 +246,7 @@ public class OWLEditor extends KommaMultiPageEditor implements
 								// uses automatically OWLIM if available
 								MODELS.NAMESPACE_URI
 										.appendLocalPart("OwlimModelSet"),
-								URIImpl.createURI(MODELS.NAMESPACE
+								URIs.createURI(MODELS.NAMESPACE
 										+ "ProjectModelSet"));
 				if (modelSet instanceof IProjectModelSet && project != null) {
 					((IProjectModelSet) modelSet).setProject(project);
