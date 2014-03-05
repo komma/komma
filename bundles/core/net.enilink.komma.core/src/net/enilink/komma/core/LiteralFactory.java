@@ -6,19 +6,13 @@ package net.enilink.komma.core;
  */
 public class LiteralFactory implements ILiteralFactory {
 	@Override
-	public ILiteral createLiteral(Object value, String label,
+	public ILiteral createLiteral(String label,
 			net.enilink.komma.core.URI datatype, String language) {
 		if (datatype != null) {
 			// let datatype take precedence if set, cannot set both
-			return new Literal(value, datatype);
+			return new Literal(label, datatype);
 		} else {
-			return new Literal(value, language);
+			return new Literal(label, language);
 		}
-	}
-
-	@Override
-	public ILiteral createLiteral(String label,
-			net.enilink.komma.core.URI datatype, String language) {
-		return createLiteral(label, label, datatype, language);
 	}
 }

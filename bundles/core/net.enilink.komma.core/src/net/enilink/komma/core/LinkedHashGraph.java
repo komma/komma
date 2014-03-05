@@ -1213,7 +1213,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		}
 	}
 
-	class GraphStatement extends StatementBase implements IStatement {
+	class GraphStatement implements IStatement {
 
 		private static final long serialVersionUID = 2200404772364346279L;
 
@@ -1260,6 +1260,21 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		@Override
 		public boolean isInferred() {
 			return isInferred;
+		}
+
+		@Override
+		public boolean equalsIgnoreContext(IStatementPattern other) {
+			return Statements.equalsIgnoreContext(this, other);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return Statements.equals(this, obj);
+		}
+
+		@Override
+		public int hashCode() {
+			return Statements.hashCode(this);
 		}
 	}
 

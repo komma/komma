@@ -94,18 +94,18 @@ public interface IEntityManager extends AutoCloseable {
 	IEntity create(IReference... concepts);
 
 	/**
-	 * Creates an ILiteral to hold a literal (value, type, language).
+	 * Creates an ILiteral to hold a literal (label, type, language).
 	 * 
-	 * @param value
-	 *            the literal's value.
+	 * @param label
+	 *            the literal's label.
 	 * @param datatype
 	 *            the literal's datatype.
 	 * @param language
 	 *            the literal's language.
 	 * 
-	 * @return Java Bean representing the literal.
+	 * @return Object representing the literal.
 	 */
-	ILiteral createLiteral(Object value, URI datatype, String language);
+	ILiteral createLiteral(String label, URI datatype, String language);
 
 	/**
 	 * Assigns <code>concept</code> to the named entity subject.

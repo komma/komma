@@ -14,13 +14,6 @@ package net.enilink.komma.core;
 public interface ILiteral extends IValue {
 
 	/**
-	 * Gets some value of this literal.
-	 * 
-	 * @return The literal's value as-is.
-	 */
-	Object getInstanceValue();
-
-	/**
 	 * Gets the label of this literal.
 	 * 
 	 * @return The literal's label.

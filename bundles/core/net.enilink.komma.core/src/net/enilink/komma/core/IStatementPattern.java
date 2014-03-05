@@ -14,26 +14,6 @@ package net.enilink.komma.core;
  * An pattern for an RDF statement that can be used for matching.
  */
 public interface IStatementPattern {
-	/**
-	 * Matches this pattern or statement against a given pattern.
-	 * 
-	 * @param other
-	 *            The pattern used for matching.
-	 * @return <tt>true</tt> if this pattern or statement matches the given
-	 *         pattern.
-	 */
-	boolean matches(IStatementPattern pattern);
-
-	/**
-	 * Matches this pattern or statement against a given pattern and ignores the
-	 * context.
-	 * 
-	 * @param other
-	 *            The pattern used for matching.
-	 * @return <tt>true</tt> if this pattern or statement matches the given
-	 *         pattern while ignoring the context.
-	 */
-	boolean matchesIgnoreContext(IStatementPattern pattern);
 
 	/**
 	 * Compares this pattern object to another object.

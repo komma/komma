@@ -10,9 +10,7 @@
  *******************************************************************************/
 package net.enilink.komma.core;
 
-
-public class StatementPattern extends StatementBase implements
-		IStatementPattern {
+public class StatementPattern implements IStatementPattern {
 	private IReference context;
 	private Object obj;
 	private IReference pred;
@@ -48,5 +46,20 @@ public class StatementPattern extends StatementBase implements
 	@Override
 	public IReference getSubject() {
 		return subj;
+	}
+
+	@Override
+	public boolean equalsIgnoreContext(IStatementPattern other) {
+		return Statements.equalsIgnoreContext(this, other);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return Statements.equals(this, obj);
+	}
+
+	@Override
+	public int hashCode() {
+		return Statements.hashCode(this);
 	}
 }
