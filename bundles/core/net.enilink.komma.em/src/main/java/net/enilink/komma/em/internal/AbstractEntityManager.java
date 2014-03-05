@@ -83,7 +83,7 @@ import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.StatementPattern;
 import net.enilink.komma.core.TransactionRequiredException;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.em.internal.behaviours.IEntityManagerAware;
@@ -752,7 +752,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 					}
 
 					if (collection != null || isBoolean) {
-						URI keyUri = URIImpl.createURI(cacheable.key());
+						URI keyUri = URIs.createURI(cacheable.key());
 						if (graph.contains(bean, keyUri, null)) {
 							Set<Object> objects = new LinkedHashSet<Object>(
 									graph.filter(bean, keyUri, null).objects());

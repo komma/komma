@@ -18,7 +18,7 @@ import org.junit.Test;
 import net.enilink.composition.annotations.Iri;
 
 import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 public class BasicManagerTest extends EntityManagerTest {
 	private static final String NS = "urn:test:";
@@ -67,11 +67,11 @@ public class BasicManagerTest extends EntityManagerTest {
 	@Override
 	public void beforeTest() throws Exception {
 		super.beforeTest();
-		me = manager.createNamed(URIImpl.createURI(NS + "me"), Person.class);
+		me = manager.createNamed(URIs.createURI(NS + "me"), Person.class);
 		me.setName("james");
 		me.setAge(102);
 		john = manager
-				.createNamed(URIImpl.createURI(NS + "john"), Person.class);
+				.createNamed(URIs.createURI(NS + "john"), Person.class);
 		john.setName("john");
 		me.getFriends().add(john);
 	}

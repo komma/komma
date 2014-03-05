@@ -25,7 +25,7 @@ import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.core.IGraph;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 public class NamedQueryTest extends EntityManagerTest {
 	private static final String NS = "urn:test:";
@@ -120,11 +120,11 @@ public class NamedQueryTest extends EntityManagerTest {
 	@Override
 	public void beforeTest() throws Exception {
 		super.beforeTest();
-		me = manager.createNamed(URIImpl.createURI(NS + "me"), Person.class);
+		me = manager.createNamed(URIs.createURI(NS + "me"), Person.class);
 		me.setName("james");
 		me.setAge(102);
 		john = manager
-				.createNamed(URIImpl.createURI(NS + "john"), Person.class);
+				.createNamed(URIs.createURI(NS + "john"), Person.class);
 		john.setName("john");
 		me.getFriends().add(john);
 	}
@@ -137,13 +137,13 @@ public class NamedQueryTest extends EntityManagerTest {
 	@Test
 	public void testBindingSetByName() throws Exception {
 		Object[] result = me.findByName("john");
-		assertEquals(URIImpl.createURI(NS + "john"), result[0]);
+		assertEquals(URIs.createURI(NS + "john"), result[0]);
 	}
 
 	@Test
 	public void testStatementByName() throws Exception {
 		IStatement result = me.findStatementByName("john");
-		assertEquals(URIImpl.createURI(NS + "john"), result.getSubject());
+		assertEquals(URIs.createURI(NS + "john"), result.getSubject());
 	}
 	
 	@Test
@@ -202,7 +202,7 @@ public class NamedQueryTest extends EntityManagerTest {
 
 	@Test
 	public void testOverride() throws Exception {
-		Employee e = manager.createNamed(URIImpl.createURI(NS + "e"),
+		Employee e = manager.createNamed(URIs.createURI(NS + "e"),
 				Employee.class);
 		e.setName("employee");
 		assertEquals("employee", e.findName());

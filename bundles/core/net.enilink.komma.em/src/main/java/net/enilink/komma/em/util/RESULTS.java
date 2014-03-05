@@ -11,8 +11,8 @@
 package net.enilink.komma.em.util;
 
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 public interface RESULTS {
-	public static final URI TYPE_RESULT = URIImpl.createURI("komma:Result");
+	public static final URI TYPE_RESULT = URIs.createURI("komma:Result");
 }

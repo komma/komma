@@ -40,7 +40,7 @@ import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.TemporalType;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.em.KommaEM;
 import net.enilink.komma.em.concepts.ClassSupport;
 import net.enilink.komma.em.concepts.IClass;
@@ -107,7 +107,7 @@ public class KommaUtil implements ISparqlConstants {
 						@Override
 						public URL map(URL value) {
 							try {
-								return FileLocator.resolve(new URL(URIImpl
+								return FileLocator.resolve(new URL(URIs
 										.createURI(value.toString())
 										.trimSegments(2).toString()));
 							} catch (Exception e) {

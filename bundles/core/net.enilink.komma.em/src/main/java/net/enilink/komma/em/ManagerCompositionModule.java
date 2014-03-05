@@ -33,7 +33,7 @@ import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.LiteralFactory;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 public class ManagerCompositionModule extends AbstractModule {
 	private static Map<ClassLoader, WeakReference<ClassLoader>> classLoaders = new WeakHashMap<ClassLoader, WeakReference<ClassLoader>>();
@@ -113,7 +113,7 @@ public class ManagerCompositionModule extends AbstractModule {
 		return new TypeFactory<URI>() {
 			@Override
 			public URI createType(String type) {
-				return URIImpl.createURI(type);
+				return URIs.createURI(type);
 			}
 
 			@Override
@@ -143,7 +143,7 @@ public class ManagerCompositionModule extends AbstractModule {
 
 		for (KommaModule.Association e : module.getDatatypes()) {
 			literalConverter.addDatatype(e.getJavaClass(),
-					URIImpl.createURI(e.getRdfType()));
+					URIs.createURI(e.getRdfType()));
 		}
 
 		// record additional converter for Base64 encoded byte arrays

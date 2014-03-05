@@ -6,7 +6,7 @@ import net.enilink.composition.annotations.Iri;
 import net.enilink.komma.core.EntityVar;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 import static org.junit.Assert.*;
 
@@ -50,7 +50,7 @@ public class EntityVarTest extends EntityManagerTest {
 
 	@Test
 	public void testVar() {
-		URI theConcept = URIImpl.createURI(NS + "theConcept");
+		URI theConcept = URIs.createURI(NS + "theConcept");
 
 		Concept c1 = manager.createNamed(theConcept, Concept.class);
 		c1.setState("This is some data.");
@@ -73,7 +73,7 @@ public class EntityVarTest extends EntityManagerTest {
 		assertSame(c1.getState(), c3.getState());
 
 		// beans with different URIs may not share internal state
-		URI otherConcept = URIImpl.createURI(NS + "otherConcept");
+		URI otherConcept = URIs.createURI(NS + "otherConcept");
 		Concept otherC = manager.createNamed(otherConcept, Concept.class);
 		c1.setState("C1 state.");
 		otherC.setState("Other state.");
