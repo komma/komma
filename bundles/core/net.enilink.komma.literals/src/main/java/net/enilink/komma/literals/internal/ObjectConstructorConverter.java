@@ -38,7 +38,7 @@ import net.enilink.komma.literals.IConverter;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * Converts objects with a string constructor to and from {@link ILiteral}.
@@ -56,7 +56,7 @@ public class ObjectConstructorConverter<T> implements IConverter<T> {
 
 	public ObjectConstructorConverter(Class<T> type)
 			throws NoSuchMethodException {
-		this.datatype = URIImpl.createURI("java:" + type.getName());
+		this.datatype = URIs.createURI("java:" + type.getName());
 		try {
 			constructor = type.getConstructor(new Class[] { String.class });
 		} catch (NoSuchMethodException e) {

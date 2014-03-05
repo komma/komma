@@ -36,14 +36,14 @@ import net.enilink.komma.literals.IConverter;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * Converts {@link Class} to and from {@link ILiteral}.
  * 
  */
 public class ClassConverter implements IConverter<Class<?>> {
-	private static final URI DATATYPE = URIImpl.createURI("java:"
+	private static final URI DATATYPE = URIs.createURI("java:"
 			+ Class.class.getName());
 
 	@Inject

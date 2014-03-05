@@ -81,7 +81,7 @@ import net.enilink.komma.literals.internal.XMLGregorianCalendarConverter;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * Converts between simple Java Objects and Strings.
@@ -215,7 +215,7 @@ public class LiteralConverter implements Cloneable {
 			return null;
 		if (rdfTypes.containsKey(type))
 			return rdfTypes.get(type);
-		URI datatype = URIImpl.createURI(JAVA_SCHEME + ":" + type.getName());
+		URI datatype = URIs.createURI(JAVA_SCHEME + ":" + type.getName());
 		recordType(type, datatype);
 		return datatype;
 	}
@@ -244,11 +244,11 @@ public class LiteralConverter implements Cloneable {
 					for (String rdf : types.split("\\s+")) {
 						if (rdf.length() == 0 && present) {
 							rdf = lc.getAnnotation(Iri.class).value();
-							recordType(lc, URIImpl.createURI(rdf));
+							recordType(lc, URIs.createURI(rdf));
 						} else if (rdf.length() == 0) {
 							logger.warn("Unkown datatype mapping {}", className);
 						} else {
-							recordType(lc, URIImpl.createURI(rdf));
+							recordType(lc, URIs.createURI(rdf));
 						}
 					}
 				}

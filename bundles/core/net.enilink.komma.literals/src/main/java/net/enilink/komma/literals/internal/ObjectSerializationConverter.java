@@ -42,7 +42,7 @@ import net.enilink.komma.literals.IConverter;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * Converts serializable objects to and from ILiteral.
@@ -63,7 +63,7 @@ public class ObjectSerializationConverter<T> implements IConverter<T> {
 
 	public ObjectSerializationConverter(Class<T> type) {
 		this.type = type;
-		this.datatype = URIImpl.createURI("java:" + type.getName());
+		this.datatype = URIs.createURI("java:" + type.getName());
 	}
 
 	public String getJavaClassName() {

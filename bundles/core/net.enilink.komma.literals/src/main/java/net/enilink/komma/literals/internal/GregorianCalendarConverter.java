@@ -39,7 +39,7 @@ import net.enilink.komma.literals.IConverter;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * Converts {@link GregorianCalendar} to and from {@link ILiteral}.
@@ -47,7 +47,7 @@ import net.enilink.komma.core.URIImpl;
  */
 public class GregorianCalendarConverter implements
 		IConverter<GregorianCalendar> {
-	private static final URI DATATYPE = URIImpl.createURI("java:"
+	private static final URI DATATYPE = URIs.createURI("java:"
 			+ GregorianCalendar.class.getName());
 
 	@Inject

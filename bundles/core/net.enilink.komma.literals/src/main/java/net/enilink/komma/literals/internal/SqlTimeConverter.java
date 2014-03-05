@@ -40,14 +40,14 @@ import net.enilink.komma.literals.IConverter;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * Converts {@link Time} to and from {@link ILiteral}.
  * 
  */
 public class SqlTimeConverter implements IConverter<Time> {
-	private static final URI DATATYPE = URIImpl.createURI("java:"
+	private static final URI DATATYPE = URIs.createURI("java:"
 			+ Time.class.getName());
 
 	@Inject
