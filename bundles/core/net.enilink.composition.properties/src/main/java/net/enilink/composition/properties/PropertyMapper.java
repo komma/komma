@@ -255,12 +255,26 @@ public class PropertyMapper {
 		try {
 			Class<?> dc = getter.getDeclaringClass();
 			Class<?> rt = getter.getReturnType();
+			Method setter;
 			if (isBeanGet(getter) || isBeanIs(getter)) {
-				String setter = SET_PREFIX + capitalize(property);
-				return dc.getDeclaredMethod(setter, rt);
+				String setterName = SET_PREFIX + capitalize(property);
+				setter = dc.getDeclaredMethod(setterName, rt);
 			} else {
-				return dc.getDeclaredMethod(getter.getName(), rt);
+				setter = dc.getDeclaredMethod(getter.getName(), rt);
 			}
+			if (setter != null) {
+				Class<?> returnType = setter.getReturnType();
+				if (!Void.TYPE.equals(returnType)
+						&& !returnType.isAssignableFrom(dc)) {
+					throw new AssertionError(
+							String.format(
+									"Setter signature for property %s should either "
+											+ "return void or %s or a superclass of %s",
+									property, dc.getCanonicalName(),
+									dc.getCanonicalName()));
+				}
+			}
+			return setter;
 		} catch (NoSuchMethodException exc) {
 			return null;
 		}

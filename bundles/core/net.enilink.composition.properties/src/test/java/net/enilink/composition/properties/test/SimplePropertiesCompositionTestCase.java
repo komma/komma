@@ -14,11 +14,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.properties.traits.PropertySetOwner;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class SimplePropertiesCompositionTestCase extends
 		PropertiesCompositionTestCase {
@@ -45,6 +46,8 @@ public class SimplePropertiesCompositionTestCase extends
 		super.initRoleMapper(roleMapper);
 
 		roleMapper.addConcept(Node.class);
+		roleMapper.addConcept(Chain.class);
+		roleMapper.addConcept(WrongSetter.class);
 	}
 
 	@Test
@@ -96,5 +99,67 @@ public class SimplePropertiesCompositionTestCase extends
 		Set<String> children = ((PropertySetOwner) node)
 				.<String> getPropertySet("urn:test:children").getAll();
 		Assert.assertEquals(node.getChildren(), children);
+	}
+
+	public interface SuperChain {
+
+	}
+
+	@Iri("urn:test:Chain")
+	public interface Chain extends SuperChain {
+		@Iri("urn:test:valueSetterInterfaceA")
+		int valueSetterInterfaceA();
+
+		Chain valueSetterInterfaceA(int value);
+
+		@Iri("urn:test:valueSetterInterfaceB")
+		int valueSetterInterfaceB();
+
+		Chain valueSetterInterfaceB(int value);
+
+		@Iri("urn:test:valueSetterSuperInterface")
+		int valueSetterSuperInterface();
+
+		SuperChain valueSetterSuperInterface(int value);
+
+		@Iri("urn:test:valueSetterVoid")
+		int valueSetterVoid();
+
+		void valueSetterVoid(int value);
+	}
+
+	@Iri("urn:test:WrongSetter")
+	public interface WrongSetter {
+		@Iri("urn:test:valueSetterNotMatching")
+		int valueSetterNotMatching();
+
+		String valueSetterNotMatching(int value);
+	}
+
+	@Test
+	public void testSetterInterface() {
+		Chain chain = objectFactory.createObject(Chain.class);
+		chain.valueSetterInterfaceA(5).valueSetterInterfaceB(7);
+		Assert.assertEquals(chain.valueSetterInterfaceA(), 5);
+		Assert.assertEquals(chain.valueSetterInterfaceB(), 7);
+	}
+
+	@Test
+	public void testSetterSuperInterface() {
+		Chain chain = objectFactory.createObject(Chain.class);
+		chain.valueSetterSuperInterface(15);
+		Assert.assertEquals(chain.valueSetterSuperInterface(), 15);
+	}
+
+	@Test
+	public void testSetterVoid() {
+		Chain chain = objectFactory.createObject(Chain.class);
+		chain.valueSetterVoid(8);
+		Assert.assertEquals(chain.valueSetterVoid(), 8);
+	}
+
+	@Test(expected = AssertionError.class)
+	public void testSetterWrong() {
+		objectFactory.createObject(WrongSetter.class);
 	}
 }

@@ -41,6 +41,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.FieldNode;
+
 import net.enilink.composition.ClassDefiner;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.asm.BehaviourClassNode;
@@ -187,15 +188,21 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.newInstance(propertyDescType);
 		gen.dup();
 
-		// call constructor
+		// call constructor (propertyName, method, method)
 		gen.push(pd.getName());
-		gen.push(Type.getType(getter.getDeclaringClass()));
-		gen.push(getter.getName());
-		gen.push(setter == null ? null : setter.getName());
+		loadMethodObject(Type.getType(getter.getDeclaringClass()),
+				getter.getName(), Type.getReturnType(getter),
+				Type.getArgumentTypes(getter), gen);
+		if (setter == null) {
+			gen.push((String) null);
+		} else {
+			loadMethodObject(Type.getType(setter.getDeclaringClass()),
+					setter.getName(), Type.getReturnType(setter),
+					Type.getArgumentTypes(setter), gen);
+		}
 		gen.invokeConstructor(propertyDescType,
 				new org.objectweb.asm.commons.Method("<init>", Type.VOID_TYPE,
-						new Type[] { STRING_TYPE, CLASS_TYPE, STRING_TYPE,
-								STRING_TYPE }));
+						new Type[] { STRING_TYPE, METHOD_TYPE, METHOD_TYPE }));
 
 		// retrieve read method annotations
 		gen.invokeVirtual(propertyDescType,
@@ -220,6 +227,19 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.putField(field.name, Type.getType(field.desc));
 
 		gen.mark(exists);
+	}
+
+	private void loadMethodObject(Type declaringClass, String name,
+			Type returnType, Type[] paramTypes, BehaviourMethodGenerator gen) {
+		gen.push(declaringClass);
+		gen.push(name);
+		gen.loadArray(paramTypes);
+		gen.invokeVirtual(
+				Type.getType(Class.class),
+				new org.objectweb.asm.commons.Method("getDeclaredMethod", Type
+						.getType(Method.class),
+						new Type[] { Type.getType(String.class),
+								Type.getType(Class[].class) }));
 	}
 
 	private void implementGetter(PropertyDescriptor pd, BehaviourClassNode node)
@@ -317,6 +337,16 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		} else {
 			gen.box(type);
 			gen.invoke(Methods.PROPERTYSET_SET_SINGLE);
+		}
+
+		// enable method chaining for setters
+		Class<?> clazz = mn.getOverriddenMethod().getDeclaringClass();
+		if (mn.getOverriddenMethod().getReturnType().isAssignableFrom(clazz)) {
+			if (clazz.isInterface()) {
+				gen.loadBean();
+			} else {
+				gen.loadThis();
+			}
 		}
 		gen.returnValue();
 		gen.endMethod();
