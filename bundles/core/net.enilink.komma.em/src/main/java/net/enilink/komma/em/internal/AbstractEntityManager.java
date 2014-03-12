@@ -996,17 +996,20 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		}
 
 		if (resource != null) {
+			Set<IReference> seen = new HashSet<>();
 			Queue<IReference> nodes = new LinkedList<IReference>();
 			nodes.add(((IReference) resource));
 			while (!nodes.isEmpty()) {
 				IReference node = nodes.remove();
-				for (IStatement stmt : matchAsserted(node, null, null)) {
-					Object o = stmt.getObject();
-					if (canDelete(node, o, anonymousOnly)) {
-						nodes.add((IReference) o);
+				if (seen.add(node)) {
+					for (IStatement stmt : matchAsserted(node, null, null)) {
+						Object o = stmt.getObject();
+						if (canDelete(node, o, anonymousOnly)) {
+							nodes.add((IReference) o);
+						}
 					}
+					remove(node);
 				}
-				remove(node);
 			}
 		}
 	}
