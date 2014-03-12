@@ -20,7 +20,9 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.common.ui.rcp,
  net.enilink.komma.workbench
 Export-Package: net.enilink.komma.edit.ui.rcp.commands,
- net.enilink.komma.edit.ui.rcp.editor
+ net.enilink.komma.edit.ui.rcp.editor,
+ net.enilink.komma.edit.ui.rcp.project
 Bundle-Activator: net.enilink.komma.edit.ui.rcp.KommaEditUIRCP$Implementation
 Bundle-ActivationPolicy: lazy
-Import-Package: com.google.inject
+Import-Package: com.google.inject,
+ com.google.inject.binder
