@@ -1,45 +1,31 @@
 package net.enilink.komma.owl.editor.rcp;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
-
 import net.enilink.commons.ui.editor.EditorForm;
 import net.enilink.commons.ui.editor.IEditorPart;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.IValue;
-import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.command.EditingDomainCommandStack;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
-import net.enilink.komma.edit.provider.ComposedAdapterFactory;
 import net.enilink.komma.edit.ui.editor.IPropertySheetPageSupport;
 import net.enilink.komma.edit.ui.editor.KommaMultiPageEditor;
 import net.enilink.komma.edit.ui.editor.KommaMultiPageEditorSupport;
 import net.enilink.komma.edit.ui.rcp.editor.TabbedPropertySheetPageSupport;
+import net.enilink.komma.edit.ui.rcp.project.ProjectModelSetManager;
 import net.enilink.komma.edit.ui.views.IViewerMenuSupport;
 import net.enilink.komma.edit.ui.views.SelectionProviderAdapter;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.IModelSetFactory;
-import net.enilink.komma.model.MODELS;
-import net.enilink.komma.model.ModelPlugin;
-import net.enilink.komma.model.ModelSetModule;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
 import net.enilink.komma.owl.editor.classes.ClassesPart;
 import net.enilink.komma.owl.editor.ontology.OntologyPart;
 import net.enilink.komma.owl.editor.properties.DatatypePropertiesPart;
 import net.enilink.komma.owl.editor.properties.ObjectPropertiesPart;
 import net.enilink.komma.owl.editor.properties.OtherPropertiesPart;
-import net.enilink.komma.workbench.IProjectModelSet;
-import net.enilink.komma.workbench.ProjectModelSetSupport;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -50,28 +36,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.dialogs.SaveAsDialog;
 
-import com.google.inject.Guice;
-
 /**
  * A basic OWL editor.
  */
 public class OWLEditor extends KommaMultiPageEditor implements
 		IViewerMenuSupport {
-	static protected class Shared {
-		IModelSet modelSet;
-		Set<Object> openEditors = Collections
-				.newSetFromMap(new WeakHashMap<Object, Boolean>());
-		ComposedAdapterFactory adapterFactory;
-	}
-
-	protected static QualifiedName PROPERTY_SHARED = new QualifiedName(
-			OWLEditor.class.getName(), "shared");
-
 	protected EditorForm form;
 	protected SelectionProviderAdapter formSelectionProvider = new SelectionProviderAdapter();
 
 	protected IProject project;
-	protected Shared shared;
+	protected ProjectModelSetManager modelSetManager;
 
 	protected void addPage(String label, IEditorPart editPart) {
 		Composite control = form.getWidgetFactory().createComposite(
@@ -184,14 +158,11 @@ public class OWLEditor extends KommaMultiPageEditor implements
 					IModelSet modelSet) {
 				AdapterFactoryEditingDomain editingDomain = super
 						.getExistingEditingDomain(modelSet);
-				if (shared.adapterFactory == null) {
-					shared.adapterFactory = createDefaultAdapterFactory();
-				}
-
 				// set up an editor-local editing domain with own command stack
 				EditingDomainCommandStack commandStack = new EditingDomainCommandStack();
 				editingDomain = new AdapterFactoryEditingDomain(
-						shared.adapterFactory, commandStack, modelSet) {
+						modelSetManager.getAdapterFactory(), commandStack,
+						modelSet) {
 					protected void registerDomainProviderAdapter() {
 						// do not register this editing domain as adapter
 					}
@@ -210,51 +181,9 @@ public class OWLEditor extends KommaMultiPageEditor implements
 					project = (IProject) getEditorInput().getAdapter(
 							IProject.class);
 				}
-				IModelSet modelSet = null;
-				try {
-					shared = (Shared) project
-							.getSessionProperty(PROPERTY_SHARED);
-				} catch (CoreException e) {
-					// ignore
-				}
-				if (shared == null) {
-					shared = new Shared();
-					try {
-						project.setSessionProperty(PROPERTY_SHARED, shared);
-					} catch (CoreException e) {
-						// ignore
-					}
-				}
-				shared.openEditors.add(OWLEditor.this);
-
-				// use shared model set
-				if (shared.modelSet != null) {
-					return shared.modelSet;
-				}
-
-				KommaModule module = ModelPlugin
-						.createModelSetModule(getClass().getClassLoader());
-				module.addConcept(IProjectModelSet.class);
-				module.addBehaviour(ProjectModelSetSupport.class);
-
-				IModelSetFactory factory = Guice.createInjector(
-						new ModelSetModule(module)).getInstance(
-						IModelSetFactory.class);
-				modelSet = factory
-						.createModelSet(MODELS.NAMESPACE_URI
-								.appendLocalPart("MemoryModelSet"),
-								// uses automatically OWLIM if available
-								MODELS.NAMESPACE_URI
-										.appendLocalPart("OwlimModelSet"),
-								URIs.createURI(MODELS.NAMESPACE
-										+ "ProjectModelSet"));
-				if (modelSet instanceof IProjectModelSet && project != null) {
-					((IProjectModelSet) modelSet).setProject(project);
-				}
-				if (shared != null) {
-					shared.modelSet = modelSet;
-				}
-				return modelSet;
+				modelSetManager = ProjectModelSetManager.getSharedInstance(project);
+				modelSetManager.addClient(OWLEditor.this);
+				return modelSetManager.getModelSet();
 			}
 
 			@Override
@@ -272,25 +201,10 @@ public class OWLEditor extends KommaMultiPageEditor implements
 			@Override
 			public void dispose() {
 				super.dispose();
-				if (shared != null) {
-					shared.openEditors.remove(OWLEditor.this);
-					if (modelSet != null && shared.openEditors.isEmpty()) {
-						// dipose shared adapter factory
-						if (shared.adapterFactory != null) {
-							shared.adapterFactory.dispose();
-							shared.adapterFactory = null;
-						}
-						modelSet.dispose();
-						modelSet = null;
-						// remove shared properties from project
-						try {
-							project.setSessionProperty(PROPERTY_SHARED, null);
-						} catch (CoreException e) {
-							// ignore
-						}
-					}
+				if (modelSetManager != null) {
+					modelSetManager.removeClient(OWLEditor.this);
+					modelSet = null;
 				}
-				shared = null;
 			}
 		};
 	}
