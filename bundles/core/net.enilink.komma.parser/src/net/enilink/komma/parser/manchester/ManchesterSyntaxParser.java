@@ -42,16 +42,6 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 					Object object) {
 				return true;
 			}
-
-			@Override
-			public boolean isObjectProperty(Object property) {
-				return true;
-			}
-
-			@Override
-			public boolean isDataProperty(Object property) {
-				return true;
-			}
 		});
 	}
 
@@ -202,11 +192,12 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 												push(createRdfList((List<?>) pop()))))))),
 				Sequence(
 						"HasKey:",
-						WithAnnotations(
-								classIri,
-								OWL.PROPERTY_HASKEY,
-								OneOrMore(FirstOf(ObjectPropertyExpression(),
-										DataPropertyExpression())))));
+						WithAnnotations(classIri, OWL.PROPERTY_HASKEY,
+								OneOrMore(PropertyExpression()))));
+	}
+
+	public Rule PropertyExpression() {
+		return FirstOf(ObjectPropertyExpression(), DataPropertyExpression());
 	}
 
 	public Rule Conjunction() {
@@ -267,7 +258,7 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 	}
 
 	public Rule DataPropertyExpression() {
-		return Sequence(IriRef(), actions.isDataProperty(peek()));
+		return IriRef();
 	}
 
 	public Rule DataPropertyFact() {
@@ -542,9 +533,7 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 	}
 
 	public Rule ObjectPropertyExpression() {
-		return FirstOf(Sequence(IriRef(), actions.isObjectProperty(peek())),
-				InverseObjectProperty());
-
+		return FirstOf(IriRef(), InverseObjectProperty());
 	}
 
 	public Rule ObjectPropertyFact() {
