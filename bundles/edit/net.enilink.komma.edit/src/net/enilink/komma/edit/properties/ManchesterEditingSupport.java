@@ -15,7 +15,6 @@ import org.parboiled.support.ParsingResult;
 
 import com.google.inject.Provider;
 
-import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
@@ -59,27 +58,6 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 		public boolean createStmt(Object subject, Object predicate,
 				Object object) {
 			return true;
-		}
-
-		@Override
-		public boolean isObjectProperty(Object property) {
-			return !isDataProperty(property);
-		}
-
-		@Override
-		public boolean isDataProperty(Object property) {
-			IModel model = modelProvider.get();
-			if (model == null) {
-				return false;
-			}
-			try {
-				IReference propertyRef = (IReference) toValue(model, property,
-						bNodes);
-				return model.getManager().find(propertyRef) instanceof DatatypeProperty;
-			} catch (IllegalArgumentException iae) {
-				// ignore, thrown if property uses an unknown prefix
-			}
-			return false;
 		}
 	}
 
