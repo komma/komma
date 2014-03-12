@@ -70,7 +70,6 @@ import net.enilink.vocab.rdf.RDF;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
-import org.eclipse.core.runtime.content.IContentDescription;
 
 import com.google.inject.ConfigurationException;
 import com.google.inject.Inject;
@@ -445,9 +444,21 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	public synchronized KommaModule getModuleClosure() {
 		KommaModule moduleClosure = state().moduleClosure;
 		if (moduleClosure == null) {
-			state().moduleClosure = moduleClosure = new KommaModule();
+			state().moduleClosure = moduleClosure = new KommaModule(
+					ModelSupport.class.getClassLoader());
 			moduleClosure.addWritableGraph(getURI());
 
+			// add support for IObject interface
+			moduleClosure.addConcept(IObject.class);
+			moduleClosure.addBehaviour(ObjectSupport.class);
+
+			// include basic roles
+			KommaModule modelSetModule = getModelSet().getModule();
+			if (modelSetModule != null) {
+				moduleClosure.includeModule(modelSetModule);
+			}
+
+			// include modules from the imports closure
 			Set<URI> seen = new HashSet<>();
 			Queue<IModel> queue = new LinkedList<>();
 			queue.add(getBehaviourDelegate());
@@ -480,15 +491,6 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			state().module = module = new KommaModule(
 					ModelSupport.class.getClassLoader());
 			module.addWritableGraph(getURI());
-
-			// add support for IObject interface
-			module.addConcept(IObject.class);
-			module.addBehaviour(ObjectSupport.class);
-
-			KommaModule modelSetModule = getModelSet().getModule();
-			if (modelSetModule != null) {
-				module.includeModule(modelSetModule);
-			}
 
 			// record namespace declarations
 			for (Namespace ns : getModelNamespaces()) {
@@ -693,10 +695,12 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				.get(OPTION_SAVE_ONLY_IF_CHANGED)
 				: getDefaultSaveOptions() != null ? getDefaultSaveOptions()
 						.get(OPTION_SAVE_ONLY_IF_CHANGED) : null;
-		if (saveOnlyIfChanged != null) {
+		if (saveOnlyIfChanged != null
+				&& options.get(IModel.OPTION_CONTENT_DESCRIPTION) == null) {
+			// add correct content type
 			Map<Object, Object> newOptions = new HashMap<>(
 					options != null ? options : Collections.emptyMap());
-			newOptions.put(IContentDescription.class, ModelUtil
+			newOptions.put(IModel.OPTION_CONTENT_DESCRIPTION, ModelUtil
 					.determineContentDescription(getURI(), getModelSet()
 							.getURIConverter(), options));
 			options = newOptions;
@@ -727,6 +731,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				}
 			}
 		}
+		setModified(false);
 	}
 
 	/*
@@ -736,8 +741,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			throws IOException {
 		File temporaryFile = File.createTempFile("ResourceSaveHelper", null);
 		try {
-			URI temporaryFileURI = URIs.createFileURI(temporaryFile
-					.getPath());
+			URI temporaryFileURI = URIs.createFileURI(temporaryFile.getPath());
 			IURIConverter uriConverter = getURIConverter();
 			OutputStream temporaryFileOutputStream = uriConverter
 					.createOutputStream(temporaryFileURI, null);

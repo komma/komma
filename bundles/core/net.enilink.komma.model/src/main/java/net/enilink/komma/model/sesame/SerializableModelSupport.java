@@ -94,7 +94,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 			options = Collections.emptyMap();
 		}
 		IContentDescription contentDescription = (IContentDescription) options
-				.get(IContentDescription.class);
+				.get(IModel.OPTION_CONTENT_DESCRIPTION);
 		if (contentDescription == null) {
 			contentDescription = ModelUtil.determineContentDescription(
 					getURI(), getModelSet().getURIConverter(), options);

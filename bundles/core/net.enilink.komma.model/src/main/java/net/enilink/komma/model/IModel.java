@@ -55,6 +55,12 @@ public interface IModel {
 	String OPTION_SAVE_ONLY_IF_CHANGED_FILE_BUFFER = "FILE_BUFFER";
 
 	/**
+	 * A load and save option that can be used to specify a content description
+	 * object.
+	 */
+	String OPTION_CONTENT_DESCRIPTION = "CONTENT_DESCRIPTION";
+
+	/**
 	 * A load and save option that can be used to specify the MIME type of the
 	 * contents.
 	 */
