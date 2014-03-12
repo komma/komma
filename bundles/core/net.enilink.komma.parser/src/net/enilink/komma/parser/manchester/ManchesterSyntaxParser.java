@@ -655,68 +655,70 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 		URI on;
 		return Sequence(
 				FirstOf(Sequence(
-						ObjectPropertyExpression(),
+						DataPropertyExpression(),
 						FirstOf(Sequence("some",
-								type = OWL.PROPERTY_SOMEVALUESFROM, Primary()),
+								type = OWL.PROPERTY_SOMEVALUESFROM,
+								DataPrimary()), //
 								Sequence("only",
 										type = OWL.PROPERTY_ALLVALUESFROM,
-										Primary()),
+										DataPrimary()),
 								Sequence("value", type = OWL.PROPERTY_HASVALUE,
-										Individual()),
-								Sequence("Self", type = OWL.PROPERTY_HASSELF,
-										push(new BooleanLiteral(true))), //
+										Literal()), //
 								Sequence(
 										"min",
 										type = OWL.PROPERTY_MINCARDINALITY,
 										INTEGER(),
-										Optional(Primary(),
-												on = OWL.PROPERTY_ONCLASS)), //
+										Optional(DataPrimary(),
+												on = OWL.PROPERTY_ONDATARANGE)), //
 								Sequence(
 										"max",
 										type = OWL.PROPERTY_MAXCARDINALITY,
 										INTEGER(),
-										Optional(Primary(),
-												on = OWL.PROPERTY_ONCLASS)), //
+										Optional(DataPrimary(),
+												on = OWL.PROPERTY_ONDATARANGE)), //
 								Sequence(
 										"exactly",
 										type = OWL.PROPERTY_CARDINALITY,
 										INTEGER(),
-										Optional(Primary(),
-												on = OWL.PROPERTY_ONCLASS)))), //
+										Optional(DataPrimary(),
+												on = OWL.PROPERTY_ONDATARANGE)))),
 						Sequence(
-								DataPropertyExpression(),
+								ObjectPropertyExpression(),
 								FirstOf(Sequence("some",
 										type = OWL.PROPERTY_SOMEVALUESFROM,
-										DataPrimary()), //
+										Primary()),
 										Sequence(
 												"only",
 												type = OWL.PROPERTY_ALLVALUESFROM,
-												DataPrimary()),
+												Primary()),
 										Sequence("value",
 												type = OWL.PROPERTY_HASVALUE,
-												Literal()), //
+												Individual()),
+										Sequence("Self",
+												type = OWL.PROPERTY_HASSELF,
+												push(new BooleanLiteral(true))), //
 										Sequence(
 												"min",
 												type = OWL.PROPERTY_MINCARDINALITY,
 												INTEGER(),
 												Optional(
-														DataPrimary(),
-														on = OWL.PROPERTY_ONDATARANGE)), //
+														Primary(),
+														on = OWL.PROPERTY_ONCLASS)), //
 										Sequence(
 												"max",
 												type = OWL.PROPERTY_MAXCARDINALITY,
 												INTEGER(),
 												Optional(
-														DataPrimary(),
-														on = OWL.PROPERTY_ONDATARANGE)), //
+														Primary(),
+														on = OWL.PROPERTY_ONCLASS)), //
 										Sequence(
 												"exactly",
 												type = OWL.PROPERTY_CARDINALITY,
 												INTEGER(),
 												Optional(
-														DataPrimary(),
-														on = OWL.PROPERTY_ONDATARANGE))))),
-				createRestriction(type, on));
+														Primary(),
+														on = OWL.PROPERTY_ONCLASS)))) //
+				), createRestriction(type, on));
 	}
 
 	public boolean createRestriction(URI type, URI on) {
