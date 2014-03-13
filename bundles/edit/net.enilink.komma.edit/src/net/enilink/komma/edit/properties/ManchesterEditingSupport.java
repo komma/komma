@@ -5,20 +5,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.parboiled.Parboiled;
-import org.parboiled.errors.ErrorUtils;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
-
-import com.google.inject.Provider;
-
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.SimpleCommand;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IValue;
+import net.enilink.komma.core.Statement;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.edit.assist.IContentProposal;
 import net.enilink.komma.edit.assist.IContentProposalProvider;
 import net.enilink.komma.edit.assist.ParboiledProposalProvider;
@@ -37,23 +34,17 @@ import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.Literal;
 import net.enilink.komma.parser.sparql.tree.QName;
 import net.enilink.komma.parser.sparql.tree.visitor.TreeWalker;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.IValue;
-import net.enilink.komma.core.Statement;
-import net.enilink.komma.core.URI;
+
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.ReportingParseRunner;
+import org.parboiled.support.ParsingResult;
 
 public class ManchesterEditingSupport extends ResourceEditingSupport {
 	class ManchesterActions implements IManchesterActions {
-		final Map<BNode, IReference> bNodes = new HashMap<BNode, IReference>();
-		final Provider<IModel> modelProvider;
-
-		public ManchesterActions(Provider<IModel> modelProvider) {
-			this.modelProvider = modelProvider;
-		}
-
 		@Override
 		public boolean createStmt(Object subject, Object predicate,
 				Object object) {
@@ -175,15 +166,7 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 				.getLabelProvider();
 
 		final ManchesterSyntaxParser parser = Parboiled.createParser(
-				ManchesterSyntaxParser.class, new ManchesterActions(
-						new Provider<IModel>() {
-							public IModel get() {
-								if (subject instanceof IObject) {
-									return ((IObject) subject).getModel();
-								}
-								return null;
-							}
-						}));
+				ManchesterSyntaxParser.class, new ManchesterActions());
 		return new ProposalSupport() {
 			@Override
 			public IContentProposalProvider getProposalProvider() {
@@ -230,12 +213,7 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 				final List<Object[]> newStmts = new ArrayList<Object[]>();
 				ParsingResult<Object> result = new ReportingParseRunner<Object>(
 						Parboiled.createParser(ManchesterSyntaxParser.class,
-								new ManchesterActions(new Provider<IModel>() {
-									@Override
-									public IModel get() {
-										return ((IObject) subject).getModel();
-									}
-								}) {
+								new ManchesterActions() {
 									@Override
 									public boolean createStmt(Object subject,
 											Object predicate, Object object) {
