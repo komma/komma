@@ -60,6 +60,18 @@ public interface IEntityManagerFactory extends AutoCloseable {
 	IEntityManager create();
 
 	/**
+	 * Creates a new {@link IEntityManager} to used within the manager provided
+	 * as <code>scope</code>. Its the user's responsibility to close this
+	 * manager when the work is finished;
+	 * 
+	 * @param scope
+	 *            The entity manager that should be used as shared entity
+	 *            manager between different beans.
+	 * @return A new {@link IEntityManager}.
+	 */
+	IEntityManager create(IEntityManager scope);
+
+	/**
 	 * Creates a new {@link IEntityManagerFactory} with the default Locale.
 	 * 
 	 * @param modules
@@ -79,27 +91,6 @@ public interface IEntityManagerFactory extends AutoCloseable {
 	 */
 	IEntityManagerFactory createChildFactory(IProvider<Locale> locale,
 			KommaModule... modules);
-
-	/**
-	 * Creates a new {@link IEntityManagerFactory} that uses the supplied
-	 * {@link IEntityManager} if a managed entity manager is requested. The
-	 * given locale is used for entity managers which are obtained via
-	 * {@link IEntityManagerFactory#create()}.
-	 * 
-	 * @param sharedManager
-	 *            Entity manager that is returned when a managed instance is
-	 *            requested via {@link IEntityManagerFactory#get()}.
-	 * 
-	 * @param locale
-	 *            The locale to use for new manager instances.
-	 * 
-	 * @param modules
-	 *            Set of modules to configure the {@link IEntityManagerFactory}.
-	 * 
-	 * @return A new {@link IEntityManagerFactory}.
-	 */
-	IEntityManagerFactory createChildFactory(IEntityManager sharedManager,
-			IProvider<Locale> locale, KommaModule... modules);
 
 	/**
 	 * Returns an {@link IEntityManager} instance that is open within the
