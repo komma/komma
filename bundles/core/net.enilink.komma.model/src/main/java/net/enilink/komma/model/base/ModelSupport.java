@@ -142,14 +142,14 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 
 					@Override
 					protected IEntityManager initialValue() {
-						return getModelSet().getEntityManagerFactory()
+						return getModelSet()
+								.getEntityManagerFactory()
 								// allow interception of call to
 								// getModule()
 								.createChildFactory(
-										theState.manager,
-										null,
 										getBehaviourDelegate()
-												.getModuleClosure()).create();
+												.getModuleClosure())
+								.create(theState.manager);
 					}
 
 					@Override
