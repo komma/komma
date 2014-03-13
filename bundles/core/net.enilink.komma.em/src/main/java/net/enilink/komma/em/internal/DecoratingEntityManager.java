@@ -13,20 +13,19 @@ package net.enilink.komma.em.internal;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
-import net.enilink.komma.em.internal.behaviours.IEntityManagerAware;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
+import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.em.internal.behaviours.IEntityManagerAware;
+
+import com.google.inject.Inject;
 
 public class DecoratingEntityManager extends AbstractEntityManager {
 	private CopyOnWriteArraySet<IEntityDecorator> decorators;
 
-	@Inject(optional = true)
-	@Named("injectManager")
-	private boolean injectManager = true;
+	@Inject
+	IEntityManager sharedManager;
 
 	@Inject
 	public DecoratingEntityManager(Set<IEntityDecorator> decorators) {
@@ -46,10 +45,7 @@ public class DecoratingEntityManager extends AbstractEntityManager {
 
 	public <T> T decorate(T entity) {
 		if (entity instanceof IEntity) {
-			if (injectManager) {
-				((IEntityManagerAware) entity)
-						.initEntityManager(DecoratingEntityManager.this);
-			}
+			((IEntityManagerAware) entity).initEntityManager(sharedManager);
 			for (IEntityDecorator decorator : decorators) {
 				decorator.decorate((IEntity) entity);
 			}

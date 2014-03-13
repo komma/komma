@@ -48,6 +48,7 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Provider;
+import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 
@@ -62,13 +63,11 @@ class EntityManagerFactory implements IEntityManagerFactory {
 	@Inject(optional = true)
 	IDataManagerFactory dmFactory;
 
-	Injector injector;
-
 	private IEntityManagerFactory parent = null;
 
 	IProvider<Locale> locale;
 
-	Injector managerInjector;
+	Injector injector;
 
 	Module managerModule;
 
@@ -79,7 +78,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 	@Inject
 	IUnitOfWork unitOfWork;
 
-	private IEntityManager sharedManager;
+	volatile IEntityManager sharedManager;
 
 	EntityManagerFactory(KommaModule module, IProvider<Locale> locale,
 			Module managerModule) {
@@ -108,8 +107,24 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 	@Override
 	public IEntityManager create() {
-		return getManagerInjector().getInstance(
-				Key.get(IEntityManager.class, Names.named("unmanaged")));
+		return getManagerInjector(new AbstractModule() {
+			@Override
+			protected void configure() {
+				bind(IEntityManager.class)
+						.to(Key.get(IEntityManager.class,
+								Names.named("unmanaged"))).in(Singleton.class);
+			}
+		}).getInstance(IEntityManager.class);
+	}
+
+	@Override
+	public IEntityManager create(final IEntityManager scope) {
+		return getManagerInjector(new AbstractModule() {
+			@Override
+			protected void configure() {
+				bind(IEntityManager.class).toInstance(scope);
+			}
+		}).getInstance(Key.get(IEntityManager.class, Names.named("unmanaged")));
 	}
 
 	@Override
@@ -128,43 +143,39 @@ class EntityManagerFactory implements IEntityManagerFactory {
 				childModule.addWritableGraph(writable);
 			}
 		}
-
 		EntityManagerFactory childFactory = new EntityManagerFactory(
 				childModule, locale == null ? this.locale : locale,
 				managerModule);
 		childFactory.parent = this;
 		injector.injectMembers(childFactory);
-
-		return childFactory;
-	}
-
-	@Override
-	public IEntityManagerFactory createChildFactory(
-			final IEntityManager sharedManager, IProvider<Locale> locale,
-			KommaModule... modules) {
-		KommaModule childModule = new KommaModule(module.getClassLoader());
-		childModule.includeModule(module);
-		for (KommaModule include : modules) {
-			childModule.includeModule(include);
-			for (URI writable : include.getWritableGraphs()) {
-				childModule.addWritableGraph(writable);
-			}
-		}
-
-		EntityManagerFactory childFactory = new EntityManagerFactory(
-				childModule, locale == null ? this.locale : locale,
-				managerModule);
-		childFactory.parent = this;
-		childFactory.sharedManager = sharedManager != null ? sharedManager
-				: this.sharedManager;
-		injector.injectMembers(childFactory);
-
 		return childFactory;
 	}
 
 	@Override
 	public IEntityManager get() {
-		return getManagerInjector().getInstance(IEntityManager.class);
+		if (sharedManager == null) {
+			synchronized (this) {
+				if (sharedManager == null) {
+					sharedManager = getManagerInjector(new AbstractModule() {
+						@Override
+						protected void configure() {
+							final Provider<IEntityManager> provider = getProvider(Key
+									.get(IEntityManager.class,
+											Names.named("unmanaged")));
+							ThreadLocalEntityManager manager = new ThreadLocalEntityManager() {
+								@Override
+								protected IEntityManager initialValue() {
+									return provider.get();
+								}
+							};
+							bind(IEntityManager.class).toInstance(manager);
+							requestInjection(manager);
+						}
+					}).getInstance(IEntityManager.class);
+				}
+			}
+		}
+		return sharedManager;
 	}
 
 	@Override
@@ -180,43 +191,31 @@ class EntityManagerFactory implements IEntityManagerFactory {
 		return parent;
 	}
 
-	public synchronized Injector getManagerInjector() {
-		if (managerInjector == null) {
-			managerInjector = injector.createChildInjector(
-					new ManagerCompositionModule(module), new AbstractModule() {
-						@Override
-						protected void configure() {
-							bind(IEntityManagerFactory.class).annotatedWith(
-									Names.named("currentFactory")).toInstance(
-									EntityManagerFactory.this);
-							if (sharedManager != null) {
-								bind(IEntityManager.class).annotatedWith(
-										Names.named("shared")).toInstance(
-										sharedManager);
-								bind(boolean.class).annotatedWith(
-										Names.named("injectManager"))
-										.toInstance(false);
-							}
-							bind(new TypeLiteral<Set<URI>>() {
-							}).annotatedWith(Names.named("readContexts"))
-									.toInstance(module.getReadableGraphs());
-							bind(new TypeLiteral<Set<URI>>() {
-							}).annotatedWith(Names.named("modifyContexts"))
-									.toInstance(module.getWritableGraphs());
+	protected synchronized Injector getManagerInjector(
+			AbstractModule customModule) {
+		return injector.createChildInjector(customModule,
+				new ManagerCompositionModule(module), new AbstractModule() {
+					@Override
+					protected void configure() {
+						bind(IEntityManagerFactory.class).annotatedWith(
+								Names.named("currentFactory")).toInstance(
+								EntityManagerFactory.this);
+						bind(new TypeLiteral<Set<URI>>() {
+						}).annotatedWith(Names.named("readContexts"))
+								.toInstance(module.getReadableGraphs());
+						bind(new TypeLiteral<Set<URI>>() {
+						}).annotatedWith(Names.named("modifyContexts"))
+								.toInstance(module.getWritableGraphs());
 
-							bind(Locale.class).toProvider(
-									new Provider<Locale>() {
-										@Override
-										public Locale get() {
-											return locale == null ? Locale
-													.getDefault() : locale
-													.get();
-										}
-									});
-						}
-					}, managerModule);
-		}
-		return managerInjector;
+						bind(Locale.class).toProvider(new Provider<Locale>() {
+							@Override
+							public Locale get() {
+								return locale == null ? Locale.getDefault()
+										: locale.get();
+							}
+						});
+					}
+				}, managerModule);
 	}
 
 	@Override

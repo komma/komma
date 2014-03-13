@@ -12,18 +12,12 @@ package net.enilink.komma.em;
 
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.komma.KommaPropertySetFactory;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.em.internal.DecoratingEntityManager;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Binding;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
-
-import net.enilink.komma.em.internal.DecoratingEntityManager;
-import net.enilink.komma.em.util.UnitOfWork;
-import net.enilink.komma.core.IEntityManager;
 
 public class DecoratingEntityManagerModule extends AbstractModule {
 	@Override
@@ -36,18 +30,6 @@ public class DecoratingEntityManagerModule extends AbstractModule {
 		Class<? extends PropertySetFactory> factoryClass = getPropertySetFactoryClass();
 		bind(factoryClass).in(Singleton.class);
 		bind(PropertySetFactory.class).to(factoryClass);
-	}
-
-	@Provides
-	protected IEntityManager provideEntityManager(final Injector injector,
-			final UnitOfWork uow) {
-		Binding<IEntityManager> binding = injector.getExistingBinding(Key.get(
-				IEntityManager.class, Names.named("shared")));
-		if (binding != null) {
-			return binding.getProvider().get();
-		} else {
-			return injector.getInstance(getManagerClass());
-		}
 	}
 
 	protected Class<? extends IEntityManager> getManagerClass() {
