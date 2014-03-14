@@ -439,10 +439,45 @@ public class PropertyTreePart extends AbstractEditingDomainPart {
 				}
 				return null;
 			}
+			String result;
 			if (element instanceof ILiteral) {
-				return ((ILiteral) element).getLabel();
+				result = ((ILiteral) element).getLabel();
+			} else {
+				result = labelProvider.getText(element);
 			}
-			return labelProvider.getText(element);
+			return result == null ? null : ellipsize(result, 155).replaceAll(
+					"[\\r\\n]+\\s*", "; ");
+		}
+
+		static final String NON_THIN = "[^iIl1\\.,']";
+
+		int textWidth(String str) {
+			return (int) (str.length() - str.replaceAll(NON_THIN, "").length() / 2);
+		}
+
+		String ellipsize(String text, int max) {
+			if (textWidth(text) <= max) {
+				return text;
+			}
+			// Start by chopping off at the word before max
+			// This is an over-approximation due to thin-characters...
+			int end = text.lastIndexOf(' ', max - 3);
+			// Just one long word. Chop it off.
+			if (end == -1) {
+				return text.substring(0, max - 3) + "...";
+			}
+			// Step forward as long as textWidth allows.
+			int newEnd = end;
+			do {
+				end = newEnd;
+				newEnd = text.indexOf(' ', end + 1);
+
+				// No more spaces.
+				if (newEnd == -1)
+					newEnd = text.length();
+
+			} while (textWidth(text.substring(0, newEnd) + "...") < max);
+			return text.substring(0, end) + "...";
 		}
 	}
 
