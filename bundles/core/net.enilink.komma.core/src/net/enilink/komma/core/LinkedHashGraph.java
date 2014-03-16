@@ -1276,6 +1276,11 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		public int hashCode() {
 			return Statements.hashCode(this);
 		}
+
+		@Override
+		public String toString() {
+			return Statements.toString(this);
+		}
 	}
 
 	class PatternIterator<S extends IStatement> extends FilterIterator<S> {
