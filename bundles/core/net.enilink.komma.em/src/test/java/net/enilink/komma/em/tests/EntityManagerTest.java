@@ -34,7 +34,7 @@ public abstract class EntityManagerTest {
 	protected UnitOfWork uow;
 
 	// defines the default module for configuring the storage backend
-	private static final String DEFAULT_STORAGE_MODULE = "net.enilink.komma.sesame.SesameTestModule";
+	private static final String DEFAULT_STORAGE_MODULE = "net.enilink.komma.sesame.SesameMemoryStoreModule";
 
 	private Module createStorageModule() {
 		try {
