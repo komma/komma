@@ -11,8 +11,11 @@ import com.google.inject.Singleton;
 
 import net.enilink.komma.core.KommaException;
 
-/** Configuration module for unit tests that use Sesame as storage back end. */
-public class SesameTestModule extends AbstractModule {
+/**
+ * Configuration module that uses a Sesame {@link MemoryStore} as storage back
+ * end.
+ */
+public class SesameMemoryStoreModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		install(new SesameModule());
