@@ -15,6 +15,7 @@ public class SesameBooleanResult extends SesameResult<Boolean, Boolean>
 	public boolean asBoolean() {
 		if (value == null) {
 			next();
+			close();
 		}
 		return value;
 	}

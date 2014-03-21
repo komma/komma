@@ -91,54 +91,57 @@ public class SesameValueConverter {
 	}
 
 	public Resource toSesame(IReference reference) {
-		return (Resource) toSesame((IValue) reference);
+		if (reference == null) {
+			return null;
+		}
+		if (reference instanceof IReferenceable) {
+			reference = ((IReferenceable) reference).getReference();
+		}
+		if (reference instanceof SesameReference) {
+			Resource resource = ((SesameReference) reference)
+					.getSesameResource();
+			if (resource instanceof BNode
+					&& ((BNode) resource).getID().startsWith("new-")) {
+				// enforce that newly created Sesame blank nodes are also
+				// correctly converted
+				reference = new BlankNode(reference.toString());
+			} else {
+				return resource;
+			}
+		}
+		URI uri = reference.getURI();
+		if (uri != null) {
+			return toSesame(reference.getURI());
+		} else {
+			String valueAsString = reference.toString();
+			if (valueAsString.startsWith("_:")) {
+				String id = valueAsString.substring(2);
+				if (id.startsWith("new-")) {
+					// convert newly created blank nodes with magic prefix
+					// "new-"
+					synchronized (bnodeMap) {
+						BNode bnode = bnodeMap.get(id);
+						if (bnode == null) {
+							bnode = valueFactory.createBNode();
+							bnodeMap.put(id, bnode);
+						}
+						return bnode;
+					}
+				}
+				return valueFactory.createBNode(id);
+			}
+			throw new KommaException(
+					"Cannot convert blank node with nominal value '"
+							+ valueAsString + "' to Sesame blank node.");
+		}
 	}
 
 	public Value toSesame(IValue value) {
 		if (value == null) {
 			return null;
 		}
-		if (value instanceof IReferenceable) {
-			value = ((IReferenceable) value).getReference();
-		}
 		if (value instanceof IReference) {
-			if (value instanceof SesameReference) {
-				Resource resource = ((SesameReference) value)
-						.getSesameResource();
-				if (resource instanceof BNode
-						&& ((BNode) resource).getID().startsWith("new-")) {
-					// enforce that newly created Sesame blank nodes are also
-					// correctly converted
-					value = new BlankNode(value.toString());
-				} else {
-					return resource;
-				}
-			}
-			URI uri = ((IReference) value).getURI();
-			if (uri != null) {
-				return toSesame(((IReference) value).getURI());
-			} else {
-				String valueAsString = ((IReference) value).toString();
-				if (valueAsString.startsWith("_:")) {
-					String id = valueAsString.substring(2);
-					if (id.startsWith("new-")) {
-						// convert newly created blank nodes with magic prefix
-						// "new-"
-						synchronized (bnodeMap) {
-							BNode bnode = bnodeMap.get(id);
-							if (bnode == null) {
-								bnode = valueFactory.createBNode();
-								bnodeMap.put(id, bnode);
-							}
-							return bnode;
-						}
-					}
-					return valueFactory.createBNode(id);
-				}
-				throw new KommaException(
-						"Cannot convert blank node with nominal value '"
-								+ valueAsString + "' to Sesame blank node.");
-			}
+			return toSesame((IReference) value);
 		}
 		if (value instanceof ILiteral) {
 			if (value instanceof SesameLiteral) {

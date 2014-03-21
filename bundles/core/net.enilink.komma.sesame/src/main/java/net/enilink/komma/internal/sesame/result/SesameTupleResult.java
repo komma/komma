@@ -1,5 +1,6 @@
 package net.enilink.komma.internal.sesame.result;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.openrdf.query.BindingSet;
@@ -17,13 +18,10 @@ import net.enilink.komma.sesame.SesameValueConverter;
 public class SesameTupleResult extends
 		SesameResult<BindingSet, IBindings<IValue>> implements
 		ITupleResult<IBindings<IValue>> {
-	private TupleQueryResult result;
-
 	protected SesameValueConverter valueConverter;
 
 	public SesameTupleResult(TupleQueryResult result) {
 		super(result);
-		this.result = result;
 	}
 
 	@Override
@@ -41,8 +39,11 @@ public class SesameTupleResult extends
 
 	@Override
 	public List<String> getBindingNames() {
+		if (delegate == null) {
+			return Collections.emptyList();
+		}
 		try {
-			return result.getBindingNames();
+			return ((TupleQueryResult) delegate).getBindingNames();
 		} catch (QueryEvaluationException e) {
 			throw new RuntimeException(e);
 		}
