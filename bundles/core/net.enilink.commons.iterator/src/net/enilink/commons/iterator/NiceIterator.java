@@ -29,8 +29,6 @@
 
 package net.enilink.commons.iterator;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
