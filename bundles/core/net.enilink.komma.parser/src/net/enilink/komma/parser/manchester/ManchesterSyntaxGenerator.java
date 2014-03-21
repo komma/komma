@@ -246,6 +246,12 @@ public class ManchesterSyntaxGenerator {
 		return sb.toString();
 	}
 
+	protected String escapeLiteral(String label) {
+		return label.replace("\\", "\\\\").replace("\t", "\\t")
+				.replace("\n", "\\n").replace("\r", "\\r")
+				.replace("\"", "\\\"");
+	}
+
 	protected ManchesterSyntaxGenerator value(Object value) {
 		if (value instanceof ILiteral) {
 			ILiteral literal = (ILiteral) value;
@@ -255,7 +261,7 @@ public class ManchesterSyntaxGenerator {
 			if (quoted) {
 				append("\"");
 			}
-			append(literal.getLabel());
+			append(escapeLiteral(literal.getLabel()));
 			if (quoted) {
 				append("\"");
 			}
