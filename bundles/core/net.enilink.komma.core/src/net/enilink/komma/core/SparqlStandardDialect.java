@@ -3,9 +3,11 @@ package net.enilink.komma.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class SparqlStandardDialect implements IDialect {
 	protected volatile int varCount = 0;
+	private static Pattern ESCAPE_CHARS = Pattern.compile("[\\[.{(*+?^$|]");
 
 	/**
 	 * Creates a semi globally unique variable name by appending a global
@@ -20,7 +22,9 @@ public class SparqlStandardDialect implements IDialect {
 	}
 
 	protected String createRegexForPattern(String searchPattern, int flags) {
-		return searchPattern.replaceAll("\\*", ".*").replaceAll("\\?", ".");
+		searchPattern = ESCAPE_CHARS.matcher(searchPattern)
+				.replaceAll("\\\\$0");
+		return searchPattern.replace("\\*", ".*").replace("\\?", ".");
 	}
 
 	protected String[] filterEmpty(String[] patterns) {
@@ -45,6 +49,7 @@ public class SparqlStandardDialect implements IDialect {
 	public QueryFragment fullTextSearch(
 			Collection<? extends String> bindingNames, int flags,
 			String... patterns) {
+		boolean caseSensitive = (flags & CASE_SENSITIVE) != 0;
 		patterns = filterEmpty(patterns);
 		if (patterns.length > 0) {
 			LinkedHashBindings<Object> bindings = new LinkedHashBindings<Object>();
@@ -65,7 +70,7 @@ public class SparqlStandardDialect implements IDialect {
 						filter.append(" || ");
 					}
 					filter.append("regex(str(?" + bindingName + "), ?" + var
-							+ ")");
+							+ (caseSensitive ? "" : ", \"i\"") + ")");
 				}
 				return new QueryFragment("FILTER (" + filter + ")", bindings);
 			} else {
@@ -87,7 +92,9 @@ public class SparqlStandardDialect implements IDialect {
 						}
 						bindingFilter
 								.append("regex(str(?" + bindingName + "), ?")
-								.append(var).append(")");
+								.append(var)
+								.append(caseSensitive ? "" : ", \"i\"")
+								.append(")");
 					}
 					filter.append(bindingFilter);
 				}

@@ -575,7 +575,7 @@ final class URIImpl implements URI {
 					+ fragment);
 		}
 		URIImpl result = new URIImpl(hierarchical, scheme, authority, device,
-				absolutePath, segments, query, fragment);
+				absolutePath, segments, query, encodeFragment(fragment, true));
 
 		if (!hasFragment()) {
 			result.cachedTrimFragment = this;
@@ -635,13 +635,13 @@ final class URIImpl implements URI {
 
 	public URI appendLocalPart(String localPart) {
 		if (!isHierarchical() && toString().endsWith(":")) {
-			return createURI(toString() + localPart);
+			return createURI(toString() + localPart, true);
 		}
 		String last = lastSegment();
 		if (last == null || last != null && last.length() > 0) {
 			return appendFragment(localPart);
 		}
-		return trimSegments(1).appendSegment(localPart);
+		return trimSegments(1).appendSegment(encodeSegment(localPart, true));
 	}
 
 	@Override

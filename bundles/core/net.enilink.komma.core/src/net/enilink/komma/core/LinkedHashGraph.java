@@ -27,9 +27,9 @@ import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.FilterIterator;
 
 /**
- * @author James Leigh
+ * Implementation of the {@link IGraph} interface using an underlying
+ * {@link LinkedHashSet}.
  */
-@SuppressWarnings("unchecked")
 public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 
 	private static final long serialVersionUID = -9161104123818983614L;
@@ -38,24 +38,24 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 
 	Map<String, String> namespaces = new LinkedHashMap<String, String>();
 
-	transient Map<Object, GraphNode> values;
+	transient Map<Object, GraphNode<Object>> values;
 
 	transient Set<GraphStatement> statements;
 
 	public LinkedHashGraph() {
-		values = new HashMap<Object, GraphNode>();
-		statements = new LinkedHashSet<GraphStatement>();
+		values = new HashMap<>();
+		statements = new LinkedHashSet<>();
 	}
 
 	public LinkedHashGraph(Collection<? extends IStatement> c) {
-		values = new HashMap<Object, GraphNode>(c.size() * 2);
-		statements = new LinkedHashSet<GraphStatement>(c.size());
+		values = new HashMap<>(c.size() * 2);
+		statements = new LinkedHashSet<>(c.size());
 		addAll(c);
 	}
 
 	public LinkedHashGraph(int size) {
-		values = new HashMap<Object, GraphNode>(size * 2);
-		statements = new LinkedHashSet<GraphStatement>(size);
+		values = new HashMap<>(size * 2);
+		statements = new LinkedHashSet<>(size);
 	}
 
 	public LinkedHashGraph(Map<String, String> namespaces,
@@ -128,7 +128,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 	@Override
 	public boolean remove(Object o) {
 		if (o instanceof Statement) {
-			Iterator iter = find((Statement) o);
+			Iterator<?> iter = find((Statement) o);
 			if (iter.hasNext()) {
 				iter.next();
 				iter.remove();
@@ -147,7 +147,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 	}
 
 	@Override
-	public Iterator iterator() {
+	public Iterator<IStatement> iterator() {
 		return match(null, null, null);
 	}
 
@@ -158,7 +158,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 
 	public boolean remove(IReference subj, IReference pred, Object obj,
 			IReference... contexts) {
-		Iterator iter = match(subj, pred, obj, contexts);
+		Iterator<?> iter = match(subj, pred, obj, contexts);
 		if (!iter.hasNext()) {
 			return false;
 		}
@@ -217,13 +217,13 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		throw new KommaException();
 	}
 
-	public IEntity objectResource() throws KommaException {
+	public IReference objectReference() throws KommaException {
 		Object obj = objectValue();
 		if (obj == null) {
 			return null;
 		}
-		if (obj instanceof IEntity) {
-			return (IEntity) obj;
+		if (obj instanceof IReference) {
+			return (IReference) obj;
 		}
 		throw new KommaException();
 	}
@@ -523,10 +523,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		} else {
 			set = smallest(statements, s, p, o);
 		}
-		Iterator<GraphStatement> it = set.iterator();
-		Iterator<GraphStatement> iter;
-		iter = new PatternIterator(it, subj, pred, obj, contexts);
-		return new GraphIterator(iter, set);
+		return new GraphIterator(new PatternIterator<>(set.iterator(), subj,
+				pred, obj, contexts), set);
 	}
 
 	boolean matches(IStatement st, IReference subj, IReference pred,
@@ -671,7 +669,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 			return null;
 		}
 
-		public IEntity objectResource() {
+		public IReference objectReference() {
 			return null;
 		}
 
@@ -768,7 +766,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		@Override
 		public int size() {
 			int size = 0;
-			Iterator<GraphStatement> iter = statementIterator();
+			Iterator<IStatement> iter = statementIterator();
 			while (iter.hasNext()) {
 				size++;
 				iter.next();
@@ -945,13 +943,13 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 			throw new KommaException();
 		}
 
-		public IEntity objectResource() throws KommaException {
+		public IReference objectReference() throws KommaException {
 			Object obj = objectValue();
 			if (obj == null) {
 				return null;
 			}
-			if (obj instanceof IEntity) {
-				return (IEntity) obj;
+			if (obj instanceof IReference) {
+				return (IReference) obj;
 			}
 			throw new KommaException();
 		}
@@ -1007,7 +1005,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		}
 	}
 
-	abstract class ObjectSet<V extends Object> extends AbstractSet<V> {
+	abstract class ObjectSet<V> extends AbstractSet<V> {
 
 		@Override
 		public Iterator<V> iterator() {
@@ -1071,17 +1069,18 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		@Override
 		public int size() {
 			Set<V> set = new LinkedHashSet<V>();
-			Iterator<GraphStatement> iter = statementIterator();
+			Iterator<IStatement> iter = statementIterator();
 			while (iter.hasNext()) {
-				set.add(node(iter.next()).getObject());
+				set.add(node((GraphStatement) iter.next()).getObject());
 			}
 			return set.size();
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public boolean remove(Object o) {
 			if (values.containsKey(o)) {
-				return removeAll(set(values.get(o)), null);
+				return removeAll(set((GraphNode<V>) values.get(o)), null);
 			}
 			return false;
 		}
@@ -1141,7 +1140,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		}
 	}
 
-	class GraphIterator implements Iterator<GraphStatement> {
+	class GraphIterator implements Iterator<IStatement> {
 
 		private Iterator<GraphStatement> iter;
 
@@ -1214,8 +1213,6 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 	}
 
 	class GraphStatement implements IStatement {
-
-		private static final long serialVersionUID = 2200404772364346279L;
 
 		GraphNode<IReference> subj;
 
@@ -1318,8 +1315,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		s.defaultReadObject();
 		// Read in size
 		int size = s.readInt();
-		values = new HashMap<Object, GraphNode>(size * 2);
-		statements = new LinkedHashSet<GraphStatement>(size);
+		values = new HashMap<>(size * 2);
+		statements = new LinkedHashSet<>(size);
 		// Read in all elements
 		for (int i = 0; i < size; i++) {
 			Statement st = (Statement) s.readObject();
@@ -1327,7 +1324,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		}
 	}
 
-	private Iterator find(Statement st) {
+	private Iterator<?> find(Statement st) {
 		IReference subj = st.getSubject();
 		IReference pred = st.getPredicate();
 		Object obj = st.getObject();
@@ -1351,10 +1348,11 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		return true;
 	}
 
-	private Set<GraphStatement> smallest(Set<GraphStatement>... sets) {
+	@SafeVarargs
+	private final <V> Set<V> smallest(Set<V>... sets) {
 		int minSize = Integer.MAX_VALUE;
-		Set<GraphStatement> minSet = null;
-		for (Set<GraphStatement> set : sets) {
+		Set<V> minSet = null;
+		for (Set<V> set : sets) {
 			if (set != null && set.size() < minSize) {
 				minSet = set;
 			}
@@ -1362,12 +1360,13 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		return minSet;
 	}
 
-	private <V extends Object> GraphNode<V> asNode(V value) {
+	@SuppressWarnings("unchecked")
+	private <V> GraphNode<V> asNode(V value) {
 		if (values.containsKey(value)) {
-			return values.get(value);
+			return (GraphNode<V>) values.get(value);
 		}
-		GraphNode<V> node = new GraphNode<V>(value);
-		values.put(value, node);
+		GraphNode<V> node = new GraphNode<>(value);
+		values.put(value, (GraphNode<Object>) node);
 		return node;
 	}
 
