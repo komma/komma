@@ -14,6 +14,8 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.em.util.ISparqlConstants;
 
 public class SparqlSearchableItemProvider implements ISearchableItemProvider {
+	private static Pattern ESCAPE_CHARS = Pattern.compile("[\\[.{(*+?^$|]");
+
 	protected IEntityManager getEntityManager(Object parent) {
 		if (parent instanceof IEntity) {
 			return ((IEntity) parent).getEntityManager();
@@ -31,6 +33,11 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 		}
 	}
 
+	protected String patternToRegex(String pattern) {
+		pattern = ESCAPE_CHARS.matcher(pattern).replaceAll("\\\\$0");
+		return pattern.replace("\\*", ".*").replace("\\?", ".");
+	}
+
 	@Override
 	public IExtendedIterator<?> find(Object expression, Object parent, int limit) {
 		IEntityManager em = getEntityManager(parent);
@@ -44,14 +51,14 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 				if (colonIndex == 0) {
 					pattern = pattern.substring(1);
 				}
-				uriPattern = "[#/:]" + pattern + "[^#/]*$";
+				uriPattern = "[#/:]" + patternToRegex(pattern) + "[^#/]*$";
 				if (colonIndex > 0) {
 					String prefix = pattern.substring(0, colonIndex);
 					pattern = pattern.substring(colonIndex + 1);
 					URI namespaceUri = em.getNamespace(prefix);
 					if (namespaceUri != null) {
-						uriPattern = namespaceUri.appendFragment(pattern)
-								.toString();
+						uriPattern = patternToRegex(namespaceUri
+								.appendFragment("") + pattern);
 					}
 				}
 			}
@@ -90,7 +97,7 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 			searchS.addParameters(query);
 			searchL.addParameters(query);
 			query.setParameter("uriPattern", uriPattern);
-			query.setParameter("labelPattern", pattern);
+			query.setParameter("labelPattern", patternToRegex(pattern));
 			setQueryParameters(query, parent);
 			return query.evaluate();
 		}
