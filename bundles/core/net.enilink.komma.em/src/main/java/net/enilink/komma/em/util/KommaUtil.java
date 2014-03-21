@@ -50,10 +50,12 @@ import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.em.concepts.OntologySupport;
 import net.enilink.komma.em.concepts.PropertySupport;
 import net.enilink.komma.em.concepts.ResourceSupport;
-import net.enilink.vocab.komma.KOMMA;
+import net.enilink.vocab.komma.KommaConceptsModule;
 import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.owl.OwlModule;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
+import net.enilink.vocab.rdfs.RdfsModule;
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
 
 import org.eclipse.core.runtime.FileLocator;
@@ -62,14 +64,12 @@ import org.osgi.framework.Bundle;
 
 public class KommaUtil implements ISparqlConstants {
 	public static KommaModule getCoreModule() {
-		KommaModule module = new KommaModule(KommaUtil.class.getClassLoader());
-		module.includeModule(new KommaModule(OWL.class.getClassLoader()));
-		module.includeModule(new KommaModule(RDFS.class.getClassLoader()));
-		module.includeModule(new KommaModule(KOMMA.class.getClassLoader()));
+		KommaModule module = new KommaCoreModule();
+		module.includeModule(new OwlModule());
+		module.includeModule(new RdfsModule());
+		module.includeModule(new KommaConceptsModule());
 
 		RoleClassLoader roleClassLoader = new RoleClassLoader(module);
-
-		// install basic RDF(S) and OWL support
 		roleClassLoader.load();
 
 		module.addBehaviour(ResourceSupport.class);

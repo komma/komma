@@ -107,7 +107,7 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 			IExtendedIterator<Object[]> results = getEntityManager()
 					.createQuery(
 							ISparqlConstants.PREFIX
-									+ "SELECT ?item ?first ?rest WHERE { ?self rdf:rest* ?item . ?item rdf:first ?first . OPTIONAL { ?item rdf:rest ?rest } }")
+									+ "SELECT ?item ?first ?rest WHERE { { BIND (?self as ?item) } UNION { ?self rdf:rest+ ?item } . ?item rdf:first ?first . OPTIONAL { ?item rdf:rest ?rest } }")
 					.restrictResultType("first", IValue.class)
 					.restrictResultType("item", IReference.class)
 					.restrictResultType("rest", IReference.class)

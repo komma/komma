@@ -319,7 +319,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		if (concepts != null && !concepts.isEmpty()) {
 			for (Class<?> concept : concepts) {
 				if (IValue.class == concept || IReference.class == concept
-						|| Object.class == concept) {
+						|| IEntity.class == concept || Object.class == concept) {
 					continue;
 				}
 
