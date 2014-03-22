@@ -367,6 +367,13 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		Class<?> type = pd.getPropertyType();
 		if (type.isPrimitive()) {
 			loadPropertySet(pd, gen, true);
+			if (Type.getType(type).getSize() == 1) {
+				gen.swap();
+			} else {
+				// support long and double types
+				gen.dupX2();
+				gen.pop();
+			}
 			persistValue(type, gen);
 		} else {
 			gen.dup();
@@ -375,6 +382,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 			gen.ifNull(isNull);
 
 			loadPropertySet(pd, gen, true);
+			gen.swap();
 			persistValue(type, gen);
 
 			Label end = gen.newLabel();
@@ -478,7 +486,6 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 	private void persistValue(Class<?> type, BehaviourMethodGenerator gen)
 			throws Exception {
-		gen.swap();
 		if (isCollection(type)) {
 			gen.invoke(Methods.PROPERTYSET_ADD_ALL);
 		} else {
