@@ -264,12 +264,9 @@ public class ModelUtil {
 		IContentTypeManager contentTypeManager = Platform
 				.getContentTypeManager();
 		if (contentTypeManager != null) {
-			QualifiedName mimeTypeQName = new QualifiedName(
-					ModelPlugin.PLUGIN_ID, "mimeType");
 			for (IContentType contentType : contentTypeManager
 					.getAllContentTypes()) {
-				Object mimeType = contentType.getDefaultDescription()
-						.getProperty(mimeTypeQName);
+				Object mimeType = mimeType(contentType.getDefaultDescription());
 				if (mimeType != null) {
 					mimeTypes.put(mimeType.toString(),
 							priorityForMimeType(mimeType.toString()));
@@ -438,6 +435,36 @@ public class ModelUtil {
 	}
 
 	/**
+	 * Returns the MIME-type for the file name or <code>null</code> if it is
+	 * unknown.
+	 * 
+	 * @param fileName
+	 *            A file name
+	 * 
+	 * @return The associated MIME-type or <code>null</code>
+	 */
+	public static String mimeType(String fileName) {
+		String mimeType = null;
+		IContentTypeManager contentTypeManager = Platform
+				.getContentTypeManager();
+		if (contentTypeManager != null) {
+			IContentType contentType = contentTypeManager
+					.findContentTypeFor(fileName);
+			;
+			if (contentType != null) {
+				mimeType = mimeType(contentType.getDefaultDescription());
+			}
+		}
+		if (mimeType == null) {
+			RDFFormat format = RDFFormat.forFileName(fileName);
+			if (format != null) {
+				mimeType = format.getDefaultMIMEType();
+			}
+		}
+		return mimeType;
+	}
+
+	/**
 	 * Compute a content description for a model URI.
 	 * 
 	 * @param uriConverter
@@ -483,12 +510,10 @@ public class ModelUtil {
 			if (lastSegment != null) {
 				IContentType[] matchingTypes = contentTypeManager
 						.findContentTypesFor(lastSegment);
-				QualifiedName mimeType = new QualifiedName(
-						ModelPlugin.PLUGIN_ID, "mimeType");
 				for (IContentType matchingType : matchingTypes) {
 					IContentDescription desc = matchingType
 							.getDefaultDescription();
-					if (desc.getProperty(mimeType) != null) {
+					if (mimeType(desc) != null) {
 						contentDescription = desc;
 						break;
 					}
@@ -506,12 +531,10 @@ public class ModelUtil {
 					optionsExt);
 			Object mimeType = attributes.get(IURIConverter.ATTRIBUTE_MIME_TYPE);
 			if (mimeType != null) {
-				QualifiedName mimeTypeQName = new QualifiedName(
-						ModelPlugin.PLUGIN_ID, "mimeType");
 				for (IContentType contentType : contentTypeManager
 						.getAllContentTypes()) {
-					if (mimeType.equals(contentType.getDefaultDescription()
-							.getProperty(mimeTypeQName))) {
+					if (mimeType.equals(mimeType(contentType
+							.getDefaultDescription()))) {
 						contentDescription = contentType
 								.getDefaultDescription();
 						break;

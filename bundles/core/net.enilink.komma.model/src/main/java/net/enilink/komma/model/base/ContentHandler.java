@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.content.ITextContentDescriber;
 import net.enilink.komma.model.IContentHandler;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.ModelPlugin;
+import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 
@@ -125,12 +126,10 @@ public class ContentHandler implements IContentHandler {
 			if (mimeType != null) {
 				// try to determine the Eclipse content-type based on the
 				// MIME-type
-				QualifiedName mimeTypeQName = new QualifiedName(
-						ModelPlugin.PLUGIN_ID, "mimeType");
 				for (IContentType contentType : Platform
 						.getContentTypeManager().getAllContentTypes()) {
-					if (mimeType.equals(contentType.getDefaultDescription()
-							.getProperty(mimeTypeQName))) {
+					if (mimeType.equals(ModelUtil.mimeType(contentType
+							.getDefaultDescription()))) {
 						result.put(IContentHandler.CONTENT_TYPE_PROPERTY,
 								contentType.getId());
 						break;
@@ -256,9 +255,8 @@ public class ContentHandler implements IContentHandler {
 				}
 				options.put(IContentHandler.OPTION_REQUESTED_PROPERTIES,
 						requestedProperties);
-				result = contentHandler.contentDescription(
-						URIs.createURI("*"), inputStream, options,
-						new HashMap<Object, Object>());
+				result = contentHandler.contentDescription(URIs.createURI("*"),
+						inputStream, options, new HashMap<Object, Object>());
 				for (Map.Entry<String, ?> property : result.entrySet()) {
 					QualifiedName qualifiedName = requestedPropertyToQualifiedNameMap
 							.get(property.getKey());
@@ -272,9 +270,8 @@ public class ContentHandler implements IContentHandler {
 			} else {
 				options.put(IContentHandler.OPTION_REQUESTED_PROPERTIES,
 						Collections.emptySet());
-				result = contentHandler.contentDescription(
-						URIs.createURI("*"), inputStream, options,
-						new HashMap<Object, Object>());
+				result = contentHandler.contentDescription(URIs.createURI("*"),
+						inputStream, options, new HashMap<Object, Object>());
 			}
 			return ((IContentHandler.Validity) result
 					.get(IContentHandler.VALIDITY_PROPERTY)).ordinal();

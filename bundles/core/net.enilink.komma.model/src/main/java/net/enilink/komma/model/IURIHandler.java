@@ -15,8 +15,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-import org.xml.sax.ContentHandler;
-
 import net.enilink.komma.core.URI;
 
 /**
@@ -30,7 +28,7 @@ import net.enilink.komma.core.URI;
  * </p>
  * 
  * @see IURIConverter
- * @see ContentHandler
+ * @see IContentHandler
  */
 public interface IURIHandler {
 
@@ -94,7 +92,7 @@ public interface IURIHandler {
 	/**
 	 * Returns a map from String properties to their corresponding values
 	 * representing a description the given URI's contents. See the
-	 * {@link ContentHandler#contentDescription(URI, InputStream, Map, Map)
+	 * {@link IContentHandler#contentDescription(URI, InputStream, Map, Map)
 	 * content handler} for more details.
 	 * 
 	 * @param uri
@@ -107,7 +105,7 @@ public interface IURIHandler {
 	 * @throws IOException
 	 *             if there is a problem accessing the contents.
 	 * @see IURIConverter#contentDescription(URI, Map)
-	 * @see ContentHandler#contentDescription(URI, InputStream, Map, Map)
+	 * @see IContentHandler#contentDescription(URI, InputStream, Map, Map)
 	 */
 	Map<String, ?> contentDescription(URI uri, Map<?, ?> options)
 			throws IOException;

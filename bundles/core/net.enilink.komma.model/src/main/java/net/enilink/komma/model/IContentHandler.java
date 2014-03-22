@@ -20,7 +20,6 @@ import java.util.SortedMap;
 
 import net.enilink.komma.core.URI;
 import net.enilink.komma.model.base.ContentHandler;
-import net.enilink.komma.model.base.URIHandler;
 
 import org.eclipse.core.runtime.content.IContentDescriber;
 import org.eclipse.core.runtime.content.IContentDescription;
@@ -38,7 +37,7 @@ import org.eclipse.core.runtime.content.IContentType;
  * {@link #contentDescription(URI, InputStream, Map, Map) content description}.
  * </p>
  * 
- * @see URIHandler
+ * @see IURIHandler
  * @see IURIConverter
  */
 public interface IContentHandler {

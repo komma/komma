@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,14 +14,21 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.commons.iterator.IMap;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.traits.Behaviour;
+import net.enilink.komma.core.BlankNode;
 import net.enilink.komma.core.INamespace;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Namespace;
+import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
 import net.enilink.komma.dm.IDataManager;
@@ -102,12 +110,55 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 		return contentDescription;
 	}
 
+	class ReconstructNodeIds implements IMap<IStatement, IStatement> {
+		final Map<String, IReference> bnodeMap = new HashMap<>();
+		Pattern idPattern = Pattern.compile("^_:n([0-9a-z]{1,13})$");
+		String prefix = BlankNode.generateId();
+		long maxNodeId = 0;
+
+		@Override
+		public IStatement map(IStatement stmt) {
+			return new Statement(convert(stmt.getSubject()),
+					convert(stmt.getPredicate()),
+					convert((IValue) stmt.getObject()));
+		}
+
+		@SuppressWarnings("unchecked")
+		<V> V convert(V value) {
+			if (value instanceof IReference
+					&& ((IReference) value).getURI() == null) {
+				String valueAsString = value.toString();
+				Matcher m = idPattern.matcher(valueAsString);
+				if (m.matches()) {
+					String idStr = m.group(1);
+					IReference bnode = bnodeMap.get(idStr);
+					if (bnode == null) {
+						long id = Long.parseLong(idStr, 36);
+						maxNodeId = Math.max(maxNodeId, id);
+						String fixedLenSuffix = ("0000000000000" + idStr)
+								.substring(idStr.length());
+						String newId = prefix + "__" + fixedLenSuffix;
+						bnode = new BlankNode(newId);
+						bnodeMap.put(idStr, bnode);
+					}
+					return (V) bnode;
+				} else {
+					return (V) new BlankNode("_:new-"
+							+ valueAsString.substring(2));
+				}
+			}
+			return value;
+		}
+	}
+
 	@Override
 	public void load(final InputStream in, final Map<?, ?> options)
 			throws IOException {
 		final List<INamespace> namespaces = new ArrayList<>();
 		final IDataManager dm = ((IModelSet.Internal) getModelSet())
 				.getDataManagerFactory().get();
+		final ReconstructNodeIds nodeIdMapper = getModelSet().isPersistent() ? null
+				: new ReconstructNodeIds();
 		getModelSet().getDataChangeSupport().setEnabled(dm, false);
 		try {
 			setModelLoading(true);
@@ -135,6 +186,9 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 
 								@Override
 								public Void visitStatement(IStatement stmt) {
+									if (nodeIdMapper != null) {
+										stmt = nodeIdMapper.map(stmt);
+									}
 									synchronized (queue) {
 										queue.add(stmt);
 										queue.notify();
@@ -156,7 +210,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 										.mimeType(contentDescription[0]);
 							}
 							ModelUtil.readData(in, getURI().toString(),
-									mimeType, visitor);
+									mimeType, nodeIdMapper != null, visitor);
 						} catch (RuntimeException e) {
 							exception[0] = e;
 						} finally {
@@ -189,6 +243,10 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 						getModelNamespaces().add(newNs);
 					}
 				}
+				// update maximal node ID
+				if (nodeIdMapper != null) {
+					maxNodeId(Math.max(maxNodeId(), nodeIdMapper.maxNodeId));
+				}
 			}
 		} catch (Throwable e) {
 			if (e instanceof KommaException) {
@@ -205,6 +263,45 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 			dm.close();
 		}
 		setModelLoaded(true);
+	}
+
+	class ShortenNodeIds implements IMap<IStatement, IStatement> {
+		final Map<String, IReference> bnodeMap = new HashMap<>();
+		Pattern idPattern = Pattern.compile("^.*__0*([0-9a-z]+)$");
+		long nextNodeId = maxNodeId() + 1;
+
+		@Override
+		public IStatement map(IStatement stmt) {
+			return new Statement(convert(stmt.getSubject()),
+					convert(stmt.getPredicate()),
+					convert((IValue) stmt.getObject()));
+		}
+
+		@SuppressWarnings("unchecked")
+		<V> V convert(V value) {
+			if (value instanceof IReference
+					&& ((IReference) value).getURI() == null) {
+				String valueAsString = value.toString();
+				if (valueAsString.startsWith("_:")) {
+					String id = valueAsString.substring(2);
+					IReference bnode = bnodeMap.get(id);
+					if (bnode == null) {
+						Matcher m = idPattern.matcher(id);
+						String shortId;
+						if (m.matches()) {
+							shortId = m.group(1);
+						} else {
+							shortId = Long.toString(nextNodeId++, 36);
+						}
+						String newId = "_:n" + shortId;
+						bnode = new BlankNode(newId);
+						bnodeMap.put(id, bnode);
+					}
+					return (V) bnode;
+				}
+			}
+			return value;
+		}
 	}
 
 	@Override
@@ -289,7 +386,9 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 				}
 			}
 
+			ShortenNodeIds idMapper = new ShortenNodeIds();
 			// use sorting to improve readability of serialized output
+			// store URI descriptions first
 			IExtendedIterator<IStatement> stmts = dm
 					.<IStatement> createQuery(
 							ISparqlConstants.PREFIX
@@ -299,17 +398,27 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 									+ "{ select distinct ?s ?p ?o0 "
 									+ projection
 									+ " where { graph ?g {?s ?p ?o0 filter isIRI(?s) "
-									+ patterns
-									+ "} } order by ?s ?p ?o0 "
-									+ projection
-									+ "} union " //
+									+ patterns + "} } order by ?s ?p ?o0 "
+									+ projection + "} }",
+							getURI().appendLocalPart("").toString(), false,
+							getURI()).setParameter("g", getURI()).evaluate()
+					.mapWith(idMapper);
+			while (stmts.hasNext()) {
+				dataVisitor.visitStatement(stmts.next());
+			}
+			// the store only blank node descriptions
+			stmts = dm
+					.<IStatement> createQuery(
+							ISparqlConstants.PREFIX
+									+ "construct { ?s ?p ?o0 } where { "
 									+ "{ select distinct ?s ?p ?o0 "
 									+ " where { graph ?g {?s ?p ?o0 filter (isBlank(?s) "
 									+ filterExpanded
 									+ ")} } order by ?s ?p ?o0 }" //
 									+ " }",
 							getURI().appendLocalPart("").toString(), false,
-							getURI()).setParameter("g", getURI()).evaluate();
+							getURI()).setParameter("g", getURI()).evaluate()
+					.mapWith(idMapper);
 			while (stmts.hasNext()) {
 				dataVisitor.visitStatement(stmts.next());
 			}
@@ -318,4 +427,9 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 		}
 		dataVisitor.visitEnd();
 	}
+
+	@Iri(MODELS.NAMESPACE + "maxNodeId")
+	public abstract long maxNodeId();
+
+	public abstract void maxNodeId(long maxNodeId);
 }
