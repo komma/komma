@@ -473,8 +473,8 @@ public abstract class RDFList extends AbstractSequentialList<Object> implements
 				while (it.hasNext()) {
 					IReference last = current;
 					current = getEntityManager().create();
-					addStatement(current, RDF.PROPERTY_FIRST, it.next());
 					addStatement(last, RDF.PROPERTY_REST, current);
+					addStatement(current, RDF.PROPERTY_FIRST, it.next());
 				}
 				addStatement(current, RDF.PROPERTY_REST, RDF.NIL);
 			}
