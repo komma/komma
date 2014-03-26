@@ -1278,6 +1278,11 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		public String toString() {
 			return Statements.toString(this);
 		}
+
+		@Override
+		public Iterator<IStatement> iterator() {
+			return Collections.<IStatement> singleton(this).iterator();
+		}
 	}
 
 	class PatternIterator<S extends IStatement> extends FilterIterator<S> {
