@@ -102,9 +102,14 @@ abstract public class NewObjectWizard extends Wizard {
 											.createURI(((IriRef) result.resultValue)
 													.getIri());
 									if (name.isRelative()) {
-										name = null;
-										throw new IllegalArgumentException(
-												"Relative IRIs are not supported.");
+										URI ns = model.getManager()
+												.getNamespace("");
+										if (ns != null) {
+											name = name.resolve(ns.trimFragment());
+										} else {
+											throw new IllegalArgumentException(
+													"Relative IRIs are not supported.");
+										}
 									}
 								} catch (IllegalArgumentException e) {
 									errorMsg = "Invalid IRI.";
@@ -114,14 +119,12 @@ abstract public class NewObjectWizard extends Wizard {
 										.getPrefix();
 								String localPart = ((QName) result.resultValue)
 										.getLocalPart();
-								URI ns;
 								if (prefix == null
 										|| prefix.trim().length() == 0) {
-									ns = model.getURI();
-								} else {
-									ns = model.getManager()
-											.getNamespace(prefix);
+									prefix = "";
 								}
+								URI ns = model.getManager()
+										.getNamespace(prefix);
 								if (ns != null) {
 									name = ns.appendLocalPart(localPart);
 								} else {

@@ -358,10 +358,37 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		}
 	};
 
+	protected INotificationListener<INotification> modifiedListener = new INotificationListener<INotification>() {
+		@Override
+		public NotificationFilter<INotification> getFilter() {
+			return null;
+		}
+
+		@Override
+		public void notifyChanged(
+				Collection<? extends INotification> notifications) {
+			for (INotification notification : notifications) {
+				if (notification instanceof IStatementNotification) {
+					if (MODELS.PROPERTY_MODIFIED
+							.equals(((IStatementNotification) notification)
+									.getPredicate())
+							&& model.equals(notification.getSubject())) {
+						editor.getSite().getShell().getDisplay()
+								.asyncExec(new Runnable() {
+									@Override
+									public void run() {
+										editor.firePropertyChange(IEditorPart.PROP_DIRTY);
+									}
+								});
+					}
+				}
+			}
+		}
+	};
+
 	/**
-	 * Adapter used to update the problem indication when resources are demanded
+	 * Adapter used to update the problem indication when models are demand
 	 * loaded.
-	 * 
 	 */
 	protected INotificationListener<INotification> problemIndicationListener = new INotificationListener<INotification>() {
 		Set<URI> properties = new HashSet<URI>(Arrays.asList(
@@ -630,6 +657,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 			modelToDiagnosticMap.put(model, diagnostic);
 		}
 		modelSet.addMetaDataListener(problemIndicationListener);
+		modelSet.addMetaDataListener(modifiedListener);
 	}
 
 	protected IModelSet createModelSet() {
@@ -684,6 +712,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		if (getEditingDomain() != null) {
 			getEditingDomain().getCommandStack().removeCommandStackListener(
 					commandStackListener);
+			modelSet.removeMetaDataListener(modifiedListener);
 			modelSet.removeMetaDataListener(problemIndicationListener);
 			setEditingDomain(null);
 		}
@@ -1210,7 +1239,6 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		};
 		getEditingDomain().getCommandStack().addCommandStackListener(
 				commandStackListener);
-
 		propertySheetPageSupport = createPropertySheetPageSupport();
 	}
 
@@ -1224,8 +1252,8 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 	 */
 	public boolean isDirty() {
 		return getEditingDomain() != null
-				&& ((BasicCommandStack) getEditingDomain().getCommandStack())
-						.isSaveNeeded();
+				&& (((BasicCommandStack) getEditingDomain().getCommandStack())
+						.isSaveNeeded() || getModel().isModified());
 	}
 
 	/**
