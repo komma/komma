@@ -140,9 +140,9 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public <T> T designateEntity(Object entity, Class<T> concept,
+	public <T> T assignTypes(Object entity, Class<T> concept,
 			Class<?>... concepts) {
-		return getDelegate().designateEntity(entity, concept, concepts);
+		return getDelegate().assignTypes(entity, concept, concepts);
 	}
 
 	@Override
@@ -322,8 +322,8 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public void removeDesignation(Object entity, Class<?>... concepts) {
-		getDelegate().removeDesignation(entity, concepts);
+	public void removeTypes(Object entity, Class<?>... concepts) {
+		getDelegate().removeTypes(entity, concepts);
 	}
 
 	@Override
