@@ -14,11 +14,12 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Set;
 
-import org.junit.Test;
 import net.enilink.composition.annotations.Iri;
-
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIs;
+import net.enilink.komma.em.util.KommaUtil;
+
+import org.junit.Test;
 
 public class BasicManagerTest extends EntityManagerTest {
 	private static final String NS = "urn:test:";
@@ -70,8 +71,7 @@ public class BasicManagerTest extends EntityManagerTest {
 		me = manager.createNamed(URIs.createURI(NS + "me"), Person.class);
 		me.setName("james");
 		me.setAge(102);
-		john = manager
-				.createNamed(URIs.createURI(NS + "john"), Person.class);
+		john = manager.createNamed(URIs.createURI(NS + "john"), Person.class);
 		john.setName("john");
 		me.getFriends().add(john);
 	}

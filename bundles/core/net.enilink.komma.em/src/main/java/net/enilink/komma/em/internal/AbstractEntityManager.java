@@ -487,7 +487,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> T designateEntity(Object entity, Class<T> concept,
+	public <T> T assignTypes(Object entity, Class<T> concept,
 			Class<?>... concepts) {
 		IReference resource = getReference(entity);
 		Collection<URI> types = new ArrayList<URI>();
@@ -1015,7 +1015,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@Override
-	public void removeDesignation(Object entity, Class<?>... concepts) {
+	public void removeTypes(Object entity, Class<?>... concepts) {
 		IReference resource = getReferenceOrFail(entity);
 
 		boolean isActive = false;

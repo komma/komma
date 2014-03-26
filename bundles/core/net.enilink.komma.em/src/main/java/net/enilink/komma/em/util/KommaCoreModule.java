@@ -9,6 +9,8 @@ import net.enilink.komma.em.internal.behaviours.RDFSContainer;
 
 public class KommaCoreModule extends KommaModule {
 	{
+		addConcept(List.class,
+				"http://www.w3.org/1999/02/22-rdf-syntax-ns#List");
 		for (String type : Arrays.asList(
 				"http://www.w3.org/2000/01/rdf-schema#Container",
 				"http://www.w3.org/1999/02/22-rdf-syntax-ns#Seq",
