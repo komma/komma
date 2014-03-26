@@ -43,7 +43,6 @@ import com.google.inject.Injector;
 public class SesameRepositoryDataManager implements IDataManager {
 	protected static final IReference[] NULL_CTX = { null };
 
-	@Inject
 	protected IDataChangeSupport changeSupport;
 
 	protected RepositoryConnection connection;
