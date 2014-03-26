@@ -17,7 +17,6 @@ import java.util.Set;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIs;
-import net.enilink.komma.em.util.KommaUtil;
 
 import org.junit.Test;
 
