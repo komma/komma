@@ -338,7 +338,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 
 			// expand blank nodes below IRIs up to expandDepth
 			// TODO also expand blank nodes below other blank nodes
-			int expandDepth = 10;
+			int expandDepth = 6;
 			StringBuilder template = new StringBuilder();
 			StringBuilder projection = new StringBuilder();
 			StringBuilder patterns = new StringBuilder();
