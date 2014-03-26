@@ -40,6 +40,23 @@ public interface IEntityManager extends AutoCloseable {
 	void addDecorator(IEntityDecorator decorator);
 
 	/**
+	 * Assigns the concepts to the given entity and returns a new object
+	 * reference that implements the first <code>concept</code>.
+	 * 
+	 * @param <T>
+	 *            The resulting entity type.
+	 * @param entity
+	 *            An existing entity.
+	 * @param concept
+	 *            interface to be translated to rdf:type.
+	 * @param concepts
+	 *            additional interfaces to be translated to rdf:type.
+	 * @return Java Bean representing <code>entity</code> that implements
+	 *         <code>concept</code>.
+	 */
+	<T> T assignTypes(Object entity, Class<T> concept, Class<?>... concepts);
+
+	/**
 	 * Clear the persistence context, causing all managed entities to become
 	 * detached. Changes made to entities that have not been flushed to the
 	 * database will not be persisted.
@@ -92,7 +109,7 @@ public interface IEntityManager extends AutoCloseable {
 	 * @return Java Bean representing the subject.
 	 */
 	IEntity create(IReference... concepts);
-
+	
 	/**
 	 * Converts a Java value to an {@link ILiteral} with the given
 	 * <code>datatype</code>.
@@ -228,22 +245,6 @@ public interface IEntityManager extends AutoCloseable {
 	IUpdate createUpdate(String update, String baseURI, boolean includeInferred);
 
 	/**
-	 * Assigns <code>concept</code> to the given entity and return a new object
-	 * reference that implements the given <code>concept</code>.
-	 * 
-	 * @param <T>
-	 * @param entity
-	 *            An existing entity retrieved from this manager.
-	 * @param concept
-	 *            interface to be translated to rdf:type.
-	 * @param concepts
-	 *            additional interfaces to be translated to rdf:type.
-	 * @return Java Bean representing <code>entity</code> that implements
-	 *         <code>concept</code>.
-	 */
-	<T> T designateEntity(Object entity, Class<T> concept, Class<?>... concepts);
-
-	/**
 	 * Retrieves the rdf:type, creates a Java Bean class and instantiates it.
 	 * 
 	 * @param reference
@@ -277,6 +278,10 @@ public interface IEntityManager extends AutoCloseable {
 	 * 
 	 * @param reference
 	 *            Reference of the entity.
+	 * @param concept
+	 *            The primary type of the resulting bean.
+	 * @param conepts
+	 *            Additional types.
 	 * @return JavaBean representing the subject.
 	 */
 	<T> T findRestricted(IReference reference, Class<T> concept,
@@ -696,17 +701,6 @@ public interface IEntityManager extends AutoCloseable {
 	void removeDecorator(IEntityDecorator decorator);
 
 	/**
-	 * Removes the <code>concept</code> designation from this
-	 * <code>entity</code>.
-	 * 
-	 * @param entity
-	 *            An existing entity retrieved from this manager.
-	 * @param concepts
-	 *            interface to be translated to rdf:type.
-	 */
-	void removeDesignation(Object entity, Class<?>... concepts);
-
-	/**
 	 * Removes a namespace declaration by removing the association between a
 	 * prefix and a namespace name.
 	 * 
@@ -730,6 +724,16 @@ public interface IEntityManager extends AutoCloseable {
 	 * @return <code>entity</code> with the given <code>qname</code>.
 	 */
 	<T> T rename(T entity, URI uri);
+
+	/**
+	 * Removes the concepts from the given <code>entity</code>.
+	 * 
+	 * @param entity
+	 *            An existing entity.
+	 * @param concepts
+	 *            interfaces to be translated to rdf:type.
+	 */
+	void removeTypes(Object entity, Class<?>... concepts);
 
 	/**
 	 * Sets the prefix for a namespace.
