@@ -214,12 +214,17 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 		return super.getChildren(object);
 	}
 
+	protected String getQueryFindPatterns(Object parent) {
+		return "?s rdfs:subPropertyOf ?parent";
+	}
+
 	@Override
 	protected ISearchableItemProvider getSearchableItemProvider() {
 		return new SparqlSearchableItemProvider() {
 			@Override
 			protected String getQueryFindPatterns(Object parent) {
-				return "?s rdfs:subPropertyOf ?parent";
+				return RDFSPropertyItemProvider.this
+						.getQueryFindPatterns(parent);
 			}
 		};
 	}
