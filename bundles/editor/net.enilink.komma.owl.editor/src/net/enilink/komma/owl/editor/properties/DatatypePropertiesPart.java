@@ -11,7 +11,6 @@
 package net.enilink.komma.owl.editor.properties;
 
 import net.enilink.komma.core.URI;
-import net.enilink.vocab.komma.KOMMA;
 import net.enilink.vocab.owl.OWL;
 
 public class DatatypePropertiesPart extends AbstractPropertiesPart {
@@ -35,6 +34,6 @@ public class DatatypePropertiesPart extends AbstractPropertiesPart {
 
 	@Override
 	protected URI getRootProperty() {
-		return KOMMA.PROPERTY_ROOTDATATYPEPROPERTY;
+		return OWL.PROPERTY_TOPDATAPROPERTY;
 	}
 }
