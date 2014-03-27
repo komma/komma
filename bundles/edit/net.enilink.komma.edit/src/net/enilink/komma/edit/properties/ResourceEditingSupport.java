@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -45,6 +46,8 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 
 public class ResourceEditingSupport implements IPropertyEditingSupport {
+	private static Pattern ESCAPE_CHARS = Pattern.compile("[\\[.{(*+?^$|]");
+
 	static class ConstructorParser extends BaseRdfParser {
 		public Rule Constructor() {
 			return Sequence(
@@ -240,6 +243,8 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 	}
 
 	protected String toUriRegex(String pattern) {
+		pattern = ESCAPE_CHARS.matcher(pattern).replaceAll("\\\\$0");
+		pattern = pattern.replace("\\*", ".*").replace("\\?", ".");
 		return "[#/:]" + pattern + "[^#/]*$";
 	}
 
@@ -514,7 +519,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			}
 		}
 		ProposalOptions options = ProposalOptions.create(subject,
-				(String) editorValue + "$", 1);
+				(String) editorValue, 1);
 		Iterator<IResource> resources = getAnyResources(
 				options.forPredicate(createNew ? null : property)).iterator();
 		if (resources.hasNext()) {

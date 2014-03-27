@@ -31,9 +31,8 @@ import net.enilink.vocab.komma.KOMMA;
 
 public class KommaItemProviderAdapterFactory extends
 		ItemProviderAdapterFactory<URI> {
-	static Set<URI> properties = new HashSet<>(Arrays.asList(
-			KOMMA.PROPERTY_ROOTOBJECTPROPERTY,
-			KOMMA.PROPERTY_ROOTDATATYPEPROPERTY, KOMMA.PROPERTY_ROOTPROPERTY));
+	static Set<URI> properties = new HashSet<>(
+			Arrays.asList(KOMMA.PROPERTY_ROOTPROPERTY));
 
 	public KommaItemProviderAdapterFactory() {
 		super(new DelegatingResourceLocator() {

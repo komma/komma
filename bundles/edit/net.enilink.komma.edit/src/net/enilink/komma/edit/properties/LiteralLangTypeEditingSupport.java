@@ -54,7 +54,7 @@ public class LiteralLangTypeEditingSupport extends ResourceEditingSupport {
 					newValue.substring(1)));
 		}
 		final ICommand command = super.convertValueFromEditor(editorValue,
-				subject, property, oldValue);
+				subject, null, oldValue);
 		return command == null ? null : command.compose(new SimpleCommand() {
 			@Override
 			protected CommandResult doExecuteWithResult(
