@@ -137,5 +137,9 @@ public interface OWL {
 	public static final URI PROPERTY_ONDATARANGE = NAMESPACE_URI.appendFragment("onDataRange");
 	
 	public static final URI PROPERTY_ONCLASS = NAMESPACE_URI.appendFragment("onClass");
+	
+	public static final URI PROPERTY_TOPOBJECTPROPERTY = NAMESPACE_URI.appendFragment("topObjectProperty");
+	
+	public static final URI PROPERTY_TOPDATAPROPERTY = NAMESPACE_URI.appendFragment("topDataProperty");
 
 }
