@@ -849,8 +849,11 @@ public class PropertyTreePart extends AbstractEditingDomainPart {
 			}
 			// createContextMenuFor(treeViewer);
 		}
-		cachedExpandedElements = Arrays
-				.asList(treeViewer.getExpandedElements());
+		if (resource != null) {
+			// prevent caching of stale objects
+			cachedExpandedElements = Arrays.asList(treeViewer
+					.getExpandedElements());
+		}
 
 		treeViewer.setInput(resource);
 		setUriText();
@@ -875,6 +878,11 @@ public class PropertyTreePart extends AbstractEditingDomainPart {
 	}
 
 	public void setInput(Object input) {
+		// prevent NPE while some editor is closed by
+		// removing old elements immediately
+		if (treeViewer != null) {
+			treeViewer.setInput(null);
+		}
 		setEditorInput(input);
 	}
 
