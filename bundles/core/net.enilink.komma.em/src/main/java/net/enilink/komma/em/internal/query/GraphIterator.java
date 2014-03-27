@@ -29,11 +29,10 @@
 package net.enilink.komma.em.internal.query;
 
 import net.enilink.commons.iterator.ConvertingIterator;
-import net.enilink.komma.em.concepts.IResource;
-import net.enilink.komma.em.internal.IEntityManagerInternal;
 import net.enilink.komma.core.IGraphResult;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IValue;
+import net.enilink.komma.em.internal.IEntityManagerInternal;
 
 /**
  * Converts the result into an array of Objects.
@@ -60,11 +59,9 @@ public class GraphIterator extends ConvertingIterator<IStatement, IStatement> {
 	@Override
 	protected IStatement convert(IStatement stmt) {
 		if (resolve) {
-			return new net.enilink.komma.core.Statement(
-					(IResource) manager
-							.find(stmt.getSubject(), IResource.class),
-					manager.find(stmt.getPredicate()), manager.toInstance(
-							(IValue) stmt.getObject(), null, null));
+			return new net.enilink.komma.core.Statement(manager.find(stmt
+					.getSubject()), manager.find(stmt.getPredicate()),
+					manager.toInstance((IValue) stmt.getObject(), null, null));
 		}
 		return stmt;
 	}
