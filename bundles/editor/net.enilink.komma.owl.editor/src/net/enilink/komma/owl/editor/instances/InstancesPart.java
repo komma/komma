@@ -285,7 +285,6 @@ public class InstancesPart extends AbstractEditingDomainPart {
 		IAdapterFactory newAdapterFactory = getAdapterFactory();
 		if (adapterFactory == null || !adapterFactory.equals(newAdapterFactory)) {
 			adapterFactory = newAdapterFactory;
-
 			adapterFactoryChanged();
 		}
 

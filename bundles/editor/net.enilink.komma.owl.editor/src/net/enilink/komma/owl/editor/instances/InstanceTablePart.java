@@ -6,11 +6,13 @@ import java.util.List;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.properties.PropertyEditingHelper.Type;
 import net.enilink.komma.edit.provider.ISearchableItemProvider;
 import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
 import net.enilink.komma.edit.ui.celleditor.PropertyCellEditingSupport;
@@ -20,7 +22,8 @@ import net.enilink.komma.em.concepts.IClass;
 import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.em.util.ISparqlConstants;
-import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelUtil;
+import net.enilink.vocab.rdfs.RDFS;
 
 import org.eclipse.jface.viewers.AbstractTableViewer;
 import org.eclipse.jface.viewers.CellLabelProvider;
@@ -43,9 +46,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
 public class InstanceTablePart extends InstancesPart {
-	static final int LIMIT = 1000;
-	static final String QUERY_INSTANCES = ISparqlConstants.PREFIX
-			+ "SELECT DISTINCT ?r WHERE { ?r a ?c } limit " + LIMIT;
+	static final int LIMIT = 10000;
 
 	class ContentProvider extends AdapterFactoryContentProvider implements
 			ILazyContentProvider, ISearchableItemProvider {
@@ -98,7 +99,11 @@ public class InstanceTablePart extends InstancesPart {
 				IResource resource = (IResource) object;
 				if (property == null) {
 					// return the object name
-					return super.getColumnText(object, columnIndex);
+					if (!rdfsLabelShown) {
+						return super.getColumnText(object, columnIndex);
+					} else {
+						return ModelUtil.getPName(object);
+					}
 				}
 				// access all values to fill the property set cache
 				Object[] values = resource.getAsSet(property).toArray();
@@ -149,8 +154,10 @@ public class InstanceTablePart extends InstancesPart {
 
 	protected LabelProvider labelProvider;
 	protected IClass currentInput;
+	protected boolean sortAscending = true;
+	protected IReference sortProperty = null;
 	protected List<IProperty> properties;
-	protected Comparator comparator = new Comparator();
+	protected boolean rdfsLabelShown;
 
 	@Override
 	protected StructuredViewer createViewer(Composite parent) {
@@ -178,16 +185,16 @@ public class InstanceTablePart extends InstancesPart {
 		return new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				comparator.setColumn(index);
-				int dir = comparator.getDirection();
 				TableViewer tableViewer = (TableViewer) getViewer();
-				tableViewer.getTable().setSortColumn(column);
-				tableViewer.getTable().setSortDirection(dir);
-				Object[] elements = (Object[]) tableViewer.getInput();
-				if (elements != null) {
-					comparator.sort(tableViewer, elements);
-				}
-				tableViewer.refresh();
+				Table table = tableViewer.getTable();
+				table.setSortColumn(column);
+				int dir = table.getSortDirection();
+				dir = dir == SWT.UP ? dir = SWT.DOWN : SWT.UP;
+				table.setSortDirection(dir);
+				sortAscending = dir == SWT.UP;
+				IProperty p = properties.get(index);
+				sortProperty = p == null ? null : p.getReference();
+				refresh();
 			}
 		};
 	}
@@ -199,13 +206,8 @@ public class InstanceTablePart extends InstancesPart {
 			viewer.setInput(null);
 		} else {
 			TableViewer tableViewer = (TableViewer) viewer;
-
-			IProperty sortProperty = null;
-			TableColumn sortColumn = tableViewer.getTable().getSortColumn();
-			for (TableColumn column : tableViewer.getTable().getColumns()) {
-				if (column == sortColumn) {
-
-				}
+			Table table = tableViewer.getTable();
+			for (TableColumn column : table.getColumns()) {
 				column.dispose();
 			}
 			properties = new ArrayList<>();
@@ -216,15 +218,15 @@ public class InstanceTablePart extends InstancesPart {
 							.getEntityManager()
 							.createQuery(
 									ISparqlConstants.PREFIX
-											+ "SELECT DISTINCT ?p WHERE { "
-											+ "{ select ?r where { ?r a ?c } limit "
-											+ LIMIT
-											+ " } ?r ?p ?o filter (isLiteral(?o) && not exists {?r ?otherP ?o . ?otherP rdfs:subPropertyOf ?p filter (?otherP != ?p)})}")
+											+ "SELECT DISTINCT ?p WHERE { ?r a ?c; ?p ?o . "
+											+ "filter (?p != rdf:type && not exists { ?r ?otherP ?o . ?otherP rdfs:subPropertyOf ?p filter (?otherP != ?p) }) }")
 							.setParameter("c", input).evaluate(IProperty.class)
 							.toList());
-
 			int col = 0;
+			rdfsLabelShown = false;
+			TableColumn sortColumn = null;
 			for (final IProperty property : properties) {
+				rdfsLabelShown |= RDFS.PROPERTY_LABEL.equals(property);
 				TableViewerColumn viewerColumn = new TableViewerColumn(
 						tableViewer, SWT.LEFT);
 				TableColumn column = viewerColumn.getColumn();
@@ -234,6 +236,10 @@ public class InstanceTablePart extends InstancesPart {
 				column.setMoveable(true);
 				column.addSelectionListener(getSelectionAdapter(column, col++));
 				column.pack();
+				if (property == sortProperty || property != null
+						&& property.equals(sortProperty)) {
+					sortColumn = column;
+				}
 				viewerColumn.setLabelProvider(new CellLabelProvider() {
 					@Override
 					public void update(ViewerCell cell) {
@@ -245,7 +251,8 @@ public class InstanceTablePart extends InstancesPart {
 				if (property != null) {
 					viewerColumn
 							.setEditingSupport(new PropertyCellEditingSupport(
-									((ColumnViewer) viewer)) {
+									((ColumnViewer) viewer), Type.VALUE,
+									SWT.MULTI | SWT.WRAP | SWT.V_SCROLL) {
 								@Override
 								protected IStatement getStatement(Object element) {
 									List<IValue> values = ((IResource) element)
@@ -265,9 +272,32 @@ public class InstanceTablePart extends InstancesPart {
 							});
 				}
 			}
-			List<IObject> instances = input.getEntityManager()
-					.createQuery(QUERY_INSTANCES).setParameter("c", input)
-					.evaluateRestricted(IObject.class).toList();
+			if (sortColumn != null) {
+				table.setSortColumn(sortColumn);
+				table.setSortDirection(sortAscending ? SWT.UP : SWT.DOWN);
+			}
+
+			boolean sortByProperty = sortProperty != null
+					&& properties.contains(sortProperty);
+			String queryStr;
+			if (sortByProperty) {
+				queryStr = ISparqlConstants.PREFIX
+						+ "SELECT DISTINCT ?r WHERE { ?r a ?c; ?p ?o } order by "
+						+ (sortAscending ? "?o" : "desc(?o)") + " limit "
+						+ LIMIT;
+			} else {
+				queryStr = ISparqlConstants.PREFIX
+						+ "SELECT DISTINCT ?r WHERE { ?r a ?c } order by "
+						+ (sortAscending || sortProperty != null ? "?r"
+								: "desc(?r)") + " limit " + LIMIT;
+			}
+			IQuery<?> query = input.getEntityManager().createQuery(queryStr)
+					.setParameter("c", input);
+			if (sortByProperty) {
+				query.setParameter("p", sortProperty);
+			}
+			List<IReference> instances = query.evaluateRestricted(
+					IReference.class).toList();
 			viewer.setInput(instances.toArray());
 		}
 	}
