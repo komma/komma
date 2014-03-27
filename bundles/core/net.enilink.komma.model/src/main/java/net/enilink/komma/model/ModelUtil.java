@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.core.BlankNode;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
@@ -69,102 +70,6 @@ public class ModelUtil {
 		// may need to be determined dynamically
 		LABEL_COLLATOR = Collator.getInstance(Locale.GERMAN);
 		LABEL_COLLATOR.setStrength(Collator.SECONDARY);
-	}
-
-	/**
-	 * Compute a label for the given element.
-	 */
-	public static String getLabel(Object element) {
-		return getLabel(element, false);
-	}
-
-	/**
-	 * Compute a label for the given element.
-	 * 
-	 * @param element
-	 *            The target element for which the label should be computed
-	 * @param useLabelForVocab
-	 *            if <code>true</code> then the property rdfs:label is also used
-	 *            for classes, properties and built-in vocabulary, else the URI
-	 *            is used as label
-	 */
-	public static String getLabel(Object element, boolean useLabelForVocab) {
-		StringBuilder text = new StringBuilder();
-		if (element instanceof IStatement) {
-			element = ((IStatement) element).getObject();
-		}
-		if (element instanceof Resource) {
-			Resource resource = (Resource) element;
-
-			String label = null;
-			if (useLabelForVocab
-					|| !(resource instanceof Class
-							|| resource instanceof Property || resource instanceof IObject
-							&& ((IObject) resource).isOntLanguageTerm())) {
-				label = resource.getRdfsLabel();
-			}
-			if (label != null) {
-				text.append(label);
-			} else {
-				URI uri = resource.getURI();
-				if (uri != null) {
-					String prefix = resource.getEntityManager().getPrefix(
-							uri.namespace());
-					String localPart = uri.localPart();
-					boolean hasLocalPart = localPart != null
-							&& localPart.length() > 0;
-					if (prefix != null && prefix.length() > 0 && hasLocalPart) {
-						text.append(prefix).append(":");
-					}
-					if (hasLocalPart && prefix != null) {
-						text.append(localPart);
-					} else {
-						text.append("<").append(uri).append(">");
-					}
-				} else {
-					text.append(resource.toString());
-				}
-			}
-		} else if (element instanceof ILiteral) {
-			text.append(((ILiteral) element).getLabel());
-		} else {
-			text.append(String.valueOf(element));
-		}
-		return text.toString();
-	}
-
-	/**
-	 * Returns a subset of the objects such that no object in the result is an
-	 * transitive container of any other object in the result.
-	 * 
-	 * @param objects
-	 *            the objects to be filtered.
-	 * @return a subset of the objects such that no object in the result is an
-	 *         ancestor of any other object in the result.
-	 */
-	public static List<IObject> filterDescendants(
-			Collection<? extends IObject> objects) {
-		List<IObject> result = new ArrayList<IObject>(objects.size());
-
-		LOOP: for (IObject object : objects) {
-			for (int i = 0, size = result.size(); i < size;) {
-				IObject rootObject = result.get(i);
-				if (rootObject.equals(object)
-						|| rootObject.getAllContents().contains(object)) {
-					continue LOOP;
-				}
-
-				if (object.getAllContents().contains(rootObject)) {
-					result.remove(i);
-					--size;
-				} else {
-					++i;
-				}
-			}
-			result.add(object);
-		}
-
-		return result;
 	}
 
 	/**
@@ -242,226 +147,24 @@ public class ModelUtil {
 		return null;
 	}
 
-	private static double priorityForMimeType(String mimeType) {
-		if ("text/plain".equals(mimeType)) {
-			return 0.5;
-		} else if ("text/html".equals(mimeType)) {
-			return 0.3;
-		}
-		return 1;
-	}
-
-	/**
-	 * Returns a map of supported MIME-types with associated priorities.
-	 * 
-	 * The key of this map is the MIME-type and the value is its priority in the
-	 * range [0, 1].
-	 * 
-	 * @return Map of MIME-types with associated priorities
-	 */
-	public static Map<String, Double> getSupportedMimeTypes() {
-		Map<String, Double> mimeTypes = new HashMap<>();
-		IContentTypeManager contentTypeManager = Platform
-				.getContentTypeManager();
-		if (contentTypeManager != null) {
-			for (IContentType contentType : contentTypeManager
-					.getAllContentTypes()) {
-				Object mimeType = mimeType(contentType.getDefaultDescription());
-				if (mimeType != null) {
-					mimeTypes.put(mimeType.toString(),
-							priorityForMimeType(mimeType.toString()));
-				}
-			}
-		} else {
-			for (RDFFormat format : RDFFormat.values()) {
-				for (String mimeType : format.getMIMETypes()) {
-					mimeTypes.put(mimeType.toString(),
-							priorityForMimeType(mimeType.toString()));
-				}
-			}
-		}
-		return mimeTypes;
-	}
-
-	private static RDFFormat determineFormat(String mimeType, InputStream in) {
+	private static RDFWriter createWriter(OutputStream os, String baseURI,
+			String mimeType, String charset) throws IOException {
 		RDFFormat format = RDFFormat.RDFXML;
 		if (mimeType != null) {
 			format = RDFFormat.forMIMEType(mimeType, format);
-		} else if (in.markSupported()) {
-			// try to distinguish RDF/XML and Turtle
-			in.mark(2048);
-			try {
-				Reader r = new InputStreamReader(in, "UTF-8");
-				while (r.ready()) {
-					int ch = r.read();
-					if (!Character.isWhitespace(ch) &&
-					// not the BOM character
-							ch != 0xFEFF) {
-						if (ch == '<') {
-							if (r.ready() && (ch = r.read()) == '?') {
-								// <?xml ...>
-								// this is RDF/XML
-								break;
-							}
-							StringBuilder tag = new StringBuilder();
-							tag.append((char) ch);
-							int charsAfterColon = -1;
-							while (r.ready() && (ch = r.read()) != '>') {
-								tag.append((char) ch);
-								if (charsAfterColon >= 0) {
-									charsAfterColon++;
-								}
-								// read up to 4 chars after namespace separator
-								// <ns:rdf [stop here]
-								if (charsAfterColon > 3
-										|| Character.isWhitespace(ch)) {
-									break;
-								} else if (ch == ':' && charsAfterColon < 0) {
-									charsAfterColon = 0;
-								}
-							}
-							// test for content like <ns:RDF ...> or <RDF ...>
-							boolean isRdfXml = Pattern
-									.compile("(^|[^:]+:)rdf\\s+$",
-											Pattern.CASE_INSENSITIVE)
-									.matcher(tag.toString()).matches();
-							if (isRdfXml) {
-								break;
-							}
-						}
-						format = RDFFormat.TURTLE;
-						break;
-					}
-				}
-			} catch (UnsupportedEncodingException e) {
-				// should never happend
-			} catch (IOException e) {
-				throw new KommaException("Reading RDF data failed.", e);
-			}
-			try {
-				in.reset();
-			} catch (IOException e) {
-				throw new KommaException("Detection of RDF format failed.");
-			}
 		}
-		return format;
-	}
-
-	/**
-	 * Look for an ontology within the given document.
-	 * 
-	 * @param in
-	 *            An input stream for the document content
-	 * @param baseURI
-	 *            A base URI for the resolution of relative URIs
-	 * @param mimeType
-	 *            The MIME-type of the document
-	 * @return The ontology URI or <code>null</code>
-	 * 
-	 * @throws Exception
-	 *             If an error occurs while searching for the ontology
-	 */
-	public static String findOntology(InputStream in, String baseURI,
-			String mimeType) throws Exception {
-		if (mimeType == null && !in.markSupported()) {
-			in = new BufferedInputStream(in);
+		if (RDFFormat.RDFXML.equals(format)) {
+			// use a special pretty writer in case of RDF/XML
+			RDFXMLPrettyWriter rdfXmlWriter = new RDFXMLPrettyWriter(
+					new OutputStreamWriter(os, charset != null ? charset
+							: "UTF-8"));
+			rdfXmlWriter.setBaseURI(baseURI);
+			return rdfXmlWriter;
+		} else {
+			RDFWriterFactory factory = RDFWriterRegistry.getInstance().get(
+					format);
+			return factory.getWriter(os);
 		}
-		final String[] ontology = { null };
-		RDFParser parser = Rio.createParser(determineFormat(mimeType, in));
-		parser.setRDFHandler(new RDFHandler() {
-			@Override
-			public void startRDF() throws RDFHandlerException {
-			}
-
-			@Override
-			public void handleStatement(Statement stmt)
-					throws RDFHandlerException {
-				if (org.openrdf.model.vocabulary.RDF.TYPE.equals(stmt
-						.getPredicate())
-						&& org.openrdf.model.vocabulary.OWL.ONTOLOGY
-								.equals(stmt.getObject())) {
-					if (stmt.getSubject() instanceof org.openrdf.model.URI) {
-						ontology[0] = stmt.getSubject().stringValue();
-						throw new RDFHandlerException("found ontology URI");
-					}
-				}
-			}
-
-			@Override
-			public void handleNamespace(String prefx, String uri)
-					throws RDFHandlerException {
-				if (prefx.length() == 0) {
-					// use empty prefix as fallback
-					ontology[0] = URIs.createURI(uri).trimFragment().toString();
-				}
-			}
-
-			@Override
-			public void handleComment(String text) throws RDFHandlerException {
-
-			}
-
-			@Override
-			public void endRDF() throws RDFHandlerException {
-
-			}
-		});
-
-		try {
-			parser.parse(in, baseURI);
-		} catch (RDFHandlerException rhe) {
-			// ignore, ontology was found
-		} finally {
-			in.close();
-		}
-
-		return ontology[0];
-	}
-
-	/**
-	 * Returns the MIME-type for the given content description.
-	 * 
-	 * @param contentDescription
-	 *            A content description
-	 * 
-	 * @return The associated MIME-type or <code>null</code>
-	 */
-	public static String mimeType(IContentDescription contentDescription) {
-		if (contentDescription != null) {
-			return (String) contentDescription.getProperty(new QualifiedName(
-					ModelPlugin.PLUGIN_ID, "mimeType"));
-		}
-		return null;
-	}
-
-	/**
-	 * Returns the MIME-type for the file name or <code>null</code> if it is
-	 * unknown.
-	 * 
-	 * @param fileName
-	 *            A file name
-	 * 
-	 * @return The associated MIME-type or <code>null</code>
-	 */
-	public static String mimeType(String fileName) {
-		String mimeType = null;
-		IContentTypeManager contentTypeManager = Platform
-				.getContentTypeManager();
-		if (contentTypeManager != null) {
-			IContentType contentType = contentTypeManager
-					.findContentTypeFor(fileName);
-			;
-			if (contentType != null) {
-				mimeType = mimeType(contentType.getDefaultDescription());
-			}
-		}
-		if (mimeType == null) {
-			RDFFormat format = RDFFormat.forFileName(fileName);
-			if (format != null) {
-				mimeType = format.getDefaultMIMEType();
-			}
-		}
-		return mimeType;
 	}
 
 	/**
@@ -545,12 +248,106 @@ public class ModelUtil {
 		return contentDescription;
 	}
 
+	private static RDFFormat determineFormat(String mimeType, InputStream in) {
+		RDFFormat format = RDFFormat.RDFXML;
+		if (mimeType != null) {
+			format = RDFFormat.forMIMEType(mimeType, format);
+		} else if (in.markSupported()) {
+			// try to distinguish RDF/XML and Turtle
+			in.mark(2048);
+			try {
+				Reader r = new InputStreamReader(in, "UTF-8");
+				while (r.ready()) {
+					int ch = r.read();
+					if (!Character.isWhitespace(ch) &&
+					// not the BOM character
+							ch != 0xFEFF) {
+						if (ch == '<') {
+							if (r.ready() && (ch = r.read()) == '?') {
+								// <?xml ...>
+								// this is RDF/XML
+								break;
+							}
+							StringBuilder tag = new StringBuilder();
+							tag.append((char) ch);
+							int charsAfterColon = -1;
+							while (r.ready() && (ch = r.read()) != '>') {
+								tag.append((char) ch);
+								if (charsAfterColon >= 0) {
+									charsAfterColon++;
+								}
+								// read up to 4 chars after namespace separator
+								// <ns:rdf [stop here]
+								if (charsAfterColon > 3
+										|| Character.isWhitespace(ch)) {
+									break;
+								} else if (ch == ':' && charsAfterColon < 0) {
+									charsAfterColon = 0;
+								}
+							}
+							// test for content like <ns:RDF ...> or <RDF ...>
+							boolean isRdfXml = Pattern
+									.compile("(^|[^:]+:)rdf\\s+$",
+											Pattern.CASE_INSENSITIVE)
+									.matcher(tag.toString()).matches();
+							if (isRdfXml) {
+								break;
+							}
+						}
+						format = RDFFormat.TURTLE;
+						break;
+					}
+				}
+			} catch (UnsupportedEncodingException e) {
+				// should never happend
+			} catch (IOException e) {
+				throw new KommaException("Reading RDF data failed.", e);
+			}
+			try {
+				in.reset();
+			} catch (IOException e) {
+				throw new KommaException("Detection of RDF format failed.");
+			}
+		}
+		return format;
+	}
+
 	/**
-	 * Read data from an input stream and forward it to a {@link IDataVisitor
-	 * data visitor}.
+	 * Returns a subset of the objects such that no object in the result is an
+	 * transitive container of any other object in the result.
 	 * 
-	 * This method generates new blank node IDs and does NOT preserve the ones
-	 * from the document.
+	 * @param objects
+	 *            the objects to be filtered.
+	 * @return a subset of the objects such that no object in the result is an
+	 *         ancestor of any other object in the result.
+	 */
+	public static List<IObject> filterDescendants(
+			Collection<? extends IObject> objects) {
+		List<IObject> result = new ArrayList<IObject>(objects.size());
+
+		LOOP: for (IObject object : objects) {
+			for (int i = 0, size = result.size(); i < size;) {
+				IObject rootObject = result.get(i);
+				if (rootObject.equals(object)
+						|| rootObject.getAllContents().contains(object)) {
+					continue LOOP;
+				}
+
+				if (object.getAllContents().contains(rootObject)) {
+					result.remove(i);
+					--size;
+				} else {
+					++i;
+				}
+			}
+			result.add(object);
+		}
+
+		return result;
+	}
+
+	/**
+	 * Look for an ontology within the given document.
 	 * 
 	 * @param in
 	 *            An input stream for the document content
@@ -558,14 +355,208 @@ public class ModelUtil {
 	 *            A base URI for the resolution of relative URIs
 	 * @param mimeType
 	 *            The MIME-type of the document
+	 * @return The ontology URI or <code>null</code>
 	 * 
-	 * @param dataVisitor
-	 *            The data visitor which should consume the data
+	 * @throws Exception
+	 *             If an error occurs while searching for the ontology
 	 */
-	public static <V extends IDataVisitor<?>> void readData(InputStream in,
-			String baseURI, String mimeType, final V dataVisitor) {
-		// generate unique BNode IDs by default
-		readData(in, baseURI, mimeType, false, dataVisitor);
+	public static String findOntology(InputStream in, String baseURI,
+			String mimeType) throws Exception {
+		if (mimeType == null && !in.markSupported()) {
+			in = new BufferedInputStream(in);
+		}
+		final String[] ontology = { null };
+		RDFParser parser = Rio.createParser(determineFormat(mimeType, in));
+		parser.setRDFHandler(new RDFHandler() {
+			@Override
+			public void endRDF() throws RDFHandlerException {
+
+			}
+
+			@Override
+			public void handleComment(String text) throws RDFHandlerException {
+
+			}
+
+			@Override
+			public void handleNamespace(String prefx, String uri)
+					throws RDFHandlerException {
+				if (prefx.length() == 0) {
+					// use empty prefix as fallback
+					ontology[0] = URIs.createURI(uri).trimFragment().toString();
+				}
+			}
+
+			@Override
+			public void handleStatement(Statement stmt)
+					throws RDFHandlerException {
+				if (org.openrdf.model.vocabulary.RDF.TYPE.equals(stmt
+						.getPredicate())
+						&& org.openrdf.model.vocabulary.OWL.ONTOLOGY
+								.equals(stmt.getObject())) {
+					if (stmt.getSubject() instanceof org.openrdf.model.URI) {
+						ontology[0] = stmt.getSubject().stringValue();
+						throw new RDFHandlerException("found ontology URI");
+					}
+				}
+			}
+
+			@Override
+			public void startRDF() throws RDFHandlerException {
+			}
+		});
+
+		try {
+			parser.parse(in, baseURI);
+		} catch (RDFHandlerException rhe) {
+			// ignore, ontology was found
+		} finally {
+			in.close();
+		}
+
+		return ontology[0];
+	}
+
+	/**
+	 * Compute a label for the given element.
+	 */
+	public static String getLabel(Object element) {
+		return getLabel(element, false);
+	}
+
+	/**
+	 * Compute a label for the given element.
+	 * 
+	 * @param element
+	 *            The target element for which the label should be computed
+	 * @param useLabelForVocab
+	 *            if <code>true</code> then the property rdfs:label is also used
+	 *            for classes, properties and built-in vocabulary, else the URI
+	 *            is used as label
+	 */
+	public static String getLabel(Object element, boolean useLabelForVocab) {
+		if (element instanceof IStatement) {
+			element = ((IStatement) element).getObject();
+		}
+		if (element instanceof Resource) {
+			Resource resource = (Resource) element;
+			String label = null;
+			if (useLabelForVocab
+					|| !(resource instanceof Class
+							|| resource instanceof Property || resource instanceof IObject
+							&& ((IObject) resource).isOntLanguageTerm())) {
+				label = resource.getRdfsLabel();
+			}
+			if (label != null) {
+				return label;
+			} else {
+				return toPName(resource);
+			}
+		} else if (element instanceof ILiteral) {
+			return ((ILiteral) element).getLabel();
+		} else {
+			return String.valueOf(element);
+		}
+	}
+
+	/**
+	 * Compute a prefixed name for the given element.
+	 */
+	public static String getPName(Object element) {
+		if (element instanceof IStatement) {
+			element = ((IStatement) element).getObject();
+		}
+		if (element instanceof IEntity) {
+			return toPName((IEntity) element);
+		}
+		return String.valueOf(element);
+	}
+
+	/**
+	 * Returns a map of supported MIME-types with associated priorities.
+	 * 
+	 * The key of this map is the MIME-type and the value is its priority in the
+	 * range [0, 1].
+	 * 
+	 * @return Map of MIME-types with associated priorities
+	 */
+	public static Map<String, Double> getSupportedMimeTypes() {
+		Map<String, Double> mimeTypes = new HashMap<>();
+		IContentTypeManager contentTypeManager = Platform
+				.getContentTypeManager();
+		if (contentTypeManager != null) {
+			for (IContentType contentType : contentTypeManager
+					.getAllContentTypes()) {
+				Object mimeType = mimeType(contentType.getDefaultDescription());
+				if (mimeType != null) {
+					mimeTypes.put(mimeType.toString(),
+							priorityForMimeType(mimeType.toString()));
+				}
+			}
+		} else {
+			for (RDFFormat format : RDFFormat.values()) {
+				for (String mimeType : format.getMIMETypes()) {
+					mimeTypes.put(mimeType.toString(),
+							priorityForMimeType(mimeType.toString()));
+				}
+			}
+		}
+		return mimeTypes;
+	}
+
+	/**
+	 * Returns the MIME-type for the given content description.
+	 * 
+	 * @param contentDescription
+	 *            A content description
+	 * 
+	 * @return The associated MIME-type or <code>null</code>
+	 */
+	public static String mimeType(IContentDescription contentDescription) {
+		if (contentDescription != null) {
+			return (String) contentDescription.getProperty(new QualifiedName(
+					ModelPlugin.PLUGIN_ID, "mimeType"));
+		}
+		return null;
+	}
+
+	/**
+	 * Returns the MIME-type for the file name or <code>null</code> if it is
+	 * unknown.
+	 * 
+	 * @param fileName
+	 *            A file name
+	 * 
+	 * @return The associated MIME-type or <code>null</code>
+	 */
+	public static String mimeType(String fileName) {
+		String mimeType = null;
+		IContentTypeManager contentTypeManager = Platform
+				.getContentTypeManager();
+		if (contentTypeManager != null) {
+			IContentType contentType = contentTypeManager
+					.findContentTypeFor(fileName);
+			;
+			if (contentType != null) {
+				mimeType = mimeType(contentType.getDefaultDescription());
+			}
+		}
+		if (mimeType == null) {
+			RDFFormat format = RDFFormat.forFileName(fileName);
+			if (format != null) {
+				mimeType = format.getDefaultMIMEType();
+			}
+		}
+		return mimeType;
+	}
+
+	private static double priorityForMimeType(String mimeType) {
+		if ("text/plain".equals(mimeType)) {
+			return 0.5;
+		} else if ("text/html".equals(mimeType)) {
+			return 0.3;
+		}
+		return 1;
 	}
 
 	/**
@@ -615,8 +606,22 @@ public class ModelUtil {
 		parser.setPreserveBNodeIDs(preserveBNodeIDs);
 		parser.setRDFHandler(new RDFHandler() {
 			@Override
-			public void startRDF() throws RDFHandlerException {
-				dataVisitor.visitBegin();
+			public void endRDF() throws RDFHandlerException {
+				dataVisitor.visitEnd();
+			}
+
+			@Override
+			public void handleComment(String text) throws RDFHandlerException {
+			}
+
+			@Override
+			public void handleNamespace(String prefix, String uri)
+					throws RDFHandlerException {
+				if (handleNamespaces) {
+					((IDataAndNamespacesVisitor<?>) dataVisitor)
+							.visitNamespace(new Namespace(prefix, URIs
+									.createURI(uri)));
+				}
 			}
 
 			@Override
@@ -632,22 +637,8 @@ public class ModelUtil {
 			}
 
 			@Override
-			public void handleNamespace(String prefix, String uri)
-					throws RDFHandlerException {
-				if (handleNamespaces) {
-					((IDataAndNamespacesVisitor<?>) dataVisitor)
-							.visitNamespace(new Namespace(prefix, URIs
-									.createURI(uri)));
-				}
-			}
-
-			@Override
-			public void handleComment(String text) throws RDFHandlerException {
-			}
-
-			@Override
-			public void endRDF() throws RDFHandlerException {
-				dataVisitor.visitEnd();
+			public void startRDF() throws RDFHandlerException {
+				dataVisitor.visitBegin();
 			}
 		});
 
@@ -668,23 +659,48 @@ public class ModelUtil {
 		}
 	}
 
-	private static RDFWriter createWriter(OutputStream os, String baseURI,
-			String mimeType, String charset) throws IOException {
-		RDFFormat format = RDFFormat.RDFXML;
-		if (mimeType != null) {
-			format = RDFFormat.forMIMEType(mimeType, format);
-		}
-		if (RDFFormat.RDFXML.equals(format)) {
-			// use a special pretty writer in case of RDF/XML
-			RDFXMLPrettyWriter rdfXmlWriter = new RDFXMLPrettyWriter(
-					new OutputStreamWriter(os, charset != null ? charset
-							: "UTF-8"));
-			rdfXmlWriter.setBaseURI(baseURI);
-			return rdfXmlWriter;
+	/**
+	 * Read data from an input stream and forward it to a {@link IDataVisitor
+	 * data visitor}.
+	 * 
+	 * This method generates new blank node IDs and does NOT preserve the ones
+	 * from the document.
+	 * 
+	 * @param in
+	 *            An input stream for the document content
+	 * @param baseURI
+	 *            A base URI for the resolution of relative URIs
+	 * @param mimeType
+	 *            The MIME-type of the document
+	 * 
+	 * @param dataVisitor
+	 *            The data visitor which should consume the data
+	 */
+	public static <V extends IDataVisitor<?>> void readData(InputStream in,
+			String baseURI, String mimeType, final V dataVisitor) {
+		// generate unique BNode IDs by default
+		readData(in, baseURI, mimeType, false, dataVisitor);
+	}
+
+	private static String toPName(IEntity resource) {
+		URI uri = resource.getURI();
+		if (uri != null) {
+			String prefix = resource.getEntityManager().getPrefix(
+					uri.namespace());
+			String localPart = uri.localPart();
+			boolean hasLocalPart = localPart != null && localPart.length() > 0;
+			StringBuilder text = new StringBuilder();
+			if (prefix != null && prefix.length() > 0 && hasLocalPart) {
+				text.append(prefix).append(":");
+			}
+			if (hasLocalPart && prefix != null) {
+				text.append(localPart);
+			} else {
+				text.append("<").append(uri).append(">");
+			}
+			return text.toString();
 		} else {
-			RDFWriterFactory factory = RDFWriterRegistry.getInstance().get(
-					format);
-			return factory.getWriter(os);
+			return resource.toString();
 		}
 	}
 
@@ -739,9 +755,10 @@ public class ModelUtil {
 				}
 
 				@Override
-				public Void visitStatement(IStatement stmt) {
+				public Void visitNamespace(INamespace namespace) {
 					try {
-						writer.handleStatement(valueConverter.toSesame(stmt));
+						writer.handleNamespace(namespace.getPrefix(), namespace
+								.getURI().toString());
 					} catch (RDFHandlerException e) {
 						throwException(e);
 					}
@@ -749,10 +766,9 @@ public class ModelUtil {
 				}
 
 				@Override
-				public Void visitNamespace(INamespace namespace) {
+				public Void visitStatement(IStatement stmt) {
 					try {
-						writer.handleNamespace(namespace.getPrefix(), namespace
-								.getURI().toString());
+						writer.handleStatement(valueConverter.toSesame(stmt));
 					} catch (RDFHandlerException e) {
 						throwException(e);
 					}

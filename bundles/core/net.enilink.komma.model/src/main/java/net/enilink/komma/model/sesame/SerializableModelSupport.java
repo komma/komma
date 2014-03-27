@@ -327,6 +327,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 			Set<URI> readableGraphs = getModuleClosure().getReadableGraphs();
 			for (INamespace namespace : getManager().getNamespaces()) {
 				if (KommaUtil.isW3cNamespace(namespace.getURI())
+						|| !namespace.isDerived()
 						|| readableGraphs.contains(namespace.getURI()
 								.trimFragment())) {
 					dataVisitor.visitNamespace(namespace);
@@ -389,36 +390,20 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 			ShortenNodeIds idMapper = new ShortenNodeIds();
 			// use sorting to improve readability of serialized output
 			// store URI descriptions first
+			String query = ISparqlConstants.PREFIX + "construct { ?s ?p ?o0 . "
+					+ template
+					+ "} where { " //
+					+ "graph ?g { " //
+					+ "{ ?s ?p ?o0 filter isIRI(?s) " + patterns
+					+ " bind (1 as ?type) } union " //
+					+ "{ ?s ?p ?o0 filter (isBlank(?s) " //
+					+ filterExpanded + ")  bind (2 as ?type) }" //
+					+ " }} order by ?type ?s ?p ?o0 " + projection //
+					+ " ";
 			IExtendedIterator<IStatement> stmts = dm
-					.<IStatement> createQuery(
-							ISparqlConstants.PREFIX
-									+ "construct { ?s ?p ?o0 . "
-									+ template
-									+ "} where { "
-									+ "{ select distinct ?s ?p ?o0 "
-									+ projection
-									+ " where { graph ?g {?s ?p ?o0 filter isIRI(?s) "
-									+ patterns + "} } order by ?s ?p ?o0 "
-									+ projection + "} }",
-							getURI().appendLocalPart("").toString(), false,
-							getURI()).setParameter("g", getURI()).evaluate()
-					.mapWith(idMapper);
-			while (stmts.hasNext()) {
-				dataVisitor.visitStatement(stmts.next());
-			}
-			// the store only blank node descriptions
-			stmts = dm
-					.<IStatement> createQuery(
-							ISparqlConstants.PREFIX
-									+ "construct { ?s ?p ?o0 } where { "
-									+ "{ select distinct ?s ?p ?o0 "
-									+ " where { graph ?g {?s ?p ?o0 filter (isBlank(?s) "
-									+ filterExpanded
-									+ ")} } order by ?s ?p ?o0 }" //
-									+ " }",
-							getURI().appendLocalPart("").toString(), false,
-							getURI()).setParameter("g", getURI()).evaluate()
-					.mapWith(idMapper);
+					.<IStatement> createQuery(query,
+							getURI().trimFragment().toString(), false, getURI())
+					.setParameter("g", getURI()).evaluate().mapWith(idMapper);
 			while (stmts.hasNext()) {
 				dataVisitor.visitStatement(stmts.next());
 			}
