@@ -30,8 +30,9 @@ public abstract class OntologySupport extends BehaviorBase implements IOntology 
 				+ "}" //
 				+ "FILTER NOT EXISTS {" //
 				+ "		?p rdfs:subPropertyOf ?other " //
-				+ "		FILTER(?p != ?other && isIRI(?other))" //
+				+ "		FILTER (?other != owl:topObjectProperty && ?other != owl:topDataProperty && ?p != ?other && isIRI(?other))" //
 				+ "} " //
+				+ "FILTER (?p != owl:topObjectProperty && ?p != owl:topDataProperty)" //
 				+ "}";
 	}
 
@@ -48,12 +49,12 @@ public abstract class OntologySupport extends BehaviorBase implements IOntology 
 				.createQuery(
 						ISparqlConstants.PREFIX
 								+ "SELECT DISTINCT ?p WHERE {"
-								+ "?p a ?type { ?type rdfs:subClassOf rdf:Property } UNION { ?p a rdf:Property } "
+								+ "?p a ?type { ?type rdfs:subClassOf* rdf:Property } UNION { ?p a rdf:Property } "
 								+ "FILTER NOT EXISTS {"
 								+ " ?p rdfs:subPropertyOf ?other FILTER (?p != ?other && isIRI(?other))"
 								+ "} "
 								+ "FILTER (isIRI(?p) && (?type = owl:AnnotationProperty || !regex(str(?type), 'http://www.w3.org/2002/07/owl#')))"
-								+ "}");
+								+ "}", false);
 		return query.evaluate(IProperty.class);
 	}
 
