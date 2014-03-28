@@ -6,6 +6,7 @@ import net.enilink.komma.core.KommaException;
 
 public abstract class SesameResult<S, T> extends NiceIterator<T> {
 	protected CloseableIteration<S, ? extends Exception> delegate;
+	protected boolean open = true;
 
 	private S current;
 
@@ -17,7 +18,7 @@ public abstract class SesameResult<S, T> extends NiceIterator<T> {
 	}
 
 	public void close() {
-		if (delegate != null) {
+		if (open) {
 			try {
 				delegate.close();
 			} catch (RuntimeException e) {
@@ -25,7 +26,7 @@ public abstract class SesameResult<S, T> extends NiceIterator<T> {
 			} catch (Exception e) {
 				throw new KommaException(e);
 			} finally {
-				delegate = null;
+				open = false;
 			}
 		}
 	}
@@ -34,7 +35,7 @@ public abstract class SesameResult<S, T> extends NiceIterator<T> {
 
 	public boolean hasNext() {
 		try {
-			if (delegate != null && delegate.hasNext()) {
+			if (delegate.hasNext()) {
 				return true;
 			} else {
 				close();

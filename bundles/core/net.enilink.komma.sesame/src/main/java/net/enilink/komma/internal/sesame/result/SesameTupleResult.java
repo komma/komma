@@ -1,19 +1,18 @@
 package net.enilink.komma.internal.sesame.result;
 
-import java.util.Collections;
 import java.util.List;
-
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.TupleQueryResult;
-
-import com.google.inject.Inject;
 
 import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.ITupleResult;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.LinkedHashBindings;
 import net.enilink.komma.sesame.SesameValueConverter;
+
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.TupleQueryResult;
+
+import com.google.inject.Inject;
 
 public class SesameTupleResult extends
 		SesameResult<BindingSet, IBindings<IValue>> implements
@@ -39,9 +38,6 @@ public class SesameTupleResult extends
 
 	@Override
 	public List<String> getBindingNames() {
-		if (delegate == null) {
-			return Collections.emptyList();
-		}
 		try {
 			return ((TupleQueryResult) delegate).getBindingNames();
 		} catch (QueryEvaluationException e) {
