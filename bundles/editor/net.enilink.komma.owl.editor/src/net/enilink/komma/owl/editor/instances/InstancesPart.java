@@ -103,9 +103,10 @@ public class InstancesPart extends AbstractEditingDomainPart {
 
 	protected StructuredViewer createViewer(Composite parent) {
 		Table table = getWidgetFactory().createTable(parent,
-				SWT.V_SCROLL | SWT.VIRTUAL);
+				SWT.V_SCROLL | SWT.VIRTUAL | SWT.MULTI);
 
 		viewer = new TableViewer(table) {
+			@SuppressWarnings("rawtypes")
 			@Override
 			protected void setSelectionToWidget(List list, boolean reveal) {
 				// FIX - do only select existing items to prevent instantiation
