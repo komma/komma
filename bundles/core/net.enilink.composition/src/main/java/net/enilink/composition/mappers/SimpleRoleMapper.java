@@ -175,7 +175,7 @@ public class SimpleRoleMapper<T> implements Cloneable {
 	private void unregistered(T type) {
 		if (!unregisteredTypes.containsKey(type)) {
 			unregisteredTypes.put(type, Boolean.TRUE);
-			logger.warn("Unregistered type {}", type);
+			logger.info("Unregistered type {}", type);
 		}
 	}
 }
