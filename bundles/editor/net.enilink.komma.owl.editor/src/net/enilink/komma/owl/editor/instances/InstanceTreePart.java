@@ -47,7 +47,7 @@ public class InstanceTreePart extends InstancesPart {
 	@Override
 	protected StructuredViewer createViewer(Composite parent) {
 		Tree tree = getWidgetFactory().createTree(parent,
-				SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL);
+				SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL | SWT.MULTI);
 		TreeViewer viewer = new TreeViewer(tree);
 		viewer.setUseHashlookup(true);
 		return viewer;

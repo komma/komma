@@ -161,8 +161,10 @@ public class InstanceTablePart extends InstancesPart {
 
 	@Override
 	protected StructuredViewer createViewer(Composite parent) {
-		Table table = getWidgetFactory().createTable(parent,
-				SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL | SWT.FULL_SELECTION);
+		Table table = getWidgetFactory().createTable(
+				parent,
+				SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL | SWT.FULL_SELECTION
+						| SWT.MULTI);
 		TableViewer viewer = new TableViewer(table);
 		viewer.getTable().setHeaderVisible(true);
 		viewer.setUseHashlookup(true);
