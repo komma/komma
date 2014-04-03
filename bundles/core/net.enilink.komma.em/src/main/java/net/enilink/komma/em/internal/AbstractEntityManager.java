@@ -151,6 +151,13 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	public void add(Iterable<? extends IStatement> statements) {
+		// defaults to consider the imports to avoid adding duplicate statements
+		add(statements, false);
+	}
+
+	@Override
+	public void add(Iterable<? extends IStatement> statements,
+			boolean ignoreImports) {
 		dm.add(new ConvertingIterator<IStatement, IStatement>(statements
 				.iterator()) {
 			@Override
@@ -165,7 +172,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 								.getObject()), stmt.getContext(), stmt
 								.isInferred());
 			}
-		}, readContexts, modifyContexts);
+		}, ignoreImports ? modifyContexts : readContexts, modifyContexts);
 	}
 
 	private <C extends Collection<URI>> C addConcept(IReference resource,

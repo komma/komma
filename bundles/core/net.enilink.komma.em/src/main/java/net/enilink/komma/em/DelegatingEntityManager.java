@@ -41,6 +41,11 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
+	public void add(Iterable<? extends IStatement> statements, boolean ignoreImports) {
+		getDelegate().add(statements, ignoreImports);
+	}
+
+	@Override
 	public void addDecorator(IEntityDecorator decorator) {
 		getDelegate().addDecorator(decorator);
 	}
