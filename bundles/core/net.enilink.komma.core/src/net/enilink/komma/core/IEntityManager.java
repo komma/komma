@@ -32,6 +32,22 @@ public interface IEntityManager extends AutoCloseable {
 	void add(Iterable<? extends IStatement> statements);
 
 	/**
+	 * Add statements to this manager, optionally ignoring statements from
+	 * imported models when checking for duplicates.
+	 * <p>
+	 * The default behaviour for add() is to take these into account to avoid
+	 * inserting statements that are already present from imports.
+	 * 
+	 * @param statements
+	 *            the statements to add
+	 * @param ignoreImports
+	 *            wether to ignore statements from imported models
+	 * @throws KommaException
+	 *             thrown if there is an error while adding the statements
+	 */
+	void add(Iterable<? extends IStatement> statements, boolean ignoreImports);
+
+	/**
 	 * Registers an {@link IEntityDecorator decorator}
 	 * 
 	 * @param decorator
@@ -109,7 +125,7 @@ public interface IEntityManager extends AutoCloseable {
 	 * @return Java Bean representing the subject.
 	 */
 	IEntity create(IReference... concepts);
-	
+
 	/**
 	 * Converts a Java value to an {@link ILiteral} with the given
 	 * <code>datatype</code>.
