@@ -149,7 +149,8 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 								.getImage(IEditUIPropertiesImages.REFRESH)));
 		toolBarManager.add(refreshAction);
 
-		final IAction hideAction = new Action("Hide built-in properties", Action.AS_CHECK_BOX) {
+		final IAction hideAction = new Action("Hide built-in properties",
+				Action.AS_CHECK_BOX) {
 			@Override
 			public void run() {
 				hideBuiltins = !hideBuiltins;
@@ -257,6 +258,9 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 
 	@Override
 	public void setInput(Object input) {
+		if (treeViewer != null && adapterFactory != null) {
+			treeViewer.setInput(null);
+		}
 		this.model = (IModel) input;
 		setStale(true);
 	}
@@ -291,8 +295,6 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 			}
 			createContextMenuFor(treeViewer);
 			treeViewer.setInput(model.getManager().find(getRootProperty()));
-		} else if (adapterFactory != null) {
-			treeViewer.setInput(new Object[0]);
 		}
 	}
 }

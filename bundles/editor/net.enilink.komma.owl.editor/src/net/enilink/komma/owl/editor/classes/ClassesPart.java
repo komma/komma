@@ -256,6 +256,9 @@ public class ClassesPart extends AbstractEditingDomainPart {
 
 	@Override
 	public void setInput(Object input) {
+		if (treeViewer != null && adapterFactory != null) {
+			treeViewer.setInput(null);
+		}
 		this.model = (IModel) input;
 		setStale(true);
 	}
@@ -309,8 +312,6 @@ public class ClassesPart extends AbstractEditingDomainPart {
 			treeViewer.setInput(new Object[] { model.getManager().find(
 					RDFS.TYPE_RESOURCE //
 					) });
-		} else if (adapterFactory != null) {
-			treeViewer.setInput(new Object[0]);
 		}
 
 		super.refresh();
