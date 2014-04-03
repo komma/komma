@@ -481,7 +481,11 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 										.createPlatformResourceURI(delta
 												.getFullPath().toString(),
 												false), false);
-								if (model != null) {
+								if (model != null
+										// no need to keep track of changes to
+										// models the editors don't care about
+										&& (saveAllModels || model
+												.equals(KommaEditorSupport.this.model))) {
 									if (delta.getKind() == IResourceDelta.REMOVED) {
 										removedModels.add(model);
 									} else if (!savedModels.remove(model)) {

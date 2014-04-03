@@ -339,7 +339,7 @@ public class AbstractEditingDomainView extends ViewPart implements
 		if (changed && editPart != null) {
 			selectionProvider.setInternalSelection(StructuredSelection.EMPTY);
 
-			if (active) {
+			if (active || this.model == null) {
 				editorForm.setInput(null);
 				editPart.setInput(this.model);
 				editorForm.refreshStale();
