@@ -232,7 +232,7 @@ public class ResultTableViewer implements IResultViewer {
 			row.rowNr = rowNr++;
 			dataRows.add(row);
 		}
-		tableViewer.getTable().removeAll();
+		tableViewer.setInput(null);
 		for (TableColumn column : tableViewer.getTable().getColumns()) {
 			column.dispose();
 		}

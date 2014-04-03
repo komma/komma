@@ -178,12 +178,12 @@ class SparqlPart extends AbstractEditorPart {
 						data.add(row);
 					}
 					result.close();
-				} else if (query instanceof IBooleanResult) {
+				} else if (result instanceof IBooleanResult) {
 					columnNames = new String[] { "result" };
 					data = new ArrayList<Object[]>();
 					data.add(new Object[] { ((IBooleanResult) result)
 							.asBoolean() });
-				} else if (query instanceof IGraphResult) {
+				} else if (result instanceof IGraphResult) {
 					columnNames = new String[] { "subject", "predicate",
 							"object" };
 					data = new ArrayList<Object[]>();
