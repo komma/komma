@@ -84,6 +84,7 @@ import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.rdfs.RDFS;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -2564,6 +2565,11 @@ public class ItemProviderAdapter extends
 	 * specified feature are updated.
 	 * 
 	 * <p>
+	 * Also clears the cache of childrenProperties upon changes to statements
+	 * with the subPropertyOf predicate so that applicable child properties are
+	 * properly refreshed.
+	 * 
+	 * <p>
 	 * Existing children in the store that correspond to any set, removed or
 	 * unset values are {@link #disposeWrapper disposed} before being removed
 	 * from the store. When children are added to, removed from, or moved within
@@ -2578,6 +2584,14 @@ public class ItemProviderAdapter extends
 	protected void updateChildren(
 			Collection<? extends INotification> notifications) {
 		for (INotification notification : notifications) {
+			// for changes to subPropertyOf, delete the childrenProperties cache
+			if (notification instanceof IStatementNotification) {
+				if (((IStatementNotification) notification).getPredicate()
+						.equals(RDFS.PROPERTY_SUBPROPERTYOF)) {
+					childrenProperties = null;
+				}
+			}
+
 			ChildrenStore childrenStore = getChildrenStore(notification
 					.getSubject());
 
