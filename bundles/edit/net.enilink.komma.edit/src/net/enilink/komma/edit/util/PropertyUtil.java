@@ -29,7 +29,6 @@ import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.owl.ObjectProperty;
 import net.enilink.vocab.rdfs.RDFS;
 
 import org.eclipse.core.commands.ExecutionException;
