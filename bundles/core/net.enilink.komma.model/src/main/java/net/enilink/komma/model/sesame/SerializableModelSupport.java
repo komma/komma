@@ -339,7 +339,8 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 
 			// expand blank nodes below IRIs up to expandDepth
 			// TODO also expand blank nodes below other blank nodes
-			int expandDepth = 6;
+			// TODO determine expandDepth depending on the size of the data set
+			int expandDepth = getModelSet().isPersistent() ? 0 : 6;
 			StringBuilder template = new StringBuilder();
 			StringBuilder projection = new StringBuilder();
 			StringBuilder patterns = new StringBuilder();
@@ -398,8 +399,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 					+ " bind (1 as ?type) } union " //
 					+ "{ ?s ?p ?o0 filter (isBlank(?s) " //
 					+ filterExpanded + ")  bind (2 as ?type) }" //
-					+ " }} order by ?type ?s ?p ?o0 " + projection //
-					+ " ";
+					+ " }} order by ?type ?s ?p ?o0 " + projection;
 			IExtendedIterator<IStatement> stmts = dm
 					.<IStatement> createQuery(query,
 							getURI().trimFragment().toString(), false, getURI())
