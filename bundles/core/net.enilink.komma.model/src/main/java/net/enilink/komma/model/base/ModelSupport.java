@@ -441,6 +441,31 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	}
 
 	@Override
+	public Set<URI> getImportsClosure() {
+		// duplicated from getModuleClosure, except includeModule() call
+		Set<URI> seen = new HashSet<>();
+		Queue<IModel> queue = new LinkedList<>();
+		queue.add(getBehaviourDelegate());
+		while (!queue.isEmpty()) {
+			IModel model = queue.remove();
+			for (URI imported : model.getImports()) {
+				try {
+					if (seen.add(imported)) {
+						queue.add(getModelSet().getModel(imported, true));
+					}
+				} catch (Throwable e) {
+					getErrors().add(
+							new DiagnosticWrappedException(getURI()
+									.toString(), new KommaException(
+									"Error while loading import: "
+											+ imported, e)));
+				}
+			}
+		}
+		return seen;
+	}
+
+	@Override
 	public synchronized KommaModule getModuleClosure() {
 		KommaModule moduleClosure = state().moduleClosure;
 		if (moduleClosure == null) {

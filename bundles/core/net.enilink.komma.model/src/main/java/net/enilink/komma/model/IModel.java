@@ -105,6 +105,11 @@ public interface IModel {
 	Set<URI> getImports();
 
 	/**
+	 * Returns all imported models, transitive imports included.
+	 */
+	Set<URI> getImportsClosure();
+
+	/**
 	 * Returns the {@link IEntityManager} manager which is responsible for
 	 * loading and modifying the ontology's contents
 	 * 
