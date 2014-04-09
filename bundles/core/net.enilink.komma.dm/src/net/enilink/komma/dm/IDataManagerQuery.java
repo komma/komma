@@ -1,5 +1,8 @@
 package net.enilink.komma.dm;
 
+import java.util.Map;
+import java.util.Set;
+
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.core.IValue;
 
@@ -12,22 +15,22 @@ public interface IDataManagerQuery<R> {
 	IExtendedIterator<R> evaluate();
 
 	/**
-	 * Skips to the <code>startPosition</code> of the results.
+	 * Get the properties and associated values that are in effect for the query
+	 * instance.
 	 * 
-	 * @param startPosition
-	 * 
-	 * @return This query object.
+	 * @return query properties
 	 */
-	IDataManagerQuery<R> setFirstResult(int startPosition);
+	Map<String, Object> getProperties();
 
 	/**
-	 * Terminates the result list after reading <code>maxResult</code>
+	 * Get the names of the properties that are supported for query objects.
+	 * These include all standard query properties as well as vendor-specific
+	 * properties supported by the provider. These properties may or may not
+	 * currently be in effect.
 	 * 
-	 * @param maxResult
-	 * 
-	 * @return This query object.
+	 * @return properties
 	 */
-	IDataManagerQuery<R> setMaxResults(int maxResult);
+	Set<String> getSupportedProperties();
 
 	/**
 	 * Assigns an entity or literal to the given name.
@@ -38,14 +41,17 @@ public interface IDataManagerQuery<R> {
 	 *            managed entity or literal.
 	 */
 	IDataManagerQuery<R> setParameter(String name, IValue value);
-
+	
 	/**
-	 * Returns <code>true</code> if the methods
-	 * {@link IDataManagerQuery#setFirstResult(int)} and
-	 * {@link IDataManagerQuery#setMaxResults(int)} are supported.
+	 * Set a query property. If a vendor-specific property is not recognized, it
+	 * is silently ignored. Depending on the database in use and the locking
+	 * mechanisms used by the provider, the property may or may not be observed.
 	 * 
-	 * @return <code>true</code> if setting limits is supported, else
-	 *         <code>false</code>
+	 * @param propertyName
+	 * @param value
+	 * @return the same query instance
+	 * @throws IllegalArgumentException
+	 *             if the second argument is not valid for the implementation
 	 */
-	boolean supportsLimit();
+	IDataManagerQuery<R> setProperty(String propertyName, Object value);
 }
