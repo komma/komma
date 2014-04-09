@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -148,6 +149,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	private URI[] readContexts = NO_CONTEXTS;
 	private URI[] modifyContexts = NO_CONTEXTS;
+
+	protected Map<String, Object> properties;
 
 	@Override
 	public void add(Iterable<? extends IStatement> statements) {
@@ -469,6 +472,15 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		IQuery<?> result = new Query<Object>(this, dm.createQuery(query,
 				baseURI, includeInferred, readContexts));
 		injector.injectMembers(result);
+		if (properties != null) {
+			// set properties on the query object
+			for (String propertyName : result.getSupportedProperties()) {
+				Object value = properties.get(propertyName);
+				if (value != null) {
+					result.setProperty(propertyName, value);
+				}
+			}
+		}
 		return result;
 	}
 
@@ -653,7 +665,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	public Map<String, Object> getProperties() {
-		return Collections.emptyMap();
+		return properties == null ? Collections.<String, Object> emptyMap()
+				: Collections.unmodifiableMap(properties);
 	}
 
 	protected IReference getReference(Object bean) {
@@ -672,11 +685,6 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			throw new KommaException("Unknown Entity: " + entity);
 		}
 		return reference;
-	}
-
-	@Override
-	public Set<String> getSupportedProperties() {
-		return Collections.emptySet();
 	}
 
 	@Override
@@ -1131,9 +1139,22 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		clearNamespaceCache();
 	}
 
+	protected Map<String, Object> ensureProperties() {
+		if (properties == null) {
+			properties = new HashMap<>();
+		}
+		return properties;
+	}
+
 	@Override
 	public void setProperty(String propertyName, Object value) {
+		ensureProperties().put(propertyName, value);
+	}
 
+	@Inject(optional = true)
+	protected void setProperties(
+			@Named("net.enilink.komma.properties") Map<String, Object> properties) {
+		ensureProperties().putAll(properties);
 	}
 
 	@Inject

@@ -158,8 +158,8 @@ public class Query<R> extends QueryBase<IQuery<R>> implements IQuery<R> {
 	}
 
 	@Override
-	public Map<String, Object> getHints() {
-		return Collections.emptyMap();
+	public Map<String, Object> getProperties() {
+		return query.getProperties();
 	}
 
 	@Override
@@ -192,15 +192,16 @@ public class Query<R> extends QueryBase<IQuery<R>> implements IQuery<R> {
 	}
 
 	@Override
-	public Set<String> getSupportedHints() {
-		return null;
+	public Set<String> getSupportedProperties() {
+		return query.getSupportedProperties();
 	}
 
 	private void doSetParameter(String name, IValue value) {
 		query.setParameter(name, value);
 	}
 
-	public IQuery<R> setHint(String hintName, Object value) {
+	public IQuery<R> setProperty(String propertyName, Object value) {
+		query.setProperty(propertyName, value);
 		return this;
 	}
 

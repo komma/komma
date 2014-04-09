@@ -13,7 +13,6 @@ package net.enilink.komma.em;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.core.IEntity;
@@ -216,11 +215,6 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	@Override
 	public Map<String, Object> getProperties() {
 		return getDelegate().getProperties();
-	}
-
-	@Override
-	public Set<String> getSupportedProperties() {
-		return getDelegate().getSupportedProperties();
 	}
 
 	@Override
