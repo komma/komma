@@ -1,5 +1,7 @@
 package net.enilink.komma.core;
 
+import java.util.Locale;
+
 /**
  * Helper methods to work with {@link ILiteral} instances.
  * 
@@ -84,8 +86,9 @@ public class Literals {
 	 * @return A string representation for the given literal
 	 */
 	public static String toString(ILiteral literal) {
-		StringBuilder result = new StringBuilder("\"").append(
-				literal.getLabel()).append("\"");
+		StringBuilder result = new StringBuilder("\"");
+		escapeTurtle(result, literal.getLabel());
+		result.append("\"");
 		URI datatype = literal.getDatatype();
 		String language = literal.getLanguage();
 		if (datatype != null) {
@@ -94,6 +97,86 @@ public class Literals {
 			result.append("@").append(language);
 		}
 		return result.toString();
+	}
+
+	/**
+	 * Escape the given string for the use within quotation marks for building a
+	 * Turtle-compatible string representation.
+	 * 
+	 * @param str
+	 *            The string that should be escaped
+	 * @return The escaped string
+	 */
+	public static String escapeTurtle(String str) {
+		return escapeTurtle(new StringBuilder(), str).toString();
+	}
+
+	private static String toHex(char ch) {
+		return Integer.toHexString(ch).toUpperCase(Locale.ENGLISH);
+	}
+
+	private static StringBuilder escapeTurtle(StringBuilder sb, String str) {
+		if (str == null) {
+			return sb;
+		}
+		int length = str.length();
+		for (int i = 0; i < length; i++) {
+			char ch = str.charAt(i);
+
+			// handle unicode
+			if (ch > 0xfff) {
+				sb.append("\\u" + toHex(ch));
+			} else if (ch > 0xff) {
+				sb.append("\\u0" + toHex(ch));
+			} else if (ch > 0x7f) {
+				sb.append("\\u00" + toHex(ch));
+			} else if (ch < 32) {
+				switch (ch) {
+				case '\b':
+					sb.append('\\');
+					sb.append('b');
+					break;
+				case '\n':
+					sb.append('\\');
+					sb.append('n');
+					break;
+				case '\t':
+					sb.append('\\');
+					sb.append('t');
+					break;
+				case '\f':
+					sb.append('\\');
+					sb.append('f');
+					break;
+				case '\r':
+					sb.append('\\');
+					sb.append('r');
+					break;
+				default:
+					if (ch > 0xf) {
+						sb.append("\\u00" + toHex(ch));
+					} else {
+						sb.append("\\u000" + toHex(ch));
+					}
+					break;
+				}
+			} else {
+				switch (ch) {
+				case '"':
+					sb.append('\\');
+					sb.append('"');
+					break;
+				case '\\':
+					sb.append('\\');
+					sb.append('\\');
+					break;
+				default:
+					sb.append(ch);
+					break;
+				}
+			}
+		}
+		return sb;
 	}
 
 	private Literals() {

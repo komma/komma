@@ -98,12 +98,12 @@ public interface IQuery<R> extends IQueryBase<IQuery<R>>, AutoCloseable {
 	boolean getBooleanResult();
 
 	/**
-	 * Get the hints and associated values that are in effect for the query
+	 * Get the properties and associated values that are in effect for the query
 	 * instance.
 	 * 
-	 * @return query hints
+	 * @return query properties
 	 */
-	Map<String, Object> getHints();
+	Map<String, Object> getProperties();
 
 	/**
 	 * Get the current lock mode for the query.
@@ -137,30 +137,27 @@ public interface IQuery<R> extends IQueryBase<IQuery<R>>, AutoCloseable {
 	<T> T getSingleResult(Class<T> resultType);
 
 	/**
-	 * Get the names of the hints that are supported for query objects. These
-	 * hints correspond to hints that may be passed to the methods of the Query
-	 * interface that take hints as arguments or used with the NamedQuery and
-	 * NamedNativeQuery annotations. These include all standard query hints as
-	 * well as vendor-specific hints supported by the provider. These hints may
-	 * or may not currently be in effect.
+	 * Get the names of the properties that are supported for query objects.
+	 * These include all standard query properties as well as vendor-specific
+	 * properties supported by the provider. These properties may or may not
+	 * currently be in effect.
 	 * 
-	 * @return hints
+	 * @return properties
 	 */
-	Set<String> getSupportedHints();
+	Set<String> getSupportedProperties();
 
 	/**
-	 * Set a query hint. If a vendor-specific hint is not recognized, it is
-	 * silently ignored. Portable applications should not rely on the standard
-	 * timeout hint. Depending on the database in use and the locking mechanisms
-	 * used by the provider, the hint may or may not be observed.
+	 * Set a query property. If a vendor-specific property is not recognized, it
+	 * is silently ignored. Depending on the database in use and the locking
+	 * mechanisms used by the provider, the property may or may not be observed.
 	 * 
-	 * @param hintName
+	 * @param propertyName
 	 * @param value
 	 * @return the same query instance
 	 * @throws IllegalArgumentException
 	 *             if the second argument is not valid for the implementation
 	 */
-	IQuery<R> setHint(String hintName, Object value);
+	IQuery<R> setProperty(String propertyName, Object value);
 
 	/**
 	 * Set the lock mode type to be used for the query execution.

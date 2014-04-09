@@ -13,7 +13,6 @@ package net.enilink.komma.core;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import javax.security.auth.Refreshable;
 import javax.transaction.TransactionRequiredException;
@@ -374,19 +373,6 @@ public interface IEntityManager extends AutoCloseable {
 	 * configuration in effect.
 	 */
 	Map<String, Object> getProperties();
-
-	/**
-	 * Get the names of the properties that are supported for use with the
-	 * entity manager. These correspond to properties and hints that may be
-	 * passed to the methods of the EntityManager interface that take a
-	 * properties argument or used with the PersistenceContext annotation. These
-	 * properties include all standard entity manager hints and properties as
-	 * well as vendor-specific ones supported by the provider. These properties
-	 * may or may not currently be in effect.
-	 * 
-	 * @return property names
-	 */
-	Set<String> getSupportedProperties();
 
 	/**
 	 * Returns the resource-level transaction object. The {@link ITransaction}
