@@ -38,7 +38,8 @@ import net.enilink.komma.em.internal.IEntityManagerInternal;
  * Converts the result into an array of Objects.
  * 
  */
-public class GraphIterator extends ConvertingIterator<IStatement, IStatement> {
+public class GraphIterator extends ConvertingIterator<IStatement, IStatement>
+		implements IGraphResult {
 	private IEntityManagerInternal manager;
 
 	private int maxResults;
