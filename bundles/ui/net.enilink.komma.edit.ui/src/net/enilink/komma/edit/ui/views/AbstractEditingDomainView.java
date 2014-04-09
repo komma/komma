@@ -201,14 +201,20 @@ public class AbstractEditingDomainView extends ViewPart implements
 
 		installSelectionProvider();
 
-		IWorkbenchPart editor = getSite().getPage().getActiveEditor();
-		if (editor != null) {
-			setWorkbenchPart(editor);
-		}
-
 		this.listener = new Listener();
 		getSite().getPage().addPartListener(listener);
 		getSite().getPage().addSelectionListener(listener);
+
+		IWorkbenchPart editor = getSite().getPage().getActiveEditor();
+		if (editor != null) {
+			setWorkbenchPart(editor);
+			// on creation of this part, make sure it is made aware of the
+			// current selection to avoid it being empty
+			if (this.model != null) {
+				this.listener.selectionChanged(editor, editor.getSite()
+						.getSelectionProvider().getSelection());
+			}
+		}
 
 		// redirect to editor actions
 		List<ActionFactory> actionFactories = Arrays.asList(

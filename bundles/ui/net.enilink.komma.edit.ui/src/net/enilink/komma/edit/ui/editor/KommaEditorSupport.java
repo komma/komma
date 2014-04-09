@@ -207,9 +207,12 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 				this.selectionProvider = selectionProvider;
 
 				// Set the editors selection based on the current viewer's
-				// selection.
-				setSelection(selectionProvider == null ? StructuredSelection.EMPTY
-						: selectionProvider.getSelection());
+				// selection, unless that is empty, then leave as-is
+				if (selectionProvider == null) {
+					setSelection(StructuredSelection.EMPTY);
+				} else if (!selectionProvider.getSelection().isEmpty()) {
+					setSelection(selectionProvider.getSelection());
+				}
 			}
 		}
 
