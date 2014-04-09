@@ -275,7 +275,11 @@ public class InstancesPart extends AbstractEditingDomainPart {
 			return true;
 		} else if (input instanceof IReference) {
 			if (viewer != null) {
-				viewer.setSelection(new StructuredSelection(input), true);
+				// FIXME: that's a sort of hack, do NOT set a selection when
+				// the item in question isn't even available in our viewer
+				if (viewer.testFindItem(input) != null) {
+					viewer.setSelection(new StructuredSelection(input), true);
+				}
 			}
 		}
 		return false;
