@@ -4,10 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.parboiled.BaseParser;
-import org.parboiled.Rule;
-import org.parboiled.annotations.SuppressNode;
-
 import net.enilink.komma.parser.sparql.tree.BNode;
 import net.enilink.komma.parser.sparql.tree.BooleanLiteral;
 import net.enilink.komma.parser.sparql.tree.DoubleLiteral;
@@ -16,6 +12,10 @@ import net.enilink.komma.parser.sparql.tree.GraphNode;
 import net.enilink.komma.parser.sparql.tree.IntegerLiteral;
 import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.QName;
+
+import org.parboiled.BaseParser;
+import org.parboiled.Rule;
+import org.parboiled.annotations.SuppressNode;
 
 public abstract class BaseRdfParser extends BaseParser<Object> {
 	public static Object LIST_BEGIN = new Object();
@@ -206,48 +206,102 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	public Rule STRING_LITERAL1() {
 		return Sequence(
 				Ch('\''),
+				push(new StringBuilder()),
 				ZeroOrMore(FirstOf(
-						Sequence(
-								TestNot(FirstOf(Ch('\''), Ch('\\'), Ch('\n'),
-										Ch('\r'))), ANY), ECHAR())),
-				push(match().replaceAll("\\'", "'")), Ch('\''), WS());
+						Sequence(TestNot(FirstOf('\'', '\\', '\n', '\r')), ANY,
+								appendToSb(matchedChar())), ECHAR(), UCHAR())),
+				push(pop().toString()), '\'', WS());
 	}
 
 	public Rule STRING_LITERAL2() {
 		return Sequence(
 				Ch('"'),
+				push(new StringBuilder()),
 				ZeroOrMore(FirstOf(
-						Sequence(
-								TestNot(FirstOf(Ch('"'), Ch('\\'), Ch('\n'),
-										Ch('\r'))), ANY), ECHAR())),
-				push(match().replaceAll("\\\"", "\"")), Ch('"'), WS());
+						Sequence(TestNot(FirstOf('"', '\\', '\n', '\r')), ANY,
+								appendToSb(matchedChar())), ECHAR(), UCHAR())),
+				push(pop().toString()), '"', WS());
 	}
 
 	public Rule STRING_LITERAL_LONG1() {
 		return Sequence(
 				String("'''"),
+				push(new StringBuilder()),
 				ZeroOrMore(
-						Optional(FirstOf(String("''"), Ch('\''))),
-						FirstOf(Sequence(TestNot(FirstOf(Ch('\''), Ch('\\'))),
-								ANY), ECHAR())),
-				push(match().replaceAll("\\'", "'")), String("'''"), WS());
+						TestNot("'''"),
+						Optional(FirstOf("''", '\''), appendToSb(match())),
+						FirstOf(Sequence(TestNot(FirstOf('\'', '\\')), ANY,
+								appendToSb(matchedChar())), ECHAR(), UCHAR())),
+				push(pop().toString()), "'''", WS());
 	}
 
 	public Rule STRING_LITERAL_LONG2() {
 		return Sequence(
-				String("\"\"\""),
+				"\"\"\"",
+				push(new StringBuilder()),
 				ZeroOrMore(
-						Optional(FirstOf(String("\"\""), Ch('\"'))),
-						FirstOf(Sequence(TestNot(FirstOf(Ch('\"'), Ch('\\'))),
-								ANY), ECHAR())),
-				push(match().replaceAll("\\\"", "\"")), String("\"\"\""), WS());
+						TestNot("\"\"\""),
+						Optional(FirstOf("\"\"", '\"'), appendToSb(match())),
+						FirstOf(Sequence(TestNot(FirstOf('\"', '\\')), ANY,
+								appendToSb(matchedChar())), ECHAR(), UCHAR())),
+				push(pop().toString()), "\"\"\"", WS());
+	}
+
+	public boolean appendToSb(String s) {
+		((StringBuilder) peek()).append(s);
+		return true;
+	}
+
+	public boolean appendToSb(char c) {
+		((StringBuilder) peek()).append(c);
+		return true;
+	}
+
+	public char unescape(char c) {
+		switch (c) {
+		case 't':
+			return '\t';
+		case 'b':
+			return '\b';
+		case 'n':
+			return '\n';
+		case 'r':
+			return '\r';
+		case 'f':
+			return '\f';
+		default:
+			return c;
+		}
+	}
+
+	/**
+	 * Unescapes the character <code>c</code> and appends it to a string builder
+	 * on the value stack.
+	 */
+	public Rule ECh(char c) {
+		return Sequence(Ch(c), appendToSb(unescape(c)));
 	}
 
 	public Rule ECHAR() {
 		return Sequence(
-				Ch('\\'),
-				FirstOf(Ch('t'), Ch('b'), Ch('n'), Ch('r'), Ch('f'), Ch('\\'),
-						Ch('"'), Ch('\'')));
+				'\\',
+				FirstOf(ECh('t'), ECh('b'), ECh('n'), ECh('r'), ECh('f'),
+						ECh('"'), ECh('\''), ECh('\\')));
+	}
+
+	public Rule UCHAR() {
+		return FirstOf(
+				Sequence(
+						"\\u",
+						Sequence(HEX(), HEX(), HEX(), HEX()),
+						appendToSb(new String(Character.toChars(Integer
+								.parseInt(match(), 16))))),
+				Sequence(
+						"\\U",
+						Sequence(HEX(), HEX(), HEX(), HEX(), HEX(), HEX(),
+								HEX(), HEX()),
+						appendToSb(new String(Character.toChars(Integer
+								.parseInt(match(), 16))))));
 	}
 
 	public Rule PN_CHARS_U() {
