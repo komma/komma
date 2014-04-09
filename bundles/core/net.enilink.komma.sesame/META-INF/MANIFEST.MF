@@ -29,6 +29,7 @@ Import-Package: com.google.inject;version="2.0.0",
  org.openrdf.queryrender.sparql,
  org.openrdf.repository,
  org.openrdf.repository.sail,
+ org.openrdf.sail,
  org.openrdf.sail.memory,
  org.slf4j
 Export-Package: net.enilink.komma.internal.sesame,

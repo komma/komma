@@ -10,9 +10,17 @@
  *******************************************************************************/
 package net.enilink.komma.internal.sesame;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.KommaException;
+import net.enilink.komma.core.Properties;
 import net.enilink.komma.dm.IDataManagerQuery;
 import net.enilink.komma.internal.sesame.result.SesameBooleanResult;
 import net.enilink.komma.internal.sesame.result.SesameGraphResult;
@@ -32,13 +40,18 @@ import com.google.inject.Injector;
  * Implements {@link IDataManagerQuery} for {@link SesameRepositoryDataManager}.
  */
 public class SesameQuery<R> implements IDataManagerQuery<R> {
+	protected static Set<String> supportedProperties = new HashSet<>(
+			Arrays.asList(Properties.TIMEOUT));
+
+	protected Map<String, Object> properties;
+
+	@Inject
+	Injector injector;
+
 	protected Query query;
 
 	@Inject
 	SesameValueConverter valueConverter;
-
-	@Inject
-	Injector injector;
 
 	public SesameQuery(Query query) {
 		this.query = query;
@@ -67,13 +80,14 @@ public class SesameQuery<R> implements IDataManagerQuery<R> {
 	}
 
 	@Override
-	public IDataManagerQuery<R> setFirstResult(int startPosition) {
-		throw new UnsupportedOperationException();
+	public Map<String, Object> getProperties() {
+		return properties == null ? Collections.<String, Object> emptyMap()
+				: Collections.unmodifiableMap(properties);
 	}
 
 	@Override
-	public IDataManagerQuery<R> setMaxResults(int maxResult) {
-		throw new UnsupportedOperationException();
+	public Set<String> getSupportedProperties() {
+		return supportedProperties;
 	}
 
 	@Override
@@ -87,8 +101,25 @@ public class SesameQuery<R> implements IDataManagerQuery<R> {
 		return this;
 	}
 
+	protected Map<String, Object> ensureProperties() {
+		if (properties == null) {
+			properties = new HashMap<>();
+		}
+		return properties;
+	}
+
 	@Override
-	public boolean supportsLimit() {
-		return false;
+	public IDataManagerQuery<R> setProperty(String propertyName, Object value) {
+		switch (propertyName) {
+		case Properties.TIMEOUT:
+			if (value instanceof Number) {
+				long timeout = ((Number) value).longValue();
+				query.setMaxQueryTime(timeout <= 0 ? 0 : (int) (timeout / 1000));
+				ensureProperties().put(propertyName, value);
+			} else
+				throw new IllegalArgumentException("Illegal argument '" + value
+						+ "' for property " + Properties.TIMEOUT);
+		}
+		return this;
 	}
 }
