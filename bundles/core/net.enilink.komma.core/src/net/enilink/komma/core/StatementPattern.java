@@ -62,4 +62,9 @@ public class StatementPattern implements IStatementPattern {
 	public int hashCode() {
 		return Statements.hashCode(this);
 	}
+
+	@Override
+	public String toString() {
+		return Statements.toString(this);
+	}
 }
