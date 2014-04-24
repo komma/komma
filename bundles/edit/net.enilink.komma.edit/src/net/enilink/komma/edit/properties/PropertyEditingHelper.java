@@ -13,8 +13,6 @@ import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.IValue;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -38,8 +36,6 @@ public abstract class PropertyEditingHelper {
 	public static enum Type {
 		PROPERTY, VALUE, LITERAL_LANG_TYPE
 	}
-
-	public URI NULL_URI = URIs.createURI("urn:null");
 
 	protected IAdapterFactory delegatingAdapterFactory = new IAdapterFactory() {
 		@Override
@@ -224,7 +220,6 @@ public abstract class PropertyEditingHelper {
 						IStatus status;
 						int index = CommandParameter.NO_INDEX;
 						if (obj == null
-								|| NULL_URI.equals(obj)
 								|| (obj instanceof ILiteral && ((ILiteral) obj)
 										.getLabel().isEmpty())) {
 							status = Status.OK_STATUS;
