@@ -454,9 +454,8 @@ public class ModelUtil {
 			}
 		} else if (element instanceof ILiteral) {
 			return ((ILiteral) element).getLabel();
-		} else {
-			return String.valueOf(element);
 		}
+		return element == null ? "" : element.toString();
 	}
 
 	/**
