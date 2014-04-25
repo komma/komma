@@ -71,16 +71,15 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 			List<IContentProposal> proposals = new ArrayList<IContentProposal>();
 			ProposalOptions options = ProposalOptions.create(subject, prefix,
 					20);
-			for (IEntity resource : getAnyResources(options)) {
-				String label = getLabel(resource);
+			for (ResourceMatch match : getAnyResources(options)) {
+				String label = getLabel(match.resource);
 				String origText = text.substring(insertPos, index);
 				// insert proposal text
 				text.replace(insertPos, index, label);
 				// create proposal
-				proposals
-						.add(new ResourceProposal(text.toString(), insertPos
-								+ label.length(), resource).setUseAsValue(text
-								.length() == label.length()));
+				proposals.add(new ResourceProposal(text.toString(), insertPos
+						+ label.length(), match.resource).setUseAsValue(text
+						.length() == label.length()));
 				// restore original text
 				text.replace(insertPos, insertPos + label.length(), origText);
 			}

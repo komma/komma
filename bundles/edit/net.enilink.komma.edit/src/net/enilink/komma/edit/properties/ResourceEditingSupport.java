@@ -4,12 +4,38 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.regex.Pattern;
+
+import net.enilink.commons.iterator.IMap;
+import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.common.command.CommandResult;
+import net.enilink.komma.common.command.ICommand;
+import net.enilink.komma.common.command.IdentityCommand;
+import net.enilink.komma.common.command.SimpleCommand;
+import net.enilink.komma.core.Bindings;
+import net.enilink.komma.core.IBindings;
+import net.enilink.komma.core.IDialect;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IQuery;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.QueryFragment;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIs;
+import net.enilink.komma.edit.assist.ContentProposal;
+import net.enilink.komma.edit.assist.IContentProposal;
+import net.enilink.komma.edit.assist.IContentProposalProvider;
+import net.enilink.komma.edit.provider.IItemLabelProvider;
+import net.enilink.komma.em.util.ISparqlConstants;
+import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.ModelUtil;
+import net.enilink.komma.parser.BaseRdfParser;
+import net.enilink.komma.parser.sparql.tree.IriRef;
+import net.enilink.komma.parser.sparql.tree.QName;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -19,31 +45,6 @@ import org.parboiled.Rule;
 import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.support.IndexRange;
 import org.parboiled.support.ParsingResult;
-
-import net.enilink.komma.common.adapter.IAdapterFactory;
-import net.enilink.komma.common.command.CommandResult;
-import net.enilink.komma.common.command.ICommand;
-import net.enilink.komma.common.command.IdentityCommand;
-import net.enilink.komma.common.command.SimpleCommand;
-import net.enilink.komma.edit.assist.ContentProposal;
-import net.enilink.komma.edit.assist.IContentProposal;
-import net.enilink.komma.edit.assist.IContentProposalProvider;
-import net.enilink.komma.edit.provider.IItemLabelProvider;
-import net.enilink.komma.em.concepts.IResource;
-import net.enilink.komma.em.util.ISparqlConstants;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.IObject;
-import net.enilink.komma.model.ModelUtil;
-import net.enilink.komma.parser.BaseRdfParser;
-import net.enilink.komma.parser.sparql.tree.IriRef;
-import net.enilink.komma.parser.sparql.tree.QName;
-import net.enilink.komma.core.IDialect;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.IQuery;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.QueryFragment;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
 
 public class ResourceEditingSupport implements IPropertyEditingSupport {
 	private static Pattern ESCAPE_CHARS = Pattern.compile("[\\[.{(*+?^$|]");
@@ -55,6 +56,20 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 							Ch('a')), WS_NO_COMMENT(),
 					FirstOf(IriRef(), PN_LOCAL(), Sequence(EMPTY, push(""))),
 					drop(), push(matchRange()));
+		}
+	}
+
+	public static class ResourceMatch {
+		public final IEntity resource;
+		public final boolean perfectMatch;
+
+		public ResourceMatch(IEntity resource) {
+			this(resource, false);
+		}
+
+		public ResourceMatch(IEntity resource, boolean perfectMatch) {
+			this.resource = resource;
+			this.perfectMatch = perfectMatch;
 		}
 	}
 
@@ -117,56 +132,58 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				position = contents.length();
 			}
 
-			List<IContentProposal> allProposals = new ArrayList<IContentProposal>();
-			Comparator<IContentProposal> comparator = new Comparator<IContentProposal>() {
-				@Override
-				public int compare(IContentProposal c1, IContentProposal c2) {
-					return c1.getLabel().compareTo(c2.getLabel());
-				}
-			};
 			int limit = 20;
 			List<IReference> predicates = new ArrayList<IReference>();
 			if (!ctor.matched) {
 				predicates.add(predicate);
 			}
 			predicates.add(null);
-			Set<IResource> allResources = new HashSet<IResource>();
+			Map<IEntity, ResourceMatch> allMatches = new LinkedHashMap<>();
 			ProposalOptions options = ProposalOptions.create(subject,
 					contents.substring(0, position), limit);
 			// ensures that resources which match the predicate's range are
 			// added in front of the result list
 			for (IReference p : predicates) {
-				if (allProposals.size() >= limit) {
+				if (allMatches.size() >= limit) {
 					break;
 				}
-				List<IResource> resources = new ArrayList<IResource>();
-				for (IResource resource : getRestrictedResources(options
+				for (ResourceMatch match : getRestrictedResources(options
 						.forPredicate(p))) {
 					// globally filter duplicate proposals
-					if (allResources.add(resource)) {
-						resources.add(resource);
+					ResourceMatch existing = allMatches.get(match.resource);
+					if (existing == null || !existing.perfectMatch
+							&& match.perfectMatch) {
+						allMatches.put(match.resource, match);
 					}
 				}
-				List<IContentProposal> proposals = toProposals(resources,
-						prefix, !ctor.matched, p != null);
-				Collections.sort(proposals, comparator);
-				allProposals.addAll(proposals);
 			}
-			return allProposals.toArray(new IContentProposal[allProposals
-					.size()]);
+			List<ResourceProposal> proposals = toProposals(allMatches.values(),
+					prefix, !ctor.matched);
+			Comparator<ResourceProposal> comparator = new Comparator<ResourceProposal>() {
+				@Override
+				public int compare(ResourceProposal p1, ResourceProposal p2) {
+					if (p1.perfectMatch && !p2.perfectMatch) {
+						return -1;
+					}
+					return p1.getLabel().compareTo(p2.getLabel());
+				}
+			};
+			Collections.sort(proposals, comparator);
+			return proposals.toArray(new IContentProposal[proposals.size()]);
 		}
 
-		protected List<IContentProposal> toProposals(
-				Iterable<IResource> resources, String prefix,
-				boolean useAsValue, boolean matchesRange) {
-			List<IContentProposal> proposals = new ArrayList<IContentProposal>();
-			for (IEntity resource : resources) {
-				String content = getLabel(resource);
+		protected List<ResourceProposal> toProposals(
+				Iterable<ResourceMatch> matches, String prefix,
+				boolean useAsValue) {
+			List<ResourceProposal> proposals = new ArrayList<>();
+			for (ResourceMatch match : matches) {
+				String content = getLabel(match.resource);
 				if (content.length() > 0) {
 					content = prefix + content;
 					proposals.add(new ResourceProposal(content, content
-							.length(), resource).setUseAsValue(useAsValue)
-							.setPerfectMatch(matchesRange));
+							.length(), match.resource)
+							.setUseAsValue(useAsValue).setPerfectMatch(
+									match.perfectMatch));
 				}
 			}
 			return proposals;
@@ -248,26 +265,32 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		return "[#/:]" + pattern + "[^#/]*$";
 	}
 
-	protected Iterable<IResource> getAnyResources(ProposalOptions options) {
-		Set<IResource> resources = new LinkedHashSet<IResource>(options.limit);
-		Iterator<IResource> restricted = getRestrictedResources(options)
+	protected Iterable<ResourceMatch> getAnyResources(ProposalOptions options) {
+		Map<IEntity, ResourceMatch> matches = new LinkedHashMap<>(options.limit);
+		Iterator<ResourceMatch> restricted = getRestrictedResources(options)
 				.iterator();
-		while (restricted.hasNext() && resources.size() < options.limit) {
-			resources.add(restricted.next());
+		while (restricted.hasNext() && matches.size() < options.limit) {
+			ResourceMatch match = restricted.next();
+			matches.put(match.resource, match);
 		}
-		if (options.predicate != null && resources.size() < options.limit) {
+		if (options.predicate != null && matches.size() < options.limit) {
 			// find resource without consideration of ranges
-			Iterator<IResource> fallback = getRestrictedResources(
+			Iterator<ResourceMatch> fallback = getRestrictedResources(
 					options.anyType()).iterator();
-			while (fallback.hasNext() && resources.size() < options.limit) {
-				resources.add(fallback.next());
+			while (fallback.hasNext() && matches.size() < options.limit) {
+				ResourceMatch match = fallback.next();
+				if (!matches.containsKey(match.resource)) {
+					matches.put(match.resource, match);
+				}
 			}
 		}
-		return resources;
+		return matches.values();
 	}
 
-	protected Iterable<IResource> getRestrictedResources(ProposalOptions options) {
-		Set<IResource> resources = new LinkedHashSet<IResource>(options.limit);
+	protected Iterable<ResourceMatch> getRestrictedResources(
+			ProposalOptions options) {
+		Map<IReference, ResourceMatch> matches = new LinkedHashMap<>(
+				options.limit);
 		IEntity subject = options.subject;
 		String pattern = options.pattern;
 		IReference predicate = options.predicate;
@@ -276,11 +299,13 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			// find resources within the current model first
 			URI graph = ((IObject) subject).getModel().getURI();
 			String graphNamespace = graph.appendLocalPart("").toString();
-			resources.addAll(retrieve(subject, predicate, type, pattern,
-					toUriRegex(pattern), graphNamespace, ((IObject) subject)
-							.getModel().getURI(), options.limit));
+			for (ResourceMatch match : retrieve(subject, predicate, type,
+					pattern, toUriRegex(pattern), graphNamespace,
+					((IObject) subject).getModel().getURI(), options.limit)) {
+				matches.put(match.resource, match);
+			}
 		}
-		if (resources.size() < options.limit) {
+		if (matches.size() < options.limit) {
 			// additionally, if limit not exceeded, find resources from other
 			// namespaces
 			String uriPattern = pattern;
@@ -300,15 +325,18 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				}
 				uriPattern = toUriRegex(pattern);
 			}
-			Iterator<IResource> fallback = retrieve(subject, predicate, type,
-					pattern, uriPattern, uriNamespace, null, options.limit)
-					.iterator();
-			while (fallback.hasNext() && resources.size() < options.limit) {
-				resources.add(fallback.next());
+			Iterator<ResourceMatch> fallback = retrieve(subject, predicate,
+					type, pattern, uriPattern, uriNamespace, null,
+					options.limit).iterator();
+			while (fallback.hasNext() && matches.size() < options.limit) {
+				ResourceMatch match = fallback.next();
+				if (!matches.containsKey(match.resource)) {
+					matches.put(match.resource, match);
+				}
 			}
 		}
 
-		return resources;
+		return matches.values();
 	}
 
 	private String[] split(String s, String pattern) {
@@ -319,15 +347,22 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		return tokens.toArray(new String[tokens.size()]);
 	}
 
-	protected List<IResource> retrieve(IEntity subject, IReference predicate,
-			IReference type, String pattern, String uriPattern,
-			String namespace, URI graph, int limit) {
+	protected List<ResourceMatch> retrieve(IEntity subject,
+			final IReference predicate, IReference type, String pattern,
+			String uriPattern, String namespace, URI graph, int limit) {
 		StringBuilder sparql = new StringBuilder(ISparqlConstants.PREFIX
-				+ "SELECT DISTINCT ?s WHERE { ");
+				+ "SELECT DISTINCT ?s ");
 
 		if (editPredicate) {
+			sparql.append("?prio WHERE { ");
 			sparql.append("?s a rdf:Property . ");
+			sparql.append("optional { ");
+			sparql.append("filter bound(?subject) . ");
+			sparql.append("{ ?subject a [ rdfs:subClassOf [ owl:onProperty ?s ] ] } ");
+			sparql.append("union { ?subject a ?subjectType . ?s rdfs:domain ?subjectType filter (?subjectType != owl:Thing && ?subjectType != rdfs:Resource) } ");
+			sparql.append("bind ( 1 as ?prio) }");
 		} else {
+			sparql.append("WHERE { ");
 			if (predicate != null) {
 				sparql.append("{");
 				sparql.append("{ ?property rdfs:range ?sType FILTER (?sType != owl:Thing) }");
@@ -379,14 +414,33 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		if (graph != null) {
 			query.setParameter("graph", graph);
 		}
+		query.setParameter("subject", subject);
 		if (!editPredicate) {
-			query.setParameter("subject", subject);
 			query.setParameter("property", predicate);
 			if (type != null) {
 				query.setParameter("sType", type);
 			}
+			return query.evaluate(IEntity.class)
+					.mapWith(new IMap<IEntity, ResourceMatch>() {
+						@Override
+						public ResourceMatch map(IEntity value) {
+							return new ResourceMatch(value, predicate != null);
+						}
+					}).toList();
+		} else {
+			// includes prio of matched predicates
+			query.bindResultType("s", IEntity.class);
+			return query.evaluate(Bindings.typed())
+					.mapWith(new IMap<IBindings<Object>, ResourceMatch>() {
+						@Override
+						public ResourceMatch map(IBindings<Object> bindings) {
+							IEntity resource = (IEntity) bindings.get("s");
+							Number prio = (Number) bindings.get("prio");
+							return new ResourceMatch(resource, prio != null
+									&& prio.intValue() > 0);
+						}
+					}).toList();
 		}
-		return query.evaluate(IResource.class).toList();
 	}
 
 	protected ConstructorParser createConstructorParser() {
@@ -520,10 +574,10 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		}
 		ProposalOptions options = ProposalOptions.create(subject,
 				(String) editorValue, 1);
-		Iterator<IResource> resources = getAnyResources(
+		Iterator<ResourceMatch> matches = getAnyResources(
 				options.forPredicate(createNew ? null : property)).iterator();
-		if (resources.hasNext()) {
-			final IEntity resource = resources.next();
+		if (matches.hasNext()) {
+			final IEntity resource = matches.next().resource;
 			if (createNew
 					&& getLabel(resource).equals(((String) editorValue).trim())) {
 				// create a new object
