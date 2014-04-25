@@ -595,8 +595,8 @@ public class ClassComposer<T> implements Types, Opcodes {
 
 	private Method getMethod(Class<?> javaClass, Method method)
 			throws Exception {
+		Class<?>[] types = method.getParameterTypes();
 		try {
-			Class<?>[] types = method.getParameterTypes();
 			Method m = javaClass.getMethod(method.getName(), types);
 			if (!isAbstract(m.getModifiers()) && !isTransient(m.getModifiers())
 					&& !isObjectMethod(m)) {
@@ -605,11 +605,10 @@ public class ClassComposer<T> implements Types, Opcodes {
 		} catch (NoSuchMethodException e) {
 			// look at @parameterTypes
 		}
-		Class<?>[] type = method.getParameterTypes();
 		for (Method m : javaClass.getMethods()) {
 			if (m.getName().equals(method.getName())) {
 				ParameterTypes ann = m.getAnnotation(ParameterTypes.class);
-				if (ann != null && Arrays.equals(ann.value(), type)) {
+				if (ann != null && Arrays.equals(ann.value(), types)) {
 					return m;
 				}
 			}
