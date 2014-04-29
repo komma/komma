@@ -2,14 +2,19 @@ package net.enilink.komma.edit.properties;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
+import net.enilink.commons.iterator.Filter;
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.IMap;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
@@ -20,6 +25,7 @@ import net.enilink.komma.core.Bindings;
 import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IDialect;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.QueryFragment;
@@ -133,7 +139,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			}
 
 			int limit = 20;
-			List<IReference> predicates = new ArrayList<IReference>();
+			Set<IReference> predicates = new LinkedHashSet<>();
 			if (!ctor.matched) {
 				predicates.add(predicate);
 			}
@@ -157,19 +163,46 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 					}
 				}
 			}
-			List<ResourceProposal> proposals = toProposals(allMatches.values(),
-					prefix, !ctor.matched);
+			List<ResourceProposal> resourceProposals = toProposals(
+					allMatches.values(), prefix, !ctor.matched);
 			Comparator<ResourceProposal> comparator = new Comparator<ResourceProposal>() {
 				@Override
 				public int compare(ResourceProposal p1, ResourceProposal p2) {
-					if (p1.perfectMatch && !p2.perfectMatch) {
-						return -1;
+					if (p1.perfectMatch) {
+						if (!p2.perfectMatch) {
+							return -1;
+						}
+					} else if (p2.perfectMatch) {
+						if (!p1.perfectMatch) {
+							return 1;
+						}
 					}
 					return p1.getLabel().compareTo(p2.getLabel());
 				}
 			};
-			Collections.sort(proposals, comparator);
-			return proposals.toArray(new IContentProposal[proposals.size()]);
+			Collections.sort(resourceProposals, comparator);
+			Collection<? extends IContentProposal> results = resourceProposals;
+			if (resourceProposals.size() < limit && !contents.contains(":")) {
+				final String contentsFinal = contents;
+				List<IContentProposal> mixedProposals = new ArrayList<IContentProposal>(
+						resourceProposals);
+				try (IExtendedIterator<INamespace> it = subject
+						.getEntityManager().getNamespaces()
+						.filterKeep(new Filter<INamespace>() {
+							public boolean accept(INamespace ns) {
+								return ns.getPrefix().startsWith(contentsFinal);
+							}
+						})) {
+					while (it.hasNext() && mixedProposals.size() < limit) {
+						INamespace ns = it.next();
+						mixedProposals.add(new ContentProposal(ns.getPrefix()
+								+ ":", ns.getPrefix() + ":", ns.getURI()
+								.toString()));
+					}
+				}
+				results = mixedProposals;
+			}
+			return results.toArray(new IContentProposal[results.size()]);
 		}
 
 		protected List<ResourceProposal> toProposals(
@@ -295,10 +328,10 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		String pattern = options.pattern;
 		IReference predicate = options.predicate;
 		IReference type = options.type;
-		if (subject instanceof IObject && !pattern.contains(":")) {
+		if (!pattern.contains(":")) {
 			// find resources within the current model first
-			URI graph = ((IObject) subject).getModel().getURI();
-			String graphNamespace = graph.appendLocalPart("").toString();
+			String graphNamespace = subject.getEntityManager().getNamespace("")
+					.toString();
 			for (ResourceMatch match : retrieve(subject, predicate, type,
 					pattern, toUriRegex(pattern), graphNamespace,
 					((IObject) subject).getModel().getURI(), options.limit)) {
