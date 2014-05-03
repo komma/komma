@@ -20,7 +20,7 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.workbench,
  org.eclipse.ui.views.properties.tabbed,
  net.enilink.komma.edit.ui.rcp
-Import-Package: com.google.inject,
+Import-Package: com.google.inject;version="3.0.0",
  net.enilink.komma.owl.editor,
  net.enilink.komma.owl.editor.classes,
  net.enilink.komma.owl.editor.ontology,
