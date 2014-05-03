@@ -8,7 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: net.enilink.komma.edit.ui.properties,
  net.enilink.komma.edit.ui.properties.internal.parts;x-friends:="net.enilink.komma.edit.ui.properties.tabbed",
  net.enilink.komma.edit.ui.properties.internal.wizards;x-friends:="net.enilink.komma.edit.ui.properties.tabbed"
-Import-Package: com.google.inject,
+Import-Package: com.google.inject;version="3.0.0",
  org.eclipse.core.commands
 Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.em,
