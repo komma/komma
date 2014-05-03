@@ -14,4 +14,4 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: net.enilink.komma.owl.edit.OWLEditPlugin$Implementation
 Export-Package: net.enilink.komma.owl.edit
-Import-Package: com.google.inject
+Import-Package: com.google.inject;version="3.0.0"
