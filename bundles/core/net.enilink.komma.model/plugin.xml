@@ -64,11 +64,12 @@
    <extension
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
+            base-type="org.eclipse.core.runtime.xml"
             default-charset="UTF-8"
             file-extensions="rdf,rdfs,owl,xml"
             id="net.enilink.komma.contenttype.rdfxml"
             name="RDF/XML"
-            priority="normal">
+            priority="low">
          <property
                default="application/rdf+xml"
                name="mimeType">
