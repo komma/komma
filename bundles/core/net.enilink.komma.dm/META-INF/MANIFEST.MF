@@ -7,7 +7,7 @@ Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: net.enilink.komma.dm,
  net.enilink.komma.dm.change
-Import-Package: com.google.inject,
+Import-Package: com.google.inject;version="3.0.0",
  net.enilink.commons.iterator,
  net.enilink.komma.core
 Bundle-ActivationPolicy: lazy
