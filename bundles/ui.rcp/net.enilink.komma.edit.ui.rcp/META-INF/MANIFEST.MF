@@ -24,5 +24,5 @@ Export-Package: net.enilink.komma.edit.ui.rcp.commands,
  net.enilink.komma.edit.ui.rcp.project
 Bundle-Activator: net.enilink.komma.edit.ui.rcp.KommaEditUIRCP$Implementation
 Bundle-ActivationPolicy: lazy
-Import-Package: com.google.inject,
- com.google.inject.binder
+Import-Package: com.google.inject;version="3.0.0",
+ com.google.inject.binder;version="3.0.0"
