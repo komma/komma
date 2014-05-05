@@ -10,11 +10,11 @@
  *******************************************************************************/
 package net.enilink.composition.test;
 
-import junit.framework.Assert;
-
-import org.junit.Test;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.mappers.RoleMapper;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class BridgeMethodTest extends CompositionTestCase {
 	Object concept;

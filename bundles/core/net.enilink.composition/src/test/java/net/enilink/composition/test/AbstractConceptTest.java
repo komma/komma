@@ -10,12 +10,12 @@
  *******************************************************************************/
 package net.enilink.composition.test;
 
-import junit.framework.Assert;
-
-import org.junit.Test;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.traits.Behaviour;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class AbstractConceptTest extends CompositionTestCase {
 	public static interface Person {
