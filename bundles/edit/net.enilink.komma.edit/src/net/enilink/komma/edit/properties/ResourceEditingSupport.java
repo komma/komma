@@ -388,7 +388,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 
 		if (editPredicate) {
 			sparql.append("?prio WHERE { ");
-			sparql.append("?s a rdf:Property . ");
+			sparql.append("?s a [rdfs:subClassOf* rdf:Property] . ");
 			sparql.append("optional { ");
 			sparql.append("filter bound(?subject) . ");
 			sparql.append("{ ?subject a [ rdfs:subClassOf [ owl:onProperty ?s ] ] } ");
