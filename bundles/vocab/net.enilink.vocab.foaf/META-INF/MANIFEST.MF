@@ -8,3 +8,4 @@ Require-Bundle: net.enilink.komma.core,
  net.enilink.vocab.owl,
  net.enilink.vocab.rdfs
 Export-Package: net.enilink.vocab.foaf
+Bundle-ClassPath: .
