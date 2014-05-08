@@ -81,4 +81,14 @@ public abstract class ThreadLocalEntityManager extends DelegatingEntityManager {
 			delegate.get().removeDecorator(decorator);
 		}
 	}
+
+	@Override
+	public int hashCode() {
+		return delegate.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return this == obj;
+	}
 }

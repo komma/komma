@@ -365,11 +365,6 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 		return getDelegate().toInstance(value, type, graph);
 	}
 
-	@Override
-	public String toString() {
-		return getDelegate().toString();
-	}
-
 	public IValue toValue(Object instance) {
 		return getDelegate().toValue(instance);
 	}
