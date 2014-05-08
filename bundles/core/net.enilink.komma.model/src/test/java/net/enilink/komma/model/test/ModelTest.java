@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.model.tests;
+package net.enilink.komma.model.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -42,10 +42,8 @@ public class ModelTest {
 	public void beforeTest() throws Exception {
 		KommaModule module = ModelPlugin.createModelSetModule(getClass()
 				.getClassLoader());
-
 		IModelSetFactory factory = Guice.createInjector(
 				new ModelSetModule(module)).getInstance(IModelSetFactory.class);
-
 		modelSet = factory.createModelSet(MODELS.NAMESPACE_URI
 				.appendLocalPart("MemoryModelSet"));
 	}

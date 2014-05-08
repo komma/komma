@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.model.tests;
+package net.enilink.komma.model.test;
 
 import static org.junit.Assert.assertEquals;
 
