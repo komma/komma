@@ -638,9 +638,6 @@ public class ItemProviderAdapter extends
 	 */
 	protected Boolean wrappingNeeded;
 
-	@Inject(optional = true)
-	protected Provider<IInputCallback> inputCallbackProvider;
-
 	/**
 	 * An instance is created from an adapter factory. The factory is used as a
 	 * key so that we always know which factory created this adapter.
@@ -797,7 +794,7 @@ public class ItemProviderAdapter extends
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object createChild(Object owner, Object property,
-			Object childDescription) {
+			Object childDescription, IAdaptable info) {
 		ChildDescriptor childDescriptor = (ChildDescriptor) childDescription;
 		Collection<? extends IReference> childTypes = (Collection<? extends IReference>) childDescriptor
 				.getValue();
@@ -820,27 +817,29 @@ public class ItemProviderAdapter extends
 
 		URI name = null;
 		boolean requiresName = childDescriptor.requiresName();
-		if ((requiresName || parentType != null)
-				&& inputCallbackProvider != null) {
-			IInputCallback input = inputCallbackProvider.get();
-			URI nameInput = URIs.createURI("input:name");
-			URI typeInput = URIs.createURI("input:type");
-			if (requiresName) {
-				input.require(nameInput);
-			}
-			if (parentType != null) {
-				input.require(typeInput, parentType);
-			}
-			if (input.ask(model)) {
+		if ((requiresName || parentType != null)) {
+			IInputCallback input = (IInputCallback) info
+					.getAdapter(IInputCallback.class);
+			if (input != null) {
+				URI nameInput = URIs.createURI("input:name");
+				URI typeInput = URIs.createURI("input:type");
 				if (requiresName) {
-					name = (URI) input.get(nameInput);
+					input.require(nameInput);
 				}
 				if (parentType != null) {
-					childTypes = (Collection<? extends IReference>) input
-							.get(typeInput);
+					input.require(typeInput, parentType);
 				}
-			} else {
-				throw new AbortExecutionException();
+				if (input.ask(model)) {
+					if (requiresName) {
+						name = (URI) input.get(nameInput);
+					}
+					if (parentType != null) {
+						childTypes = (Collection<? extends IReference>) input
+								.get(typeInput);
+					}
+				} else {
+					throw new AbortExecutionException();
+				}
 			}
 		}
 		if (name == null) {

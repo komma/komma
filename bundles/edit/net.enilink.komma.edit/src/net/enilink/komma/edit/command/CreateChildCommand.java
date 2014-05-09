@@ -21,20 +21,20 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ExtendedCompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
-import net.enilink.komma.core.IReference;
+
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * This command wraps an {@link AddCommand} or {@link SetCommand} to provide the
@@ -44,9 +44,9 @@ import net.enilink.komma.core.IReference;
  * the <code>newChildDescriptor</code> argument to {@link #create create()} --
  * they must be, so that the user can specify which he actually wishes to
  * create. As a result, this command essentially just creates and executes the
- * appropriate lower-level command, and delegates matters of appearance
- * (text, icon, result) to the appropriate item provider, so that it may be
- * handled correctly for the given model.
+ * appropriate lower-level command, and delegates matters of appearance (text,
+ * icon, result) to the appropriate item provider, so that it may be handled
+ * correctly for the given model.
  * 
  * <p>
  * Note that this command makes no assumptions about the relationship between
@@ -63,7 +63,7 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 	 */
 	public static interface IHelper {
 		Object createChild(Object owner, Object property,
-				Object childDescription);
+				Object childDescription, IAdaptable info);
 
 		/**
 		 * This returns the description of the action of creating the specified
@@ -178,9 +178,9 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 	 * <code>feature</code>, or <code>child</code> are <code>null</code>,
 	 * {@link #createCommand} will return {@link UnexecutableCommand#INSTANCE}
 	 * and, hence,
-	 * {@link net.enilink.komma.common.command.AbstractCommand#canExecute}
-	 * will return <code>false</code>. If non-null, <code>selection</code> is
-	 * the collection of selected objects. An internal default {@link IHelper
+	 * {@link net.enilink.komma.common.command.AbstractCommand#canExecute} will
+	 * return <code>false</code>. If non-null, <code>selection</code> is the
+	 * collection of selected objects. An internal default {@link IHelper
 	 * Helper} will provide generic implmentations for the delegated command
 	 * methods.
 	 */
@@ -211,12 +211,11 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 	 * is multi-valued. If any of <code>owner</code>, <code>feature</code>, or
 	 * <code>child</code> are <code>null</code>, {@link #createCommand} will
 	 * return {@link UnexecutableCommand#INSTANCE} and, hence,
-	 * {@link net.enilink.komma.common.command.AbstractCommand#canExecute}
-	 * will return <code>false</code>. If non-null, <code>selection</code> is
-	 * the collection of selected objects. The internal default helper is used
-	 * by the command. If <code>index</code> is
-	 * {@link CommandParameter#NO_INDEX}, this behaves just like the first
-	 * constructor form.
+	 * {@link net.enilink.komma.common.command.AbstractCommand#canExecute} will
+	 * return <code>false</code>. If non-null, <code>selection</code> is the
+	 * collection of selected objects. The internal default helper is used by
+	 * the command. If <code>index</code> is {@link CommandParameter#NO_INDEX},
+	 * this behaves just like the first constructor form.
 	 */
 	public CreateChildCommand(IEditingDomain domain, IResource owner,
 			IReference property, Object childDescription, int index,
@@ -267,7 +266,7 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 	protected CommandResult doExecuteWithResult(
 			IProgressMonitor progressMonitor, IAdaptable info)
 			throws ExecutionException {
-		child = helper.createChild(owner, property, childDescription);
+		child = helper.createChild(owner, property, childDescription, info);
 
 		if (child != null) {
 			addAndExecute(
