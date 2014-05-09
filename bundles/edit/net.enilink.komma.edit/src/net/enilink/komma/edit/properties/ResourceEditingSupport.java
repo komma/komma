@@ -542,16 +542,29 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 
 	protected URI toURI(IModel model, Object value) {
 		if (value instanceof IriRef) {
-			return URIs.createURI(((IriRef) value).getIri());
+			URI uri = URIs.createURI(((IriRef) value).getIri());
+			if (uri.isRelative()) {
+				URI ns = model.getManager().getNamespace("");
+				if (ns != null) {
+					if (ns.fragment() != null) {
+						uri = ns.appendLocalPart(uri.toString());
+					} else {
+						uri = uri.resolve(ns);
+					}
+				} else {
+					throw new IllegalArgumentException(
+							"Relative IRIs are not supported.");
+				}
+				return uri;
+			}
 		} else if (value instanceof QName) {
 			String prefix = ((QName) value).getPrefix();
 			String localPart = ((QName) value).getLocalPart();
 			URI ns;
 			if (prefix == null || prefix.trim().length() == 0) {
-				ns = model.getURI();
-			} else {
-				ns = model.getManager().getNamespace(prefix);
+				prefix = "";
 			}
+			ns = model.getManager().getNamespace(prefix);
 			if (ns != null) {
 				return ns.appendLocalPart(localPart);
 			}

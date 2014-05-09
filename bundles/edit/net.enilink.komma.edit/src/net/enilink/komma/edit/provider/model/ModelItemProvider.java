@@ -89,7 +89,7 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 					IProgressMonitor progressMonitor, IAdaptable info)
 					throws ExecutionException {
 				child = ModelItemProvider.this.createChild(getModel(), null,
-						value);
+						value, info);
 				affectedObjects.add(child);
 				children.add(child);
 				return CommandResult.newOKCommandResult(child);
@@ -240,8 +240,8 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 
 	@Override
 	public Object createChild(Object owner, Object property,
-			Object childDescription) {
-		return super.createChild(owner, property, childDescription);
+			Object childDescription, IAdaptable info) {
+		return super.createChild(owner, property, childDescription, info);
 	}
 
 	@Override
