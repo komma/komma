@@ -37,24 +37,6 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 	 */
 	public KommaMultiPageEditor() {
 		editorSupport = createEditorSupport();
-		Injector injector = createInjector();
-		if (injector != null) {
-			injector.injectMembers(editorSupport);
-		}
-	}
-
-	protected Injector createInjector() {
-		return Guice.createInjector(new AbstractModule() {
-			@Override
-			protected void configure() {
-				bind(IInputCallback.class).to(InputCallbackDialog.class);
-			}
-
-			@Provides
-			IAdapterFactory provideAdapterFactory() {
-				return editorSupport.getAdapterFactory();
-			}
-		});
 	}
 
 	protected abstract KommaMultiPageEditorSupport<? extends KommaMultiPageEditor> createEditorSupport();

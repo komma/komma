@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
@@ -30,9 +31,11 @@ import org.eclipse.ui.IWorkbenchPart;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.edit.command.ICommandActionDelegate;
+import net.enilink.komma.edit.command.IInputCallback;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
+import net.enilink.komma.edit.ui.editor.InputCallbackDialog;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 
 /**
@@ -194,7 +197,17 @@ public abstract class StaticSelectionCommandAction extends
 			// use up the command
 			try {
 				editingDomain.getCommandStack().execute(command,
-						progressMonitor, null);
+						progressMonitor, new IAdaptable() {
+							@Override
+							public Object getAdapter(Class adapter) {
+								if (IInputCallback.class.equals(adapter)) {
+									return new InputCallbackDialog(
+											((AdapterFactoryEditingDomain) editingDomain)
+													.getAdapterFactory());
+								}
+								return null;
+							}
+						});
 			} catch (ExecutionException e) {
 				handle(e);
 			}

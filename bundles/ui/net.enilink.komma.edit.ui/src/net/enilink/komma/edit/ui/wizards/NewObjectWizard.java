@@ -105,7 +105,12 @@ abstract public class NewObjectWizard extends Wizard {
 										URI ns = model.getManager()
 												.getNamespace("");
 										if (ns != null) {
-											name = name.resolve(ns.trimFragment());
+											if (ns.fragment() != null) {
+												name = ns.appendLocalPart(name
+														.toString());
+											} else {
+												name = name.resolve(ns);
+											}
 										} else {
 											throw new IllegalArgumentException(
 													"Relative IRIs are not supported.");
