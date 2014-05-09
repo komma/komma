@@ -105,7 +105,7 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 						IProgressMonitor progressMonitor, IAdaptable info)
 						throws ExecutionException {
 					child = helper.createChild(owner, property,
-							childDescription);
+							childDescription, info);
 					if (child != null) {
 						addAndExecute(AddCommand.create(domain, child,
 								property, owner, index), progressMonitor, info);
