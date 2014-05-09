@@ -66,24 +66,28 @@ public class ThreadingTest {
 		int count = 30;
 		final ScheduledExecutorService executorService = Executors
 				.newScheduledThreadPool(15);
-		final AtomicInteger invocations = new AtomicInteger();
+		final AtomicInteger iterations = new AtomicInteger();
 		class TestRunnable implements Runnable {
 			@Override
 			public void run() {
 				IUnitOfWork uow = modelSet.getUnitOfWork();
 				uow.begin();
 				try {
-					invocations.incrementAndGet();
-					URI name = URIs.createURI("class:"
-							+ BlankNode.generateId().substring(1));
-					Class c = model.getManager().createNamed(name, Class.class);
-					c.setRdfsLabel(name.toString());
-					Restriction r = model.getManager()
-							.create(Restriction.class);
-					r.setOwlOnProperty(model.getManager().find(
-							RDFS.PROPERTY_LABEL, OwlProperty.class));
-					r.setOwlMaxCardinality(BigInteger.valueOf(1));
-					c.getRdfsSubClassOf().add(r);
+					for (int i = 0; i < 20; i++) {
+						iterations.incrementAndGet();
+						// add some classes and restrictions
+						URI name = URIs.createURI("class:"
+								+ BlankNode.generateId().substring(1));
+						Class c = model.getManager().createNamed(name,
+								Class.class);
+						c.setRdfsLabel(name.toString());
+						Restriction r = model.getManager().create(
+								Restriction.class);
+						r.setOwlOnProperty(model.getManager().find(
+								RDFS.PROPERTY_LABEL, OwlProperty.class));
+						r.setOwlMaxCardinality(BigInteger.valueOf(1));
+						c.getRdfsSubClassOf().add(r);
+					}
 				} finally {
 					uow.end();
 				}
@@ -96,16 +100,16 @@ public class ThreadingTest {
 					(int) (1 + Math.random() * 20), TimeUnit.MILLISECONDS);
 		}
 
-		// repeat test for 3 minutes
-		// Thread.sleep(3 * 60 * 1000);
+		// repeat test
+		//Thread.sleep(3 * 60 * 1000);
 
 		executorService.shutdown();
-		executorService.awaitTermination(3, TimeUnit.SECONDS);
+		executorService.awaitTermination(10, TimeUnit.SECONDS);
 
 		// ensure that weak reference are removed
 		for (int i = 0; i < 3; i++) {
 			System.gc();
 		}
-		System.out.println("Number of invocations: " + invocations.get());
+		System.out.println("Number of iterations: " + iterations.get());
 	}
 }
