@@ -10,12 +10,12 @@
  *******************************************************************************/
 package net.enilink.komma.em;
 
-import com.google.inject.Inject;
-
+import net.enilink.komma.core.KommaException;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.em.util.UnitOfWork;
-import net.enilink.komma.core.KommaException;
+
+import com.google.inject.Inject;
 
 public class ThreadLocalDataManager extends DelegatingDataManager {
 	@Inject
@@ -34,6 +34,10 @@ public class ThreadLocalDataManager extends DelegatingDataManager {
 			delegate.remove();
 		}
 	}
+	
+	protected IDataManager initialValue() {
+		return dmFactory.get();
+	}
 
 	@Override
 	public IDataManager getDelegate() {
@@ -42,7 +46,7 @@ public class ThreadLocalDataManager extends DelegatingDataManager {
 			if (!uow.isActive()) {
 				throw new KommaException("No active unit of work found.");
 			}
-			manager = dmFactory.get();
+			manager = initialValue();
 			uow.addCloseable(this);
 			delegate.set(manager);
 		}

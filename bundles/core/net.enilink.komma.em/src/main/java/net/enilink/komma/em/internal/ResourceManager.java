@@ -42,20 +42,27 @@ public class ResourceManager {
 
 	public void removeResource(IReference resource) {
 		boolean active = dm.getTransaction().isActive();
-		if (!active) {
-			dm.getTransaction().begin();
-		}
-		dm.remove(Arrays.asList( //
-				new Statement(resource, null, null), //
-				new Statement(null, null, resource)), contexts);
-		if (!active) {
-			dm.getTransaction().commit();
+		try {
+			if (!active) {
+				dm.getTransaction().begin();
+			}
+			dm.remove(Arrays.asList( //
+					new Statement(resource, null, null), //
+					new Statement(null, null, resource)), contexts);
+			if (!active) {
+				dm.getTransaction().commit();
+			}
+		} catch (Exception e) {
+			if (!active && dm.getTransaction().isActive()) {
+				dm.getTransaction().rollback();
+			}
+			throw e;
 		}
 	}
 
 	public void renameResource(IReference before, IReference after) {
+		boolean active = dm.getTransaction().isActive();
 		try {
-			boolean active = dm.getTransaction().isActive();
 			if (!active) {
 				dm.getTransaction().begin();
 			}
@@ -100,6 +107,9 @@ public class ResourceManager {
 				dm.getTransaction().commit();
 			}
 		} catch (Exception e) {
+			if (!active && dm.getTransaction().isActive()) {
+				dm.getTransaction().rollback();
+			}
 			throw new KommaException(e);
 		}
 	}
