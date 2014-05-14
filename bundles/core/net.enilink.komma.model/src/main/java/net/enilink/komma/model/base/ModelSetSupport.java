@@ -151,6 +151,45 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		 * @see #getURIConverter
 		 */
 		protected IURIConverter uriConverter;
+
+		protected volatile IDataManagerFactory dmFactory;
+
+		protected volatile IEntityManagerFactory emFactory;
+
+		IDataManagerFactory getDmFactory() {
+			if (dmFactory == null) {
+				synchronized (this) {
+					if (dmFactory == null) {
+						dmFactory = injector
+								.getInstance(IDataManagerFactory.class);
+					}
+				}
+			}
+			return dmFactory;
+		}
+
+		IEntityManagerFactory getEmFactory() {
+			if (emFactory == null) {
+				synchronized (this) {
+					if (emFactory == null) {
+						emFactory = injector
+								.getInstance(IEntityManagerFactory.class);
+					}
+				}
+			}
+			return emFactory;
+		}
+
+		void dispose() {
+			if (emFactory != null) {
+				emFactory.close();
+				emFactory = null;
+			}
+			if (dmFactory != null) {
+				dmFactory.close();
+				dmFactory = null;
+			}
+		}
 	}
 
 	protected EntityVar<State> state;
@@ -327,7 +366,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	public void dispose() {
 		if (state.get() != null) {
 			getUnitOfWork().end();
-			getEntityManagerFactory().close();
+			state().dispose();
 			try {
 				metaDataManagerFactory.close();
 			} catch (Exception e) {
@@ -438,12 +477,12 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 
 	@Override
 	public IDataManagerFactory getDataManagerFactory() {
-		return state().injector.getInstance(IDataManagerFactory.class);
+		return state().getDmFactory();
 	}
 
 	@Override
 	public IEntityManagerFactory getEntityManagerFactory() {
-		return state().injector.getInstance(IEntityManagerFactory.class);
+		return state().getEmFactory();
 	}
 
 	/*

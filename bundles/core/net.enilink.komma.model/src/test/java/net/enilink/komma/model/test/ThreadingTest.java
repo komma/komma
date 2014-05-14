@@ -77,7 +77,7 @@ public class ThreadingTest {
 						iterations.incrementAndGet();
 						// add some classes and restrictions
 						URI name = URIs.createURI("class:"
-								+ BlankNode.generateId().substring(1));
+								+ BlankNode.generateId().substring(2));
 						Class c = model.getManager().createNamed(name,
 								Class.class);
 						c.setRdfsLabel(name.toString());
@@ -101,7 +101,7 @@ public class ThreadingTest {
 		}
 
 		// repeat test
-		//Thread.sleep(3 * 60 * 1000);
+		// Thread.sleep(3 * 60 * 1000);
 
 		executorService.shutdown();
 		executorService.awaitTermination(10, TimeUnit.SECONDS);
