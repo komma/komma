@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.enilink.komma.core.BlankNode;
+import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
@@ -72,6 +73,9 @@ public class ThreadingTest {
 			public void run() {
 				IUnitOfWork uow = modelSet.getUnitOfWork();
 				uow.begin();
+				modelSet.getDataChangeSupport().setEnabled(null, false);
+				ITransaction transaction = model.getManager().getTransaction();
+				transaction.begin();
 				try {
 					for (int i = 0; i < 20; i++) {
 						iterations.incrementAndGet();
@@ -88,7 +92,11 @@ public class ThreadingTest {
 						r.setOwlMaxCardinality(BigInteger.valueOf(1));
 						c.getRdfsSubClassOf().add(r);
 					}
+					transaction.commit();
 				} finally {
+					if (transaction.isActive()) {
+						transaction.rollback();
+					}
 					uow.end();
 				}
 			}
