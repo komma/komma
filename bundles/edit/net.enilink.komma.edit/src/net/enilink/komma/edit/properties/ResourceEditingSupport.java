@@ -555,8 +555,8 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 					throw new IllegalArgumentException(
 							"Relative IRIs are not supported.");
 				}
-				return uri;
 			}
+			return uri;
 		} else if (value instanceof QName) {
 			String prefix = ((QName) value).getPrefix();
 			String localPart = ((QName) value).getLocalPart();
