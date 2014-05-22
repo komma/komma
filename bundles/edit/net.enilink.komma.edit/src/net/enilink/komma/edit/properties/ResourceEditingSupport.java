@@ -67,15 +67,18 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 
 	public static class ResourceMatch {
 		public final IEntity resource;
-		public final boolean perfectMatch;
+		public final boolean inGraph;
+		public final boolean matchesRange;
 
-		public ResourceMatch(IEntity resource) {
-			this(resource, false);
+		public ResourceMatch(IEntity resource, boolean inGraph,
+				boolean matchesRange) {
+			this.resource = resource;
+			this.inGraph = inGraph;
+			this.matchesRange = matchesRange;
 		}
 
-		public ResourceMatch(IEntity resource, boolean perfectMatch) {
-			this.resource = resource;
-			this.perfectMatch = perfectMatch;
+		public int score() {
+			return 0 + (matchesRange ? 1000 : 0) + (inGraph ? 1 : 0);
 		}
 	}
 
@@ -83,7 +86,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			IResourceProposal {
 		IEntity resource;
 		boolean useAsValue;
-		boolean perfectMatch;
+		int score;
 
 		public ResourceProposal(String content, int cursorPosition,
 				IEntity resource) {
@@ -98,13 +101,13 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			return resource;
 		}
 
-		public ResourceProposal setPerfectMatch(boolean perfectMatch) {
-			this.perfectMatch = perfectMatch;
+		public ResourceProposal setScore(int score) {
+			this.score = score;
 			return this;
 		}
 
-		public boolean isPerfectMatch() {
-			return perfectMatch;
+		public int getScore() {
+			return score;
 		}
 
 		public ResourceProposal setUseAsValue(boolean useAsValue) {
@@ -157,8 +160,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 						.forPredicate(p))) {
 					// globally filter duplicate proposals
 					ResourceMatch existing = allMatches.get(match.resource);
-					if (existing == null || !existing.perfectMatch
-							&& match.perfectMatch) {
+					if (existing == null || existing.score() < match.score()) {
 						allMatches.put(match.resource, match);
 					}
 				}
@@ -168,14 +170,11 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			Comparator<ResourceProposal> comparator = new Comparator<ResourceProposal>() {
 				@Override
 				public int compare(ResourceProposal p1, ResourceProposal p2) {
-					if (p1.perfectMatch) {
-						if (!p2.perfectMatch) {
-							return -1;
-						}
-					} else if (p2.perfectMatch) {
-						if (!p1.perfectMatch) {
-							return 1;
-						}
+					// higher scores are better and hence should be inserted in
+					// front of the list
+					int scoreDiff = p2.score - p1.score;
+					if (scoreDiff != 0) {
+						return scoreDiff;
 					}
 					return p1.getLabel().compareTo(p2.getLabel());
 				}
@@ -215,8 +214,7 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 					content = prefix + content;
 					proposals.add(new ResourceProposal(content, content
 							.length(), match.resource)
-							.setUseAsValue(useAsValue).setPerfectMatch(
-									match.perfectMatch));
+							.setUseAsValue(useAsValue).setScore(match.score()));
 				}
 			}
 			return proposals;
@@ -292,10 +290,13 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		return value.toString();
 	}
 
+	protected String toRegex(String pattern) {
+		return ESCAPE_CHARS.matcher(pattern).replaceAll("\\\\$0")
+				.replace("\\*", ".*").replace("\\?", ".");
+	}
+
 	protected String toUriRegex(String pattern) {
-		pattern = ESCAPE_CHARS.matcher(pattern).replaceAll("\\\\$0");
-		pattern = pattern.replace("\\*", ".*").replace("\\?", ".");
-		return "[#/:]" + pattern + "[^#/]*$";
+		return "[#/:]" + toRegex(pattern) + "[^#/]*$";
 	}
 
 	protected Iterable<ResourceMatch> getAnyResources(ProposalOptions options) {
@@ -330,11 +331,9 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		IReference type = options.type;
 		if (!pattern.contains(":")) {
 			// find resources within the current model first
-			String graphNamespace = subject.getEntityManager().getNamespace("")
-					.toString();
 			for (ResourceMatch match : retrieve(subject, predicate, type,
-					pattern, toUriRegex(pattern), graphNamespace,
-					((IObject) subject).getModel().getURI(), options.limit)) {
+					pattern, toUriRegex(pattern), null, ((IObject) subject)
+							.getModel().getURI(), options.limit)) {
 				matches.put(match.resource, match);
 			}
 		}
@@ -382,7 +381,10 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 
 	protected List<ResourceMatch> retrieve(IEntity subject,
 			final IReference predicate, IReference type, String pattern,
-			String uriPattern, String namespace, URI graph, int limit) {
+			String uriPattern, String namespace, final URI graph, int limit) {
+		// System.out.println("retrieve("
+		// + Arrays.asList(predicate, type, pattern, uriPattern,
+		// namespace, graph, limit) + ")");
 		StringBuilder sparql = new StringBuilder(ISparqlConstants.PREFIX
 				+ "SELECT DISTINCT ?s ");
 
@@ -396,37 +398,41 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			sparql.append("bind ( 1 as ?prio) }");
 		} else {
 			sparql.append("WHERE { ");
+			if (type != null || predicate != null) {
+				sparql.append("?s a ?sType .");
+			}
 			if (predicate != null) {
-				sparql.append("{");
 				sparql.append("{ ?property rdfs:range ?sType FILTER (?sType != owl:Thing) }");
 				sparql.append(" UNION ");
 				sparql.append("{ ?subject a [rdfs:subClassOf ?r] . ?r owl:onProperty ?property { ?r owl:allValuesFrom ?sType } UNION { ?r owl:someValuesFrom ?sType }}");
-				sparql.append(" ?s a ?sType ");
-				// allow to edit properties without range information
-				sparql.append("} UNION { FILTER (NOT EXISTS { ?property rdfs:range ?sType } && NOT EXISTS { ?subject a [rdfs:subClassOf ?r] . ?r owl:onProperty ?property }) } ");
-			}
-			if (type != null) {
-				sparql.append("?s a ?sType .");
 			}
 		}
-
-		IDialect dialect = subject.getEntityManager().getFactory().getDialect();
-		QueryFragment searchS = dialect.fullTextSearch(Arrays.asList("s"),
-				IDialect.ALL, split(pattern, "\\s*[#/]\\s*"));
-		QueryFragment searchL = dialect.fullTextSearch(Arrays.asList("l"),
-				IDialect.DEFAULT, pattern);
 
 		if (graph != null) {
 			sparql.append(" graph ?graph {\n");
 		}
 
-		sparql.append("{ ?s ?p ?o . " + searchS);
-		sparql.append(" FILTER regex(str(?s), ?uriPattern)");
-		sparql.append(" }");
-		sparql.append(" UNION ");
-		sparql.append("{ ");
-		sparql.append("?s rdfs:label ?l . " + searchL);
-		sparql.append(" }");
+		QueryFragment searchS = null, searchL = null;
+		if (pattern.trim().isEmpty()) {
+			sparql.append("?s ?p ?o . ");
+		} else {
+			IDialect dialect = subject.getEntityManager().getFactory()
+					.getDialect();
+			searchS = dialect.fullTextSearch(Arrays.asList("s"), IDialect.ALL,
+					split(pattern, "\\s*[#/]\\s*"));
+			searchL = dialect.fullTextSearch(Arrays.asList("l"),
+					IDialect.DEFAULT, pattern);
+
+			sparql.append("{ ?s ?p ?o . " + searchS);
+			sparql.append(" FILTER regex(str(?s), ?uriPattern)");
+			sparql.append(" }");
+			sparql.append(" UNION ");
+			sparql.append("{ ");
+			sparql.append("?s rdfs:label ?l . " + searchL);
+			// required, since FTS on labels has wrong results using OWLIM
+			sparql.append(" FILTER regex(str(?l), ?pattern)");
+			sparql.append(" }");
+		}
 		if (namespace != null) {
 			sparql.append(" FILTER regex(str(?s), ?namespace)");
 		}
@@ -434,13 +440,19 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			sparql.append("\n}");
 		}
 		sparql.append(" } LIMIT " + limit);
+		// System.out.println(sparql);
 
 		// TODO incorporate correct ranges
 		IQuery<?> query = subject.getEntityManager().createQuery(
 				sparql.toString());
-		searchS.addParameters(query);
-		searchL.addParameters(query);
+		if (searchS != null) {
+			searchS.addParameters(query);
+		}
+		if (searchL != null) {
+			searchL.addParameters(query);
+		}
 		query.setParameter("uriPattern", uriPattern);
+		query.setParameter("pattern", "^" + toRegex(pattern));
 		if (namespace != null) {
 			query.setParameter("namespace", "^" + namespace);
 		}
@@ -457,7 +469,9 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 					.mapWith(new IMap<IEntity, ResourceMatch>() {
 						@Override
 						public ResourceMatch map(IEntity value) {
-							return new ResourceMatch(value, predicate != null);
+							// System.out.println(" > " + value);
+							return new ResourceMatch(value, graph != null,
+									predicate != null);
 						}
 					}).toList();
 		} else {
@@ -469,8 +483,8 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 						public ResourceMatch map(IBindings<Object> bindings) {
 							IEntity resource = (IEntity) bindings.get("s");
 							Number prio = (Number) bindings.get("prio");
-							return new ResourceMatch(resource, prio != null
-									&& prio.intValue() > 0);
+							return new ResourceMatch(resource, graph != null,
+									prio != null && prio.intValue() > 0);
 						}
 					}).toList();
 		}

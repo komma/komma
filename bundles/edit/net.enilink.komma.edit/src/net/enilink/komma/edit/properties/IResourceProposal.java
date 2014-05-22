@@ -25,11 +25,12 @@ public interface IResourceProposal extends IContentProposal {
 	boolean getUseAsValue();
 
 	/**
-	 * Indicates that the corresponding resource is a perfect match for the
-	 * related proposal query (e.g. the resource matches some property range).
+	 * Returns the score of the corresponding resource for the related proposal
+	 * query (e.g. the resource matches some property range).
 	 * 
-	 * @return <code>true</code> if the resource is a perfect match, else
-	 *         <code>false</code>.
+	 * A score &gt; 1000 can be considered as a perfect match.
+	 * 
+	 * @return The match score for the corresponding resource.
 	 */
-	boolean isPerfectMatch();
+	int getScore();
 }
