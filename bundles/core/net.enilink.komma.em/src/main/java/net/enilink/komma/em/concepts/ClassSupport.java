@@ -39,7 +39,7 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 			sb.append("{ ?subClass a ")
 					.append(RDFS.TYPE_RESOURCE.equals(this) ? "rdfs:Class"
 							: "owl:Class").append(" . ");
-			sb.append("MINUS { ?subClass rdfs:subClassOf ?someSuperClass ")
+			sb.append("MINUS { ?subClass rdfs:subClassOf ?someSuperClass . { ?someSuperClass a rdfs:Class } UNION { ?someSuperClass a owl:Class } ")
 					.append("FILTER (isIRI(?someSuperClass) && ?someSuperClass != ?subClass && ?someSuperClass != owl:Thing && ?someSuperClass != rdfs:Resource) } }");
 			sb.append(" UNION { ?subClass rdfs:subClassOf ?superClass }");
 		} else {
