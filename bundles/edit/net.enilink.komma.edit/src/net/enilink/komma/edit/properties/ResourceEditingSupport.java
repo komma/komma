@@ -508,25 +508,27 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				return new IItemLabelProvider() {
 					@Override
 					public String getText(Object object) {
-						IItemLabelProvider labelProvider = (IItemLabelProvider) adapterFactory
-								.adapt(((ResourceProposal) object).resource,
-										IItemLabelProvider.class);
-						if (labelProvider != null) {
-							return labelProvider
-									.getText(((ResourceProposal) object).resource);
+						if (object instanceof ResourceProposal) {
+							IEntity resource = ((ResourceProposal) object).resource;
+							IItemLabelProvider labelProvider = (IItemLabelProvider) adapterFactory
+									.adapt(resource, IItemLabelProvider.class);
+							if (labelProvider != null) {
+								return labelProvider.getText(resource);
+							}
+							return ModelUtil.getLabel(resource);
 						}
-						return ModelUtil
-								.getLabel(((ResourceProposal) object).resource);
+						return ((ContentProposal) object).getLabel();
 					}
 
 					@Override
 					public Object getImage(Object object) {
-						IItemLabelProvider labelProvider = (IItemLabelProvider) adapterFactory
-								.adapt(((ResourceProposal) object).resource,
-										IItemLabelProvider.class);
-						if (labelProvider != null) {
-							return labelProvider
-									.getImage(((ResourceProposal) object).resource);
+						if (object instanceof ResourceProposal) {
+							IEntity resource = ((ResourceProposal) object).resource;
+							IItemLabelProvider labelProvider = (IItemLabelProvider) adapterFactory
+									.adapt(resource, IItemLabelProvider.class);
+							if (labelProvider != null) {
+								return labelProvider.getImage(resource);
+							}
 						}
 						return null;
 					}
