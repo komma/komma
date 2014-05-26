@@ -43,3 +43,4 @@ Import-Package: com.google.inject;version="3.0.0",
  org.openrdf.sail.inferencer.fc,
  org.openrdf.sail.memory,
  org.slf4j
+Bundle-ClassPath: .
