@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import net.enilink.composition.annotations.Iri;
+import net.enilink.composition.traits.Behaviour;
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.URI;
@@ -46,8 +47,8 @@ import com.google.inject.Singleton;
 
 @Iri(MODELS.NAMESPACE + "MemoryModelSet")
 public abstract class MemoryModelSetSupport implements IModelSet,
-		IModelSet.Internal {
-	protected Repository createRepository() throws RepositoryException {
+		IModelSet.Internal, IRepositoryModelSet, Behaviour<IRepositoryModelSet> {
+	public Repository createRepository() throws RepositoryException {
 		MemoryStore store = new MemoryStore();
 		SailRepository repository = new SailRepository(store);
 		repository.initialize();
@@ -149,7 +150,7 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 			@Provides
 			protected Repository provideRepository() {
 				try {
-					return createRepository();
+					return getBehaviourDelegate().createRepository();
 				} catch (RepositoryException e) {
 					throw new KommaException("Unable to create repository.", e);
 				}
