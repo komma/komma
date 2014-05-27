@@ -19,8 +19,7 @@ Export-Package: net.enilink.komma.internal.model.extensions;x-friends:="net.enil
 Require-Bundle: net.enilink.komma.em;visibility:=reexport,
  org.eclipse.core.resources,
  org.eclipse.core.runtime,
- net.enilink.commons.util,
- org.junit;resolution:=optional
+ net.enilink.commons.util
 Bundle-ActivationPolicy: lazy
 Import-Package: com.google.inject;version="3.0.0",
  com.google.inject.binder;version="3.0.0",
@@ -42,5 +41,6 @@ Import-Package: com.google.inject;version="3.0.0",
  org.openrdf.sail,
  org.openrdf.sail.inferencer.fc,
  org.openrdf.sail.memory,
- org.slf4j
+ org.slf4j,
+ org.junit;version="4.0.0";resolution:=optional
 Bundle-ClassPath: .
