@@ -5,9 +5,8 @@ import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.Set;
 
-import junit.framework.Assert;
-import junit.framework.ComparisonFailure;
-
+import org.junit.Assert;
+import org.junit.ComparisonFailure;
 import org.junit.Test;
 import org.parboiled.Parboiled;
 import org.parboiled.buffers.DefaultInputBuffer;

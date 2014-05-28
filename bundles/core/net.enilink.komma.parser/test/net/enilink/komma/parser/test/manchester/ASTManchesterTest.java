@@ -5,9 +5,8 @@ import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.Set;
 
-import junit.framework.Assert;
-import junit.framework.ComparisonFailure;
-
+import org.junit.Assert;
+import org.junit.ComparisonFailure;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.parboiled.Parboiled;
@@ -43,7 +42,8 @@ public class ASTManchesterTest extends GUnitBaseTestCase {
 			ParsingResult<Object> result = new ReportingParseRunner<Object>(
 					parser.OntologyDocument()).run(textInfo.text);
 
-			InputBuffer inputBuffer = new DefaultInputBuffer(textInfo.text.toCharArray());
+			InputBuffer inputBuffer = new DefaultInputBuffer(
+					textInfo.text.toCharArray());
 
 			boolean passed = result.hasErrors()
 					&& textInfo.result == Result.FAIL || !result.hasErrors()

@@ -9,7 +9,7 @@ import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.parboiled.Node;
 import org.parboiled.buffers.InputBuffer;
@@ -64,9 +64,10 @@ public class GUnitBaseTestCase {
 			} else {
 				Matcher matcher = unicodes.matcher(line);
 				while (matcher.find()) {
-					matcher.appendReplacement(text, Character
-							.toString((char) Integer.parseInt(matcher.group(1),
-									16)));
+					matcher.appendReplacement(
+							text,
+							Character.toString((char) Integer.parseInt(
+									matcher.group(1), 16)));
 				}
 				matcher.appendTail(text);
 
