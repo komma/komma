@@ -8,3 +8,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: net.enilink.komma.parser;visibility:=reexport,
  org.parboiled
 Export-Package: net.enilink.komma.query
+Import-Package: org.junit;version="4.0.0";resolution:=optional
