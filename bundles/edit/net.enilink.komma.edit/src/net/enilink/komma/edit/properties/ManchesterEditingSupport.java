@@ -21,8 +21,6 @@ import net.enilink.komma.edit.assist.IContentProposalProvider;
 import net.enilink.komma.edit.assist.ParboiledProposalProvider;
 import net.enilink.komma.edit.assist.ReflectiveSemanticProposals;
 import net.enilink.komma.edit.provider.IItemLabelProvider;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.IObject;
 import net.enilink.komma.parser.manchester.IManchesterActions;
 import net.enilink.komma.parser.manchester.ManchesterSyntaxParser;
 import net.enilink.komma.parser.sparql.tree.BNode;
@@ -91,25 +89,24 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 		super(adapterFactory);
 	}
 
-	protected CommandResult addStatements(final IModel model,
+	protected CommandResult addStatements(final IEntityManager em,
 			final Object subject, final List<Object[]> stmts) {
 		Map<BNode, IReference> bNodes = new HashMap<BNode, IReference>();
 		List<IStatement> realStmts = new ArrayList<IStatement>();
 		for (Object[] stmt : stmts) {
 			Object s = stmt[0], p = stmt[1], o = stmt[2];
-			realStmts.add(new Statement((IReference) toValue(model, s, bNodes),
-					(IReference) toValue(model, p, bNodes), toValue(model, o,
-							bNodes)));
+			realStmts
+					.add(new Statement((IReference) toValue(em, s, bNodes),
+							(IReference) toValue(em, p, bNodes), toValue(em, o,
+									bNodes)));
 
 		}
-		model.getManager().add(realStmts);
-		return CommandResult
-				.newOKCommandResult(toValue(model, subject, bNodes));
+		em.add(realStmts);
+		return CommandResult.newOKCommandResult(toValue(em, subject, bNodes));
 	}
 
-	protected IValue toValue(final IModel model, Object value,
+	protected IValue toValue(final IEntityManager em, Object value,
 			final Map<BNode, IReference> bNodes) {
-		final IEntityManager em = model.getManager();
 		if (value instanceof BNode) {
 			IReference reference = bNodes.get(value);
 			if (reference == null) {
@@ -117,7 +114,7 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 			}
 			return reference;
 		} else if (value instanceof IriRef || value instanceof QName) {
-			return toURI(model, value);
+			return toURI(em, value);
 		} else if (value instanceof Literal) {
 			final IValue[] result = new IValue[1];
 			((Literal) value).accept(new TreeWalker<Void>() {
@@ -147,7 +144,7 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 						Void data) {
 					result[0] = em.createLiteral(
 							genericLiteral.getLabel(),
-							(URI) toValue(model, genericLiteral.getDatatype(),
+							(URI) toValue(em, genericLiteral.getDatatype(),
 									bNodes), genericLiteral.getLanguage());
 					return false;
 				}
@@ -222,7 +219,7 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 									}
 								}).Description()).run((String) editorValue);
 				if (result.matched && result.resultValue != null) {
-					return addStatements(((IObject) subject).getModel(),
+					return addStatements(subject.getEntityManager(),
 							result.resultValue, newStmts);
 				} else {
 					return CommandResult.newErrorCommandResult(ErrorUtils

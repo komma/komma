@@ -186,7 +186,7 @@ public abstract class PropertyEditingHelper {
 			if (newPredicate instanceof IProperty) {
 				setProperty(element, (IProperty) newPredicate);
 			}
-			newObjectCommand = null;
+			return CommandResult.newOKCommandResult();
 		}
 
 		if (newObjectCommand != null) {
@@ -261,7 +261,7 @@ public abstract class PropertyEditingHelper {
 			CommandResult result = execute(command);
 			return result == null ? CommandResult.newOKCommandResult() : result;
 		}
-		return CommandResult.newOKCommandResult();
+		return CommandResult.newCancelledCommandResult();
 	}
 
 	protected CommandResult execute(ICommand command) {

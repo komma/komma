@@ -25,6 +25,7 @@ import net.enilink.komma.core.Bindings;
 import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IDialect;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
@@ -36,7 +37,6 @@ import net.enilink.komma.edit.assist.IContentProposal;
 import net.enilink.komma.edit.assist.IContentProposalProvider;
 import net.enilink.komma.edit.provider.IItemLabelProvider;
 import net.enilink.komma.em.util.ISparqlConstants;
-import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.parser.BaseRdfParser;
@@ -556,11 +556,11 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		return value != null ? getLabel(value) : "";
 	}
 
-	protected URI toURI(IModel model, Object value) {
+	protected URI toURI(IEntityManager manager, Object value) {
 		if (value instanceof IriRef) {
 			URI uri = URIs.createURI(((IriRef) value).getIri());
 			if (uri.isRelative()) {
-				URI ns = model.getManager().getNamespace("");
+				URI ns = manager.getNamespace("");
 				if (ns != null) {
 					if (ns.fragment() != null) {
 						uri = ns.appendLocalPart(uri.toString());
@@ -580,14 +580,20 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			if (prefix == null || prefix.trim().length() == 0) {
 				prefix = "";
 			}
-			ns = model.getManager().getNamespace(prefix);
+			ns = manager.getNamespace(prefix);
 			if (ns != null) {
 				return ns.appendLocalPart(localPart);
 			}
 			throw new IllegalArgumentException("Unknown prefix for QName "
 					+ value);
 		} else if (value != null) {
-			return model.getURI().appendLocalPart(value.toString());
+			URI ns = manager.getNamespace("");
+			if (ns != null) {
+				return ns.appendLocalPart(value.toString());
+			} else {
+				throw new IllegalArgumentException(
+						"Relative IRIs are not supported.");
+			}
 		}
 		return null;
 	}
@@ -595,7 +601,8 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 	@Override
 	public ICommand convertValueFromEditor(Object editorValue,
 			final IEntity subject, IReference property, Object oldValue) {
-		if (editorValue.toString().isEmpty()) {
+		String valueStr = editorValue.toString().trim();
+		if (valueStr.isEmpty()) {
 			return new IdentityCommand("Remove statement.");
 		}
 
@@ -603,16 +610,15 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		boolean createNew = false;
 		ConstructorParser parser = createConstructorParser();
 		ParsingResult<Object> ctor = new BasicParseRunner<Object>(
-				parser.Constructor()).run((String) editorValue);
+				parser.Constructor()).run(valueStr);
 		if (ctor.matched) {
 			createNew = true;
 			IndexRange range = (IndexRange) ctor.resultValue;
-			editorValue = ((String) editorValue).substring(range.start,
-					range.end);
+			valueStr = valueStr.substring(range.start, range.end);
 			// check if a name for the new resource is given
 			if (ctor.valueStack.size() > 1) {
 				if (subject instanceof IObject) {
-					name[0] = toURI(((IObject) subject).getModel(),
+					name[0] = toURI(subject.getEntityManager(),
 							ctor.valueStack.peek(1));
 				}
 			}
@@ -620,9 +626,9 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			// allow to specify resources as full IRIs in the form
 			// <http://example.org#resource>
 			ParsingResult<Object> Iri = new BasicParseRunner<Object>(
-					parser.IRI_REF_WSPACE()).run((String) editorValue);
+					parser.IRI_REF_WSPACE()).run(valueStr);
 			if (Iri.matched) {
-				name[0] = toURI(((IObject) subject).getModel(), Iri.resultValue);
+				name[0] = toURI(subject.getEntityManager(), Iri.resultValue);
 				return new SimpleCommand() {
 					@Override
 					protected CommandResult doExecuteWithResult(
@@ -634,29 +640,45 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				};
 			}
 		}
-		ProposalOptions options = ProposalOptions.create(subject,
-				(String) editorValue, 1);
-		Iterator<ResourceMatch> matches = getAnyResources(
-				options.forPredicate(createNew ? null : property)).iterator();
-		if (matches.hasNext()) {
-			final IEntity resource = matches.next().resource;
-			if (createNew
-					&& getLabel(resource).equals(((String) editorValue).trim())) {
-				// create a new object
-				return new SimpleCommand() {
-					@Override
-					protected CommandResult doExecuteWithResult(
-							IProgressMonitor progressMonitor, IAdaptable info)
-							throws ExecutionException {
-						return CommandResult.newOKCommandResult(subject
-								.getEntityManager().createNamed(name[0],
-										resource));
-					}
-				};
-			} else if (!resource.equals(oldValue)
-					&& getLabel(resource).equals(((String) editorValue).trim())) {
-				// replace value with existing object
-				return new IdentityCommand(resource);
+		// allow to force the creation of a resource by appending "!" even if it
+		// does not exist
+		if (valueStr.endsWith("!") && valueStr.length() > 1) {
+			valueStr = valueStr.substring(0, valueStr.length() - 1);
+			name[0] = toURI(subject.getEntityManager(), valueStr);
+			return new SimpleCommand() {
+				@Override
+				protected CommandResult doExecuteWithResult(
+						IProgressMonitor progressMonitor, IAdaptable info)
+						throws ExecutionException {
+					return CommandResult.newOKCommandResult(subject
+							.getEntityManager().find(name[0]));
+				}
+			};
+		} else {
+			ProposalOptions options = ProposalOptions.create(subject,
+					(String) editorValue, 1);
+			Iterator<ResourceMatch> matches = getAnyResources(
+					options.forPredicate(createNew ? null : property))
+					.iterator();
+			if (matches.hasNext()) {
+				final IEntity resource = matches.next().resource;
+				if (createNew && getLabel(resource).equals(valueStr)) {
+					// create a new object
+					return new SimpleCommand() {
+						@Override
+						protected CommandResult doExecuteWithResult(
+								IProgressMonitor progressMonitor,
+								IAdaptable info) throws ExecutionException {
+							return CommandResult.newOKCommandResult(subject
+									.getEntityManager().createNamed(name[0],
+											resource));
+						}
+					};
+				} else if (!resource.equals(oldValue)
+						&& getLabel(resource).equals(valueStr)) {
+					// replace value with existing object
+					return new IdentityCommand(resource);
+				}
 			}
 		}
 		return null;
