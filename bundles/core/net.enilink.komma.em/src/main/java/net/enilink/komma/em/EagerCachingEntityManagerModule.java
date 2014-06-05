@@ -11,23 +11,21 @@
 package net.enilink.komma.em;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.collections.map.ReferenceMap;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.em.internal.EagerCachingEntityManager;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-
-import net.enilink.komma.em.internal.EagerCachingEntityManager;
-import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.IReference;
 
 public class EagerCachingEntityManagerModule extends
 		DecoratingEntityManagerModule {
 	@Provides
 	@Singleton
-	@SuppressWarnings("unchecked")
 	Map<IReference, Object> provideEntityCache() {
-		return new ReferenceMap(ReferenceMap.HARD, ReferenceMap.HARD, true);
+		return new ConcurrentHashMap<>();
 	}
 
 	@Override

@@ -90,6 +90,7 @@ public class CacheModule extends AbstractModule {
 
 	private String cacheName;
 	static CacheContainer cacheContainer;
+	public static Configuration configuration;
 
 	public CacheModule(String cacheName) {
 		this.cacheName = cacheName;
@@ -108,14 +109,16 @@ public class CacheModule extends AbstractModule {
 	CacheContainer provideCacheContainer() {
 		synchronized (CacheModule.class) {
 			if (cacheContainer == null) {
-				Configuration configuration = new ConfigurationBuilder()
-						.invocationBatching().enable() // required for TreeCache
-						.eviction().strategy(EvictionStrategy.LIRS) // LIRS
-																	// instead
-																	// of LRU?
-						.maxEntries(30000) // a reasonable limit?
-						.jmxStatistics().enable() // expose statistics via JMX
-						.build();
+				Configuration config = configuration != null ? configuration
+						: new ConfigurationBuilder()
+								// required for TreeCache
+								.invocationBatching().enable().eviction()
+								.strategy(EvictionStrategy.LIRS)
+								// reasonable limits?
+								.maxEntries(30000).expiration()
+								.wakeUpInterval(5000).lifespan(120000)
+								// expose statistics via JMX
+								.jmxStatistics().enable().build();
 				// workaround for classloading issues w/ factory methods
 				// http://community.jboss.org/wiki/ModuleCompatibleClassloadingGuide
 				ClassLoader oldTCCL = Thread.currentThread()
@@ -124,7 +127,7 @@ public class CacheModule extends AbstractModule {
 					Thread.currentThread().setContextClassLoader(
 							DefaultCacheManager.class.getClassLoader());
 					EmbeddedCacheManager cacheManager = new DefaultCacheManager(
-							configuration);
+							config);
 					cacheManager.addListener(new StartStopListener());
 					cacheContainer = cacheManager;
 				} finally {
