@@ -30,6 +30,10 @@ Import-Package: com.google.inject;version="3.0.0",
  info.aduna.xml,
  net.enilink.komma.internal.sesame,
  net.enilink.komma.sesame,
+ org.aopalliance.intercept;version="1.0.0",
+ org.infinispan.configuration.cache,
+ org.infinispan.eviction,
+ org.junit;version="4.0.0";resolution:=optional,
  org.openrdf.model,
  org.openrdf.model.impl,
  org.openrdf.model.vocabulary,
@@ -41,6 +45,5 @@ Import-Package: com.google.inject;version="3.0.0",
  org.openrdf.sail,
  org.openrdf.sail.inferencer.fc,
  org.openrdf.sail.memory,
- org.slf4j,
- org.junit;version="4.0.0";resolution:=optional
+ org.slf4j
 Bundle-ClassPath: .

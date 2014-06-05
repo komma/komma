@@ -3,12 +3,13 @@ package net.enilink.komma.model;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
-import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.komma.core.IProvider;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaException;
@@ -35,6 +36,7 @@ import org.osgi.framework.Bundle;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 
@@ -73,40 +75,35 @@ public class ModelSetModule extends AbstractModule {
 		module.includeModule(KommaUtil.getCoreModule());
 
 		ModelSetFactory factory = injector.createChildInjector(
-				new AbstractModule() {
-					@Override
-					protected void configure() {
-						bind(IDataManager.class).to(
-								ThreadLocalDataManager.class).in(
-								Singleton.class);
-					}
-
-					@Singleton
-					@Provides
-					Repository provideRepository() {
-						return createMetaDataRepository();
-					}
-				},
-				new SesameModule(),
-				new EntityManagerFactoryModule(module, getLocaleProvider(),
-						new EagerCachingEntityManagerModule() {
-							@Override
-							protected Class<? extends PropertySetFactory> getPropertySetFactoryClass() {
-								Class<? extends PropertySetFactory> factoryClass = ModelSetModule.this
-										.getPropertySetFactoryClass();
-								return factoryClass != null ? factoryClass
-										: super.getPropertySetFactoryClass();
-							}
-						})).getInstance(ModelSetFactory.class);
+				createFactoryModules(module))
+				.getInstance(ModelSetFactory.class);
 		return factory;
+	}
+
+	protected List<? extends Module> createFactoryModules(
+			KommaModule kommaModule) {
+		return Arrays.<Module> asList(new AbstractModule() {
+			@Override
+			protected void configure() {
+				bind(IDataManager.class).to(ThreadLocalDataManager.class).in(
+						Singleton.class);
+			}
+
+			@Singleton
+			@Provides
+			Repository provideRepository() {
+				return createMetaDataRepository();
+			}
+		}, new SesameModule(), new EntityManagerFactoryModule(kommaModule,
+				getLocaleProvider(), getEntityManagerModule()));
 	}
 
 	protected IProvider<Locale> getLocaleProvider() {
 		return null;
 	}
 
-	protected Class<? extends PropertySetFactory> getPropertySetFactoryClass() {
-		return null;
+	protected Module getEntityManagerModule() {
+		return new EagerCachingEntityManagerModule();
 	}
 
 	/**

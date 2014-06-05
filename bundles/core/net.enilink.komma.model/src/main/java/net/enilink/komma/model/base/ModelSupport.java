@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -107,19 +108,211 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	/**
 	 * Represents the transient state of this resource
 	 */
-	static class State {
+	class State {
 		KommaModule module;
 		KommaModule moduleClosure;
 		Set<URI> importedModels;
-		IEntityManager manager;
+		volatile WeakReference<IEntityManager> managerRef;
 
 		void reset() {
 			module = null;
 			moduleClosure = null;
 			importedModels = null;
-			if (manager != null) {
-				manager.close();
+			if (managerRef != null) {
+				IEntityManager manager = managerRef.get();
+				if (manager != null) {
+					manager.close();
+				}
 			}
+		}
+
+		IEntityManager manager() {
+			IEntityManager manager = managerRef != null ? managerRef.get()
+					: null;
+			if (manager == null) {
+				synchronized (this) {
+					manager = managerRef != null ? managerRef.get() : null;
+					if (manager == null) {
+						manager = new ThreadLocalEntityManager() {
+							volatile Map<URI, String> uriToPrefix = new ConcurrentHashMap<>();
+							volatile Map<String, URI> prefixToUri = new ConcurrentHashMap<>();
+
+							@Override
+							protected IEntityManager initialValue() {
+								return getModelSet()
+										.getEntityManagerFactory()
+										// allow interception of call to
+										// getModule()
+										.createChildFactory(
+												getBehaviourDelegate()
+														.getModuleClosure())
+										.create(managerRef.get());
+							}
+
+							@Override
+							public void removeNamespace(String prefix) {
+								for (Namespace ns : new ArrayList<>(
+										getModelNamespaces())) {
+									if (prefix.equals(ns.getPrefix())) {
+										getModelNamespaces().remove(ns);
+										fireNotifications(Arrays
+												.asList(new NamespaceNotification(
+														prefix, ns.getURI(),
+														null)));
+										break;
+									}
+								}
+								clearNamespaceCache();
+							}
+
+							@Override
+							public void setNamespace(String prefix, URI uri) {
+								if (prefix == null || prefix.isEmpty()) {
+									return;
+								}
+								URI oldUri = null;
+								// prevent addition of redundant prefix/uri
+								// combinations
+								if (uri.equals(super.getNamespace(prefix))) {
+									oldUri = uri;
+								}
+								if (oldUri == null) {
+									for (Namespace ns : new ArrayList<>(
+											getModelNamespaces())) {
+										if (prefix.equals(ns.getPrefix())) {
+											ns.setPrefix(prefix);
+											oldUri = ns.getURI();
+											break;
+										}
+									}
+								}
+								if (oldUri == null) {
+									Namespace ns = getEntityManager().create(
+											Namespace.class);
+									ns.setPrefix(prefix);
+									ns.setURI(uri);
+									getModelNamespaces().add(ns);
+								}
+								fireNotifications(Arrays
+										.asList(new NamespaceNotification(
+												prefix, oldUri, uri)));
+								clearNamespaceCache();
+							}
+
+							@Override
+							public IExtendedIterator<INamespace> getNamespaces() {
+								Set<URI> uris = new HashSet<>();
+								Map<String, INamespace> prefixMap = new LinkedHashMap<>();
+								prefixMap.put("",
+										new net.enilink.komma.core.Namespace(
+												"", getURI()
+														.appendLocalPart("")));
+								for (INamespace ns : WrappedIterator
+										.create(getAllModelNamespaces()
+												.iterator())
+										.andThen(
+												super.getNamespaces()
+														.mapWith(
+														// mark inherited
+														// namespaces as derived
+																new IMap<INamespace, INamespace>() {
+																	@Override
+																	public INamespace map(
+																			INamespace ns) {
+																		return new net.enilink.komma.core.Namespace(
+																				ns.getPrefix(),
+																				ns.getURI(),
+																				true);
+																	}
+																}))) {
+									if (!prefixMap.containsKey(ns.getPrefix())
+											&& uris.add(ns.getURI())) {
+										prefixMap
+												.put(ns.getPrefix(),
+														new net.enilink.komma.core.Namespace(
+																ns.getPrefix(),
+																ns.getURI(),
+																ns.isDerived()));
+									}
+								}
+								return WrappedIterator.create(prefixMap
+										.values().iterator());
+							}
+
+							List<INamespace> getAllModelNamespaces() {
+								List<INamespace> nsList = new ArrayList<INamespace>(
+										getModelNamespaces());
+								KommaModule module = moduleClosure;
+								if (module != null) {
+									for (INamespace ns : module.getNamespaces()) {
+										nsList.add(new net.enilink.komma.core.Namespace(
+												ns.getPrefix(), ns.getURI(),
+												true));
+									}
+								}
+								return nsList;
+							}
+
+							@Override
+							public URI getNamespace(String prefix) {
+								if (prefix == null || prefix.length() == 0) {
+									return getURI().appendLocalPart("");
+								}
+								if (prefixToUri.isEmpty()) {
+									cacheNamespaces();
+								}
+								URI uri = prefixToUri.get(prefix);
+								return uri != null ? uri : super
+										.getNamespace(prefix);
+							}
+
+							@Override
+							public String getPrefix(URI namespace) {
+								if (namespace.equals(getURI().appendLocalPart(
+										""))) {
+									return "";
+								}
+								if (uriToPrefix.isEmpty()) {
+									cacheNamespaces();
+								}
+								String prefix = uriToPrefix.get(namespace);
+								return prefix != null ? prefix : super
+										.getPrefix(namespace);
+							}
+
+							protected void clearNamespaceCache() {
+								uriToPrefix.clear();
+								prefixToUri.clear();
+							}
+
+							protected void cacheNamespaces() {
+								for (INamespace ns : getAllModelNamespaces()) {
+									if (!uriToPrefix.containsKey(ns.getURI())
+											&& !prefixToUri.containsKey(ns
+													.getPrefix())) {
+										uriToPrefix.put(ns.getURI(),
+												ns.getPrefix());
+										prefixToUri.put(ns.getPrefix(),
+												ns.getURI());
+									}
+								}
+							}
+
+							@Override
+							protected void finalize() throws Throwable {
+								// remove all state if weak reference to this
+								// entity manager is gc'ed
+								ModelSupport.this.state.remove();
+								super.finalize();
+							}
+						};
+						injector.injectMembers(manager);
+						manager.addDecorator(new ModelInjector());
+						managerRef = new WeakReference<>(manager);
+					}
+				}
+			}
+			return manager;
 		}
 	}
 
@@ -134,159 +327,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 		synchronized (state) {
 			State s = state.get();
 			if (s == null) {
-				s = new State();
-				final State theState = s;
-				s.manager = new ThreadLocalEntityManager() {
-					volatile Map<URI, String> uriToPrefix = new ConcurrentHashMap<>();
-					volatile Map<String, URI> prefixToUri = new ConcurrentHashMap<>();
-
-					@Override
-					protected IEntityManager initialValue() {
-						return getModelSet()
-								.getEntityManagerFactory()
-								// allow interception of call to
-								// getModule()
-								.createChildFactory(
-										getBehaviourDelegate()
-												.getModuleClosure())
-								.create(theState.manager);
-					}
-
-					@Override
-					public void removeNamespace(String prefix) {
-						for (Namespace ns : new ArrayList<>(
-								getModelNamespaces())) {
-							if (prefix.equals(ns.getPrefix())) {
-								getModelNamespaces().remove(ns);
-								fireNotifications(Arrays
-										.asList(new NamespaceNotification(
-												prefix, ns.getURI(), null)));
-								break;
-							}
-						}
-						clearNamespaceCache();
-					}
-
-					@Override
-					public void setNamespace(String prefix, URI uri) {
-						if (prefix == null || prefix.isEmpty()) {
-							return;
-						}
-						URI oldUri = null;
-						// prevent addition of redundant prefix/uri combinations
-						if (uri.equals(super.getNamespace(prefix))) {
-							oldUri = uri;
-						}
-						if (oldUri == null) {
-							for (Namespace ns : new ArrayList<>(
-									getModelNamespaces())) {
-								if (prefix.equals(ns.getPrefix())) {
-									ns.setPrefix(prefix);
-									oldUri = ns.getURI();
-									break;
-								}
-							}
-						}
-						if (oldUri == null) {
-							Namespace ns = getEntityManager().create(
-									Namespace.class);
-							ns.setPrefix(prefix);
-							ns.setURI(uri);
-							getModelNamespaces().add(ns);
-						}
-						fireNotifications(Arrays
-								.asList(new NamespaceNotification(prefix,
-										oldUri, uri)));
-						clearNamespaceCache();
-					}
-
-					@Override
-					public IExtendedIterator<INamespace> getNamespaces() {
-						Set<URI> uris = new HashSet<>();
-						Map<String, INamespace> prefixMap = new LinkedHashMap<>();
-						prefixMap.put("", new net.enilink.komma.core.Namespace(
-								"", getURI().appendLocalPart("")));
-						for (INamespace ns : WrappedIterator.create(
-								getAllModelNamespaces().iterator()).andThen(
-								super.getNamespaces().mapWith(
-								// mark inherited namespaces as derived
-										new IMap<INamespace, INamespace>() {
-											@Override
-											public INamespace map(INamespace ns) {
-												return new net.enilink.komma.core.Namespace(
-														ns.getPrefix(), ns
-																.getURI(), true);
-											}
-										}))) {
-							if (!prefixMap.containsKey(ns.getPrefix())
-									&& uris.add(ns.getURI())) {
-								prefixMap.put(
-										ns.getPrefix(),
-										new net.enilink.komma.core.Namespace(ns
-												.getPrefix(), ns.getURI(), ns
-												.isDerived()));
-							}
-						}
-						return WrappedIterator.create(prefixMap.values()
-								.iterator());
-					}
-
-					List<INamespace> getAllModelNamespaces() {
-						List<INamespace> nsList = new ArrayList<INamespace>(
-								getModelNamespaces());
-						KommaModule module = theState.moduleClosure;
-						if (module != null) {
-							for (INamespace ns : module.getNamespaces()) {
-								nsList.add(new net.enilink.komma.core.Namespace(
-										ns.getPrefix(), ns.getURI(), true));
-							}
-						}
-						return nsList;
-					}
-
-					@Override
-					public URI getNamespace(String prefix) {
-						if (prefix == null || prefix.length() == 0) {
-							return getURI().appendLocalPart("");
-						}
-						if (prefixToUri.isEmpty()) {
-							cacheNamespaces();
-						}
-						URI uri = prefixToUri.get(prefix);
-						return uri != null ? uri : super.getNamespace(prefix);
-					}
-
-					@Override
-					public String getPrefix(URI namespace) {
-						if (namespace.equals(getURI().appendLocalPart(""))) {
-							return "";
-						}
-						if (uriToPrefix.isEmpty()) {
-							cacheNamespaces();
-						}
-						String prefix = uriToPrefix.get(namespace);
-						return prefix != null ? prefix : super
-								.getPrefix(namespace);
-					}
-
-					protected void clearNamespaceCache() {
-						uriToPrefix.clear();
-						prefixToUri.clear();
-					}
-
-					protected void cacheNamespaces() {
-						for (INamespace ns : getAllModelNamespaces()) {
-							if (!uriToPrefix.containsKey(ns.getURI())
-									&& !prefixToUri.containsKey(ns.getPrefix())) {
-								uriToPrefix.put(ns.getURI(), ns.getPrefix());
-								prefixToUri.put(ns.getPrefix(), ns.getURI());
-							}
-						}
-					}
-				};
-				injector.injectMembers(s.manager);
-				s.manager.addDecorator(new ModelInjector());
-				state.set(s);
+				state.set(s = new State());
 			}
 			return s;
 		}
@@ -380,7 +421,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	 */
 	@Override
 	public IEntityManager getManager() {
-		return state().manager;
+		return state().manager();
 	}
 
 	/*
@@ -455,10 +496,10 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 					}
 				} catch (Throwable e) {
 					getErrors().add(
-							new DiagnosticWrappedException(getURI()
-									.toString(), new KommaException(
-									"Error while loading import: "
-											+ imported, e)));
+							new DiagnosticWrappedException(getURI().toString(),
+									new KommaException(
+											"Error while loading import: "
+													+ imported, e)));
 				}
 			}
 		}
