@@ -101,7 +101,7 @@
             name="Turtle"
             priority="normal">
          <property
-               default="application/x-turtle"
+               default="text/turtle"
                name="mimeType">
          </property>
          <property
