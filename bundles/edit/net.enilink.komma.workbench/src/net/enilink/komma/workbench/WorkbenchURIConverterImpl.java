@@ -185,16 +185,18 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 	protected void removeRules(Collection<? extends IContainer> containers) {
 		try {
 			for (IContainer container : containers) {
-				container.accept(new IResourceVisitor() {
-					@Override
-					public boolean visit(IResource resource)
-							throws CoreException {
-						if (resource.getType() == IResource.FILE) {
-							removeRule((IFile) resource);
+				if (container.isAccessible()) {
+					container.accept(new IResourceVisitor() {
+						@Override
+						public boolean visit(IResource resource)
+								throws CoreException {
+							if (resource.getType() == IResource.FILE) {
+								removeRule((IFile) resource);
+							}
+							return true;
 						}
-						return true;
-					}
-				});
+					});
+				}
 			}
 		} catch (CoreException e) {
 			KommaWorkbenchPlugin.INSTANCE.log(e);
@@ -204,8 +206,7 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 	public boolean removeInputContainer(IContainer container) {
 		if (inputContainers.remove(container)) {
 			removeRules(Collections.singleton(container));
-			if (container.getType() == IResource.PROJECT
-					&& container.isAccessible()) {
+			if (container.getType() == IResource.PROJECT) {
 				try {
 					updateDependencies((IProject) container,
 							Collections.<IProject> emptyList());
@@ -236,13 +237,33 @@ public class WorkbenchURIConverterImpl extends ExtensibleURIConverter implements
 			delta.accept(new IResourceDeltaVisitor() {
 				@Override
 				public boolean visit(IResourceDelta delta) throws CoreException {
-					if (delta.getResource() instanceof IProject
+					int type = delta.getResource().getType();
+					if ((type == IResource.PROJECT || type == IResource.FOLDER)
+							&& delta.getMovedToPath() != null
+							&& inputContainers.contains(delta.getResource())) {
+						IResource newContainer = ResourcesPlugin.getWorkspace()
+								.getRoot().findMember(delta.getMovedToPath());
+						removeInputContainer((IContainer) delta.getResource());
+						// remove rules for contained files
+						delta.accept(new IResourceDeltaVisitor() {
+							@Override
+							public boolean visit(IResourceDelta delta)
+									throws CoreException {
+								if (delta.getResource().getType() == IResource.FILE) {
+									removeRule((IFile) delta.getResource());
+								}
+								return true;
+							}
+						});
+						addInputContainer((IContainer) newContainer);
+						return false;
+					} else if (type == IResource.PROJECT
 							&& inputContainers.contains(delta.getResource())
 							&& delta.getResource().isAccessible()) {
 						IProject p = (IProject) delta.getResource();
 						updateDependencies(p,
 								Arrays.asList(p.getReferencedProjects()));
-					} else if (delta.getResource().getType() == IResource.FILE
+					} else if (type == IResource.FILE
 							&& supportedExtensions.contains(delta.getResource()
 									.getFileExtension())) {
 						boolean isRelevant = false;
