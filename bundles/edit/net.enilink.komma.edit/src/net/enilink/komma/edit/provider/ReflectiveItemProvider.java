@@ -82,14 +82,17 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 		}
 	}
 
+	protected boolean updateLabel(IStatementNotification notification) {
+		return RDFS.PROPERTY_LABEL.equals(notification.getPredicate());
+	}
+
 	protected void addViewerNotifications(
 			Collection<IViewerNotification> viewerNotifications,
 			IStatementNotification notification) {
 		IEntity object = resolveReference(notification.getSubject());
 		if (object instanceof IResource) {
 			((IResource) object).refresh(notification.getPredicate());
-			boolean labelUpdate = RDFS.PROPERTY_LABEL.equals(notification
-					.getPredicate());
+			boolean labelUpdate = updateLabel(notification);
 			viewerNotifications.add(new ViewerNotification(object,
 					!labelUpdate, labelUpdate));
 		}

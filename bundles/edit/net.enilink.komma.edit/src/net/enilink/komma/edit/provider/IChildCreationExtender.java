@@ -45,9 +45,9 @@ public interface IChildCreationExtender {
 
 	/**
 	 * A descriptor can create a child creation extender. They are used as the
-	 * values in a {@link Descriptor.Registry registry}.
+	 * values in a {@link IDescriptor.IRegistry registry}.
 	 */
-	interface Descriptor {
+	interface IDescriptor {
 		/**
 		 * Creates a child creation extender.
 		 * 
@@ -57,13 +57,13 @@ public interface IChildCreationExtender {
 
 		/**
 		 * A registry is an index that takes a namespace and maps it to a
-		 * collection of {@link Descriptor descriptor}s.
+		 * collection of {@link IDescriptor descriptor}s.
 		 */
-		interface Registry {
+		interface IRegistry {
 			/**
 			 * The global registry typically populated by plugin registration.
 			 */
-			Registry INSTANCE = KommaEditPlugin
+			IRegistry INSTANCE = KommaEditPlugin
 					.getChildCreationExtenderDescriptorRegistry();
 
 			/**
@@ -76,19 +76,19 @@ public interface IChildCreationExtender {
 			 * @return a collection of descriptors that can create a child
 			 *         creation extender.
 			 */
-			Collection<Descriptor> getDescriptors(String namespace);
+			Collection<IDescriptor> getDescriptors(String namespace);
 
 			/**
 			 * A simple registry implementation that supports delegation.
 			 */
-			class Impl extends HashMap<String, Collection<Descriptor>>
-					implements Registry {
+			class Impl extends HashMap<String, Collection<IDescriptor>>
+					implements IRegistry {
 				private static final long serialVersionUID = 1L;
 
 				/**
 				 * The delegate registry should lookup fail locally.
 				 */
-				protected Registry delegateRegistry;
+				protected IRegistry delegateRegistry;
 
 				/**
 				 * Creates an instance.
@@ -97,12 +97,12 @@ public interface IChildCreationExtender {
 				 *            <code>null</code> or a registration that should
 				 *            act as the delegate.
 				 */
-				public Impl(Registry delegateRegistry) {
+				public Impl(IRegistry delegateRegistry) {
 					this.delegateRegistry = delegateRegistry;
 				}
 
-				public Collection<Descriptor> getDescriptors(String namespace) {
-					Collection<Descriptor> descriptor = get(namespace);
+				public Collection<IDescriptor> getDescriptors(String namespace) {
+					Collection<IDescriptor> descriptor = get(namespace);
 					return descriptor == null ? delegatedGetDescriptors(namespace)
 							: descriptor;
 				}
@@ -110,7 +110,7 @@ public interface IChildCreationExtender {
 				/**
 				 * This is called when local lookup fails.
 				 */
-				protected Collection<Descriptor> delegatedGetDescriptors(
+				protected Collection<IDescriptor> delegatedGetDescriptors(
 						String namespace) {
 					if (delegateRegistry != null) {
 						return delegateRegistry.getDescriptors(namespace);

@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.eclipse.emf.edit">
+<schema targetNamespace="net.enilink.komma.edit" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.eclipse.emf.edit" id="childCreationExtenders" name="Registered Child Creation Extenders"/>
+         <meta.schema plugin="net.enilink.komma.edit" id="childCreationExtenders" name="Registered Child Creation Extenders"/>
       </appInfo>
       <documentation>
          This extension point is used to register a child creation extender that is able to produce new child descriptors for classes of the given package. The global child creation extender registry, &lt;samp&gt;IChildCreationExtender.Descriptor.Registry.INSTANCE&lt;/samp&gt;, is used to record the registration.
@@ -11,6 +11,11 @@
    </annotation>
 
    <element name="extension">
+      <annotation>
+         <appInfo>
+            <meta.element />
+         </appInfo>
+      </annotation>
       <complexType>
          <sequence>
             <element ref="extender" minOccurs="1" maxOccurs="unbounded"/>
@@ -69,7 +74,7 @@
          <meta.section type="since"/>
       </appInfo>
       <documentation>
-         2.4.0
+         1.0.0
       </documentation>
    </annotation>
 
@@ -80,8 +85,8 @@
       <documentation>
          &lt;extension point=&quot;org.eclipse.emf.edit.childCreationExtender&quot;&gt;
   &lt;factory
-     uri = &quot;http:///org/eclipse/example/library.ecore&quot; 
-     class = &quot;org.eclipse.example.library.extended.provider.ExtendedLibraryItemProviderAdapterFactory$LibraryChildCreationExtender&quot;/&gt;
+     uri = &quot;http://enilink.net/vocab/library#&quot;
+     class = &quot;net.enilink.komma.example.library.extended.provider.ExtendedLibraryItemProviderAdapterFactory$LibraryChildCreationExtender&quot;/&gt;
 &lt;/extension&gt;
       </documentation>
    </annotation>

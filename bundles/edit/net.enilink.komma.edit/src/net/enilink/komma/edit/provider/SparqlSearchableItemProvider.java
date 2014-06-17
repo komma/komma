@@ -81,7 +81,7 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 					+ searchL //
 					+ " FILTER regex(str(?l), ?labelPattern, \"i\")" //
 					+ "} UNION {" //
-					+ (isFilter ? " ?s ?p [] . " : "") + searchS
+					+ (isFilter ? " ?s ?p ?o . " : "") + searchS
 					+ " FILTER regex(str(?s), ?uriPattern, \"i\")" //
 					+ "} " //
 					// if FTS is natively implemented then add
@@ -92,7 +92,7 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 			if (limit > 0) {
 				queryStr += " LIMIT " + limit;
 			}
-
+			
 			IQuery<?> query = em.createQuery(queryStr);
 			searchS.addParameters(query);
 			searchL.addParameters(query);

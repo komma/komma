@@ -28,7 +28,7 @@ import net.enilink.komma.edit.domain.IEditingDomain;
  * A child creation extension manager encapsulates a
  * {@link #getChildCreationExtenders() list of child creation extenders} for a
  * particular package. The list is automatically populated based on
- * {@link IChildCreationExtender.Descriptor.Registry#getDescriptors(String)
+ * {@link IChildCreationExtender.IDescriptor.IRegistry#getDescriptors(String)
  * registered extensions} for the package. The manager also acts as resource
  * locator that loads resources from either the primary resource locator or one
  * of the extenders.
@@ -40,7 +40,7 @@ public class ChildCreationExtenderManager extends DelegatingResourceLocator {
 	protected IResourceLocator primaryResourceLocator;
 
 	/**
-	 * A key in the {@link IChildCreationExtender.Descriptor.Registry child
+	 * A key in the {@link IChildCreationExtender.IDescriptor.IRegistry child
 	 * creation extender registry} which will typically be the namespace of the
 	 * package being extended.
 	 */
@@ -122,7 +122,7 @@ public class ChildCreationExtenderManager extends DelegatingResourceLocator {
 	 *            the resource locator for finding basic resources.
 	 * @param namespace
 	 *            a key in the
-	 *            {@link IChildCreationExtender.Descriptor.Registry child
+	 *            {@link IChildCreationExtender.IDescriptor.IRegistry child
 	 *            creation extender registry} which will typically be the
 	 *            namespace of the package whose extensions are being managed.
 	 */
@@ -151,7 +151,7 @@ public class ChildCreationExtenderManager extends DelegatingResourceLocator {
 	public synchronized List<IChildCreationExtender> getChildCreationExtenders() {
 		if (childCreationExtenders == null) {
 			childCreationExtenders = new ChildCreationExtenderList();
-			for (IChildCreationExtender.Descriptor descriptor : IChildCreationExtender.Descriptor.Registry.INSTANCE
+			for (IChildCreationExtender.IDescriptor descriptor : IChildCreationExtender.IDescriptor.IRegistry.INSTANCE
 					.getDescriptors(namespace)) {
 				childCreationExtenders.add(descriptor
 						.createChildCreationExtender());

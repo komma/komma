@@ -22,12 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
 import net.enilink.komma.common.command.AbstractCommand;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.CommandWrapper;
@@ -37,12 +31,19 @@ import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.common.util.Log;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.edit.KommaEditPlugin;
-import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.concepts.IResource;
-import net.enilink.komma.core.IReference;
+import net.enilink.komma.model.IModelAware;
+import net.enilink.komma.model.IModelSet;
+
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 /**
  * The drag and drop command logically acts upon an owner object onto which a
@@ -333,12 +334,15 @@ public class DragAndDropCommand extends AbstractCommand implements
 		return domain.getParent(object);
 	}
 
-	protected boolean isCrossDomain() {
+	protected boolean isCrossModelSet() {
 		for (Object item : collection) {
-			IEditingDomain itemDomain = AdapterFactoryEditingDomain
-					.getEditingDomainFor(item);
-			if (itemDomain != null && itemDomain != domain) {
-				return true;
+			if (item instanceof IModelAware) {
+				IModelSet itemModelSet = ((IModelAware) item).getModel()
+						.getModelSet();
+				if (itemModelSet != null
+						&& !itemModelSet.equals(domain.getModelSet())) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -735,7 +739,7 @@ public class DragAndDropCommand extends AbstractCommand implements
 
 			dropCommand = compoundCommand.getCommandList().size() == 0 ? (ICommand) IdentityCommand.INSTANCE
 					: compoundCommand;
-		} else if (isCrossDomain()) {
+		} else if (isCrossModelSet()) {
 			dragCommand = IdentityCommand.INSTANCE;
 			dropCommand = UnexecutableCommand.INSTANCE;
 		} else {
@@ -760,7 +764,7 @@ public class DragAndDropCommand extends AbstractCommand implements
 	 * This attempts to prepare a drop move on operation.
 	 */
 	protected boolean prepareDropMoveOn() {
-		if (isCrossDomain()) {
+		if (isCrossModelSet()) {
 			dragCommand = IdentityCommand.INSTANCE;
 			dropCommand = UnexecutableCommand.INSTANCE;
 		} else {

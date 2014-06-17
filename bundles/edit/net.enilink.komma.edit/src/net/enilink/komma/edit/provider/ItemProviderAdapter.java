@@ -90,9 +90,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-
 /**
  * This adapter implementation provides a convenient reusable base for adapters
  * that will be used as item providers. Default implementations for the
@@ -1505,7 +1502,7 @@ public class ItemProviderAdapter extends
 	 * in {@link net.enilink.komma.rmf.common.notify.Notifier}.
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void fireNotifications(
 			Collection<? extends IViewerNotification> notifications) {
 		/*

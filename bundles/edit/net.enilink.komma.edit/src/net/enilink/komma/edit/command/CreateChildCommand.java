@@ -368,13 +368,21 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 		if (owner == null || property == null || childDescription == null) {
 			return false;
 		}
-		if (owner.getApplicableCardinality(property).getSecond() != 1) {
+		int maxCardinality = owner.getApplicableCardinality(property)
+				.getSecond();
+		if (maxCardinality != 1) {
+			if (maxCardinality != Integer.MAX_VALUE
+					&& owner.getCardinality(property) >= maxCardinality) {
+				// cannot execute command since maximal cardinality is already
+				// reached
+				return false;
+			}
 			doAdd = true;
 			return true;
 		} else if (owner.getCardinality(property) == 0) {
 			return true;
 		}
-		return true;
+		return false;
 	}
 
 	/**

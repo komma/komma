@@ -188,28 +188,28 @@ public final class KommaEditPlugin extends AbstractKommaPlugin {
 
 	/**
 	 * The singleton instance of a
-	 * {@link IChildCreationExtender.Descriptor.Registry child creation extender
+	 * {@link IChildCreationExtender.IDescriptor.IRegistry child creation extender
 	 * registry}.
 	 */
-	private static IChildCreationExtender.Descriptor.Registry.Impl childCreationExtenderDescriptorRegistry;
+	private static IChildCreationExtender.IDescriptor.IRegistry.Impl childCreationExtenderDescriptorRegistry;
 
 	/**
 	 * Returns a populated instance of a
-	 * {@link IChildCreationExtender.Descriptor.Registry child creation extender
+	 * {@link IChildCreationExtender.IDescriptor.IRegistry child creation extender
 	 * registry}.
 	 * 
 	 * @return a populated instance of child creation extender registry.
 	 */
-	public static IChildCreationExtender.Descriptor.Registry getChildCreationExtenderDescriptorRegistry() {
+	public static IChildCreationExtender.IDescriptor.IRegistry getChildCreationExtenderDescriptorRegistry() {
 		if (childCreationExtenderDescriptorRegistry == null) {
-			childCreationExtenderDescriptorRegistry = new IChildCreationExtender.Descriptor.Registry.Impl(
+			childCreationExtenderDescriptorRegistry = new IChildCreationExtender.IDescriptor.IRegistry.Impl(
 					null) {
 				private static final long serialVersionUID = 1L;
 
 				@Override
-				public Collection<IChildCreationExtender.Descriptor> delegatedGetDescriptors(
+				public Collection<IChildCreationExtender.IDescriptor> delegatedGetDescriptors(
 						String namespace) {
-					Collection<IChildCreationExtender.Descriptor> descriptors = get(namespace);
+					Collection<IChildCreationExtender.IDescriptor> descriptors = get(namespace);
 					return descriptors != null ? descriptors : super
 							.delegatedGetDescriptors(namespace);
 				}
@@ -232,7 +232,7 @@ public final class KommaEditPlugin extends AbstractKommaPlugin {
 
 							class PluginChildCreationExtenderDescriptor extends
 									PluginClassDescriptor implements
-									IChildCreationExtender.Descriptor {
+									IChildCreationExtender.IDescriptor {
 								public PluginChildCreationExtenderDescriptor(
 										IConfigurationElement element,
 										String attributeName) {
@@ -250,20 +250,20 @@ public final class KommaEditPlugin extends AbstractKommaPlugin {
 								}
 							}
 
-							Collection<IChildCreationExtender.Descriptor> collection = childCreationExtenderDescriptorRegistry
+							Collection<IChildCreationExtender.IDescriptor> collection = childCreationExtenderDescriptorRegistry
 									.get(packageURI);
 							if (add) {
 								if (collection == null) {
 									childCreationExtenderDescriptorRegistry
 											.put(packageURI,
-													collection = new ArrayList<IChildCreationExtender.Descriptor>());
+													collection = new ArrayList<IChildCreationExtender.IDescriptor>());
 								}
 
 								collection
 										.add(new PluginChildCreationExtenderDescriptor(
 												element, "class"));
 							} else if (collection != null) {
-								for (IChildCreationExtender.Descriptor descriptor : collection) {
+								for (IChildCreationExtender.IDescriptor descriptor : collection) {
 									if (descriptor instanceof PluginChildCreationExtenderDescriptor
 											&& ((PluginChildCreationExtenderDescriptor) descriptor)
 													.matches(element)) {
