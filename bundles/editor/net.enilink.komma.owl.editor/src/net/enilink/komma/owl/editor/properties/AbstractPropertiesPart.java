@@ -10,11 +10,17 @@
  *******************************************************************************/
 package net.enilink.komma.owl.editor.properties;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
@@ -30,6 +36,10 @@ import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
+import net.enilink.vocab.owl.AnnotationProperty;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.owl.OntologyProperty;
+import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
 
 import org.eclipse.core.commands.ExecutionException;
@@ -266,6 +276,22 @@ public abstract class AbstractPropertiesPart extends AbstractEditingDomainPart {
 	}
 
 	protected Object[] filterElements(Object parent, Object[] elements) {
+		if (hideBuiltins && getRootProperty().equals(parent)) {
+			List<Object> list = new ArrayList<>(Arrays.asList(elements));
+			for (Iterator<?> it = list.iterator(); it.hasNext();) {
+				Object element = it.next();
+				if (element instanceof IReference) {
+					URI uri = ((IReference) element).getURI();
+					if (uri != null
+							&& RDF.NAMESPACE_URI.equals(uri.namespace())
+							|| OWL.NAMESPACE_URI.equals(uri.namespace())
+							&& !(element instanceof AnnotationProperty || element instanceof OntologyProperty)) {
+						it.remove();
+					}
+				}
+			}
+			return list.toArray();
+		}
 		return elements;
 	}
 
