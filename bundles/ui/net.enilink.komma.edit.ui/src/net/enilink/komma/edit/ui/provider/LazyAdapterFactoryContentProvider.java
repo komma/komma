@@ -54,6 +54,13 @@ public class LazyAdapterFactoryContentProvider extends
 		}
 	}
 
+	/**
+	 * This method may be overridden to allow filtering of the returned elements.
+	 */
+	protected Object[] internalGetChildren(Object element) {
+		return super.getChildren(element);
+	}
+
 	@Override
 	public Object[] getChildren(Object element) {
 		Object[] children;
@@ -62,7 +69,7 @@ public class LazyAdapterFactoryContentProvider extends
 		} else {
 			children = parentToChildren.get(element);
 			if (children == null) {
-				children = super.getChildren(element);
+				children = internalGetChildren(element);
 				parentToChildren.put(element, children);
 				((TreeViewer) viewer).setChildCount(element, children.length);
 			}
