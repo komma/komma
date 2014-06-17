@@ -186,6 +186,9 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	private static final String SELECT_CONTAINER = PREFIX //
 			+ "SELECT ?container WHERE { ?container komma:contains ?obj . }";
 
+	private static final String COUNT_PROPERTY_OBJECTS = PREFIX //
+			+ "SELECT (count(?obj) as ?count) WHERE { ?subj ?pred ?obj . }";
+
 	private static final String SELECT_PROPERTY_OBJECTS = PREFIX //
 			+ "SELECT ?obj WHERE { ?subj ?pred ?obj . }";
 
@@ -305,13 +308,12 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public int getCardinality(IReference property) {
-		int count = 0;
-		for (Iterator<?> it = getPropertyValues(property, true); it.hasNext();) {
-			it.next();
-
-			count++;
-		}
-		return count;
+		IQuery<?> query = getEntityManager().createQuery(
+				COUNT_PROPERTY_OBJECTS, true);
+		query.setParameter("subj", this);
+		query.setParameter("pred", property);
+		Object count = query.getSingleResult();
+		return (count instanceof Number) ? ((Number) count).intValue() : 0;
 	}
 
 	@Override
