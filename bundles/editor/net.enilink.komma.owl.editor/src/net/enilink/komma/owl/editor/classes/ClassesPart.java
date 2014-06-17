@@ -274,13 +274,14 @@ public class ClassesPart extends AbstractEditingDomainPart {
 						.setContentProvider(new LazyAdapterFactoryContentProvider(
 								getAdapterFactory()) {
 							@Override
-							public Object[] getChildren(Object element) {
+							protected Object[] internalGetChildren(
+									Object element) {
 								if (hideBuiltins
 										&& (RDFS.TYPE_RESOURCE.equals(element) || OWL.TYPE_THING
 												.equals(element))) {
 									List<Object> children = new ArrayList<>(
 											Arrays.asList(super
-													.getChildren(element)));
+													.internalGetChildren(element)));
 									for (Iterator<?> it = children.iterator(); it
 											.hasNext();) {
 										Object child = it.next();
@@ -299,7 +300,7 @@ public class ClassesPart extends AbstractEditingDomainPart {
 									}
 									return children.toArray();
 								}
-								return super.getChildren(element);
+								return super.internalGetChildren(element);
 							}
 
 						});

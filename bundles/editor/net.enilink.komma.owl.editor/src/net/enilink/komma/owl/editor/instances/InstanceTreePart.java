@@ -35,7 +35,7 @@ public class InstanceTreePart extends InstancesPart {
 									RDF.TYPE_PROPERTY)) {
 						return "?s rdfs:subPropertyOf [ a ?parent ] . ";
 					}
-					return "[ a ?parent; komma:child ] . ";
+					return "[ a ?parent; komma:descendant ?s ] . ";
 				}
 			};
 			return searchableProvider.find(expression, currentInput, 20);
