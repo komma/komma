@@ -21,9 +21,15 @@ public interface InferencingCapability {
 		public boolean doesOWL() {
 			return false;
 		}
+
+		public boolean inDefaultGraph() {
+			return true;
+		}
 	};
 
 	boolean doesOWL();
 
 	boolean doesRDFS();
+
+	boolean inDefaultGraph();
 }
