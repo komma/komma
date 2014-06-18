@@ -98,7 +98,8 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 			}
 		}
 
-		protected IReference[] addNull(boolean includeInferred,
+		@Override
+		protected IReference[] addNullContext(boolean includeInferred,
 				IReference[] contexts) {
 			if (includeInferred) {
 				// contexts = Arrays.copyOf(contexts, contexts.length + 1);
@@ -106,13 +107,6 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 				contexts = new IReference[0];
 			}
 			return contexts;
-		}
-
-		@Override
-		public <R> IDataManagerQuery<R> createQuery(String query,
-				String baseURI, boolean includeInferred, IReference... contexts) {
-			return super.createQuery(query, baseURI, includeInferred,
-					addNull(includeInferred, contexts));
 		}
 
 		@Override
@@ -180,6 +174,11 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 
 							@Override
 							public boolean doesOWL() {
+								return true;
+							}
+
+							@Override
+							public boolean inDefaultGraph() {
 								return true;
 							}
 						});
