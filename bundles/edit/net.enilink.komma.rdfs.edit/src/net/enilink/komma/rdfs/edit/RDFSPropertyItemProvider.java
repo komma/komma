@@ -38,7 +38,6 @@ import net.enilink.komma.edit.provider.ViewerNotification;
 import net.enilink.komma.em.concepts.IClass;
 import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.concepts.IResource;
-import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.vocab.owl.DatatypeProperty;
@@ -83,20 +82,21 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 		if (object instanceof DatatypeProperty) {
 			newChildDescriptors
 					.add(createChildParameter(
-							(IProperty) ((IObject) object).getModel().resolve(
-									subPropertyOf),
+							(IProperty) ((IEntity) object).getEntityManager()
+									.find(subPropertyOf),
 							new ChildDescriptor(
-									Arrays.asList((IClass) ((IObject) object)
-											.getModel().resolve(
+									Arrays.asList((IClass) ((IEntity) object)
+											.getEntityManager().find(
 													OWL.TYPE_DATATYPEPROPERTY)),
 									true)));
 		} else if (object instanceof ObjectProperty) {
 			newChildDescriptors.add(createChildParameter(
-					(IProperty) ((IObject) object).getModel().resolve(
+					(IProperty) ((IEntity) object).getEntityManager().find(
 							subPropertyOf),
 					new ChildDescriptor(Arrays
-							.asList((IClass) ((IObject) object).getModel()
-									.resolve(OWL.TYPE_OBJECTPROPERTY)), true)));
+							.asList((IClass) ((IEntity) object)
+									.getEntityManager().find(
+											OWL.TYPE_OBJECTPROPERTY)), true)));
 		}
 	}
 
@@ -154,9 +154,12 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 					&& !owner.equals(value)
 					&& !((IProperty) owner).getRdfsSubPropertyOf().contains(
 							value)) {
-				addCommand.add(createAddCommand(domain, (IObject) value,
-						((IObject) value).getModel().resolve(subPropertyOf),
-						Arrays.asList(owner), CommandParameter.NO_INDEX));
+				addCommand.add(createAddCommand(
+						domain,
+						(IResource) value,
+						((IResource) value).getEntityManager().find(
+								subPropertyOf), Arrays.asList(owner),
+						CommandParameter.NO_INDEX));
 			} else {
 				addCommand.dispose();
 				return UnexecutableCommand.INSTANCE;
@@ -168,14 +171,6 @@ public class RDFSPropertyItemProvider extends ReflectiveItemProvider {
 	@Override
 	protected ICommand factorMoveCommand(IEditingDomain domain,
 			CommandParameter commandParameter) {
-		// final IObject owner = commandParameter.getOwnerObject();
-		// final Object value = commandParameter.getValue();
-		// if (owner instanceof IClass && value instanceof IClass
-		// && !owner.equals(value)) {
-		// return createMoveCommand(domain, (IObject) value, ((IObject) value)
-		// .getModel().resolve(subClassOf), owner,
-		// CommandParameter.NO_INDEX);
-		// }
 		return UnexecutableCommand.INSTANCE;
 	}
 
