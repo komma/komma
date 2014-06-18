@@ -1,5 +1,6 @@
 package net.enilink.komma.internal.sesame;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -48,7 +49,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 	protected RepositoryConnection connection;
 
 	@Inject(optional = true)
-	protected InferencingCapability inferencing;
+	protected volatile InferencingCapability inferencing;
 
 	@Inject
 	protected Injector injector;
@@ -71,6 +72,20 @@ public class SesameRepositoryDataManager implements IDataManager {
 		}
 		this.changeSupport = changeSupport;
 		this.transaction = new SesameTransaction(this, changeSupport);
+	}
+
+	protected IReference[] addNullContext(boolean includeInferred,
+			IReference[] contexts) {
+		if (includeInferred) {
+			for (IReference ctx : contexts) {
+				if (ctx == null) {
+					return contexts;
+				}
+			}
+			contexts = Arrays.copyOf(contexts, contexts.length + 1);
+			contexts[contexts.length - 1] = null;
+		}
+		return contexts;
 	}
 
 	@Override
@@ -252,6 +267,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 	@Override
 	public <R> IDataManagerQuery<R> createQuery(String query, String baseURI,
 			boolean includeInferred, IReference... contexts) {
+		contexts = addNullContext(includeInferred, contexts);
 		try {
 			// query = ensureBindingsInGraph(query, contexts);
 			Query sesameQuery = prepareSesameQuery(query, baseURI,
@@ -280,6 +296,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 	public IDataManagerUpdate createUpdate(String update, String baseURI,
 			boolean includeInferred, IReference[] readContexts,
 			IReference... modifyContexts) {
+		readContexts = addNullContext(includeInferred, readContexts);
 		if (changeSupport.isEnabled(this)) {
 			return new SesameUpdate(this, update, baseURI, includeInferred,
 					readContexts, modifyContexts);
@@ -304,23 +321,23 @@ public class SesameRepositoryDataManager implements IDataManager {
 	@Override
 	public InferencingCapability getInferencing() {
 		if (inferencing == null) {
-			try {
-				inferencing = new InferencingCapability() {
-					@Override
-					public boolean doesOWL() {
-						return false;
-					}
+			inferencing = new InferencingCapability() {
+				@Override
+				public boolean doesOWL() {
+					return false;
+				}
 
-					@Override
-					public boolean doesRDFS() {
-						// assume that RDFS is supported
-						return true;
-					}
-				};
-			} catch (Exception e) {
-				throw new KommaException(
-						"Error while determining inferencing capabilities", e);
-			}
+				@Override
+				public boolean doesRDFS() {
+					// assume that RDFS is supported
+					return true;
+				}
+
+				@Override
+				public boolean inDefaultGraph() {
+					return true;
+				}
+			};
 		}
 		return inferencing;
 	}
@@ -373,6 +390,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 	@Override
 	public boolean hasMatch(IReference subject, IReference predicate,
 			IValue object, boolean includeInferred, IReference... contexts) {
+		contexts = addNullContext(includeInferred, contexts);
 		try {
 			return getConnection().hasStatement(
 					(Resource) valueConverter.toSesame(subject),
@@ -393,6 +411,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 	public IExtendedIterator<IStatement> match(IReference subject,
 			IReference predicate, IValue object, boolean includeInferred,
 			IReference... contexts) {
+		contexts = addNullContext(includeInferred, contexts);
 		try {
 			SesameGraphResult result = new SesameGraphResult(getConnection()
 					.getStatements(valueConverter.toSesame(subject),
