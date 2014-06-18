@@ -72,6 +72,13 @@ public abstract class AdapterFactory implements IAdapterFactory, IDisposable {
 
 	abstract protected Object createAdapter(Object object, Object type);
 
+	public void unlinkAdapter(Object object) {
+		Object adapter = object2adapters.remove(object);
+		if (adapter instanceof IAdapter) {
+			((IAdapter) adapter).removeTarget(object);
+		}
+	}
+
 	@Override
 	public boolean isFactoryForType(Object type) {
 		return false;

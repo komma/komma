@@ -32,6 +32,7 @@ import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.event.IStatementNotification;
+import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
 
 /**
@@ -71,8 +72,20 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 				0);
 		for (INotification notification : notifications) {
 			if (notification instanceof IStatementNotification) {
-				addViewerNotifications(viewerNotifications,
-						(IStatementNotification) notification);
+				IStatementNotification stmtNotification = (IStatementNotification) notification;
+				// ensure that adapter is replaced by another one that matches
+				// the current entity types
+				if (RDF.PROPERTY_TYPE.equals(stmtNotification.getPredicate())
+						&& adapterFactory instanceof AdapterFactory) {
+					IEntity object = resolveReference(notification.getSubject());
+					if (object != null) {
+						viewerNotifications.add(new ViewerNotification(object,
+								true, true));
+					}
+					((AdapterFactory) adapterFactory)
+							.unlinkAdapter(stmtNotification.getSubject());
+				}
+				addViewerNotifications(viewerNotifications, stmtNotification);
 			}
 		}
 
