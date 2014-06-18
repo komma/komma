@@ -218,46 +218,46 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 			RepositoryConnection conn = null;
 			try {
 				conn = repository.getConnection();
-				for (String name : bundles) {
-					URL url = Platform.getBundle(name).getResource(
-							"META-INF/org.openrdf.ontologies");
-					if (url != null) {
-						URL resolvedUrl = FileLocator.resolve(url);
+				URI defaultGraph = getDefaultGraph();
+				Resource[] contexts = defaultGraph == null ? new Resource[0]
+						: new Resource[] { repository.getValueFactory()
+								.createURI(defaultGraph.toString()) };
+				if (!conn.hasStatement(null, null, null, false, contexts)) {
+					for (String name : bundles) {
+						URL url = Platform.getBundle(name).getResource(
+								"META-INF/org.openrdf.ontologies");
+						if (url != null) {
+							URL resolvedUrl = FileLocator.resolve(url);
 
-						Properties properties = new Properties();
-						InputStream in = resolvedUrl.openStream();
-						properties.load(in);
-						in.close();
+							Properties properties = new Properties();
+							InputStream in = resolvedUrl.openStream();
+							properties.load(in);
+							in.close();
 
-						URI baseUri = URIs.createURI(url.toString())
-								.trimSegments(1);
-						for (Map.Entry<Object, Object> entry : properties
-								.entrySet()) {
-							String file = entry.getKey().toString();
-							if (file.contains("rdfs") && skipRdfsOnImport()) {
-								// skip RDF and RDFS schema
-								continue;
-							}
-
-							URI fileUri = URIs.createFileURI(file);
-							fileUri = fileUri.resolve(baseUri);
-
-							resolvedUrl = FileLocator.resolve(new URL(fileUri
-									.toString()));
-							if (resolvedUrl != null) {
-								in = resolvedUrl.openStream();
-								if (in != null && in.available() > 0) {
-									URI defaultGraph = getDefaultGraph();
-									Resource[] contexts = defaultGraph == null ? new Resource[0]
-											: new Resource[] { repository
-													.getValueFactory()
-													.createURI(
-															defaultGraph
-																	.toString()) };
-									conn.add(in, "", RDFFormat.RDFXML, contexts);
+							URI baseUri = URIs.createURI(url.toString())
+									.trimSegments(1);
+							for (Map.Entry<Object, Object> entry : properties
+									.entrySet()) {
+								String file = entry.getKey().toString();
+								if (file.contains("rdfs") && skipRdfsOnImport()) {
+									// skip RDF and RDFS schema
+									continue;
 								}
-								if (in != null) {
-									in.close();
+
+								URI fileUri = URIs.createFileURI(file);
+								fileUri = fileUri.resolve(baseUri);
+
+								resolvedUrl = FileLocator.resolve(new URL(
+										fileUri.toString()));
+								if (resolvedUrl != null) {
+									in = resolvedUrl.openStream();
+									if (in != null && in.available() > 0) {
+										conn.add(in, "", RDFFormat.RDFXML,
+												contexts);
+									}
+									if (in != null) {
+										in.close();
+									}
 								}
 							}
 						}
