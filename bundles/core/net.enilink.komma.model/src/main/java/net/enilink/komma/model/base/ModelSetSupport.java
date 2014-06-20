@@ -31,6 +31,7 @@ import net.enilink.komma.common.notify.FilterUtil;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationSupport;
+import net.enilink.komma.core.BlankNode;
 import net.enilink.komma.core.EntityVar;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
@@ -252,7 +253,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 
 	@Override
 	public void collectInjectionModules(Collection<Module> modules) {
-		modules.add(new CacheModule(getReference().toString()));
+		modules.add(new CacheModule(BlankNode.generateId()));
 		// ensure that one shared data manager is used throughout the model set
 		modules.add(new AbstractModule() {
 			protected void configure() {
