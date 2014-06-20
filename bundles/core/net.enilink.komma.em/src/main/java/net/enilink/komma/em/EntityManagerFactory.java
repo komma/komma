@@ -73,7 +73,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 	KommaModule module;
 
-	private boolean open = true;
+	private volatile boolean open = true;
 
 	@Inject
 	IUnitOfWork unitOfWork;
@@ -87,7 +87,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 		this.managerModule = managerModule;
 	}
 
-	public void close() {
+	public synchronized void close() {
 		if (open) {
 			if (parent == null) {
 				if (dmFactory != null) {
@@ -105,8 +105,15 @@ class EntityManagerFactory implements IEntityManagerFactory {
 		}
 	}
 
+	private void ensureFactoryIsOpened() {
+		if (!open) {
+			throw new RuntimeException("EntityManagerFactory is closed!");
+		}
+	}
+
 	@Override
 	public IEntityManager create() {
+		ensureFactoryIsOpened();
 		return getManagerInjector(new AbstractModule() {
 			@Override
 			protected void configure() {
@@ -119,6 +126,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 	@Override
 	public IEntityManager create(final IEntityManager scope) {
+		ensureFactoryIsOpened();
 		return getManagerInjector(new AbstractModule() {
 			@Override
 			protected void configure() {
