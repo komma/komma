@@ -23,7 +23,7 @@ public interface InferencingCapability {
 		}
 
 		public boolean inDefaultGraph() {
-			return true;
+			return false;
 		}
 	};
 
