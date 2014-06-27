@@ -76,7 +76,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 
 	protected IReference[] addNullContext(boolean includeInferred,
 			IReference[] contexts) {
-		if (includeInferred) {
+		if (includeInferred && getInferencing().inDefaultGraph()) {
 			for (IReference ctx : contexts) {
 				if (ctx == null) {
 					return contexts;
