@@ -7,6 +7,6 @@ Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: net.enilink.komma.core,
  net.enilink.vocab.rdfs
-Import-Package: com.google.inject;version="3.0.0",
+Import-Package: com.google.inject;version="4.0.0",
  org.slf4j
 Export-Package: net.enilink.komma.literals
