@@ -1,6 +1,7 @@
 package net.enilink.komma.parser.sparql;
 
 import org.parboiled.Rule;
+import org.parboiled.support.Var;
 
 import net.enilink.komma.parser.sparql.tree.Graph;
 import net.enilink.komma.parser.sparql.tree.GraphPattern;
@@ -21,12 +22,12 @@ import net.enilink.komma.parser.sparql.tree.expr.GraphPatternExpr;
 public class Sparql11Parser extends SparqlParser {
 	@Override
 	public Rule BuiltInCall() {
-		boolean not = false;
-		return FirstOf(
-				Sequence(Optional("NOT", not = true), "EXISTS",
+		Var<Boolean> not = new Var<>(false);
+		return firstOf(
+				sequence(optional("NOT", not.set(true)), "EXISTS",
 						GroupGraphPattern(), //
 						push(new GraphPatternExpr(
-								not ? GraphPatternExpr.Type.NOT_EXISTS
+								not.get() ? GraphPatternExpr.Type.NOT_EXISTS
 										: GraphPatternExpr.Type.EXISTS,
 								(GraphPattern) pop())) //
 				), //
@@ -34,12 +35,12 @@ public class Sparql11Parser extends SparqlParser {
 	}
 
 	public Rule GraphPatternNotTriples() {
-		return FirstOf(OptionalGraphPattern(), MinusGraphPattern(),
+		return firstOf(OptionalGraphPattern(), MinusGraphPattern(),
 				GroupOrUnionGraphPattern(), GraphGraphPattern());
 	}
 
 	public Rule MinusGraphPattern() {
-		return Sequence("MINUS", GroupGraphPattern(), push(new MinusGraph(
+		return sequence("MINUS", GroupGraphPattern(), push(new MinusGraph(
 				(Graph) pop())));
 	}
 }

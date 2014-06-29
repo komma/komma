@@ -22,10 +22,6 @@ public class GUnitBaseTestCase {
 		OK, FAIL
 	};
 
-	public GUnitBaseTestCase() {
-		super();
-	}
-
 	protected class TextInfo {
 		public Result result;
 		public String text;
@@ -53,9 +49,8 @@ public class GUnitBaseTestCase {
 
 				return textInfo;
 			} else if (line.startsWith("@check")) {
-
-				String pfad = line.replace("@check:", "");
-				String[] s = pfad.split("=");
+				String path = line.replace("@check:", "");
+				String[] s = path.split("=");
 				if (s.length == 2) {
 					pathCheck.put(s[0], s[1]);
 				} else {
@@ -70,7 +65,6 @@ public class GUnitBaseTestCase {
 									matcher.group(1), 16)));
 				}
 				matcher.appendTail(text);
-
 				text.append('\n');
 			}
 		}

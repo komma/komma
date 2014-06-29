@@ -5,20 +5,21 @@ import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.Set;
 
+import net.enilink.komma.parser.manchester.ManchesterActions;
+import net.enilink.komma.parser.manchester.ManchesterSyntaxParser;
+import net.enilink.komma.parser.test.GUnitBaseTestCase;
+
 import org.junit.Assert;
-import org.junit.ComparisonFailure;
 import org.junit.BeforeClass;
+import org.junit.ComparisonFailure;
 import org.junit.Test;
 import org.parboiled.Parboiled;
 import org.parboiled.buffers.DefaultInputBuffer;
 import org.parboiled.buffers.InputBuffer;
-import org.parboiled.common.StringUtils;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
-import net.enilink.komma.parser.manchester.ManchesterActions;
-import net.enilink.komma.parser.manchester.ManchesterSyntaxParser;
-import net.enilink.komma.parser.test.GUnitBaseTestCase;
+import com.google.common.base.Joiner;
 
 public class ASTManchesterTest extends GUnitBaseTestCase {
 
@@ -36,9 +37,7 @@ public class ASTManchesterTest extends GUnitBaseTestCase {
 				.getResourceAsStream("Ontology_AST.gunit")));
 
 		int failures = 0;
-
 		for (TextInfo textInfo : getTextInfos(in)) {
-
 			ParsingResult<Object> result = new ReportingParseRunner<Object>(
 					parser.OntologyDocument()).run(textInfo.text);
 
@@ -50,8 +49,7 @@ public class ASTManchesterTest extends GUnitBaseTestCase {
 					&& textInfo.result == Result.OK;
 
 			if (result.hasErrors() && textInfo.result == Result.OK) {
-				System.out.println(StringUtils
-						.join(result.parseErrors, "---\n"));
+				System.out.println(Joiner.on("---\n").join(result.parseErrors));
 			}
 
 			if (textInfo.pathCheck.size() > 0) {

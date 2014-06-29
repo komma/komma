@@ -103,11 +103,11 @@ public class ManchesterTest extends GUnitBaseTestCase {
 				Set<String> keySet = textInfo.pathCheck.keySet();
 				for (Iterator<String> iterator = keySet.iterator(); iterator
 						.hasNext();) {
-					String pfad = iterator.next();
-					String expected = textInfo.pathCheck.get(pfad);
+					String path = iterator.next();
+					String expected = textInfo.pathCheck.get(path);
 
 					try {
-						assertNode(result, pfad, expected, inputBuffer);
+						assertNode(result, path, expected, inputBuffer);
 					} catch (ComparisonFailure e) {
 						System.err.println(e);
 						passed = false;
