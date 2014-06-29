@@ -5,14 +5,8 @@ Bundle-SymbolicName: net.enilink.composition.properties.komma
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Import-Package: com.google.inject;version="3.0.0",
+Import-Package: com.google.inject;version="4.0.0",
  net.enilink.commons.iterator,
- net.enilink.komma.core,
- org.objectweb.asm;version="3.2.0",
- org.objectweb.asm.commons;version="3.2.0",
- org.objectweb.asm.signature;version="3.2.0",
- org.objectweb.asm.tree;version="3.2.0",
- org.objectweb.asm.util;version="3.2.0",
  net.enilink.composition,
  net.enilink.composition.annotations,
  net.enilink.composition.asm,
@@ -26,6 +20,12 @@ Import-Package: com.google.inject;version="3.0.0",
  net.enilink.composition.properties.traits,
  net.enilink.composition.properties.util,
  net.enilink.composition.vocabulary,
+ net.enilink.komma.core,
+ org.objectweb.asm;version="5.0.0",
+ org.objectweb.asm.commons;version="5.0.0",
+ org.objectweb.asm.signature;version="5.0.0",
+ org.objectweb.asm.tree;version="5.0.0",
+ org.objectweb.asm.util;version="5.0.0",
  org.slf4j
 Export-Package: net.enilink.composition.properties.komma,
  net.enilink.composition.properties.sparql
