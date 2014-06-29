@@ -49,12 +49,17 @@ public abstract class ExtendedClassNode extends ClassNode {
 	/**
 	 * Creates an {@link ExtendedClassNode}.
 	 * 
-	 * @param type Java type that gets defined by this class node.
-	 * @param parentClass The direct super class or the primary interface for this class node.
-	 * @param parentClassInfo Optional meta information for <code>parentClass</code>.
+	 * @param type
+	 *            Java type that gets defined by this class node.
+	 * @param parentClass
+	 *            The direct super class or the primary interface for this class
+	 *            node.
+	 * @param parentClassInfo
+	 *            Optional meta information for <code>parentClass</code>.
 	 */
 	public ExtendedClassNode(Type type, Class<?> parentClass,
 			ClassInfo parentClassInfo) {
+		super(Opcodes.ASM5);
 		String[] interfaces = new String[parentClass.getInterfaces().length];
 		int i = 0;
 		for (Class<?> face : parentClass.getInterfaces()) {
@@ -165,8 +170,8 @@ public abstract class ExtendedClassNode extends ClassNode {
 	}
 
 	private Object getKey(Method method) {
-		return Arrays.asList(method.getReturnType(), method.getName(), Arrays
-				.asList(method.getParameterTypes()));
+		return Arrays.asList(method.getReturnType(), method.getName(),
+				Arrays.asList(method.getParameterTypes()));
 	}
 
 	public Class<?> getParentClass() {

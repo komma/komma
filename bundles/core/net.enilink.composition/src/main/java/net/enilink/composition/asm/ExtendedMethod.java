@@ -12,6 +12,7 @@ package net.enilink.composition.asm;
 
 import java.lang.reflect.Method;
 
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 /**
@@ -23,12 +24,12 @@ public class ExtendedMethod extends org.objectweb.asm.tree.MethodNode {
 
 	public ExtendedMethod(ExtendedClassNode owner, int access, String name,
 			String desc, String signature, String[] exceptions) {
-		super(access, name, desc, signature, exceptions);
+		super(Opcodes.ASM5, access, name, desc, signature, exceptions);
 		this.owner = owner;
 	}
 
 	public ExtendedMethod(ExtendedClassNode owner, Method method) {
-		super(method.getModifiers(), method.getName(), Type
+		super(Opcodes.ASM5, method.getModifiers(), method.getName(), Type
 				.getMethodDescriptor(method), null, null);
 		this.owner = owner;
 		this.method = method;

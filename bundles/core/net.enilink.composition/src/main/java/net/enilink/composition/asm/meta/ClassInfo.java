@@ -96,7 +96,7 @@ public class ClassInfo extends ClassVisitor {
 	 * Constructs a new {@link ClassNode}.
 	 */
 	public ClassInfo() {
-		super(Opcodes.ASM4);
+		super(Opcodes.ASM5);
 
 		this.interfaces = new ArrayList<String>();
 		this.methods = new HashMap<Method, MethodNode>();
@@ -139,8 +139,8 @@ public class ClassInfo extends ClassVisitor {
 
 	public MethodVisitor visitMethod(final int access, final String name,
 			final String desc, final String signature, final String[] exceptions) {
-		MethodNode mn = new MethodNode(access, name, desc, signature,
-				exceptions) {
+		MethodNode mn = new MethodNode(Opcodes.ASM5, access, name, desc,
+				signature, exceptions) {
 			public void visitEnd() {
 				instructions.clear();
 			}

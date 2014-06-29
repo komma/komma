@@ -23,6 +23,7 @@ package net.enilink.composition.asm.util;
 
 import java.util.Stack;
 
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
@@ -44,7 +45,7 @@ public class InsnListGenerator extends
 	protected Stack<InsnList> stack;
 
 	public InsnListGenerator(MethodNode mn) {
-		super(mn, mn.access, mn.name, mn.desc);
+		super(Opcodes.ASM5, mn, mn.access, mn.name, mn.desc);
 		this.mn = mn;
 		this.instructions = mn.instructions;
 	}
