@@ -65,6 +65,8 @@ public interface OWL {
 	public static final URI TYPE_OWLRESOURCE = NAMESPACE_URI.appendFragment("OwlResource");
 	
 	public static final URI TYPE_INDIVIDUAL = NAMESPACE_URI.appendFragment("Individual");
+	
+	public static final URI TYPE_NEGATIVEPROPERTYASSERTION = NAMESPACE_URI.appendFragment("NegativePropertyAssertion");
 
 	public static final URI PROPERTY_ANNOTATEDSOURCE = NAMESPACE_URI.appendFragment("annotatedSource");
 	
@@ -141,5 +143,13 @@ public interface OWL {
 	public static final URI PROPERTY_TOPOBJECTPROPERTY = NAMESPACE_URI.appendFragment("topObjectProperty");
 	
 	public static final URI PROPERTY_TOPDATAPROPERTY = NAMESPACE_URI.appendFragment("topDataProperty");
+	
+	public static final URI PROPERTY_SOURCEINDIVIDUAL = NAMESPACE_URI.appendFragment("sourceIndividual");
+	
+	public static final URI PROPERTY_TARGETINDIVIDUAL = NAMESPACE_URI.appendFragment("targetIndividual");
+	
+	public static final URI PROPERTY_TARGETVALUE = NAMESPACE_URI.appendFragment("targetValue");
+	
+	public static final URI PROPERTY_ASSERTIONPROPRETY = NAMESPACE_URI.appendFragment("assertionProperty");
 
 }
