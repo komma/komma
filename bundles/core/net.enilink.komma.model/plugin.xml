@@ -64,12 +64,13 @@
    <extension
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
-            base-type="org.eclipse.core.runtime.xml"
+            base-type="net.enilink.komma.contenttype.rdf"
             default-charset="UTF-8"
+            describer="org.eclipse.core.runtime.content.XMLRootElementContentDescriber2:RDF"
             file-extensions="rdf,rdfs,owl,xml"
             id="net.enilink.komma.contenttype.rdfxml"
             name="RDF/XML"
-            priority="low">
+            priority="normal">
          <property
                default="application/rdf+xml"
                name="mimeType">
@@ -80,6 +81,7 @@
          </property>
       </content-type>
       <content-type
+            base-type="net.enilink.komma.contenttype.rdf"
             default-charset="US-ASCII"
             file-extensions="nt"
             id="net.enilink.komma.contenttype.ntriples"
@@ -95,6 +97,7 @@
          </property>
       </content-type>
       <content-type
+            base-type="net.enilink.komma.contenttype.rdf"
             default-charset="UTF-8"
             file-extensions="ttl"
             id="net.enilink.komma.contenttype.turtle"
@@ -110,6 +113,7 @@
          </property>
       </content-type>
       <content-type
+            base-type="net.enilink.komma.contenttype.rdf"
             default-charset="UTF-8"
             file-extensions="n3"
             id="net.enilink.komma.contenttype.n3"
@@ -125,6 +129,7 @@
          </property>
       </content-type>
       <content-type
+            base-type="net.enilink.komma.contenttype.rdf"
             default-charset="UTF-8"
             file-extensions="trix"
             id="net.enilink.komma.contenttype.trix"
@@ -140,6 +145,7 @@
          </property>
       </content-type>
       <content-type
+            base-type="net.enilink.komma.contenttype.rdf"
             default-charset="UTF-8"
             file-extensions="xhtml"
             id="net.enilink.komma.contenttype.rdfa"
@@ -153,6 +159,12 @@
                default="false"
                name="hasWriter">
          </property>
+      </content-type>
+      <content-type
+            base-type="org.eclipse.core.runtime.text"
+            id="net.enilink.komma.contenttype.rdf"
+            name="RDF"
+            priority="normal">
       </content-type>
    </extension>
       <extension

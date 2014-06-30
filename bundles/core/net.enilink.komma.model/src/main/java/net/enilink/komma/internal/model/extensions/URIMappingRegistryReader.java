@@ -10,10 +10,6 @@
  *******************************************************************************/
 package net.enilink.komma.internal.model.extensions;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import net.enilink.komma.core.URI;
 import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.base.IURIMapRuleSet;
 import net.enilink.komma.model.base.RegExURIMapRule;
