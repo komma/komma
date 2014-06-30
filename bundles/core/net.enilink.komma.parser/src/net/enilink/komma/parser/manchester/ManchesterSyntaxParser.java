@@ -30,10 +30,6 @@ import org.parboiled.support.Var;
  * @author Ken Wenzel
  */
 public class ManchesterSyntaxParser extends BaseRdfParser {
-	// TODO muss in CONCEPTS
-	public static final URI OWL_DISJOINT_UNION_OF = OWL.NAMESPACE_URI
-			.appendFragment("disjointUnionOf");
-
 	public IManchesterActions actions;
 
 	public ManchesterSyntaxParser() {
@@ -186,7 +182,7 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 								"DisjointUnionOf:",
 								WithAnnotations(
 										classIri,
-										OWL_DISJOINT_UNION_OF,
+										OWL.PROPERTY_DISJOINTUNIONOF,
 										sequence(
 												List2(Description()),
 												push(createRdfList((List<?>) pop()))))),
@@ -435,7 +431,7 @@ public class ManchesterSyntaxParser extends BaseRdfParser {
 					OWL.TYPE_NEGATIVEPROPERTYASSERTION);
 			actions.createStmt(assertion, OWL.PROPERTY_SOURCEINDIVIDUAL,
 					individual);
-			actions.createStmt(assertion, OWL.PROPERTY_ASSERTIONPROPRETY,
+			actions.createStmt(assertion, OWL.PROPERTY_ASSERTIONPROPERTY,
 					property);
 			actions.createStmt(assertion,
 					value instanceof Literal ? OWL.PROPERTY_TARGETVALUE
