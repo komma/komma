@@ -150,6 +150,8 @@ public interface OWL {
 	
 	public static final URI PROPERTY_TARGETVALUE = NAMESPACE_URI.appendFragment("targetValue");
 	
-	public static final URI PROPERTY_ASSERTIONPROPRETY = NAMESPACE_URI.appendFragment("assertionProperty");
+	public static final URI PROPERTY_ASSERTIONPROPERTY = NAMESPACE_URI.appendFragment("assertionProperty");
+	
+	public static final URI PROPERTY_DISJOINTUNIONOF = NAMESPACE_URI.appendFragment("disjointUnionOf");
 
 }
