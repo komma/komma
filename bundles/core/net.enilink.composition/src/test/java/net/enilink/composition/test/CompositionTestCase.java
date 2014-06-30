@@ -65,7 +65,6 @@ public abstract class CompositionTestCase {
 
 			@Provides
 			@Singleton
-			@SuppressWarnings("unused")
 			protected TypeFactory<String> provideTypeFactory() {
 				return new TypeFactory<String>() {
 					@Override
