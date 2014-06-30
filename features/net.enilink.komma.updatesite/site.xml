@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/net.enilink.komma.edit.feature_1.0.0.qualifier.jar" id="net.enilink.komma.edit.feature" version="1.0.0.qualifier">
+   <feature url="features/net.enilink.komma.edit.feature_1.1.0.qualifier.jar" id="net.enilink.komma.edit.feature" version="1.1.0.qualifier">
       <category name="rdf"/>
    </feature>
-   <feature url="features/net.enilink.komma.editor.feature_1.0.0.qualifier.jar" id="net.enilink.komma.editor.feature" version="1.0.0.qualifier">
+   <feature url="features/net.enilink.komma.editor.feature_1.1.0.qualifier.jar" id="net.enilink.komma.editor.feature" version="1.1.0.qualifier">
       <category name="rdf"/>
    </feature>
-   <feature url="features/net.enilink.komma.feature_1.0.0.qualifier.jar" id="net.enilink.komma.feature" version="1.0.0.qualifier">
+   <feature url="features/net.enilink.komma.feature_1.1.0.qualifier.jar" id="net.enilink.komma.feature" version="1.1.0.qualifier">
       <category name="rdf"/>
    </feature>
    <category-def name="rdf" label="RDF"/>
