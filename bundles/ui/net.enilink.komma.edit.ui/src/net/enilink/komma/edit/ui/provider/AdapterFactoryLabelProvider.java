@@ -250,7 +250,7 @@ public class AdapterFactoryLabelProvider implements ILabelProvider,
 	public AdapterFactoryLabelProvider(IAdapterFactory adapterFactory) {
 		this.adapterFactory = adapterFactory;
 		if (adapterFactory instanceof INotifier) {
-			((INotifier) adapterFactory).addListener(this);
+			((INotifier<INotification>) adapterFactory).addListener(this);
 		}
 
 		labelProviderListeners = new ArrayList<ILabelProviderListener>();
@@ -345,7 +345,7 @@ public class AdapterFactoryLabelProvider implements ILabelProvider,
 	@SuppressWarnings("unchecked")
 	public void dispose() {
 		if (this.adapterFactory instanceof INotifier) {
-			((INotifier) adapterFactory).removeListener(this);
+			((INotifier<INotification>) adapterFactory).removeListener(this);
 		}
 	}
 

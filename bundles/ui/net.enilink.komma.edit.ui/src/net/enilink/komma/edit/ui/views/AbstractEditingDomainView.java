@@ -164,7 +164,6 @@ public class AbstractEditingDomainView extends ViewPart implements
 	@Override
 	public void createPartControl(Composite parent) {
 		parent.setLayout(new FillLayout());
-
 		editorForm = new EditorForm(parent) {
 			@Override
 			public void fireSelectionChanged(IEditorPart firingPart,
@@ -196,7 +195,8 @@ public class AbstractEditingDomainView extends ViewPart implements
 			}
 		};
 		editorForm.addPart(editPart);
-
+		
+		editorForm.getWidgetFactory().adapt(parent);
 		editPart.createContents(parent);
 
 		installSelectionProvider();
