@@ -349,6 +349,7 @@ public class ArchiveURLConnection extends URLConnection {
 		getOutputStream(false, timeStamp).close();
 	}
 
+	@SuppressWarnings("resource")
 	private OutputStream getOutputStream(boolean delete, long timeStamp)
 			throws IOException {
 		// Create the delegate URL
