@@ -116,7 +116,8 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 			delegateItemProvider = getRootAdapterFactory().adapt(delegateValue,
 					IStructuredItemContentProvider.class);
 			if (delegateItemProvider instanceof INotifier) {
-				((INotifier) delegateItemProvider).addListener(this);
+				((INotifier<INotification>) delegateItemProvider)
+						.addListener(this);
 			}
 		}
 	}
@@ -129,7 +130,8 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	@SuppressWarnings("unchecked")
 	public void dispose() {
 		if (delegateItemProvider instanceof INotifier) {
-			((INotifier) delegateItemProvider).removeListener(this);
+			((INotifier<INotification>) delegateItemProvider)
+					.removeListener(this);
 		}
 
 		if (childrenMap != null) {
@@ -516,8 +518,7 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 		 * 
 		 * @exception ClassCastException
 		 *                If the specified command does not implement
-		 *                {@link net.enilink.komma.common.command.ICommand}
-		 *                .
+		 *                {@link net.enilink.komma.common.command.ICommand} .
 		 */
 		public AffectedObjectsWrappingCommandActionDelegate(
 				ICommandActionDelegate command) {
@@ -552,7 +553,7 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	public void fireNotifications(
 			Collection<? extends INotification> notifications) {
 		if (adapterFactory instanceof INotificationBroadcaster) {
-			INotificationBroadcaster adapterFactoryChangeNotifier = (INotificationBroadcaster) adapterFactory;
+			INotificationBroadcaster<INotification> adapterFactoryChangeNotifier = (INotificationBroadcaster<INotification>) adapterFactory;
 			adapterFactoryChangeNotifier.fireNotifications(notifications);
 		}
 		if (changeNotifier != null) {

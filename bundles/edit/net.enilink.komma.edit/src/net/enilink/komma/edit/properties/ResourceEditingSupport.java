@@ -57,10 +57,10 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 
 	static class ConstructorParser extends BaseRdfParser {
 		public Rule Constructor() {
-			return Sequence(
-					FirstOf(Sequence(FirstOf(IriRef(), PN_LOCAL()), Ch('a')),
-							Ch('a')), WS_NO_COMMENT(),
-					FirstOf(IriRef(), PN_LOCAL(), Sequence(EMPTY, push(""))),
+			return sequence(
+					firstOf(sequence(firstOf(IriRef(), PN_LOCAL()), ch('a')),
+							ch('a')), WS_NO_COMMENT(),
+					firstOf(IriRef(), PN_LOCAL(), sequence(EMPTY, push(""))),
 					drop(), push(matchRange()));
 		}
 	}
