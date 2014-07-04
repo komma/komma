@@ -14,7 +14,7 @@
  *
  * $Id: InputDialog.java,v 1.4 2008/05/07 19:08:40 emerks Exp $
  */
-package net.enilink.komma.edit.ui.provider;
+package net.enilink.komma.edit.ui.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -45,7 +45,7 @@ import net.enilink.commons.ui.dialogs.DialogHelper;
  * away.
  * </p>
  */
-class InputDialog extends Dialog {
+public class InputDialog extends Dialog {
 	/**
 	 * The title of the dialog.
 	 */

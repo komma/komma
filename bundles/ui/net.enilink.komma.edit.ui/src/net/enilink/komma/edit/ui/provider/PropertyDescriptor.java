@@ -51,6 +51,7 @@ import net.enilink.komma.edit.provider.IItemLabelProvider;
 import net.enilink.komma.edit.provider.IItemPropertyDescriptor;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.edit.ui.celleditor.PropertyEditorDialog;
+import net.enilink.komma.edit.ui.dialogs.InputDialog;
 import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.util.KommaUtil;
 import net.enilink.komma.model.IObject;
