@@ -570,16 +570,15 @@ public interface IModel {
 	 */
 	interface Internal extends IModel {
 		/**
-		 * Indicates whether the resource is currently being loaded.
-		 * <p>
-		 * This will be <code>true</code> during a call to
-		 * {@link #load(InputStream, Map) load(InputStream, Map)}, before
-		 * notifications are dispatched.
-		 * </p>
+		 * Allows to avoid demand-loading of an imported model, e.g. for
+		 * security reasons.
 		 * 
-		 * @return whether this resource is currently being loaded.
+		 * @param imported
+		 *            The imported model
+		 * @return <code>true</code> if demand-loading should be used, else
+		 *         <code>false</code>.
 		 */
-		boolean isLoading();
+		boolean demandLoadImport(URI imported);
 
 		/**
 		 * Returns a module for this model.
@@ -590,6 +589,18 @@ public interface IModel {
 		 * Returns a module that includes all imported model modules.
 		 */
 		KommaModule getModuleClosure();
+
+		/**
+		 * Indicates whether the model is currently being loaded.
+		 * <p>
+		 * This will be <code>true</code> during a call to
+		 * {@link #load(InputStream, Map) load(InputStream, Map)}, before
+		 * notifications are dispatched.
+		 * </p>
+		 * 
+		 * @return whether this model is currently being loaded.
+		 */
+		boolean isLoading();
 	}
 
 	/**

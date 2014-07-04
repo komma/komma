@@ -151,6 +151,9 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 
 							@Override
 							public void removeNamespace(String prefix) {
+								if (prefix == null) {
+									prefix = "";
+								}
 								for (Namespace ns : new ArrayList<>(
 										getModelNamespaces())) {
 									if (prefix.equals(ns.getPrefix())) {
@@ -167,8 +170,8 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 
 							@Override
 							public void setNamespace(String prefix, URI uri) {
-								if (prefix == null || prefix.isEmpty()) {
-									return;
+								if (prefix == null) {
+									prefix = "";
 								}
 								URI oldUri = null;
 								// prevent addition of redundant prefix/uri
@@ -203,10 +206,6 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 							public IExtendedIterator<INamespace> getNamespaces() {
 								Set<URI> uris = new HashSet<>();
 								Map<String, INamespace> prefixMap = new LinkedHashMap<>();
-								prefixMap.put("",
-										new net.enilink.komma.core.Namespace(
-												"", getURI()
-														.appendLocalPart("")));
 								for (INamespace ns : WrappedIterator
 										.create(getAllModelNamespaces()
 												.iterator())
@@ -242,6 +241,17 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 							List<INamespace> getAllModelNamespaces() {
 								List<INamespace> nsList = new ArrayList<INamespace>(
 										getModelNamespaces());
+								boolean emptyPrefix = false;
+								for (INamespace ns : nsList) {
+									if (ns.getPrefix().isEmpty()) {
+										emptyPrefix = true;
+										break;
+									}
+								}
+								if (!emptyPrefix) {
+									nsList.add(new net.enilink.komma.core.Namespace(
+											"", getURI().appendLocalPart("")));
+								}
 								KommaModule module = moduleClosure;
 								if (module != null) {
 									for (INamespace ns : module.getNamespaces()) {
@@ -345,15 +355,16 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				if (!isActive) {
 					manager.getTransaction().begin();
 				}
-				if (!manager.hasMatch(this, RDF.PROPERTY_TYPE,
+				IOntology ontology = getOntology();
+				if (!manager.hasMatch(ontology, RDF.PROPERTY_TYPE,
 						OWL.TYPE_ONTOLOGY)) {
-					manager.add(new Statement(this, RDF.PROPERTY_TYPE,
+					manager.add(new Statement(ontology, RDF.PROPERTY_TYPE,
 							OWL.TYPE_ONTOLOGY));
 				}
 				if (prefix != null && prefix.trim().length() > 0) {
 					manager.setNamespace(prefix, uri.appendLocalPart(""));
 				}
-				manager.add(new Statement(this, OWL.PROPERTY_IMPORTS, uri));
+				manager.add(new Statement(ontology, OWL.PROPERTY_IMPORTS, uri));
 				if (!isActive) {
 					manager.getTransaction().commit();
 					unloadManager();
@@ -450,12 +461,14 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				try {
 					// retrieve imported ontologies while filtering those which
 					// are likely already contained within this model
+					IOntology ontology = getOntology();
 					IExtendedIterator<IReference> imports = dm
 							.createQuery(
 									ISparqlConstants.PREFIX
 											+ " SELECT ?import WHERE { ?ontology owl:imports ?import FILTER NOT EXISTS { ?import a owl:Ontology } }",
-									getURI().toString(), false, getURI())
-							.evaluate().mapWith(new IMap<Object, IReference>() {
+									ontology.getURI().toString(), false,
+									ontology.getURI()).evaluate()
+							.mapWith(new IMap<Object, IReference>() {
 								@Override
 								public IReference map(Object value) {
 									return (IReference) ((IBindings<?>) value)
@@ -482,6 +495,11 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	}
 
 	@Override
+	public boolean demandLoadImport(URI imported) {
+		return true;
+	}
+
+	@Override
 	public Set<URI> getImportsClosure() {
 		// duplicated from getModuleClosure, except includeModule() call
 		Set<URI> seen = new HashSet<>();
@@ -492,7 +510,10 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			for (URI imported : model.getImports()) {
 				try {
 					if (seen.add(imported)) {
-						queue.add(getModelSet().getModel(imported, true));
+						queue.add(getModelSet().getModel(
+								imported,
+								getBehaviourDelegate().demandLoadImport(
+										imported)));
 					}
 				} catch (Throwable e) {
 					getErrors().add(
@@ -535,7 +556,11 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				for (URI imported : model.getImports()) {
 					try {
 						if (seen.add(imported)) {
-							queue.add(getModelSet().getModel(imported, true));
+							IModel importedModel = getModelSet().getModel(
+									imported, true);
+							if (importedModel != null) {
+								queue.add(importedModel);
+							}
 						}
 					} catch (Throwable e) {
 						getErrors().add(
@@ -609,7 +634,8 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	 */
 	@Override
 	public IOntology getOntology() {
-		return getManager().find(getURI().trimFragment(), IOntology.class);
+		return getManager().find(getManager().getNamespace("").trimFragment(),
+				IOntology.class);
 	}
 
 	IURIConverter getURIConverter() {
@@ -805,7 +831,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	 */
 	protected void saveOnlyIfChangedWithFileBuffer(Map<?, ?> options)
 			throws IOException {
-		File temporaryFile = File.createTempFile("ResourceSaveHelper", null);
+		File temporaryFile = File.createTempFile("ModelSaveHelper", null);
 		try {
 			URI temporaryFileURI = URIs.createFileURI(temporaryFile.getPath());
 			IURIConverter uriConverter = getURIConverter();
@@ -976,7 +1002,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	public void setURI(URI uri) {
 		if (uri != null && !uri.equals(getURI())) {
 			URI oldURI = getURI();
-			// rename ontology in data
+			// rename model in data
 			getManager().rename(oldURI, uri);
 			// move model data
 			IDataManager dm = getModelSet().getDataManagerFactory().get();
