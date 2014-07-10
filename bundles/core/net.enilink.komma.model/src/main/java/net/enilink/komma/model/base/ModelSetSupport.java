@@ -292,7 +292,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	 * Javadoc copied from interface.
 	 */
 	public IModel createModel(URI uri) {
-		return createModel(uri, null);
+		return getBehaviourDelegate().createModel(uri, null);
 	}
 
 	/*
@@ -312,9 +312,9 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	}
 
 	/**
-	 * Creates a new resource appropriate for the URI. It is called by
+	 * Creates a new model appropriate for the URI. It is called by
 	 * {@link #getModel(URI, boolean) getModel(URI, boolean)} when a URI that
-	 * doesn't exist as a resource is demand loaded. This implementation simply
+	 * doesn't exist as a model is demand loaded. This implementation simply
 	 * calls {@link #createModel(URI, String) createModel(URI)}. Clients may
 	 * extend this as appropriate.
 	 * 
@@ -324,7 +324,8 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	 * @see #getModel(URI, boolean)
 	 */
 	protected IModel demandCreateModel(URI uri) {
-		return createModel(uri, IContentHandler.UNSPECIFIED_CONTENT_TYPE);
+		return getBehaviourDelegate().createModel(uri,
+				IContentHandler.UNSPECIFIED_CONTENT_TYPE);
 	}
 
 	/**
