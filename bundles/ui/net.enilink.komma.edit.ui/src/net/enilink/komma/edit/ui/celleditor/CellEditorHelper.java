@@ -1,19 +1,20 @@
 package net.enilink.komma.edit.ui.celleditor;
 
-import org.eclipse.jface.fieldassist.ContentProposalAdapter;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.swt.graphics.Image;
-
 import net.enilink.komma.common.ui.assist.ContentProposals;
 import net.enilink.komma.common.ui.celleditor.TextCellEditorWithContentProposal;
-import net.enilink.komma.edit.properties.IPropertyEditingSupport;
+import net.enilink.komma.edit.properties.IEditingSupport;
+import net.enilink.komma.edit.properties.IProposalSupport;
 import net.enilink.komma.edit.provider.IItemLabelProvider;
 import net.enilink.komma.edit.ui.assist.JFaceContentProposal;
 import net.enilink.komma.edit.ui.assist.JFaceProposalProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.graphics.Image;
+
 /**
- * Helper class for cell editors when using {@link IPropertyEditingSupport}.
+ * Helper class for cell editors when using {@link IEditingSupport}.
  */
 public class CellEditorHelper {
 	/**
@@ -21,7 +22,7 @@ public class CellEditorHelper {
 	 */
 	public static void updateProposals(
 			TextCellEditorWithContentProposal textCellEditor,
-			IPropertyEditingSupport.ProposalSupport proposals) {
+			IProposalSupport proposals) {
 		ContentProposalAdapter proposalAdapter = textCellEditor
 				.getContentProposalAdapter();
 		if (proposals != null) {

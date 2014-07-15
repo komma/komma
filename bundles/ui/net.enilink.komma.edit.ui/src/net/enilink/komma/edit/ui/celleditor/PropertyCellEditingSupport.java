@@ -1,11 +1,12 @@
 package net.enilink.komma.edit.ui.celleditor;
 
 import net.enilink.komma.common.ui.celleditor.TextCellEditorWithContentProposal;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.properties.IPropertyEditingSupport;
+import net.enilink.komma.edit.properties.EditingHelper;
+import net.enilink.komma.edit.properties.IEditingSupport;
 import net.enilink.komma.edit.properties.IResourceProposal;
-import net.enilink.komma.edit.properties.PropertyEditingHelper;
 import net.enilink.komma.edit.ui.assist.JFaceContentProposal;
 import net.enilink.komma.em.concepts.IProperty;
 
@@ -29,9 +30,9 @@ import org.eclipse.swt.widgets.Tree;
 public abstract class PropertyCellEditingSupport extends EditingSupport {
 	private static final int PROPOSAL_DELAY = 1000;
 
-	protected PropertyEditingHelper.Type type;
+	protected EditingHelper.Type type;
 
-	protected PropertyEditingHelper helper;
+	protected EditingHelper helper;
 
 	private Object currentElement;
 
@@ -60,19 +61,14 @@ public abstract class PropertyCellEditingSupport extends EditingSupport {
 	};
 
 	public PropertyCellEditingSupport(ColumnViewer viewer) {
-		this(viewer, PropertyEditingHelper.Type.VALUE, SWT.NONE);
+		this(viewer, EditingHelper.Type.VALUE, SWT.NONE);
 	}
 
 	public PropertyCellEditingSupport(final ColumnViewer viewer,
-			PropertyEditingHelper.Type type, final int cellEditorStyle) {
+			EditingHelper.Type type, final int cellEditorStyle) {
 		super(viewer);
 		this.type = type;
-		helper = new PropertyEditingHelper(type) {
-			@Override
-			protected IStatement getStatement(Object element) {
-				return PropertyCellEditingSupport.this.getStatement(element);
-			}
-
+		helper = new EditingHelper(type) {
 			@Override
 			protected IEditingDomain getEditingDomain() {
 				return PropertyCellEditingSupport.this.getEditingDomain();
@@ -80,16 +76,16 @@ public abstract class PropertyCellEditingSupport extends EditingSupport {
 
 			@Override
 			protected void setProperty(Object element, IProperty property) {
-				PropertyCellEditingSupport.this.setProperty(element, property);
+				PropertyCellEditingSupport.this.setProperty(currentElement,
+						property);
 			}
 
 			@Override
-			protected IPropertyEditingSupport getPropertyEditingSupport(
-					IStatement stmt) {
-				IPropertyEditingSupport support = PropertyCellEditingSupport.this
-						.getPropertyEditingSupport(stmt);
+			protected IEditingSupport getEditingSupport(Object element) {
+				IEditingSupport support = PropertyCellEditingSupport.this
+						.getEditingSupport(element);
 				return support != null ? support : super
-						.getPropertyEditingSupport(stmt);
+						.getEditingSupport(element);
 			}
 		};
 
@@ -149,7 +145,7 @@ public abstract class PropertyCellEditingSupport extends EditingSupport {
 
 	@Override
 	protected boolean canEdit(Object element) {
-		return helper.canEdit(element);
+		return helper.canEdit(getStatement(element));
 	}
 
 	@Override
@@ -157,11 +153,11 @@ public abstract class PropertyCellEditingSupport extends EditingSupport {
 		acceptedResourceProposal = null;
 		currentElement = unwrap(element);
 		CellEditorHelper.updateProposals(textCellEditor,
-				helper.getProposalSupport(currentElement));
+				helper.getProposalSupport(getStatement(currentElement)));
 		return textCellEditor;
 	}
 
-	protected IPropertyEditingSupport getPropertyEditingSupport(IStatement stmt) {
+	protected IEditingSupport getEditingSupport(Object element) {
 		return null;
 	}
 
@@ -203,7 +199,7 @@ public abstract class PropertyCellEditingSupport extends EditingSupport {
 
 	@Override
 	protected Object getValue(Object element) {
-		return helper.getValue(unwrap(element));
+		return helper.getValue(getStatement(unwrap(element)));
 	}
 
 	@Override
@@ -214,7 +210,10 @@ public abstract class PropertyCellEditingSupport extends EditingSupport {
 		if (acceptedResourceProposal != null) {
 			value = acceptedResourceProposal.getResource();
 		}
-		IStatus status = helper.setValue(element, value).getStatus();
+		IStatement stmt = getStatement(element);
+		IStatus status = helper.setValue(stmt,
+				((IEntity) stmt.getSubject()).getEntityManager(), value)
+				.getStatus();
 		setEditStatus(element, status, value);
 	}
 }

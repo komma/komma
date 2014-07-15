@@ -1,5 +1,25 @@
 package net.enilink.komma.edit.ui.viewers;
 
+import net.enilink.commons.ui.editor.EditorWidgetFactory;
+import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.common.ui.celleditor.TextCellEditorWithContentProposal;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IStatementPattern;
+import net.enilink.komma.core.Statement;
+import net.enilink.komma.edit.IEditImages;
+import net.enilink.komma.edit.KommaEditPlugin;
+import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.properties.EditingHelper;
+import net.enilink.komma.edit.properties.EditingHelper.Type;
+import net.enilink.komma.edit.properties.IEditingSupport;
+import net.enilink.komma.edit.properties.IResourceProposal;
+import net.enilink.komma.edit.ui.assist.JFaceContentProposal;
+import net.enilink.komma.edit.ui.celleditor.CellEditorHelper;
+import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
+import net.enilink.komma.edit.ui.provider.reflective.StatementPatternContentProvider;
+
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalListener;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -19,25 +39,6 @@ import org.eclipse.swt.widgets.Text;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-import net.enilink.commons.ui.editor.EditorWidgetFactory;
-import net.enilink.komma.common.adapter.IAdapterFactory;
-import net.enilink.komma.common.ui.celleditor.TextCellEditorWithContentProposal;
-import net.enilink.komma.edit.IEditImages;
-import net.enilink.komma.edit.KommaEditPlugin;
-import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.properties.IPropertyEditingSupport;
-import net.enilink.komma.edit.properties.IResourceProposal;
-import net.enilink.komma.edit.properties.PropertyEditingHelper;
-import net.enilink.komma.edit.properties.PropertyEditingHelper.Type;
-import net.enilink.komma.edit.ui.assist.JFaceContentProposal;
-import net.enilink.komma.edit.ui.celleditor.CellEditorHelper;
-import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
-import net.enilink.komma.edit.ui.provider.reflective.StatementPatternContentProvider;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.IStatementPattern;
-import net.enilink.komma.core.Statement;
-
 public class PropertyViewer extends ContentViewer {
 	private static final int PROPOSAL_DELAY = 1000;
 
@@ -52,27 +53,14 @@ public class PropertyViewer extends ContentViewer {
 	@Inject(optional = true)
 	protected Provider<IAdapterFactory> adapterFactoryProvider;
 
-	IPropertyEditingSupport propertyEditingSupport;
+	IEditingSupport editingSupport;
 
 	protected Object currentElement;
 
-	private final PropertyEditingHelper helper = new PropertyEditingHelper(
-			Type.VALUE) {
-		protected IPropertyEditingSupport getPropertyEditingSupport(
-				IStatement stmt) {
-			return propertyEditingSupport != null ? propertyEditingSupport
-					: super.getPropertyEditingSupport(stmt);
-		}
-
-		@Override
-		protected IStatement getStatement(Object element) {
-			if (element instanceof IStatement) {
-				return (IStatement) element;
-			}
-			if (element instanceof IStatementPattern) {
-				return fillPattern((IStatementPattern) element, null);
-			}
-			return null;
+	private final EditingHelper helper = new EditingHelper(Type.VALUE) {
+		protected IEditingSupport getEditingSupport(Object element) {
+			return editingSupport != null ? editingSupport : super
+					.getEditingSupport(element);
 		}
 
 		protected IAdapterFactory getAdapterFactory() {
@@ -160,8 +148,10 @@ public class PropertyViewer extends ContentViewer {
 
 			@Override
 			public void applyEditorValue() {
+				IStatement stmt = getStatement(currentElement);
 				helper.setValue(
-						currentElement,
+						stmt,
+						((IEntity) stmt.getSubject()).getEntityManager(),
 						acceptedResourceProposal[0] != null ? acceptedResourceProposal[0]
 								.getResource() : textCellEditor.getValue());
 			}
@@ -185,9 +175,18 @@ public class PropertyViewer extends ContentViewer {
 		// not supported
 	}
 
-	public void setPropertyEditingSupport(
-			IPropertyEditingSupport propertyEditingSupport) {
-		this.propertyEditingSupport = propertyEditingSupport;
+	protected IStatement getStatement(Object element) {
+		if (element instanceof IStatement) {
+			return (IStatement) element;
+		}
+		if (element instanceof IStatementPattern) {
+			return fillPattern((IStatementPattern) element, null);
+		}
+		return null;
+	}
+
+	public void setEditingSupport(IEditingSupport editingSupport) {
+		this.editingSupport = editingSupport;
 	}
 
 	@Override
@@ -241,7 +240,8 @@ public class PropertyViewer extends ContentViewer {
 		if (currentElement instanceof IStatement) {
 			ILabelProvider labelProvider = (ILabelProvider) getLabelProvider();
 			if (valueEditor != null) {
-				valueEditor.setValue(helper.getValue(currentElement));
+				valueEditor.setValue(helper
+						.getValue(getStatement(currentElement)));
 			} else {
 				valueText
 						.setText(labelProvider.getText(unwrap(currentElement)));
@@ -257,7 +257,7 @@ public class PropertyViewer extends ContentViewer {
 		}
 		if (valueEditor != null) {
 			CellEditorHelper.updateProposals(valueEditor,
-					helper.getProposalSupport(currentElement));
+					helper.getProposalSupport(getStatement(currentElement)));
 		}
 	}
 
