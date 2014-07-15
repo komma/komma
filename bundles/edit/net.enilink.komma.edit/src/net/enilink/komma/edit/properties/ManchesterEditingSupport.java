@@ -20,6 +20,8 @@ import net.enilink.komma.edit.assist.IContentProposal;
 import net.enilink.komma.edit.assist.IContentProposalProvider;
 import net.enilink.komma.edit.assist.ParboiledProposalProvider;
 import net.enilink.komma.edit.assist.ReflectiveSemanticProposals;
+import net.enilink.komma.edit.properties.ResourceFinder.Match;
+import net.enilink.komma.edit.properties.ResourceFinder.Options;
 import net.enilink.komma.edit.provider.IItemLabelProvider;
 import net.enilink.komma.parser.manchester.IManchesterActions;
 import net.enilink.komma.parser.manchester.ManchesterSyntaxParser;
@@ -51,10 +53,10 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 	}
 
 	class ManchesterProposals extends ReflectiveSemanticProposals {
-		IEntity subject;
+		IEntityManager em;
 
-		public ManchesterProposals(IEntity subject) {
-			this.subject = subject;
+		public ManchesterProposals(IEntityManager em) {
+			this.em = em;
 		}
 
 		public IContentProposal[] IriRef(ParsingResult<?> result, int index,
@@ -67,9 +69,8 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 			int insertPos = index - prefix.length();
 
 			List<IContentProposal> proposals = new ArrayList<IContentProposal>();
-			ProposalOptions options = ProposalOptions.create(subject, prefix,
-					20);
-			for (ResourceMatch match : getAnyResources(options)) {
+			Options options = Options.create(em, null, prefix, 20);
+			for (Match match : new ResourceFinder().findAnyResources(options)) {
 				String label = getLabel(match.resource);
 				String origText = text.substring(insertPos, index);
 				// insert proposal text
@@ -155,19 +156,20 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 	}
 
 	@Override
-	public ProposalSupport getProposalSupport(final IEntity subject,
-			final IReference property, Object value) {
+	public IProposalSupport getProposalSupport(Object element) {
+		final IEntity subject = getSubject(element);
+		if (subject == null) {
+			return null;
+		}
 		final IItemLabelProvider resourceLabelProvider = super
-				.getProposalSupport(subject, property, value)
-				.getLabelProvider();
-
+				.getProposalSupport(element).getLabelProvider();
 		final ManchesterSyntaxParser parser = Parboiled.createParser(
 				ManchesterSyntaxParser.class, new ManchesterActions());
-		return new ProposalSupport() {
+		return new IProposalSupport() {
 			@Override
 			public IContentProposalProvider getProposalProvider() {
 				return new ParboiledProposalProvider(parser.Description(),
-						new ManchesterProposals(subject));
+						new ManchesterProposals(subject.getEntityManager()));
 			}
 
 			@Override
@@ -199,8 +201,8 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 	}
 
 	@Override
-	public ICommand convertValueFromEditor(final Object editorValue,
-			final IEntity subject, IReference property, Object oldValue) {
+	public ICommand convertEditorValue(final Object editorValue,
+			final IEntityManager entityManager, Object element) {
 		return new SimpleCommand() {
 			@Override
 			protected CommandResult doExecuteWithResult(
@@ -219,8 +221,8 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 									}
 								}).Description()).run((String) editorValue);
 				if (result.matched && result.resultValue != null) {
-					return addStatements(subject.getEntityManager(),
-							result.resultValue, newStmts);
+					return addStatements(entityManager, result.resultValue,
+							newStmts);
 				} else {
 					return CommandResult.newErrorCommandResult(ErrorUtils
 							.printParseErrors(result.parseErrors));

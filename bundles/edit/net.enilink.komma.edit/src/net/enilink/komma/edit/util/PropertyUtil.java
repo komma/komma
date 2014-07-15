@@ -5,12 +5,10 @@ import java.util.Queue;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.util.Pair;
-import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.ICompositeCommand;
 import net.enilink.komma.common.command.SimpleCommand;
-import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
@@ -19,17 +17,8 @@ import net.enilink.komma.edit.command.CommandParameter;
 import net.enilink.komma.edit.command.RemoveCommand;
 import net.enilink.komma.edit.command.SetCommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.properties.IPropertyEditingSupport;
-import net.enilink.komma.edit.properties.LiteralEditingSupport;
-import net.enilink.komma.edit.properties.ManchesterEditingSupport;
-import net.enilink.komma.edit.properties.ResourceEditingSupport;
-import net.enilink.komma.em.concepts.IClass;
 import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.em.concepts.IResource;
-import net.enilink.komma.em.util.ISparqlConstants;
-import net.enilink.vocab.owl.DatatypeProperty;
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.rdfs.RDFS;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IUndoableOperation;
@@ -161,47 +150,5 @@ public class PropertyUtil {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Find the best matching {@link IPropertyEditingSupport} for the given
-	 * statement.
-	 */
-	public static IPropertyEditingSupport getEditingSupport(
-			IAdapterFactory adapterFactory, final IEntity subject,
-			final IReference predicate, final Object object) {
-		IPropertyEditingSupport support = adapterFactory == null ? null
-				: (IPropertyEditingSupport) adapterFactory.adapt(predicate,
-						IPropertyEditingSupport.class);
-		if (support != null) {
-			return support;
-		}
-		// assume that property values are literals if current object is
-		// already a literal
-		if (object != null && !(object instanceof IReference)) {
-			support = new LiteralEditingSupport();
-		}
-		if (support == null) {
-			IProperty property = predicate instanceof IProperty ? (IProperty) predicate
-					: subject.getEntityManager().find(predicate,
-							IProperty.class);
-			if (property instanceof DatatypeProperty
-					|| property.getRdfsRanges().contains(RDFS.TYPE_LITERAL)
-					|| property
-							.getEntityManager()
-							.createQuery(
-									ISparqlConstants.PREFIX
-											+ "ASK { ?p rdfs:range ?r . filter (exists { ?r a rdfs:DataType } || regex(str(?r), 'http://www.w3.org/2001/XMLSchema#')) }")
-							.setParameter("p", property).getBooleanResult()) {
-				support = new LiteralEditingSupport();
-			} else if (object instanceof IClass
-					|| property.getRdfsRanges().contains(RDFS.TYPE_CLASS)
-					|| property.getRdfsRanges().contains(OWL.TYPE_CLASS)) {
-				support = new ManchesterEditingSupport(adapterFactory);
-			} else {
-				support = new ResourceEditingSupport(adapterFactory);
-			}
-		}
-		return support;
 	}
 }

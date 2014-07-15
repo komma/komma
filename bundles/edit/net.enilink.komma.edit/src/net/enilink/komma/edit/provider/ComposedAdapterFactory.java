@@ -385,6 +385,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 		Object result = null;
 
 		if (target instanceof IReference) {
+			// class or property
 			URI uri = ((IReference) target).getURI();
 			if (uri != null) {
 				IAdapterFactory factory = getFactoryForTypes(Arrays.asList(

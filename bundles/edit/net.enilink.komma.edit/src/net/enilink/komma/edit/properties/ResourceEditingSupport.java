@@ -1,7 +1,6 @@
 package net.enilink.komma.edit.properties;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,37 +10,33 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.commons.iterator.IMap;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.common.command.SimpleCommand;
-import net.enilink.komma.core.Bindings;
-import net.enilink.komma.core.IBindings;
-import net.enilink.komma.core.IDialect;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.INamespace;
-import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.QueryFragment;
+import net.enilink.komma.core.IStatement;
+import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.assist.ContentProposal;
 import net.enilink.komma.edit.assist.IContentProposal;
 import net.enilink.komma.edit.assist.IContentProposalProvider;
+import net.enilink.komma.edit.properties.ResourceFinder.Match;
+import net.enilink.komma.edit.properties.ResourceFinder.Options;
 import net.enilink.komma.edit.provider.IItemLabelProvider;
-import net.enilink.komma.em.util.ISparqlConstants;
-import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.parser.BaseRdfParser;
 import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.QName;
+import net.enilink.vocab.rdf.RDF;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -52,9 +47,7 @@ import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.support.IndexRange;
 import org.parboiled.support.ParsingResult;
 
-public class ResourceEditingSupport implements IPropertyEditingSupport {
-	private static Pattern ESCAPE_CHARS = Pattern.compile("[\\[.{(*+?^$|]");
-
+public class ResourceEditingSupport implements IEditingSupport {
 	static class ConstructorParser extends BaseRdfParser {
 		public Rule Constructor() {
 			return sequence(
@@ -62,23 +55,6 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 							ch('a')), WS_NO_COMMENT(),
 					firstOf(IriRef(), PN_LOCAL(), sequence(EMPTY, push(""))),
 					drop(), push(matchRange()));
-		}
-	}
-
-	public static class ResourceMatch {
-		public final IEntity resource;
-		public final boolean inGraph;
-		public final boolean matchesRange;
-
-		public ResourceMatch(IEntity resource, boolean inGraph,
-				boolean matchesRange) {
-			this.resource = resource;
-			this.inGraph = inGraph;
-			this.matchesRange = matchesRange;
-		}
-
-		public int score() {
-			return 0 + (matchesRange ? 1000 : 0) + (inGraph ? 1 : 0);
 		}
 	}
 
@@ -147,19 +123,23 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				predicates.add(predicate);
 			}
 			predicates.add(null);
-			Map<IEntity, ResourceMatch> allMatches = new LinkedHashMap<>();
-			ProposalOptions options = ProposalOptions.create(subject,
+			Map<IEntity, Match> allMatches = new LinkedHashMap<>();
+			Options options = Options.create(subject,
 					contents.substring(0, position), limit);
+			if (editPredicate) {
+				options = options.ofType(RDF.TYPE_PROPERTY);
+			}
 			// ensures that resources which match the predicate's range are
 			// added in front of the result list
+			ResourceFinder finder = new ResourceFinder();
 			for (IReference p : predicates) {
 				if (allMatches.size() >= limit) {
 					break;
 				}
-				for (ResourceMatch match : getRestrictedResources(options
+				for (Match match : finder.findRestrictedResources(options
 						.forPredicate(p))) {
 					// globally filter duplicate proposals
-					ResourceMatch existing = allMatches.get(match.resource);
+					Match existing = allMatches.get(match.resource);
 					if (existing == null || existing.score() < match.score()) {
 						allMatches.put(match.resource, match);
 					}
@@ -204,11 +184,10 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			return results.toArray(new IContentProposal[results.size()]);
 		}
 
-		protected List<ResourceProposal> toProposals(
-				Iterable<ResourceMatch> matches, String prefix,
-				boolean useAsValue) {
+		protected List<ResourceProposal> toProposals(Iterable<Match> matches,
+				String prefix, boolean useAsValue) {
 			List<ResourceProposal> proposals = new ArrayList<>();
-			for (ResourceMatch match : matches) {
+			for (Match match : matches) {
 				String content = getLabel(match.resource);
 				if (content.length() > 0) {
 					content = prefix + content;
@@ -218,50 +197,6 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 				}
 			}
 			return proposals;
-		}
-	}
-
-	public static class ProposalOptions implements Cloneable {
-		IEntity subject;
-		IReference predicate;
-		IReference type;
-		String pattern;
-		int limit;
-
-		ProposalOptions(IEntity subject, String pattern, int limit) {
-			this.subject = subject;
-			this.pattern = pattern.trim();
-			this.limit = limit;
-		}
-
-		public static ProposalOptions create(IEntity subject, String pattern,
-				int limit) {
-			return new ProposalOptions(subject, pattern, limit);
-		}
-
-		public ProposalOptions forPredicate(IReference predicate) {
-			ProposalOptions result = clone();
-			result.predicate = predicate;
-			return result;
-		}
-
-		public ProposalOptions ofType(IReference type) {
-			ProposalOptions result = clone();
-			result.type = type;
-			return result;
-		}
-
-		public ProposalOptions anyType() {
-			return clone().ofType(null).forPredicate(null);
-		}
-
-		@Override
-		public ProposalOptions clone() {
-			try {
-				return (ProposalOptions) super.clone();
-			} catch (CloneNotSupportedException e) {
-				throw new AssertionError(e);
-			}
 		}
 	}
 
@@ -290,217 +225,32 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		return value.toString();
 	}
 
-	protected String toRegex(String pattern) {
-		return ESCAPE_CHARS.matcher(pattern).replaceAll("\\\\$0")
-				.replace("\\*", ".*").replace("\\?", ".");
-	}
-
-	protected String toUriRegex(String pattern) {
-		return "[#/:]" + toRegex(pattern) + "[^#/]*$";
-	}
-
-	protected Iterable<ResourceMatch> getAnyResources(ProposalOptions options) {
-		Map<IEntity, ResourceMatch> matches = new LinkedHashMap<>(options.limit);
-		Iterator<ResourceMatch> restricted = getRestrictedResources(options)
-				.iterator();
-		while (restricted.hasNext() && matches.size() < options.limit) {
-			ResourceMatch match = restricted.next();
-			matches.put(match.resource, match);
-		}
-		if (options.predicate != null && matches.size() < options.limit) {
-			// find resource without consideration of ranges
-			Iterator<ResourceMatch> fallback = getRestrictedResources(
-					options.anyType()).iterator();
-			while (fallback.hasNext() && matches.size() < options.limit) {
-				ResourceMatch match = fallback.next();
-				if (!matches.containsKey(match.resource)) {
-					matches.put(match.resource, match);
-				}
-			}
-		}
-		return matches.values();
-	}
-
-	protected Iterable<ResourceMatch> getRestrictedResources(
-			ProposalOptions options) {
-		Map<IReference, ResourceMatch> matches = new LinkedHashMap<>(
-				options.limit);
-		IEntity subject = options.subject;
-		String pattern = options.pattern;
-		IReference predicate = options.predicate;
-		IReference type = options.type;
-		if (!pattern.contains(":")) {
-			// find resources within the current model first
-			for (ResourceMatch match : retrieve(subject, predicate, type,
-					pattern, toUriRegex(pattern), null, ((IObject) subject)
-							.getModel().getURI(), options.limit)) {
-				matches.put(match.resource, match);
-			}
-		}
-		if (matches.size() < options.limit) {
-			// additionally, if limit not exceeded, find resources from other
-			// namespaces
-			String uriPattern = pattern;
-			String uriNamespace = null;
-			if (!pattern.matches(".*[#/].*")) {
-				int colonIndex = pattern.lastIndexOf(':');
-				if (colonIndex == 0) {
-					pattern = pattern.substring(1);
-				} else if (colonIndex > 0) {
-					String prefix = pattern.substring(0, colonIndex);
-					URI namespaceUri = subject.getEntityManager().getNamespace(
-							prefix);
-					if (namespaceUri != null) {
-						uriNamespace = namespaceUri.toString();
-						pattern = pattern.substring(colonIndex + 1);
-					}
-				}
-				uriPattern = toUriRegex(pattern);
-			}
-			Iterator<ResourceMatch> fallback = retrieve(subject, predicate,
-					type, pattern, uriPattern, uriNamespace, null,
-					options.limit).iterator();
-			while (fallback.hasNext() && matches.size() < options.limit) {
-				ResourceMatch match = fallback.next();
-				if (!matches.containsKey(match.resource)) {
-					matches.put(match.resource, match);
-				}
-			}
-		}
-
-		return matches.values();
-	}
-
-	private String[] split(String s, String pattern) {
-		List<String> tokens = new ArrayList<String>(Arrays.asList(s
-				.split(pattern)));
-		while (tokens.remove(""))
-			;
-		return tokens.toArray(new String[tokens.size()]);
-	}
-
-	protected List<ResourceMatch> retrieve(IEntity subject,
-			final IReference predicate, IReference type, String pattern,
-			String uriPattern, String namespace, final URI graph, int limit) {
-		// System.out.println("retrieve("
-		// + Arrays.asList(predicate, type, pattern, uriPattern,
-		// namespace, graph, limit) + ")");
-		StringBuilder sparql = new StringBuilder(ISparqlConstants.PREFIX
-				+ "SELECT DISTINCT ?s ");
-
-		if (editPredicate) {
-			sparql.append("?prio WHERE { ");
-			sparql.append("?s a [rdfs:subClassOf* rdf:Property] . ");
-			sparql.append("optional { ");
-			sparql.append("filter bound(?subject) . ");
-			sparql.append("{ ?subject a [ rdfs:subClassOf [ owl:onProperty ?s ] ] } ");
-			sparql.append("union { ?subject a ?subjectType . ?s rdfs:domain ?subjectType filter (?subjectType != owl:Thing && ?subjectType != rdfs:Resource) } ");
-			sparql.append("bind ( 1 as ?prio) }");
-		} else {
-			sparql.append("WHERE { ");
-			if (type != null || predicate != null) {
-				sparql.append("?s a ?sType .");
-			}
-			if (predicate != null) {
-				sparql.append("{ ?property rdfs:range ?sType FILTER (?sType != owl:Thing) }");
-				sparql.append(" UNION ");
-				sparql.append("{ ?subject a [rdfs:subClassOf ?r] . ?r owl:onProperty ?property { ?r owl:allValuesFrom ?sType } UNION { ?r owl:someValuesFrom ?sType }}");
-			}
-		}
-
-		if (graph != null) {
-			sparql.append(" graph ?graph {\n");
-		}
-
-		QueryFragment searchS = null, searchL = null;
-		if (pattern.trim().isEmpty()) {
-			sparql.append("?s ?p ?o . ");
-		} else {
-			IDialect dialect = subject.getEntityManager().getFactory()
-					.getDialect();
-			searchS = dialect.fullTextSearch(Arrays.asList("s"), IDialect.ALL,
-					split(pattern, "\\s*[#/]\\s*"));
-			searchL = dialect.fullTextSearch(Arrays.asList("l"),
-					IDialect.DEFAULT, pattern);
-
-			sparql.append("{ ?s ?p ?o . " + searchS);
-			sparql.append(" FILTER regex(str(?s), ?uriPattern)");
-			sparql.append(" }");
-			sparql.append(" UNION ");
-			sparql.append("{ ");
-			sparql.append("?s rdfs:label ?l . " + searchL);
-			// required, since FTS on labels has wrong results using OWLIM
-			sparql.append(" FILTER regex(str(?l), ?pattern)");
-			sparql.append(" }");
-		}
-		if (namespace != null) {
-			sparql.append(" FILTER regex(str(?s), ?namespace)");
-		}
-		if (graph != null) {
-			sparql.append("\n}");
-		}
-		sparql.append(" } LIMIT " + limit);
-		// System.out.println(sparql);
-
-		// TODO incorporate correct ranges
-		IQuery<?> query = subject.getEntityManager().createQuery(
-				sparql.toString());
-		if (searchS != null) {
-			searchS.addParameters(query);
-		}
-		if (searchL != null) {
-			searchL.addParameters(query);
-		}
-		query.setParameter("uriPattern", uriPattern);
-		query.setParameter("pattern", "^" + toRegex(pattern));
-		if (namespace != null) {
-			query.setParameter("namespace", "^" + namespace);
-		}
-		if (graph != null) {
-			query.setParameter("graph", graph);
-		}
-		query.setParameter("subject", subject);
-		if (!editPredicate) {
-			query.setParameter("property", predicate);
-			if (type != null) {
-				query.setParameter("sType", type);
-			}
-			return query.evaluate(IEntity.class)
-					.mapWith(new IMap<IEntity, ResourceMatch>() {
-						@Override
-						public ResourceMatch map(IEntity value) {
-							// System.out.println(" > " + value);
-							return new ResourceMatch(value, graph != null,
-									predicate != null);
-						}
-					}).toList();
-		} else {
-			// includes prio of matched predicates
-			query.bindResultType("s", IEntity.class);
-			return query.evaluate(Bindings.typed())
-					.mapWith(new IMap<IBindings<Object>, ResourceMatch>() {
-						@Override
-						public ResourceMatch map(IBindings<Object> bindings) {
-							IEntity resource = (IEntity) bindings.get("s");
-							Number prio = (Number) bindings.get("prio");
-							return new ResourceMatch(resource, graph != null,
-									prio != null && prio.intValue() > 0);
-						}
-					}).toList();
-		}
-	}
-
 	protected ConstructorParser createConstructorParser() {
 		return Parboiled.createParser(ConstructorParser.class);
 	}
 
+	/**
+	 * Returns the statement that is represented by this element.
+	 */
+	protected IStatement getStatement(Object element) {
+		if (element instanceof IStatement) {
+			return (IStatement) element;
+		} else {
+			return null;
+		}
+	}
+
 	@Override
-	public ProposalSupport getProposalSupport(final IEntity subject,
-			final IReference property, Object value) {
-		return new ProposalSupport() {
+	public IProposalSupport getProposalSupport(Object element) {
+		final IStatement stmt = getStatement(element);
+		if (stmt == null) {
+			return null;
+		}
+		return new IProposalSupport() {
 			@Override
 			public IContentProposalProvider getProposalProvider() {
-				return new ResourceProposalProvider(subject, property);
+				return new ResourceProposalProvider(
+						(IEntity) stmt.getSubject(), stmt.getPredicate());
 			}
 
 			@Override
@@ -543,15 +293,16 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 	}
 
 	@Override
-	public boolean canEdit(IEntity subject, IReference property, Object value) {
+	public boolean canEdit(Object element) {
 		return true;
 	}
 
 	@Override
-	public Object getValueForEditor(IEntity subject, IReference property,
-			Object value) {
-		if (editPredicate) {
-			value = property;
+	public Object getEditorValue(Object element) {
+		Object value = null;
+		IStatement stmt = getStatement(element);
+		if (stmt != null) {
+			value = editPredicate ? stmt.getPredicate() : stmt.getObject();
 		}
 		return value != null ? getLabel(value) : "";
 	}
@@ -587,6 +338,12 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 			throw new IllegalArgumentException("Unknown prefix for QName "
 					+ value);
 		} else if (value != null) {
+			// try to parse value as IRI ref or prefixed name
+			ParsingResult<Object> iriRef = new BasicParseRunner<Object>(
+					createConstructorParser().IriRef()).run(value.toString());
+			if (iriRef.matched) {
+				return toURI(manager, iriRef.resultValue);
+			}
 			URI ns = manager.getNamespace("");
 			if (ns != null) {
 				return ns.appendLocalPart(value.toString());
@@ -598,87 +355,105 @@ public class ResourceEditingSupport implements IPropertyEditingSupport {
 		return null;
 	}
 
+	protected IEntity getSubject(Object element) {
+		if (element instanceof IEntity) {
+			return (IEntity) element;
+		}
+		IStatement stmt = getStatement(element);
+		return (IEntity) ((stmt != null && stmt.getSubject() instanceof IEntity) ? stmt
+				.getSubject() : null);
+	}
+
 	@Override
-	public ICommand convertValueFromEditor(Object editorValue,
-			final IEntity subject, IReference property, Object oldValue) {
+	public ICommand convertEditorValue(Object editorValue,
+			final IEntityManager entityManager, Object element) {
+		if (editorValue instanceof IValue) {
+			// short-circuit if supplied value is already an RDF resource
+			return new IdentityCommand(editorValue);
+		}
+
 		String valueStr = editorValue.toString().trim();
 		if (valueStr.isEmpty()) {
-			return new IdentityCommand("Remove statement.");
+			return new IdentityCommand("Remove element.");
 		}
 
 		final URI[] name = { null };
 		boolean createNew = false;
-		ConstructorParser parser = createConstructorParser();
 		ParsingResult<Object> ctor = new BasicParseRunner<Object>(
-				parser.Constructor()).run(valueStr);
+				createConstructorParser().Constructor()).run(valueStr);
 		if (ctor.matched) {
 			createNew = true;
 			IndexRange range = (IndexRange) ctor.resultValue;
 			valueStr = valueStr.substring(range.start, range.end);
 			// check if a name for the new resource is given
 			if (ctor.valueStack.size() > 1) {
-				if (subject instanceof IObject) {
-					name[0] = toURI(subject.getEntityManager(),
-							ctor.valueStack.peek(1));
-				}
-			}
-		} else {
-			// allow to specify resources as full IRIs in the form
-			// <http://example.org#resource>
-			ParsingResult<Object> Iri = new BasicParseRunner<Object>(
-					parser.IRI_REF_WSPACE()).run(valueStr);
-			if (Iri.matched) {
-				name[0] = toURI(subject.getEntityManager(), Iri.resultValue);
-				return new SimpleCommand() {
-					@Override
-					protected CommandResult doExecuteWithResult(
-							IProgressMonitor progressMonitor, IAdaptable info)
-							throws ExecutionException {
-						return CommandResult.newOKCommandResult(subject
-								.getEntityManager().find(name[0]));
-					}
-				};
+				name[0] = toURI(entityManager, ctor.valueStack.peek(1));
 			}
 		}
-		// allow to force the creation of a resource by appending "!" even if it
+
+		boolean forced = false;
+		// allow to force the use of a resource by appending "!" even if it
 		// does not exist
 		if (valueStr.endsWith("!") && valueStr.length() > 1) {
+			forced = true;
 			valueStr = valueStr.substring(0, valueStr.length() - 1);
-			name[0] = toURI(subject.getEntityManager(), valueStr);
+		}
+
+		// allow to specify resources as full IRIs in the form
+		// <http://example.org#resource> or as prefixed names
+		// example:resource
+		final URI uri = toURI(entityManager, valueStr);
+		if (uri != null && (forced || entityManager.hasMatch(uri, null, null))) {
 			return new SimpleCommand() {
 				@Override
 				protected CommandResult doExecuteWithResult(
 						IProgressMonitor progressMonitor, IAdaptable info)
 						throws ExecutionException {
-					return CommandResult.newOKCommandResult(subject
-							.getEntityManager().find(name[0]));
+					if (name[0] != null) {
+						// create a new resource
+						return CommandResult.newOKCommandResult(entityManager
+								.createNamed(name[0], uri));
+					} else {
+						return CommandResult.newOKCommandResult(entityManager
+								.find(uri));
+					}
 				}
 			};
-		} else {
-			ProposalOptions options = ProposalOptions.create(subject,
+		}
+
+		// try a full-text search to find the resource
+		IStatement stmt = getStatement(element);
+		Options options;
+		Object oldValue = null;
+		IReference property = null;
+		if (stmt != null) {
+			options = Options.create((IEntity) stmt.getSubject(),
 					(String) editorValue, 1);
-			Iterator<ResourceMatch> matches = getAnyResources(
-					options.forPredicate(createNew ? null : property))
-					.iterator();
-			if (matches.hasNext()) {
-				final IEntity resource = matches.next().resource;
-				if (createNew && getLabel(resource).equals(valueStr)) {
-					// create a new object
-					return new SimpleCommand() {
-						@Override
-						protected CommandResult doExecuteWithResult(
-								IProgressMonitor progressMonitor,
-								IAdaptable info) throws ExecutionException {
-							return CommandResult.newOKCommandResult(subject
-									.getEntityManager().createNamed(name[0],
-											resource));
-						}
-					};
-				} else if (!resource.equals(oldValue)
-						&& getLabel(resource).equals(valueStr)) {
-					// replace value with existing object
-					return new IdentityCommand(resource);
-				}
+			property = stmt.getPredicate();
+			oldValue = property == null ? null : stmt.getObject();
+		} else {
+			options = Options.create(entityManager, null, (String) editorValue,
+					1);
+		}
+		Iterator<Match> matches = new ResourceFinder().findAnyResources(
+				options.forPredicate(createNew ? null : property)).iterator();
+		if (matches.hasNext()) {
+			final IEntity resource = matches.next().resource;
+			if (createNew && getLabel(resource).equals(valueStr)) {
+				// create a new object
+				return new SimpleCommand() {
+					@Override
+					protected CommandResult doExecuteWithResult(
+							IProgressMonitor progressMonitor, IAdaptable info)
+							throws ExecutionException {
+						return CommandResult.newOKCommandResult(entityManager
+								.createNamed(name[0], resource));
+					}
+				};
+			} else if (!resource.equals(oldValue)
+					&& getLabel(resource).equals(valueStr)) {
+				// replace value with existing object
+				return new IdentityCommand(resource);
 			}
 		}
 		return null;

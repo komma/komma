@@ -5,8 +5,10 @@ import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.em.concepts.IProperty;
@@ -17,21 +19,20 @@ import net.enilink.vocab.xmlschema.XMLSCHEMA;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-public class LiteralEditingSupport implements IPropertyEditingSupport {
+public class LiteralEditingSupport implements IEditingSupport {
 	@Override
-	public ProposalSupport getProposalSupport(IEntity subject,
-			IReference property, Object value) {
+	public IProposalSupport getProposalSupport(Object element) {
 		return null;
 	}
 
 	@Override
-	public boolean canEdit(IEntity subject, IReference property, Object value) {
-		return true;
+	public boolean canEdit(Object element) {
+		return element instanceof IStatement;
 	}
 
 	@Override
-	public Object getValueForEditor(IEntity subject, IReference property,
-			Object value) {
+	public Object getEditorValue(Object element) {
+		Object value = ((IStatement) element).getObject();
 		if (value instanceof ILiteral) {
 			ILiteral literal = (ILiteral) value;
 			return literal.getLabel();
@@ -48,8 +49,10 @@ public class LiteralEditingSupport implements IPropertyEditingSupport {
 	}
 
 	@Override
-	public ICommand convertValueFromEditor(Object editorValue, IEntity subject,
-			IReference property, Object oldValue) {
+	public ICommand convertEditorValue(Object editorValue,
+			IEntityManager entityManager, Object element) {
+		IStatement stmt = (IStatement) element;
+		Object oldValue = stmt.getObject();
 		ILiteral newLiteral;
 		if (editorValue instanceof ILiteral) {
 			newLiteral = (ILiteral) editorValue;
@@ -60,9 +63,9 @@ public class LiteralEditingSupport implements IPropertyEditingSupport {
 				literalType = ((ILiteral) oldValue).getDatatype();
 				literalLanguage = ((ILiteral) oldValue).getLanguage();
 			} else {
-				IExtendedIterator<? extends IReference> ranges = subject
-						.getEntityManager().find(property, IProperty.class)
-						.getNamedRanges(subject, false);
+				IExtendedIterator<? extends IReference> ranges = entityManager
+						.find(stmt.getPredicate(), IProperty.class)
+						.getNamedRanges((IEntity) stmt.getSubject(), false);
 				while (ranges.hasNext() && literalType == null) {
 					URI type = ranges.next().getURI();
 					if (!isAbstractType(type)) {
@@ -74,12 +77,11 @@ public class LiteralEditingSupport implements IPropertyEditingSupport {
 			if (isAbstractType(literalType)) {
 				literalType = null;
 			}
-			newLiteral = subject.getEntityManager().createLiteral(
-					(String) editorValue, literalType, literalLanguage);
+			newLiteral = entityManager.createLiteral((String) editorValue,
+					literalType, literalLanguage);
 			if (literalType != null) {
 				// try to convert literal to given type
-				Object result = subject.getEntityManager().toInstance(
-						newLiteral);
+				Object result = entityManager.toInstance(newLiteral);
 				if (result instanceof ILiteral) {
 					return new UnexecutableCommand(new Status(IStatus.ERROR,
 							KommaEditPlugin.PLUGIN_ID,
