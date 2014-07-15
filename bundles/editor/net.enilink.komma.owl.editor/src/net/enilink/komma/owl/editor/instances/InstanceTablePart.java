@@ -12,7 +12,7 @@ import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.properties.PropertyEditingHelper.Type;
+import net.enilink.komma.edit.properties.EditingHelper.Type;
 import net.enilink.komma.edit.provider.ISearchableItemProvider;
 import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
 import net.enilink.komma.edit.ui.celleditor.PropertyCellEditingSupport;
