@@ -7,8 +7,8 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.properties.PropertyEditingHelper;
-import net.enilink.komma.edit.properties.PropertyEditingHelper.Type;
+import net.enilink.komma.edit.properties.EditingHelper;
+import net.enilink.komma.edit.properties.EditingHelper.Type;
 import net.enilink.komma.edit.ui.celleditor.PropertyCellEditingSupport;
 import net.enilink.komma.em.concepts.IProperty;
 import net.enilink.komma.core.IStatement;
@@ -19,11 +19,11 @@ class ValueEditingSupport extends PropertyCellEditingSupport {
 	private boolean createNew;
 
 	public ValueEditingSupport(TreeViewer viewer) {
-		this(viewer, PropertyEditingHelper.Type.VALUE);
+		this(viewer, EditingHelper.Type.VALUE);
 	}
 
 	public ValueEditingSupport(final TreeViewer viewer,
-			PropertyEditingHelper.Type type) {
+			EditingHelper.Type type) {
 		super(viewer, type, (type == Type.VALUE ? SWT.MULTI | SWT.WRAP
 				| SWT.V_SCROLL : SWT.SINGLE));
 	}
@@ -40,7 +40,7 @@ class ValueEditingSupport extends PropertyCellEditingSupport {
 				|| element instanceof PropertyNode
 				&& (((PropertyNode) element).isCreateNewStatementOnEdit() || ((PropertyNode) element)
 						.isIncomplete());
-		if (type == PropertyEditingHelper.Type.PROPERTY && expandedNode) {
+		if (type == EditingHelper.Type.PROPERTY && expandedNode) {
 			return false;
 		}
 		return super.canEdit(element);

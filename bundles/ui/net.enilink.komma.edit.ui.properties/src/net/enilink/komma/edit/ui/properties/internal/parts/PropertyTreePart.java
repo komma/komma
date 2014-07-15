@@ -25,7 +25,7 @@ import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
-import net.enilink.komma.edit.properties.PropertyEditingHelper;
+import net.enilink.komma.edit.properties.EditingHelper;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
 import net.enilink.komma.edit.ui.properties.internal.wizards.EditPropertyWizard;
@@ -731,7 +731,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart {
 
 		editingSupports = new ArrayList<>();
 		ValueEditingSupport editingSupport = new ValueEditingSupport(
-				treeViewer, PropertyEditingHelper.Type.PROPERTY);
+				treeViewer, EditingHelper.Type.PROPERTY);
 		editingSupports.add(editingSupport);
 		column.setEditingSupport(editingSupport);
 
@@ -752,7 +752,7 @@ public class PropertyTreePart extends AbstractEditingDomainPart {
 		column.getColumn().setWidth(80);
 
 		editingSupport = new ValueEditingSupport(treeViewer,
-				PropertyEditingHelper.Type.LITERAL_LANG_TYPE);
+				EditingHelper.Type.LITERAL_LANG_TYPE);
 		editingSupports.add(editingSupport);
 		column.setEditingSupport(editingSupport);
 

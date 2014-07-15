@@ -21,10 +21,10 @@ import net.enilink.komma.core.Statements;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.properties.IPropertyEditingSupport;
 import net.enilink.komma.edit.properties.IResourceProposal;
-import net.enilink.komma.edit.properties.PropertyEditingHelper;
-import net.enilink.komma.edit.properties.PropertyEditingHelper.Type;
+import net.enilink.komma.edit.properties.EditingHelper;
+import net.enilink.komma.edit.properties.EditingHelper.Type;
+import net.enilink.komma.edit.properties.IProposalSupport;
 import net.enilink.komma.edit.ui.assist.JFaceContentProposal;
 import net.enilink.komma.edit.ui.assist.JFaceProposalProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
@@ -57,14 +57,9 @@ import org.eclipse.swt.widgets.Text;
 public class StatementView extends AbstractEditingDomainView {
 	class StatementPart extends AbstractEditingDomainPart implements
 			INotificationListener<INotification> {
-		class MyPropertyEditingHelper extends PropertyEditingHelper {
-			MyPropertyEditingHelper(Type type) {
+		class MyEditingHelper extends EditingHelper {
+			MyEditingHelper(Type type) {
 				super(type);
-			}
-
-			@Override
-			protected IStatement getStatement(Object element) {
-				return (IStatement) element;
 			}
 
 			@Override
@@ -90,10 +85,8 @@ public class StatementView extends AbstractEditingDomainView {
 
 		IResourceProposal acceptedResourceProposal;
 
-		MyPropertyEditingHelper propertyHelper = new MyPropertyEditingHelper(
-				Type.PROPERTY);
-		MyPropertyEditingHelper valueHelper = new MyPropertyEditingHelper(
-				Type.VALUE);
+		MyEditingHelper propertyHelper = new MyEditingHelper(Type.PROPERTY);
+		MyEditingHelper valueHelper = new MyEditingHelper(Type.VALUE);
 
 		IModelSet modelSet;
 
@@ -187,7 +180,7 @@ public class StatementView extends AbstractEditingDomainView {
 			typeLabel.setLayoutData(data);
 			typeText = getWidgetFactory().createText(footer, "",
 					SWT.SINGLE | SWT.H_SCROLL);
-			createProposalAdapter(typeText, new MyPropertyEditingHelper(
+			createProposalAdapter(typeText, new MyEditingHelper(
 					Type.LITERAL_LANG_TYPE));
 			typeText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
 					false));
@@ -222,14 +215,14 @@ public class StatementView extends AbstractEditingDomainView {
 		}
 
 		protected ContentProposalAdapter createProposalAdapter(Text text,
-				final PropertyEditingHelper editingHelper) {
+				final EditingHelper editingHelper) {
 			return ContentProposals.enableContentProposal(text,
 					new IContentProposalProvider() {
 						@Override
 						public IContentProposal[] getProposals(String contents,
 								int position) {
 							if (stmt != null) {
-								IPropertyEditingSupport.ProposalSupport proposalSupport = editingHelper
+								IProposalSupport proposalSupport = editingHelper
 										.getProposalSupport(stmt);
 								if (proposalSupport != null) {
 									return JFaceProposalProvider.wrap(
@@ -307,7 +300,9 @@ public class StatementView extends AbstractEditingDomainView {
 					if (!prop.equals(stmt.getPredicate())) {
 						stmt = new Statement(stmt.getSubject(), prop, null);
 					}
-					CommandResult result = valueHelper.setValue(stmt, newValue);
+					CommandResult result = valueHelper.setValue(stmt,
+							((IEntity) stmt.getSubject()).getEntityManager(),
+							newValue);
 					if (result.getStatus().isOK()
 							&& result.getReturnValue() != null) {
 						stmt = new Statement(stmt.getSubject(),
