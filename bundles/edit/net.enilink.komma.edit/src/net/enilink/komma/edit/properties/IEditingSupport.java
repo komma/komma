@@ -49,7 +49,7 @@ public interface IEditingSupport {
 	 * @param entityManager
 	 *            The target entity manager.
 	 * @param element
-	 *            * The current value or <code>null</code>.
+	 *            The current value or <code>null</code>.
 	 * 
 	 * @return An {@link ICommand} that creates a corresponding RDF
 	 *         representation for the given <code>editorValue</code>.
