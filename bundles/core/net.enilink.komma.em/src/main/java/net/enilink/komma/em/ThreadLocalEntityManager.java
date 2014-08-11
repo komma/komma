@@ -20,6 +20,7 @@ import net.enilink.komma.em.util.UnitOfWork;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
 import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.KommaException;
 
 public abstract class ThreadLocalEntityManager extends DelegatingEntityManager {
 	private ThreadLocal<IEntityManager> delegate = new ThreadLocal<IEntityManager>();
@@ -57,6 +58,9 @@ public abstract class ThreadLocalEntityManager extends DelegatingEntityManager {
 	public IEntityManager getDelegate() {
 		IEntityManager manager = delegate.get();
 		if (manager == null || !manager.isOpen()) {
+			if (!uow.isActive()) {
+				throw new KommaException("No active unit of work found.");
+			}
 			manager = initialValue();
 			for (IEntityDecorator decorator : decorators) {
 				manager.addDecorator(decorator);
