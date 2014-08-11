@@ -167,6 +167,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 		if (connection == null) {
 			return;
 		}
+		changeSupport.close(this);
 		try {
 			connection.close();
 		} catch (Exception e) {
