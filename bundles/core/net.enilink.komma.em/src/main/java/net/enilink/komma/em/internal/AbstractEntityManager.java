@@ -87,6 +87,7 @@ import net.enilink.komma.core.TransactionRequiredException;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.dm.IDataManagerUpdate;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.em.internal.behaviours.IEntityManagerAware;
 import net.enilink.komma.em.internal.query.Query;
@@ -498,8 +499,10 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			boolean includeInferred) {
 		log.debug("Update: {}", update);
 
-		IUpdate result = new Update(this, dm.createUpdate(update, baseURI,
-				includeInferred, readContexts, modifyContexts));
+		IDataManagerUpdate dmUpdate = dm.createUpdate(update, baseURI,
+				includeInferred, readContexts, modifyContexts);
+		injector.injectMembers(dmUpdate);
+		IUpdate result = new Update(this, dmUpdate);
 		injector.injectMembers(result);
 		return result;
 	}
