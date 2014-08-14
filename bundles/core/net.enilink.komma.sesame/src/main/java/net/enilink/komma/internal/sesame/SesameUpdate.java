@@ -79,6 +79,7 @@ public class SesameUpdate implements IDataManagerUpdate {
 			if (localTransaction && dm.getTransaction().isActive()) {
 				dm.getTransaction().rollback();
 			}
+			throw new RuntimeException(e);
 		}
 	}
 
