@@ -204,7 +204,6 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 
 							@Override
 							public IExtendedIterator<INamespace> getNamespaces() {
-								Set<URI> uris = new HashSet<>();
 								Map<String, INamespace> prefixMap = new LinkedHashMap<>();
 								for (INamespace ns : WrappedIterator
 										.create(getAllModelNamespaces()
@@ -224,8 +223,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 																				true);
 																	}
 																}))) {
-									if (!prefixMap.containsKey(ns.getPrefix())
-											&& uris.add(ns.getURI())) {
+									if (!prefixMap.containsKey(ns.getPrefix())) {
 										prefixMap
 												.put(ns.getPrefix(),
 														new net.enilink.komma.core.Namespace(
@@ -297,14 +295,17 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 
 							protected void cacheNamespaces() {
 								for (INamespace ns : getAllModelNamespaces()) {
-									if (!uriToPrefix.containsKey(ns.getURI())
-											&& !prefixToUri.containsKey(ns
-													.getPrefix())) {
+									// in case of many prefixes for the same URI
+									// use the lexicographically first prefix
+									String prefix = uriToPrefix
+											.get(ns.getURI());
+									if (prefix == null
+											|| prefix.compareTo(ns.getPrefix()) > 0) {
 										uriToPrefix.put(ns.getURI(),
 												ns.getPrefix());
-										prefixToUri.put(ns.getPrefix(),
-												ns.getURI());
 									}
+									prefixToUri
+											.put(ns.getPrefix(), ns.getURI());
 								}
 							}
 
