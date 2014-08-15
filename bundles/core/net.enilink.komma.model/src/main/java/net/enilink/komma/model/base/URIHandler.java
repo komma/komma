@@ -22,6 +22,11 @@ import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import net.enilink.komma.core.URI;
 import net.enilink.komma.model.IContentHandler;
@@ -32,9 +37,13 @@ import net.enilink.komma.model.ModelUtil;
 
 /**
  * An implementation of a {@link IURIHandler URI handler}.
- * 
+ *
  */
 public class URIHandler implements IURIHandler {
+
+	private final static int TIMEOUT_HARD_IN_MS = 5000;
+	private final static int TIMEOUT_SOFT_IN_MS = TIMEOUT_HARD_IN_MS - 100;
+
 	/**
 	 * This implementation always returns true; clients are generally expected
 	 * to override this.
@@ -104,7 +113,13 @@ public class URIHandler implements IURIHandler {
 					@Override
 					public void close() throws IOException {
 						super.close();
-						int responseCode = httpURLConnection.getResponseCode();
+						int responseCode;
+						try {
+							responseCode = getResponseCode(httpURLConnection);
+						} catch (InterruptedException | ExecutionException
+								| TimeoutException e) {
+							throw new IOException(e);
+						}
 						switch (responseCode) {
 						case HttpURLConnection.HTTP_OK:
 						case HttpURLConnection.HTTP_CREATED:
@@ -158,20 +173,19 @@ public class URIHandler implements IURIHandler {
 
 	/**
 	 * Creates an input stream for the URI, assuming it's a URL, and returns it.
-	 * 
+	 *
 	 * @return an open input stream.
 	 * @exception IOException
 	 *                if there is a problem obtaining an open input stream.
 	 */
+
 	public InputStream createInputStream(URI uri, Map<?, ?> options)
 			throws IOException {
 		try {
 			URL url = new URL(uri.toString());
 			final URLConnection urlConnection = url.openConnection();
 			urlConnection.setRequestProperty("Accept", acceptHeader());
-
-			InputStream result = urlConnection.getInputStream();
-
+			InputStream result = getInputStream(urlConnection);
 			Map<Object, Object> response = getResponse(options);
 			if (response != null) {
 				response.put(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY,
@@ -184,7 +198,8 @@ public class URIHandler implements IURIHandler {
 				}
 			}
 			return result;
-		} catch (RuntimeException exception) {
+		} catch (RuntimeException | ExecutionException | InterruptedException
+				| TimeoutException exception) {
 			throw new IModel.IOWrappedException(exception);
 		}
 	}
@@ -200,7 +215,7 @@ public class URIHandler implements IURIHandler {
 			if (urlConnection instanceof HttpURLConnection) {
 				final HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
 				httpURLConnection.setRequestMethod("DELETE");
-				int responseCode = httpURLConnection.getResponseCode();
+				int responseCode = getResponseCode(httpURLConnection);
 				switch (responseCode) {
 				case HttpURLConnection.HTTP_OK:
 				case HttpURLConnection.HTTP_ACCEPTED:
@@ -216,7 +231,8 @@ public class URIHandler implements IURIHandler {
 			} else {
 				throw new IOException("Delete is not supported for " + uri);
 			}
-		} catch (RuntimeException exception) {
+		} catch (RuntimeException | ExecutionException | InterruptedException
+				| TimeoutException exception) {
 			throw new IModel.IOWrappedException(exception);
 		}
 	}
@@ -294,7 +310,7 @@ public class URIHandler implements IURIHandler {
 			if (urlConnection instanceof HttpURLConnection) {
 				HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
 				httpURLConnection.setRequestMethod("HEAD");
-				int responseCode = httpURLConnection.getResponseCode();
+				int responseCode = getResponseCode(httpURLConnection);
 				// TODO
 				// I'm concerned that folders will often return 401 or even 403.
 				// So should we consider something to exist even though access
@@ -325,7 +341,7 @@ public class URIHandler implements IURIHandler {
 				if (urlConnection instanceof HttpURLConnection) {
 					HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
 					httpURLConnection.setRequestMethod("OPTIONS");
-					int responseCode = httpURLConnection.getResponseCode();
+					int responseCode = getResponseCode(httpURLConnection);
 					if (responseCode == HttpURLConnection.HTTP_OK) {
 						String allow = httpURLConnection
 								.getHeaderField("Allow");
@@ -351,7 +367,7 @@ public class URIHandler implements IURIHandler {
 					if (urlConnection instanceof HttpURLConnection) {
 						HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
 						httpURLConnection.setRequestMethod("HEAD");
-						httpURLConnection.getResponseCode();
+						getResponseCode(httpURLConnection);
 					}
 				}
 				if (requestedAttributes == null
@@ -380,10 +396,46 @@ public class URIHandler implements IURIHandler {
 					}
 				}
 			}
-		} catch (IOException exception) {
+		} catch (IOException | ExecutionException | InterruptedException
+				| TimeoutException exception) {
 			// Ignore exceptions.
 		}
 		return result;
+	}
+
+	private int getResponseCode(final HttpURLConnection connection)
+			throws InterruptedException, ExecutionException, TimeoutException {
+		FutureTask<Integer> futureTask = new FutureTask<>(
+				new Callable<Integer>() {
+					@Override
+					public Integer call() throws Exception {
+						setupTimeout(connection);
+						return connection.getResponseCode();
+					}
+				});
+		new Thread(futureTask).start();
+
+		return futureTask.get(TIMEOUT_HARD_IN_MS, TimeUnit.MILLISECONDS);
+	}
+
+	private InputStream getInputStream(final URLConnection connection)
+			throws InterruptedException, ExecutionException, TimeoutException {
+		FutureTask<InputStream> futureTask = new FutureTask<>(
+				new Callable<InputStream>() {
+					@Override
+					public InputStream call() throws Exception {
+						setupTimeout(connection);
+						return connection.getInputStream();
+					}
+				});
+		new Thread(futureTask).start();
+
+		return futureTask.get(TIMEOUT_HARD_IN_MS, TimeUnit.MILLISECONDS);
+	}
+
+	private void setupTimeout(URLConnection connection) {
+		connection.setConnectTimeout(TIMEOUT_SOFT_IN_MS);
+		connection.setReadTimeout(TIMEOUT_SOFT_IN_MS);
 	}
 
 	public void setAttributes(URI uri, Map<String, ?> attributes,
