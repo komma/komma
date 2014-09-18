@@ -509,19 +509,18 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 		while (!queue.isEmpty()) {
 			IModel model = queue.remove();
 			for (URI imported : model.getImports()) {
-				try {
-					if (seen.add(imported)) {
-						queue.add(getModelSet().getModel(
-								imported,
-								getBehaviourDelegate().demandLoadImport(
-										imported)));
+				if (seen.add(imported)) {
+					try {
+						boolean demandLoad = getBehaviourDelegate()
+								.demandLoadImport(imported);
+						queue.add(getModelSet().getModel(imported, demandLoad));
+					} catch (Throwable e) {
+						getErrors().add(
+								new DiagnosticWrappedException(getURI()
+										.toString(), new KommaException(
+										"Error while loading import: "
+												+ imported, e)));
 					}
-				} catch (Throwable e) {
-					getErrors().add(
-							new DiagnosticWrappedException(getURI().toString(),
-									new KommaException(
-											"Error while loading import: "
-													+ imported, e)));
 				}
 			}
 		}
@@ -548,6 +547,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 
 			// include modules from the imports closure
 			Set<URI> seen = new HashSet<>();
+			seen.add(getURI());
 			Queue<IModel> queue = new LinkedList<>();
 			queue.add(getBehaviourDelegate());
 			while (!queue.isEmpty()) {
@@ -555,20 +555,30 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				moduleClosure.includeModule(((IModel.Internal) model)
 						.getModule());
 				for (URI imported : model.getImports()) {
-					try {
-						if (seen.add(imported)) {
-							IModel importedModel = getModelSet().getModel(
-									imported, true);
-							if (importedModel != null) {
-								queue.add(importedModel);
-							}
+					if (seen.add(imported)) {
+						boolean demandLoad = getBehaviourDelegate()
+								.demandLoadImport(imported);
+						IModel importedModel = null;
+						try {
+							importedModel = getModelSet().getModel(imported,
+									demandLoad);
+						} catch (Throwable e) {
+							getErrors().add(
+									new DiagnosticWrappedException(getURI()
+											.toString(), new KommaException(
+											"Error while loading import: "
+													+ imported, e)));
 						}
-					} catch (Throwable e) {
-						getErrors().add(
-								new DiagnosticWrappedException(getURI()
-										.toString(), new KommaException(
-										"Error while loading import: "
-												+ imported, e)));
+						// try to re-fetch model if load-on-demand is requested
+						// and
+						// the initial loading has been failed
+						if (demandLoad && importedModel == null) {
+							importedModel = getModelSet().getModel(imported,
+									false);
+						}
+						if (importedModel != null) {
+							queue.add(importedModel);
+						}
 					}
 				}
 			}

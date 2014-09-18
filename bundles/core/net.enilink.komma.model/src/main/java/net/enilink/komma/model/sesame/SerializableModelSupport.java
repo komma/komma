@@ -308,12 +308,14 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 	public void save(OutputStream os, Map<?, ?> options) throws IOException {
 		String mimeType = (String) options.get(IModel.OPTION_MIME_TYPE);
 		String charset = null;
-		final IContentDescription contentDescription = determineContentDescription(options);
-		if (contentDescription != null) {
-			if (mimeType == null) {
-				mimeType = ModelUtil.mimeType(contentDescription);
+		if (mimeType == null) {
+			final IContentDescription contentDescription = determineContentDescription(options);
+			if (contentDescription != null) {
+				if (mimeType == null) {
+					mimeType = ModelUtil.mimeType(contentDescription);
+				}
+				charset = contentDescription.getCharset();
 			}
-			charset = contentDescription.getCharset();
 		}
 
 		IDataAndNamespacesVisitor<?> dataVisitor = ModelUtil.writeData(os,
