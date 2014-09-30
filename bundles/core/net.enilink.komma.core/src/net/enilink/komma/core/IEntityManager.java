@@ -10,6 +10,7 @@
  *******************************************************************************/
 package net.enilink.komma.core;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -736,6 +737,16 @@ public interface IEntityManager extends AutoCloseable {
 	 *            interfaces to be translated to rdf:type.
 	 */
 	void removeTypes(Object entity, Class<?>... concepts);
+
+	/**
+	 * Returns a list of roles that are registered for the given
+	 * <code>type</code>.
+	 * 
+	 * @param type
+	 *            The type which roles should be looked up.
+	 * @return A list of registered roles
+	 */
+	Collection<Class<?>> rolesForType(URI type);
 
 	/**
 	 * Sets the prefix for a namespace.
