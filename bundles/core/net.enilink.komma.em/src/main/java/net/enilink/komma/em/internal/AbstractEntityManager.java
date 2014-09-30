@@ -1171,6 +1171,11 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@Override
+	public Collection<Class<?>> rolesForType(URI type) {
+		return mapper.findRoles(type, new HashSet<Class<?>>());
+	}
+
+	@Override
 	public Object toInstance(IValue value) {
 		return toInstance(value, null, null);
 	}

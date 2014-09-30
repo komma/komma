@@ -19,9 +19,11 @@ import java.util.Set;
 import org.infinispan.Cache;
 import org.infinispan.tree.Fqn;
 import org.infinispan.tree.TreeCache;
+
 import net.enilink.composition.asm.BehaviourMethodProcessor;
 import net.enilink.composition.cache.IPropertyCache;
 import net.enilink.composition.cache.behaviours.CacheBehaviourMethodProcessor;
+import net.enilink.composition.properties.PropertySet;
 
 import com.google.inject.Inject;
 import com.google.inject.Key;
@@ -58,55 +60,67 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 		return Fqn.root();
 	}
 
+	/**
+	 * The property cache implementation that is used within {@link PropertySet}
+	 * .
+	 */
+	static class PropertyCache implements IPropertyCache {
+		final TreeCache<Object, Object> treeCache;
+		final Fqn contextKey;
+
+		PropertyCache(TreeCache<Object, Object> treeCache, Fqn contextKey) {
+			this.treeCache = treeCache;
+			this.contextKey = contextKey;
+		}
+
+		@SuppressWarnings("serial")
+		class IteratorList extends ArrayList<Object> {
+		};
+
+		Fqn fqnFor(Object entity, Object property) {
+			return Fqn.fromElements(((IReferenceable) entity).getReference(),
+					"properties", contextKey, property);
+		}
+
+		@Override
+		public Object put(Object entity, Object property, Object[] parameters,
+				Object value) {
+			Fqn fqn = fqnFor(entity, property);
+			boolean isIterator = value instanceof Iterator<?>;
+			if (isIterator) {
+				// usually an iterator cannot be cached
+				// -> cache a special list instead and return an
+				// iterator for this list
+				IteratorList itValues = new IteratorList();
+				while (((Iterator<?>) value).hasNext()) {
+					itValues.add(((Iterator<?>) value).next());
+				}
+				value = itValues;
+			}
+			treeCache.put(fqn, Arrays.asList(parameters), value);
+			if (isIterator) {
+				return WrappedIterator.create(((List<?>) value).iterator());
+			}
+			return value;
+		}
+
+		@Override
+		public Object get(Object entity, Object property, Object[] parameters) {
+			Fqn fqn = fqnFor(entity, property);
+			Object value = treeCache.get(fqn, Arrays.asList(parameters));
+			boolean isIterator = value instanceof IteratorList;
+			if (isIterator) {
+				return WrappedIterator.create(((List<?>) value).iterator());
+			}
+			return value;
+		}
+	}
+
 	@Singleton
 	@Provides
 	IPropertyCache providePropertyCache(
 			final TreeCache<Object, Object> treeCache, final Fqn contextKey) {
-		return new IPropertyCache() {
-			@SuppressWarnings("serial")
-			class IteratorList extends ArrayList<Object> {
-			};
-
-			Fqn fqnFor(Object entity, Object property) {
-				return Fqn.fromElements(
-						((IReferenceable) entity).getReference(), "properties",
-						contextKey, property);
-			}
-
-			@Override
-			public Object put(Object entity, Object property,
-					Object[] parameters, Object value) {
-				Fqn fqn = fqnFor(entity, property);
-				boolean isIterator = value instanceof Iterator<?>;
-				if (isIterator) {
-					// usually an iterator cannot be cached
-					// -> cache a special list instead and return an
-					// iterator for this list
-					IteratorList itValues = new IteratorList();
-					while (((Iterator<?>) value).hasNext()) {
-						itValues.add(((Iterator<?>) value).next());
-					}
-					value = itValues;
-				}
-				treeCache.put(fqn, Arrays.asList(parameters), value);
-				if (isIterator) {
-					return WrappedIterator.create(((List<?>) value).iterator());
-				}
-				return value;
-			}
-
-			@Override
-			public Object get(Object entity, Object property,
-					Object[] parameters) {
-				Fqn fqn = fqnFor(entity, property);
-				Object value = treeCache.get(fqn, Arrays.asList(parameters));
-				boolean isIterator = value instanceof IteratorList;
-				if (isIterator) {
-					return WrappedIterator.create(((List<?>) value).iterator());
-				}
-				return value;
-			}
-		};
+		return new PropertyCache(treeCache, contextKey);
 	}
 
 	@Override

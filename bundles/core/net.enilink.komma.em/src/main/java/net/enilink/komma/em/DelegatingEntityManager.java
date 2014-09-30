@@ -10,6 +10,7 @@
  *******************************************************************************/
 package net.enilink.komma.em;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -40,7 +41,8 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public void add(Iterable<? extends IStatement> statements, boolean ignoreImports) {
+	public void add(Iterable<? extends IStatement> statements,
+			boolean ignoreImports) {
 		getDelegate().add(statements, ignoreImports);
 	}
 
@@ -338,6 +340,11 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	@Override
 	public <T> T rename(T bean, net.enilink.komma.core.URI uri) {
 		return getDelegate().rename(bean, uri);
+	}
+
+	@Override
+	public Collection<Class<?>> rolesForType(URI type) {
+		return getDelegate().rolesForType(type);
 	}
 
 	@Override
