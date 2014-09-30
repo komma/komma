@@ -47,7 +47,10 @@ public interface IDataChangeSupport extends IDataChangeListener {
 	boolean isEnabled(IDataManager dm);
 
 	/**
-	 * Enables or disables change tracking for the given data manager.
+	 * Enables or disables change tracking for the given data manager. If
+	 * <code>null</code> is passed for the parameter <code>dm</code> then the
+	 * change tracking is disabled for all data managers within the current
+	 * thread.
 	 * 
 	 * @param dm
 	 *            The data manager
