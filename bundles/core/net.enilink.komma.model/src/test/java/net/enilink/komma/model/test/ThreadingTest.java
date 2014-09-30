@@ -103,21 +103,25 @@ public class ThreadingTest {
 		}
 
 		System.out.println("Start");
+		long start = System.currentTimeMillis();
 		for (int i = 0; i < count; i++) {
 			executorService.scheduleWithFixedDelay(new TestRunnable(), 0,
-					(int) (1 + Math.random() * 20), TimeUnit.MILLISECONDS);
+					(int) (1 + Math.random() * 20), //
+					TimeUnit.MILLISECONDS);
 		}
 
 		// repeat test
-		// Thread.sleep(3 * 60 * 1000);
+		// Thread.sleep(1 * 60 * 1000);
 
 		executorService.shutdown();
 		executorService.awaitTermination(10, TimeUnit.SECONDS);
+		long end = System.currentTimeMillis();
 
 		// ensure that weak reference are removed
 		for (int i = 0; i < 3; i++) {
 			System.gc();
 		}
-		System.out.println("Number of iterations: " + iterations.get());
+		System.out.println("Number of iterations: " + iterations.get() + " in "
+				+ ((end - start) / 1000) + " seconds.");
 	}
 }

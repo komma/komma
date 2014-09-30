@@ -163,6 +163,19 @@ public interface IModel {
 	boolean isLoaded();
 
 	/**
+	 * Sets whether this model has been loaded.
+	 * <p>
+	 * A model is set to be loaded after it is {@link #load(Map) loaded} and
+	 * unset to be loaded after it is {@link #unload unloaded}.
+	 * </p>
+	 * 
+	 * @param isLoaded
+	 *            whether this model has been loaded.
+	 * @see #isLoaded
+	 */
+	void setLoaded(boolean isLoaded);
+
+	/**
 	 * Returns whether this model has been modified.
 	 * <p>
 	 * A model is set to be unmodified after it is loaded or saved.
@@ -176,7 +189,7 @@ public interface IModel {
 	/**
 	 * Sets whether this model has been modified.
 	 * <p>
-	 * A resource is model set to be unmodified after it is loaded or saved.
+	 * A model is set to be unmodified after it is loaded or saved.
 	 * </p>
 	 * 
 	 * @param isModified

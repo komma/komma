@@ -1000,6 +1000,11 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			}
 		}
 	}
+	
+	@Override
+	public void setLoaded(boolean isLoaded) {
+		setModelLoaded(isLoaded);
+	}
 
 	@Override
 	public void setModified(boolean isModified) {
