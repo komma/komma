@@ -41,9 +41,11 @@ Import-Package: com.google.inject;version="4.0.0",
  org.openrdf.repository.base,
  org.openrdf.repository.http,
  org.openrdf.repository.sail,
+ org.openrdf.repository.sparql,
  org.openrdf.rio,
  org.openrdf.sail,
  org.openrdf.sail.inferencer.fc,
  org.openrdf.sail.memory,
+ org.openrdf.sail.nativerdf,
  org.slf4j
 Bundle-ClassPath: .
