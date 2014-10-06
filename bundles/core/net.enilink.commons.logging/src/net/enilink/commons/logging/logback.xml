@@ -12,7 +12,7 @@
     <target>System.err</target>
   </appender>
 
-  <root level="info">
+  <root level="${net.enilink.logger.rootLevel:-INFO}">
     <appender-ref ref="STDERR" />
   </root>
 </configuration>
