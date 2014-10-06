@@ -40,7 +40,6 @@ import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
-import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.properties.Filterable;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.exceptions.PropertyException;
@@ -73,9 +72,6 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 
 	@Inject
 	protected IEntityManager manager;
-
-	@Inject
-	protected RoleMapper<URI> roleMapper;
 
 	protected IReference property;
 
@@ -203,8 +199,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 	}
 
 	protected Collection<Class<?>> findConcepts(URI rdfType) {
-		Collection<Class<?>> roles = new HashSet<Class<?>>();
-		roleMapper.findRoles(rdfType, roles);
+		Collection<Class<?>> roles = manager.rolesForType(rdfType);
 		return WrappedIterator.create(roles.iterator())
 				.filterKeep(new Filter<Class<?>>() {
 					@Override
