@@ -54,9 +54,11 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 
 	class ManchesterProposals extends ReflectiveSemanticProposals {
 		IEntityManager em;
+		IEntity subject;
 
-		public ManchesterProposals(IEntityManager em) {
+		public ManchesterProposals(IEntityManager em, IEntity subject) {
 			this.em = em;
+			this.subject = subject;
 		}
 
 		public IContentProposal[] IriRef(ParsingResult<?> result, int index,
@@ -69,7 +71,9 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 			int insertPos = index - prefix.length();
 
 			List<IContentProposal> proposals = new ArrayList<IContentProposal>();
-			Options options = Options.create(em, null, prefix, 20);
+			int limit = 20;
+			Options options = subject == null ? Options.create(em, null,
+					prefix, limit) : Options.create(subject, prefix, limit);
 			for (Match match : new ResourceFinder().findAnyResources(options)) {
 				String label = getLabel(match.resource);
 				String origText = text.substring(insertPos, index);
@@ -169,7 +173,8 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 			@Override
 			public IContentProposalProvider getProposalProvider() {
 				return new ParboiledProposalProvider(parser.Description(),
-						new ManchesterProposals(subject.getEntityManager()));
+						new ManchesterProposals(subject.getEntityManager(),
+								subject));
 			}
 
 			@Override

@@ -110,7 +110,7 @@ public class ResourceFinder {
 		String pattern = options.pattern;
 		IReference predicate = options.predicate;
 		IReference type = options.type;
-		if (!pattern.contains(":")) {
+		if (!pattern.contains(":") && subject != null) {
 			// find resources within the current model first
 			for (Match match : retrieve(options.em, subject, predicate, type,
 					pattern, toUriRegex(pattern), null, ((IObject) subject)
