@@ -178,7 +178,7 @@ public class CompositeCommand extends AbstractCommand implements
 	 * Initializes me with a blank label.
 	 */
 	public CompositeCommand() {
-		this(CommonPlugin.INSTANCE.getString("_UI_AbstractCommand_label"), null);
+		this(null);
 	}
 
 	/**
@@ -817,6 +817,27 @@ public class CompositeCommand extends AbstractCommand implements
 					getReturnValues());
 		}
 		return commandResult;
+	}
+
+	/**
+	 * Determines the label by composing the labels of the commands in the list;
+	 * this is affected by the setting of {@link #resultIndex}.
+	 * 
+	 * @return the label.
+	 */
+	@Override
+	public String getLabel() {
+		if (label != null) {
+			return label;
+		} else if (!getChildren().isEmpty()) {
+			for (IUndoableOperation child : getChildren()) {
+				String childLabel = child.getLabel();
+				if (childLabel != null) {
+					return childLabel;
+				}
+			}
+		}
+		return super.getLabel();
 	}
 
 	/**

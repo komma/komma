@@ -24,8 +24,9 @@ import java.util.List;
 import net.enilink.komma.common.CommonPlugin;
 
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.operations.AbstractOperation;
+import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.commands.operations.IUndoableOperation;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -41,14 +42,21 @@ import org.eclipse.core.runtime.Status;
  * {@link #canExecute} directly.
  * 
  * <p>
- * It is very convenient to use prepare, as it is guaranteed to be called only
- * once just before canExecute is to be tested. It can be implemented to create
- * any additional commands that need to be executed, and the result it yields
- * becomes the permanent cached return value for canExecute.
+ * It is very convenient to IUndoContextuse prepare, as it is guaranteed to be
+ * called only once just before canExecute is to be tested. It can be
+ * implemented to create any additional commands that need to be executed, and
+ * the result it yields becomes the permanent cached return value for
+ * canExecute.
  * 
  */
-public abstract class AbstractCommand extends AbstractOperation implements
-		ICommand {
+public abstract class AbstractCommand implements ICommand, IUndoableOperation {
+	List<IUndoContext> contexts = new ArrayList<>();
+
+	/**
+	 * The label of this command. May be <code>null</code>.
+	 */
+	protected String label;
+
 	/**
 	 * Keeps track of whether prepare needs to be called. It is tested in
 	 * {@link #canExecute} so that {@link #prepare} is called exactly once to
@@ -75,7 +83,6 @@ public abstract class AbstractCommand extends AbstractOperation implements
 	 * 
 	 */
 	protected AbstractCommand() {
-		this(CommonPlugin.INSTANCE.getString("_UI_AbstractCommand_label"));
 	}
 
 	/**
@@ -85,7 +92,7 @@ public abstract class AbstractCommand extends AbstractOperation implements
 	 *            the label.
 	 */
 	protected AbstractCommand(String label) {
-		super(label);
+		this.label = label;
 	}
 
 	/**
@@ -99,6 +106,35 @@ public abstract class AbstractCommand extends AbstractOperation implements
 	protected AbstractCommand(String label, String description) {
 		this(label);
 		this.description = description;
+	}
+
+	public void addContext(IUndoContext context) {
+		if (!contexts.contains(context)) {
+			contexts.add(context);
+		}
+	}
+
+	public final IUndoContext[] getContexts() {
+		return (IUndoContext[]) contexts.toArray(new IUndoContext[contexts
+				.size()]);
+	}
+
+	public final boolean hasContext(IUndoContext context) {
+		Assert.isNotNull(context);
+		for (int i = 0; i < contexts.size(); i++) {
+			IUndoContext otherContext = (IUndoContext) contexts.get(i);
+			// have to check both ways because one context may be more general
+			// in
+			// its matching rules than another.
+			if (context.matches(otherContext) || otherContext.matches(context)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void removeContext(IUndoContext context) {
+		contexts.remove(context);
 	}
 
 	/**
@@ -338,6 +374,21 @@ public abstract class AbstractCommand extends AbstractOperation implements
 	 */
 	protected final void setResult(CommandResult result) {
 		this.commandResult = result;
+	}
+
+	public String getLabel() {
+		return label != null ? label : CommonPlugin.INSTANCE
+				.getString("_UI_AbstractCommand_label");
+	}
+
+	/**
+	 * Set the label of the command to the specified name.
+	 * 
+	 * @param name
+	 *            the string to be used for the label.
+	 */
+	public void setLabel(String name) {
+		label = name;
 	}
 
 	/*

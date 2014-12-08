@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import net.enilink.komma.common.CommonPlugin;
+
 import org.eclipse.core.commands.operations.IUndoableOperation;
 
 /**
@@ -219,6 +221,24 @@ public class ExtendedCompositeCommand extends CompositeCommand {
 	 */
 	public int getResultIndex() {
 		return resultIndex;
+	}
+
+	public String getLabel() {
+		if (label != null) {
+			return label;
+		} else {
+			List<IUndoableOperation> children = getChildren();
+			if (getChildren().isEmpty()) {
+				return CommonPlugin.INSTANCE
+						.getString("_UI_AbstractCommand_label");
+			} else if (resultIndex == LAST_COMMAND_ALL
+					|| resultIndex == MERGE_COMMAND_ALL) {
+				return children.get(children.size() - 1).getLabel();
+			} else if (resultIndex < children.size()) {
+				return children.get(resultIndex).getLabel();
+			}
+		}
+		return super.getLabel();
 	}
 
 	/**
