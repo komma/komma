@@ -65,6 +65,20 @@ public class EntityVarModule extends AbstractModule {
 				return false;
 			return true;
 		}
+
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(getClass().getSimpleName())
+					.append("(field = ");
+			if (field == null) {
+				sb.append((String) null);
+			} else {
+				sb.append(field.getDeclaringClass()).append("#")
+						.append(field.getName());
+			}
+			return sb.append(", reference = ").append(reference).append(")")
+					.toString();
+		}
 	}
 
 	/**
