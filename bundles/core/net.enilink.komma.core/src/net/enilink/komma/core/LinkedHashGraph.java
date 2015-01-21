@@ -13,12 +13,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.AbstractSet;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -35,8 +36,6 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 	private static final long serialVersionUID = -9161104123818983614L;
 
 	static final IReference[] NULL_CTX = new IReference[] { null };
-
-	Map<String, String> namespaces = new LinkedHashMap<String, String>();
 
 	transient Map<Object, GraphNode<Object>> values;
 
@@ -56,38 +55,6 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 	public LinkedHashGraph(int size) {
 		values = new HashMap<>(size * 2);
 		statements = new LinkedHashSet<>(size);
-	}
-
-	public LinkedHashGraph(Map<String, String> namespaces,
-			Collection<? extends Statement> c) {
-		this(c);
-		this.namespaces.putAll(namespaces);
-	}
-
-	public LinkedHashGraph(Map<String, String> namespaces) {
-		this();
-		this.namespaces.putAll(namespaces);
-	}
-
-	public LinkedHashGraph(Map<String, String> namespaces, int size) {
-		this(size);
-		this.namespaces.putAll(namespaces);
-	}
-
-	public String getNamespace(String prefix) {
-		return namespaces.get(prefix);
-	}
-
-	public Map<String, String> getNamespaces() {
-		return namespaces;
-	}
-
-	public String setNamespace(String prefix, String name) {
-		return namespaces.put(prefix, name);
-	}
-
-	public void removeNamespace(String prefix) {
-		namespaces.remove(prefix);
 	}
 
 	@Override
@@ -245,6 +212,40 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 			return null;
 		}
 		return obj.toString();
+	}
+
+	@Override
+	public void rename(IReference source, IReference target) {
+		LinkedHashGraph.rename(this, source, target);
+	}
+
+	static void rename(IGraph graph, IReference source, IReference target) {
+		Iterator<IStatement> it = graph.iterator();
+		List<IStatement> newStatements = new ArrayList<>();
+		while (it.hasNext()) {
+			IStatement stmt = it.next();
+			IReference s = stmt.getSubject();
+			IReference p = stmt.getPredicate();
+			Object o = stmt.getObject();
+			boolean changed = false;
+			if (source.equals(s)) {
+				s = target;
+				changed = true;
+			}
+			if (source.equals(p)) {
+				p = target;
+				changed = true;
+			}
+			if (source.equals(o)) {
+				o = target;
+				changed = true;
+			}
+			if (changed) {
+				it.remove();
+			}
+			newStatements.add(new Statement(s, p, o, stmt.getContext()));
+		}
+		graph.addAll(newStatements);
 	}
 
 	@Override
@@ -588,22 +589,6 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 
 		private Set<IStatement> emptySet = Collections.emptySet();
 
-		public String getNamespace(String prefix) {
-			return namespaces.get(prefix);
-		}
-
-		public Map<String, String> getNamespaces() {
-			return namespaces;
-		}
-
-		public String setNamespace(String prefix, String name) {
-			return namespaces.put(prefix, name);
-		}
-
-		public void removeNamespace(String prefix) {
-			namespaces.remove(prefix);
-		}
-
 		@Override
 		public Iterator<IStatement> iterator() {
 			return emptySet.iterator();
@@ -678,6 +663,10 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		}
 
 		@Override
+		public void rename(IReference source, IReference target) {
+		}
+
+		@Override
 		public int hashCode() {
 			return size();
 		}
@@ -716,57 +705,15 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 			this.contexts = notNull(contexts);
 		}
 
-		public String getNamespace(String prefix) {
-			return namespaces.get(prefix);
-		}
-
-		public Map<String, String> getNamespaces() {
-			return namespaces;
-		}
-
-		public String setNamespace(String prefix, String name) {
-			return namespaces.put(prefix, name);
-		}
-
-		public void removeNamespace(String prefix) {
-			namespaces.remove(prefix);
-		}
-
 		@Override
 		public Iterator<IStatement> iterator() {
-			final GraphIterator iter = statementIterator();
-			return new Iterator<IStatement>() {
-
-				private GraphStatement current;
-
-				private GraphStatement next;
-
-				public boolean hasNext() {
-					if (next == null && iter.hasNext()) {
-						next = iter.next();
-					}
-					return next != null;
-				}
-
-				public GraphStatement next() {
-					if (next == null) {
-						next = iter.next();
-					}
-					current = next;
-					next = null;
-					return current;
-				}
-
-				public void remove() {
-					iter.remove();
-				}
-			};
+			return match(subj, pred, obj, contexts);
 		}
 
 		@Override
 		public int size() {
 			int size = 0;
-			Iterator<IStatement> iter = statementIterator();
+			Iterator<IStatement> iter = iterator();
 			while (iter.hasNext()) {
 				size++;
 				iter.next();
@@ -963,6 +910,11 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		}
 
 		@Override
+		public void rename(IReference source, IReference target) {
+			LinkedHashGraph.rename(this, source, target);
+		}
+
+		@Override
 		public int hashCode() {
 			return size();
 		}
@@ -977,10 +929,6 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 				return GraphUtil.equals(this, model);
 			}
 			return false;
-		}
-
-		private GraphIterator statementIterator() {
-			return match(subj, pred, obj, contexts);
 		}
 
 		private boolean accept(IStatement st) {
