@@ -16,5 +16,5 @@ import net.enilink.komma.core.URI;
 public interface IModelSetFactory {
 	IModelSet createModelSet(URI... modelSetTypes);
 
-	IModelSet createModelSet(IGraph configuration, URI... modelSetTypes);
+	IModelSet createModelSet(URI name, IGraph config);
 }
