@@ -195,17 +195,6 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		throw new KommaException();
 	}
 
-	public URI objectURI() throws KommaException {
-		Object obj = objectValue();
-		if (obj == null) {
-			return null;
-		}
-		if (obj instanceof URI) {
-			return (URI) obj;
-		}
-		throw new KommaException();
-	}
-
 	public String objectString() throws KommaException {
 		Object obj = objectValue();
 		if (obj == null) {
@@ -489,7 +478,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		};
 	}
 
-	GraphIterator match(IReference subj, IReference pred, Object obj,
+	protected GraphIterator match(IReference subj, IReference pred, Object obj,
 			IReference... contexts) {
 		assert contexts != null;
 		Set<GraphStatement> s = null;
@@ -575,7 +564,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 
 	IGraph emptyGraph = new EmptyGraph();
 
-	IGraph emptyGraph() {
+	protected IGraph emptyGraph() {
 		return emptyGraph;
 	}
 
@@ -584,7 +573,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		return new GraphIterator(set.iterator(), set);
 	}
 
-	class EmptyGraph extends AbstractSet<IStatement> implements IGraph {
+	protected class EmptyGraph extends AbstractSet<IStatement> implements
+			IGraph {
 		private static final long serialVersionUID = 3123007631452759092L;
 
 		private Set<IStatement> emptySet = Collections.emptySet();
@@ -626,7 +616,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 
 		public IGraph filter(IReference subj, IReference pred, Object obj,
 				IReference... contexts) {
-			return emptyGraph;
+			return emptyGraph();
 		}
 
 		public Set<Object> objects() {
@@ -685,17 +675,18 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 
 	}
 
-	class FilteredGraph extends AbstractSet<IStatement> implements IGraph {
+	protected class FilteredGraph extends AbstractSet<IStatement> implements
+			IGraph {
 
 		private static final long serialVersionUID = -2353344619836326934L;
 
-		private IReference subj;
+		protected IReference subj;
 
-		private IReference pred;
+		protected IReference pred;
 
-		private Object obj;
+		protected Object obj;
 
-		private IReference[] contexts;
+		protected IReference[] contexts;
 
 		public FilteredGraph(IReference subj, IReference pred, Object obj,
 				IReference... contexts) {
@@ -953,7 +944,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		}
 	}
 
-	abstract class ObjectSet<V> extends AbstractSet<V> {
+	abstract protected class ObjectSet<V> extends AbstractSet<V> {
 
 		@Override
 		public Iterator<V> iterator() {
@@ -1088,7 +1079,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		}
 	}
 
-	class GraphIterator implements Iterator<IStatement> {
+	protected class GraphIterator implements Iterator<IStatement> {
 
 		private Iterator<GraphStatement> iter;
 
@@ -1133,7 +1124,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		}
 	}
 
-	class GraphNode<V extends Object> implements Serializable {
+	protected class GraphNode<V extends Object> implements Serializable {
 
 		private static final long serialVersionUID = -1205676084606998540L;
 
@@ -1160,7 +1151,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		}
 	}
 
-	class GraphStatement implements IStatement {
+	protected class GraphStatement implements IStatement {
 
 		GraphNode<IReference> subj;
 
@@ -1233,7 +1224,8 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		}
 	}
 
-	class PatternIterator<S extends IStatement> extends FilterIterator<S> {
+	protected class PatternIterator<S extends IStatement> extends
+			FilterIterator<S> {
 		public PatternIterator(Iterator<S> iter, final IReference subj,
 				final IReference pred, final Object obj,
 				final IReference... contexts) {
