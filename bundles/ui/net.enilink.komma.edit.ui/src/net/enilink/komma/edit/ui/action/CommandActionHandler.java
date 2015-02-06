@@ -24,10 +24,12 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.domain.IEditingDomainProvider;
 
 /*
  * This base action class implements an action by creating a command and delegating to it;
@@ -48,20 +50,15 @@ public class CommandActionHandler extends AbstractActionHandler {
 	/**
 	 * This constructs and instance in this editing domain.
 	 */
-	public CommandActionHandler(IWorkbenchPage page, IEditingDomain domain) {
+	public CommandActionHandler(IWorkbenchPage page) {
 		super(page);
-
-		this.domain = domain;
 	}
 
 	/**
 	 * This constructs and instance in this editing domain.
 	 */
-	public CommandActionHandler(IWorkbenchPage page, IEditingDomain domain,
-			String label) {
+	public CommandActionHandler(IWorkbenchPage page, String label) {
 		super(page);
-
-		this.domain = domain;
 		setText(label);
 	}
 
@@ -117,7 +114,18 @@ public class CommandActionHandler extends AbstractActionHandler {
 		List<?> list = selection.toList();
 		Collection<Object> collection = new ArrayList<Object>(list);
 		command = createCommand(collection);
-
 		return command.canExecute();
+	}
+
+	@Override
+	protected void setWorkbenchPart(IWorkbenchPart workbenchPart) {
+		super.setWorkbenchPart(workbenchPart);
+		if (workbenchPart instanceof IEditingDomainProvider) {
+			setEditingDomain(((IEditingDomainProvider) workbenchPart)
+					.getEditingDomain());
+		} else {
+			// ensures that action is disabled for parts without editing domain
+			setEditingDomain(null);
+		}
 	}
 }

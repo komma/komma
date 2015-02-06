@@ -316,15 +316,11 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		public void partActivated(IWorkbenchPart p) {
 			if (p instanceof ContentOutline) {
 				if (((ContentOutline) p).getCurrentPage() == contentOutlinePage) {
-					getActionBarContributor().setActiveEditor(editor);
-
 					editorSelectionProvider
 							.setSelectionProvider(contentOutlineViewer);
 				}
 			} else if (p instanceof PropertySheet) {
 				if (((PropertySheet) p).getCurrentPage() == propertySheetPageSupport) {
-					getActionBarContributor().setActiveEditor(editor);
-
 					// handleActivate();
 				}
 			} else if (p == editor) {
@@ -337,7 +333,6 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 						&& getEditingDomain() != null
 						&& getEditingDomain().equals(
 								provider.getEditingDomain())) {
-					getActionBarContributor().setActiveEditor(editor);
 					editorSelectionProvider.setSelectionProvider(p.getSite()
 							.getSelectionProvider());
 				}

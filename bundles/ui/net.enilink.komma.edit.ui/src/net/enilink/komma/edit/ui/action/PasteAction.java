@@ -16,22 +16,18 @@
  */
 package net.enilink.komma.edit.ui.action;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.edit.command.PasteFromClipboardCommand;
-import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
 
 /**
  * A paste action is implemented by creating a {@link PasteFromClipboardCommand}
@@ -47,14 +43,8 @@ public class PasteAction extends CommandActionHandler {
 		}
 	}
 
-	public PasteAction(IWorkbenchPage page, IEditingDomain domain) {
-		super(page, domain, KommaEditUIPlugin.INSTANCE
-				.getString("_UI_Paste_menu_item"));
-	}
-
 	public PasteAction(IWorkbenchPage page) {
-		super(page, null, KommaEditUIPlugin.INSTANCE
-				.getString("_UI_Paste_menu_item"));
+		super(page, KommaEditUIPlugin.INSTANCE.getString("_UI_Paste_menu_item"));
 	}
 
 	@Override
@@ -79,14 +69,6 @@ public class PasteAction extends CommandActionHandler {
 					.iterator().next(), null);
 		} else {
 			return IdentityCommand.INSTANCE;
-		}
-	}
-
-	public void setWorkbenchPart(IWorkbenchPart workbenchPart) {
-		super.setWorkbenchPart(workbenchPart);
-		if (workbenchPart instanceof IEditingDomainProvider) {
-			domain = ((IEditingDomainProvider) workbenchPart)
-					.getEditingDomain();
 		}
 	}
 }

@@ -29,8 +29,6 @@ import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.edit.command.CopyToClipboardCommand;
-import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 
 import org.eclipse.core.commands.ExecutionException;
@@ -41,7 +39,6 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
 
 /**
  * A copy action is implemented by creating a {@link CopyToClipboardCommand}.
@@ -69,14 +66,8 @@ public class CopyAction extends CommandActionHandler {
 		}
 	}
 
-	public CopyAction(IWorkbenchPage page, IEditingDomain domain) {
-		super(page, domain, KommaEditUIPlugin.INSTANCE
-				.getString("_UI_Copy_menu_item"));
-	}
-
 	public CopyAction(IWorkbenchPage page) {
-		super(page, null, KommaEditUIPlugin.INSTANCE
-				.getString("_UI_Copy_menu_item"));
+		super(page, KommaEditUIPlugin.INSTANCE.getString("_UI_Copy_menu_item"));
 	}
 
 	@Override
@@ -138,13 +129,5 @@ public class CopyAction extends CommandActionHandler {
 						return CommandResult.newOKCommandResult();
 					}
 				}, cmd)) : IdentityCommand.INSTANCE;
-	}
-
-	public void setWorkbenchPart(IWorkbenchPart workbenchPart) {
-		super.setWorkbenchPart(workbenchPart);
-		if (workbenchPart instanceof IEditingDomainProvider) {
-			domain = ((IEditingDomainProvider) workbenchPart)
-					.getEditingDomain();
-		}
 	}
 }

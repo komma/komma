@@ -116,22 +116,6 @@ public abstract class AbstractActionHandler extends Action implements
 		setWorkbenchPart(workbenchPart);
 		if (workbenchPart != null) {
 			this.workbenchPage = workbenchPart.getSite().getPage();
-
-			// This is needed for backward compatibility in case the creator
-			// of the action (using this constructor) did not dispose of it
-			this.partListener = new PartListenerAdapter() {
-
-				/**
-				 * when the part closes, remove the listener to the workbench
-				 * page and remove all listeners.
-				 */
-				public void partClosed(IWorkbenchPart part) {
-					if (getWorkbenchPart() == part) {
-						dispose();
-					}
-				}
-			};
-			workbenchPage.addPartListener(partListener);
 		}
 	}
 
@@ -151,7 +135,8 @@ public abstract class AbstractActionHandler extends Action implements
 				 */
 				public void partActivated(IWorkbenchPart part) {
 					setWorkbenchPart(part);
-					if (part != null && contributedToPart(part) && !isDisposed())
+					if (part != null && contributedToPart(part)
+							&& !isDisposed())
 						refresh();
 				}
 
@@ -164,7 +149,6 @@ public abstract class AbstractActionHandler extends Action implements
 						setEnabled(false);
 					}
 				}
-
 			};
 			workbenchPage.addPartListener(partListener);
 		}

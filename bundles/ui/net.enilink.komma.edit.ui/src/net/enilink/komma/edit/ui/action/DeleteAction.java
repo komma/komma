@@ -18,16 +18,13 @@ package net.enilink.komma.edit.ui.action;
 
 import java.util.Collection;
 
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
-
 import net.enilink.komma.common.command.CompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.edit.command.DeleteCommand;
 import net.enilink.komma.edit.command.RemoveCommand;
-import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
+
+import org.eclipse.ui.IWorkbenchPage;
 
 /**
  * A delete action removes objects from their parent containers, optionally
@@ -40,23 +37,15 @@ public class DeleteAction extends CommandActionHandler {
 	 */
 	protected boolean removeAllReferences;
 
-	public DeleteAction(IWorkbenchPage page, IEditingDomain domain,
-			boolean removeAllReferences) {
-		super(page, domain, KommaEditUIPlugin.INSTANCE
-				.getString(removeAllReferences ? "_UI_Delete_menu_item" : "_UI_DeleteFromParent_menu_item"));
+	public DeleteAction(IWorkbenchPage page, boolean removeAllReferences) {
+		super(page, KommaEditUIPlugin.INSTANCE
+				.getString(removeAllReferences ? "_UI_Delete_menu_item"
+						: "_UI_DeleteFromParent_menu_item"));
 		this.removeAllReferences = removeAllReferences;
 	}
 
-	public DeleteAction(IWorkbenchPage page, IEditingDomain domain) {
-		this(page, domain, false);
-	}
-
-	public DeleteAction(IWorkbenchPage page, boolean removeAllReferences) {
-		this(page, null, removeAllReferences);
-	}
-
 	public DeleteAction(IWorkbenchPage page) {
-		this(page, null);
+		this(page, false);
 	}
 
 	@Override
@@ -67,13 +56,5 @@ public class DeleteAction extends CommandActionHandler {
 			command.add(DeleteCommand.create(domain, selection));
 		}
 		return command;
-	}
-
-	public void setWorkbenchPart(IWorkbenchPart workbenchPart) {
-		super.setWorkbenchPart(workbenchPart);
-		if (workbenchPart instanceof IEditingDomainProvider) {
-			domain = ((IEditingDomainProvider) workbenchPart)
-					.getEditingDomain();
-		}
 	}
 }
