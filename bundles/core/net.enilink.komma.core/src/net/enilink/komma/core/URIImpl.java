@@ -96,7 +96,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#isRelative()
+	 * @see net.enilink.komma.core.URI#isRelative()
 	 */
 	public boolean isRelative() {
 		return scheme == null;
@@ -105,7 +105,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#isHierarchical()
+	 * @see net.enilink.komma.core.URI#isHierarchical()
 	 */
 	public boolean isHierarchical() {
 		return hierarchical;
@@ -114,7 +114,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#hasAuthority()
+	 * @see net.enilink.komma.core.URI#hasAuthority()
 	 */
 	public boolean hasAuthority() {
 		return hierarchical && authority != null;
@@ -123,7 +123,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#hasOpaquePart()
+	 * @see net.enilink.komma.core.URI#hasOpaquePart()
 	 */
 	public boolean hasOpaquePart() {
 		// note: hierarchical -> authority != null
@@ -133,7 +133,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#hasDevice()
+	 * @see net.enilink.komma.core.URI#hasDevice()
 	 */
 	public boolean hasDevice() {
 		// note: device != null -> hierarchical
@@ -143,7 +143,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#hasPath()
+	 * @see net.enilink.komma.core.URI#hasPath()
 	 */
 	public boolean hasPath() {
 		// note: (absolutePath || authority == null) -> hierarchical
@@ -155,7 +155,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#hasAbsolutePath()
+	 * @see net.enilink.komma.core.URI#hasAbsolutePath()
 	 */
 	public boolean hasAbsolutePath() {
 		// note: absolutePath -> hierarchical
@@ -165,7 +165,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#hasRelativePath()
+	 * @see net.enilink.komma.core.URI#hasRelativePath()
 	 */
 	public boolean hasRelativePath() {
 		// note: authority == null -> hierarchical
@@ -177,7 +177,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#hasEmptyPath()
+	 * @see net.enilink.komma.core.URI#hasEmptyPath()
 	 */
 	public boolean hasEmptyPath() {
 		// note: authority == null -> hierarchical
@@ -190,7 +190,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#hasQuery()
+	 * @see net.enilink.komma.core.URI#hasQuery()
 	 */
 	public boolean hasQuery() {
 		// note: query != null -> hierarchical
@@ -200,7 +200,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#hasFragment()
+	 * @see net.enilink.komma.core.URI#hasFragment()
 	 */
 	public boolean hasFragment() {
 		return fragment != null;
@@ -209,7 +209,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#isCurrentDocumentReference()
+	 * @see net.enilink.komma.core.URI#isCurrentDocumentReference()
 	 */
 	public boolean isCurrentDocumentReference() {
 		// note: authority == null -> hierarchical
@@ -222,7 +222,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#isEmpty()
+	 * @see net.enilink.komma.core.URI#isEmpty()
 	 */
 	public boolean isEmpty() {
 		// note: authority == null -> hierarchical
@@ -235,7 +235,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#isFile()
+	 * @see net.enilink.komma.core.URI#isFile()
 	 */
 	public boolean isFile() {
 		return isHierarchical()
@@ -246,7 +246,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#isPlatform()
+	 * @see net.enilink.komma.core.URI#isPlatform()
 	 */
 	public boolean isPlatform() {
 		return isHierarchical() && !hasAuthority() && segmentCount() >= 2
@@ -256,7 +256,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#isPlatformResource()
+	 * @see net.enilink.komma.core.URI#isPlatformResource()
 	 */
 	public boolean isPlatformResource() {
 		return isPlatform() && "resource".equals(segments[0]);
@@ -265,7 +265,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#isPlatformPlugin()
+	 * @see net.enilink.komma.core.URI#isPlatformPlugin()
 	 */
 	public boolean isPlatformPlugin() {
 		return isPlatform() && "plugin".equals(segments[0]);
@@ -274,7 +274,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#isArchive()
+	 * @see net.enilink.komma.core.URI#isArchive()
 	 */
 	public boolean isArchive() {
 		return isArchiveScheme(scheme);
@@ -291,7 +291,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#equals(java.lang.Object)
+	 * @see net.enilink.komma.core.URI#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object object) {
@@ -342,7 +342,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#scheme()
+	 * @see net.enilink.komma.core.URI#scheme()
 	 */
 	public String scheme() {
 		return scheme;
@@ -351,7 +351,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#opaquePart()
+	 * @see net.enilink.komma.core.URI#opaquePart()
 	 */
 	public String opaquePart() {
 		return isHierarchical() ? null : authority;
@@ -360,7 +360,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#authority()
+	 * @see net.enilink.komma.core.URI#authority()
 	 */
 	public String authority() {
 		return isHierarchical() ? authority : null;
@@ -369,7 +369,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#userInfo()
+	 * @see net.enilink.komma.core.URI#userInfo()
 	 */
 	public String userInfo() {
 		if (!hasAuthority())
@@ -382,7 +382,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#host()
+	 * @see net.enilink.komma.core.URI#host()
 	 */
 	public String host() {
 		if (!hasAuthority())
@@ -397,7 +397,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#port()
+	 * @see net.enilink.komma.core.URI#port()
 	 */
 	public String port() {
 		if (!hasAuthority())
@@ -410,7 +410,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#device()
+	 * @see net.enilink.komma.core.URI#device()
 	 */
 	public String device() {
 		return device;
@@ -419,7 +419,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#segments()
+	 * @see net.enilink.komma.core.URI#segments()
 	 */
 	public String[] segments() {
 		return segments.clone();
@@ -428,7 +428,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#segmentsList()
+	 * @see net.enilink.komma.core.URI#segmentsList()
 	 */
 	public List<String> segmentsList() {
 		return Collections.unmodifiableList(Arrays.asList(segments));
@@ -437,7 +437,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#segmentCount()
+	 * @see net.enilink.komma.core.URI#segmentCount()
 	 */
 	public int segmentCount() {
 		return segments.length;
@@ -446,7 +446,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#segment(int)
+	 * @see net.enilink.komma.core.URI#segment(int)
 	 */
 	public String segment(int i) {
 		return segments[i];
@@ -455,7 +455,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#lastSegment()
+	 * @see net.enilink.komma.core.URI#lastSegment()
 	 */
 	public String lastSegment() {
 		int len = segments.length;
@@ -467,7 +467,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#path()
+	 * @see net.enilink.komma.core.URI#path()
 	 */
 	public String path() {
 		if (!hasPath())
@@ -488,7 +488,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#devicePath()
+	 * @see net.enilink.komma.core.URI#devicePath()
 	 */
 	public String devicePath() {
 		if (!hasPath())
@@ -521,7 +521,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#query()
+	 * @see net.enilink.komma.core.URI#query()
 	 */
 	public String query() {
 		return query;
@@ -530,7 +530,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#appendQuery(java.lang.String)
+	 * @see net.enilink.komma.core.URI#appendQuery(java.lang.String)
 	 */
 	public URI appendQuery(String query) {
 		if (!validQuery(query)) {
@@ -544,7 +544,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#trimQuery()
+	 * @see net.enilink.komma.core.URI#trimQuery()
 	 */
 	public URI trimQuery() {
 		if (query == null) {
@@ -558,7 +558,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#fragment()
+	 * @see net.enilink.komma.core.URI#fragment()
 	 */
 	public String fragment() {
 		return fragment;
@@ -567,7 +567,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#appendFragment(java.lang.String)
+	 * @see net.enilink.komma.core.URI#appendFragment(java.lang.String)
 	 */
 	public URIImpl appendFragment(String fragment) {
 		if (!validFragment(fragment)) {
@@ -586,7 +586,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#trimFragment()
+	 * @see net.enilink.komma.core.URI#trimFragment()
 	 */
 	public URIImpl trimFragment() {
 		if (fragment == null) {
@@ -602,7 +602,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#namespace()
+	 * @see net.enilink.komma.core.URI#namespace()
 	 */
 	public URIImpl namespace() {
 		if (cachedNamespace != null) {
@@ -665,7 +665,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#resolve(net.enilink.komma
+	 * @see net.enilink.komma.core.URI#resolve(net.enilink.komma
 	 * .common.util.URI)
 	 */
 	public URIImpl resolve(URI base) {
@@ -675,7 +675,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#resolve(net.enilink.komma
+	 * @see net.enilink.komma.core.URI#resolve(net.enilink.komma
 	 * .common.util.URI, boolean)
 	 */
 	public URIImpl resolve(URI base, boolean preserveRootParents) {
@@ -807,7 +807,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#deresolve(net.enilink.komma
+	 * @see net.enilink.komma.core.URI#deresolve(net.enilink.komma
 	 * .common.util.URIImpl)
 	 */
 	public URI deresolve(URI base) {
@@ -817,7 +817,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#deresolve(net.enilink.komma
+	 * @see net.enilink.komma.core.URI#deresolve(net.enilink.komma
 	 * .common.util.URIImpl, boolean, boolean, boolean)
 	 */
 	public URI deresolve(URI base, boolean preserveRootParents,
@@ -1127,7 +1127,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#toFileString()
+	 * @see net.enilink.komma.core.URI#toFileString()
 	 */
 	public String toFileString() {
 		if (!isFile())
@@ -1162,7 +1162,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#toPlatformString(boolean)
+	 * @see net.enilink.komma.core.URI#toPlatformString(boolean)
 	 */
 	public String toPlatformString(boolean decode) {
 		if (isPlatform()) {
@@ -1179,7 +1179,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#appendSegment(java.lang.String)
+	 * @see net.enilink.komma.core.URI#appendSegment(java.lang.String)
 	 */
 	public URIImpl appendSegment(String segment) {
 		if (!validSegment(segment)) {
@@ -1204,8 +1204,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#appendSegments(java.lang.String
-	 * [])
+	 * @see net.enilink.komma.core.URI#appendSegments(java.lang.String [])
 	 */
 	public URIImpl appendSegments(String[] segments) {
 		if (!validSegments(segments)) {
@@ -1233,7 +1232,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#trimSegments(int)
+	 * @see net.enilink.komma.core.URI#trimSegments(int)
 	 */
 	public URIImpl trimSegments(int i) {
 		if (!isHierarchical() || i < 1)
@@ -1252,7 +1251,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#hasTrailingPathSeparator()
+	 * @see net.enilink.komma.core.URI#hasTrailingPathSeparator()
 	 */
 	public boolean hasTrailingPathSeparator() {
 		return segments.length > 0
@@ -1262,7 +1261,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#fileExtension()
+	 * @see net.enilink.komma.core.URI#fileExtension()
 	 */
 	public String fileExtension() {
 		int len = segments.length;
@@ -1277,8 +1276,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#appendFileExtension(java.lang
-	 * .String)
+	 * @see net.enilink.komma.core.URI#appendFileExtension(java.lang .String)
 	 */
 	public URI appendFileExtension(String fileExtension) {
 		if (!validSegment(fileExtension)) {
@@ -1309,7 +1307,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#trimFileExtension()
+	 * @see net.enilink.komma.core.URI#trimFileExtension()
 	 */
 	public URI trimFileExtension() {
 		int len = segments.length;
@@ -1334,7 +1332,7 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#isPrefix()
+	 * @see net.enilink.komma.core.URI#isPrefix()
 	 */
 	public boolean isPrefix() {
 		return hierarchical
@@ -1346,8 +1344,8 @@ final class URIImpl implements URI {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.enilink.komma.common.util.URI#replacePrefix(net.enilink
-	 * .komma.common.util.URI, net.enilink.komma.common.util.URI)
+	 * @see net.enilink.komma.core.URI#replacePrefix(net.enilink.core.URI,
+	 * net.enilink.komma.core.URI)
 	 */
 	public URI replacePrefix(URI oldPrefix, URI newPrefix) {
 		if (!oldPrefix.isPrefix() || !newPrefix.isPrefix()) {
