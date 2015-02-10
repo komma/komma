@@ -167,7 +167,6 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 
 				final AtomicBoolean finished = new AtomicBoolean(false);
 				final Queue<IStatement> queue = new LinkedList<IStatement>();
-				final IContentDescription[] contentDescription = { determineContentDescription(options) };
 				final Throwable[] exception = { null };
 				Executors.newSingleThreadExecutor().execute(new Runnable() {
 					@Override
@@ -204,13 +203,15 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 							};
 							String mimeType = (String) options
 									.get(IModel.OPTION_MIME_TYPE);
-							if (mimeType == null
-									&& contentDescription[0] != null) {
+							if (mimeType == null) {
+								IContentDescription contentDescription = determineContentDescription(options);
 								mimeType = ModelUtil
-										.mimeType(contentDescription[0]);
+										.mimeType(contentDescription);
 							}
 							ModelUtil.readData(in, getURI().toString(),
 									mimeType, nodeIdMapper != null, visitor);
+						} catch (IOException e) {
+							exception[0] = e;
 						} catch (RuntimeException e) {
 							exception[0] = e;
 						} finally {

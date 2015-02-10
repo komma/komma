@@ -366,9 +366,10 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 
 	@Override
 	public void dispose() {
-		if (state.get() != null) {
+		State theState = state.get();
+		if (theState != null) {
 			getUnitOfWork().end();
-			state().dispose();
+			theState.dispose();
 			try {
 				metaDataManagerFactory.close();
 			} catch (Exception e) {
