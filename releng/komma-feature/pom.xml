@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>net.enilink</groupId>
+	<artifactId>komma-feature</artifactId>
+	<version>1.1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>../../com.google.guava</module>
+		<module>../../com.google.inject</module>
+		<module>../../net.enilink.commons.iterator</module>
+		<module>../../net.enilink.commons.logging</module>
+		<module>../../net.enilink.commons.util</module>
+		<module>../../net.enilink.composition.cache</module>
+		<module>../../net.enilink.composition.properties.komma</module>
+		<module>../../net.enilink.composition.properties</module>
+		<module>../../net.enilink.composition</module>
+		<module>../../net.enilink.komma.common</module>
+		<module>../../net.enilink.komma.core</module>
+		<module>../../net.enilink.komma.dm</module>
+		<module>../../net.enilink.komma.em</module>
+		<module>../../net.enilink.komma.literals</module>
+		<module>../../net.enilink.komma.model</module>
+		<module>../../net.enilink.komma.parser</module>
+		<module>../../net.enilink.komma.query</module>
+		<module>../../net.enilink.komma.sesame</module>
+		<module>../../net.enilink.vocab.komma</module>
+		<module>../../net.enilink.vocab.owl</module>
+		<module>../../net.enilink.vocab.rdfs</module>
+		<module>../../org.aopalliance</module>
+		<module>../../org.infinispan</module>
+		<module>../../org.objectweb.asm</module>
+		<module>../../org.openrdf.sesame</module>
+		<module>../../org.parboiled</module>
+
+		<module>../../komma-features/net.enilink.komma.license.feature</module>
+		<module>../../komma-features/net.enilink.komma.feature</module>
+	</modules>
+</project>
