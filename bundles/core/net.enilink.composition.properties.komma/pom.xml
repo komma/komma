@@ -4,8 +4,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>net.enilink</groupId>
-    <artifactId>komma-core</artifactId>
+    <artifactId>komma-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../komma-releng/pom.xml</relativePath>
   </parent>
   <groupId>net.enilink</groupId>
   <artifactId>net.enilink.composition.properties.komma</artifactId>
