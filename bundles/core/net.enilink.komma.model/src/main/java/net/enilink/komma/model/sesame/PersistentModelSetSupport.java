@@ -11,10 +11,16 @@
 package net.enilink.komma.model.sesame;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
 import net.enilink.composition.annotations.Iri;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.model.MODELS;
 
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
@@ -25,15 +31,29 @@ import org.openrdf.sail.nativerdf.NativeStore;
 public abstract class PersistentModelSetSupport extends MemoryModelSetSupport {
 
 	@Iri(MODELS.NAMESPACE + "repository")
-	public abstract String getRepository();
+	public abstract URI getRepository();
 
 	public Repository createRepository() throws RepositoryException {
-		NativeStore store = new NativeStore(new File(getRepository()));
+		URI repo = getRepository();
+		if (repo.scheme() == "workspace") {
+			URL loc = Platform.getInstanceLocation().getURL();
+			try {
+				URI workspace = URIs.createURI(FileLocator.resolve(loc)
+						.toString());
+				if (workspace.lastSegment() == "") {
+					workspace = workspace.trimSegments(1);
+				}
+				repo = workspace.appendSegments(repo.segments());
+			} catch (IOException e) {
+				throw new RepositoryException(e);
+			}
+		}
+
+		NativeStore store = new NativeStore(new File(repo.toFileString()));
 		SailRepository repository = new SailRepository(store);
 		repository.initialize();
 		addBasicKnowledge(repository);
 		return new SailRepository(Boolean.FALSE.equals(getInference()) ? store
 				: new ForwardChainingRDFSInferencer(store));
 	}
-
 }
