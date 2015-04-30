@@ -39,29 +39,25 @@ import java.util.List;
 import javax.xml.namespace.QName;
 
 import net.enilink.composition.annotations.Iri;
-
-import net.enilink.vocab.owl.DataRange;
-import net.enilink.vocab.owl.DeprecatedClass;
-import net.enilink.vocab.owl.DeprecatedProperty;
-import net.enilink.vocab.owl.OwlProperty;
-import net.enilink.vocab.owl.Restriction;
-import net.enilink.vocab.owl.SymmetricProperty;
-import net.enilink.vocab.owl.Thing;
-import net.enilink.vocab.rdf.Property;
-import net.enilink.vocab.rdfs.Class;
-import net.enilink.vocab.rdfs.Resource;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.generator.JavaNameResolver;
 import net.enilink.komma.generator.concepts.CodeClass;
 import net.enilink.komma.generator.concepts.CodeOntology;
-import net.enilink.komma.generator.concepts.CodeProperty;
 import net.enilink.komma.generator.source.JavaClassBuilder;
 import net.enilink.komma.generator.source.JavaCommentBuilder;
 import net.enilink.komma.generator.source.JavaMethodBuilder;
 import net.enilink.komma.generator.source.JavaPropertyBuilder;
 import net.enilink.komma.generator.source.JavaSourceBuilder;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
+import net.enilink.vocab.owl.DataRange;
+import net.enilink.vocab.owl.DeprecatedClass;
+import net.enilink.vocab.owl.DeprecatedProperty;
+import net.enilink.vocab.owl.Restriction;
+import net.enilink.vocab.owl.Thing;
+import net.enilink.vocab.rdf.Property;
+import net.enilink.vocab.rdfs.Class;
+import net.enilink.vocab.rdfs.Resource;
 
 public class JavaCodeBuilder {
 	private static final String OWL = "http://www.w3.org/2002/07/owl#";
@@ -103,22 +99,21 @@ public class JavaCodeBuilder {
 		if (type != null) {
 			list.add(type);
 		}
-		for (Class eq : concept.getOwlEquivalentClasses()) {
-			type = resolver.getType(eq.getURI());
-			if (type != null) {
-				list.add(type);
-			}
-		}
+		// for (Class eq : concept.getOwlEquivalentClasses()) {
+		// type = resolver.getType(eq.getURI());
+		// if (type != null) {
+		// list.add(type);
+		// }
+		// }
 		out.annotateURIs(Iri.class, list);
-		List<URI> oneOf = new ArrayList<URI>();
-		if (concept.getOwlOneOf() != null) {
-			for (Object o : concept.getOwlOneOf()) {
-				if (o instanceof IEntity) {
-					oneOf.add(((IEntity) o).getURI());
-				}
-			}
-		}
-
+		// List<URI> oneOf = new ArrayList<URI>();
+		// if (concept.getOwlOneOf() != null) {
+		// for (Object o : concept.getOwlOneOf()) {
+		// if (o instanceof IEntity) {
+		// oneOf.add(((IEntity) o).getURI());
+		// }
+		// }
+		// }
 		// out.annotateQNames(oneOf.class, oneOf);
 		// annotate(intersectionOf.class, concept.getOwlIntersectionOf());
 		// annotate(complementOf.class, concept.getOwlComplementOf());
@@ -128,7 +123,12 @@ public class JavaCodeBuilder {
 		for (Class sups : concept.getRdfsSubClassOf()) {
 			if (sups.getURI() == null || sups.equals(concept))
 				continue;
-			out.extend(resolver.getClassName(sups.getURI()));
+			String className = resolver.getClassName(sups.getURI());
+			if (!className.contains(".")) {
+				// skip unknown classes without a package
+				continue;
+			}
+			out.extend(className);
 		}
 	}
 
@@ -195,32 +195,32 @@ public class JavaCodeBuilder {
 		if (type != null) {
 			list.add(type);
 		}
-		if (property instanceof OwlProperty) {
-			OwlProperty p = (OwlProperty) property;
-			for (Property eq : p.getOwlEquivalentProperties()) {
-				type = resolver.getType(eq.getURI());
-				if (type != null) {
-					list.add(type);
-				}
-			}
-		}
+		// if (property instanceof OwlProperty) {
+		// OwlProperty p = (OwlProperty) property;
+		// for (Property eq : p.getOwlEquivalentProperties()) {
+		// type = resolver.getType(eq.getURI());
+		// if (type != null) {
+		// list.add(type);
+		// }
+		// }
+		// }
 		prop.annotateURIs(Iri.class, list);
-		list.clear();
-		if (property instanceof SymmetricProperty) {
-			type = resolver.getType(property.getURI());
-			if (type != null) {
-				list.add(type);
-			}
-		}
-		if (property instanceof CodeProperty) {
-			CodeProperty p = (CodeProperty) property;
-			for (Property eq : p.findAllInverseOfProperties()) {
-				type = resolver.getType(eq.getURI());
-				if (type != null) {
-					list.add(type);
-				}
-			}
-		}
+		// list.clear();
+		// if (property instanceof SymmetricProperty) {
+		// type = resolver.getType(property.getURI());
+		// if (type != null) {
+		// list.add(type);
+		// }
+		// }
+		// if (property instanceof CodeProperty) {
+		// CodeProperty p = (CodeProperty) property;
+		// for (Property eq : p.findAllInverseOfProperties()) {
+		// type = resolver.getType(eq.getURI());
+		// if (type != null) {
+		// list.add(type);
+		// }
+		// }
+		// }
 		// prop.annotateQNames(inverseOf.class, list);
 		String className = getRangeClassName(dec, property);
 		if (dec.isFunctional(property)) {

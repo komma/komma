@@ -225,8 +225,7 @@ public class CodeGenerator implements IGenerator {
 		if (namespace.endsWith("#"))
 			return manager.createNamed(URIs.createURI(namespace.substring(0,
 					namespace.length() - 1)), Ontology.class);
-		return manager
-				.createNamed(URIs.createURI(namespace), Ontology.class);
+		return manager.createNamed(URIs.createURI(namespace), Ontology.class);
 	}
 
 	public Collection<Class<?>> getBaseClasses() {
@@ -237,7 +236,7 @@ public class CodeGenerator implements IGenerator {
 		return propertyNamesPrefix;
 	}
 
-	@Inject
+	@Inject(optional = true)
 	public void setBaseClasses(
 			@Named("baseClasses") Collection<Class<?>> baseClasses) {
 		this.baseClasses = baseClasses;
@@ -248,7 +247,7 @@ public class CodeGenerator implements IGenerator {
 		this.resolver = resolver;
 	}
 
-	@Inject
+	@Inject(optional = true)
 	public void setPropertyNamesPrefix(
 			@Named("propertyNamesPrefix") String prefixPropertyNames) {
 		this.propertyNamesPrefix = prefixPropertyNames;

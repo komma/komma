@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -60,19 +61,26 @@ import java.util.jar.JarOutputStream;
 import net.enilink.composition.mappers.ComposedRoleMapper;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.mappers.TypeFactory;
+import net.enilink.komma.core.IDialect;
+import net.enilink.komma.core.IEntityDecorator;
+import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IUnitOfWork;
+import net.enilink.komma.core.InferencingCapability;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.KommaModule.Association;
+import net.enilink.komma.core.SparqlStandardDialect;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 import net.enilink.komma.core.visitor.IDataVisitor;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
+import net.enilink.komma.dm.change.DataChangeTracker;
+import net.enilink.komma.dm.change.IDataChangeSupport;
+import net.enilink.komma.dm.change.IDataChangeTracker;
 import net.enilink.komma.em.EagerCachingEntityManagerModule;
-import net.enilink.komma.em.EntityManagerFactoryModule;
 import net.enilink.komma.em.ManagerCompositionModule;
 import net.enilink.komma.em.util.KommaUtil;
 import net.enilink.komma.em.util.RoleClassLoader;
@@ -154,11 +162,15 @@ public class OntologyConverter implements IApplication {
 							Names.named("propertyNamesPrefix")).toInstance(
 							prefix);
 				}
+
+				List<String> baseClasses = Collections.emptyList();
 				if (commandLine.hasOption('e')) {
-					bind(new TypeLiteral<Collection<String>>() {
-					}).annotatedWith(Names.named("baseClasses")).toInstance(
-							Arrays.asList(commandLine.getOptionValues('e')));
+					baseClasses = Arrays.asList(commandLine
+							.getOptionValues('e'));
 				}
+				bind(new TypeLiteral<Collection<String>>() {
+				}).annotatedWith(Names.named("baseClasses")).toInstance(
+						baseClasses);
 
 				bind(new TypeLiteral<Collection<URL>>() {
 				}).annotatedWith(Names.named("jars")).toInstance(
@@ -670,6 +682,20 @@ public class OntologyConverter implements IApplication {
 
 						bind(UnitOfWork.class).toInstance(uow);
 						bind(IUnitOfWork.class).toInstance(uow);
+
+						bind(Locale.class).toInstance(Locale.getDefault());
+						bind(IDataManager.class).toProvider(
+								IDataManagerFactory.class);
+
+						bind(DataChangeTracker.class).in(Singleton.class);
+						bind(IDataChangeSupport.class).to(
+								DataChangeTracker.class);
+						bind(IDataChangeTracker.class).to(
+								DataChangeTracker.class);
+
+						bind(IDialect.class).to(SparqlStandardDialect.class);
+						bind(InferencingCapability.class).toInstance(
+								InferencingCapability.NONE);
 					}
 
 					@Singleton
@@ -677,14 +703,16 @@ public class OntologyConverter implements IApplication {
 					Repository provideRepository() {
 						return repository;
 					}
-				}, new SesameModule(), new EntityManagerFactoryModule(
-						kommaModule, null));
+				}, new SesameModule());
 
 		return factoryInjector.createChildInjector(
 				new ManagerCompositionModule(kommaModule),
 				new EagerCachingEntityManagerModule(), new AbstractModule() {
 					@Override
 					protected void configure() {
+						Multibinder.newSetBinder(binder(),
+								IEntityDecorator.class);
+
 						Multibinder<IGenerator> generators = Multibinder
 								.newSetBinder(binder(), IGenerator.class);
 						if (!constantsOnly) {
@@ -694,6 +722,17 @@ public class OntologyConverter implements IApplication {
 						generators.addBinding()
 								.to(ConstantsClassesGenerator.class)
 								.in(Singleton.class);
+
+						// bind a simple mock factory
+						bind(IEntityManagerFactory.class).to(
+								SimpleEMFactory.class).in(Singleton.class);
+					}
+
+					@Provides
+					@Singleton
+					IEntityManager provideManager(
+							@Named("unmanaged") IEntityManager em) {
+						return em;
 					}
 
 					@Provides
@@ -781,7 +820,6 @@ public class OntologyConverter implements IApplication {
 						OwlNormalizer normalizer = new OwlNormalizer();
 						injector.injectMembers(normalizer);
 						normalizer.normalize();
-
 						return normalizer;
 					}
 				});
@@ -987,12 +1025,12 @@ public class OntologyConverter implements IApplication {
 				return URIs.createURI(st.getObject().stringValue());
 			st = first(conn, RDF.TYPE, OWL.CLASS);
 			if (st != null)
-				return URIs.createURI(((org.openrdf.model.URI) st
-						.getSubject()).getNamespace());
+				return URIs.createURI(((org.openrdf.model.URI) st.getSubject())
+						.getNamespace());
 			st = first(conn, RDF.TYPE, RDFS.CLASS);
 			if (st != null)
-				return URIs.createURI(((org.openrdf.model.URI) st
-						.getSubject()).getNamespace());
+				return URIs.createURI(((org.openrdf.model.URI) st.getSubject())
+						.getNamespace());
 			return null;
 		} finally {
 			conn.clear();
