@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 public class JavaClassBuilder extends JavaSourceBuilder {
 	private PrintWriter out;
@@ -166,7 +166,7 @@ public class JavaClassBuilder extends JavaSourceBuilder {
 		closeHeader();
 		sb.append("\tpublic static final ").append(imports(URI.class));
 		sb.append(" ").append(name).append(" = ")
-				.append(imports(URIImpl.class)).append(".createURI(");
+				.append(imports(URIs.class)).append(".createURI(");
 		sb.append("\"").append(value.toString()).append("\");\n");
 		return this;
 	}

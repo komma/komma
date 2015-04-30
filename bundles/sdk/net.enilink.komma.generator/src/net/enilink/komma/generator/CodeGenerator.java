@@ -55,7 +55,7 @@ import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * Converts OWL ontologies into JavaBeans. This class can be used to create Elmo
@@ -116,7 +116,7 @@ public class CodeGenerator implements IGenerator {
 		Class<net.enilink.vocab.rdfs.Class> rdfsClass = net.enilink.vocab.rdfs.Class.class;
 		if (!containKnownNamespace(klass.getRdfsSubClassOf())) {
 			for (Class<?> b : baseClasses) {
-				URI name = URIImpl.createURI(JAVA_NS + b.getName());
+				URI name = URIs.createURI(JAVA_NS + b.getName());
 				klass.getRdfsSubClassOf().add(
 						bean.getEntityManager().createNamed(name, rdfsClass));
 			}
@@ -223,10 +223,10 @@ public class CodeGenerator implements IGenerator {
 
 	private Ontology findOntology(IEntityManager manager, String namespace) {
 		if (namespace.endsWith("#"))
-			return manager.createNamed(URIImpl.createURI(namespace.substring(0,
+			return manager.createNamed(URIs.createURI(namespace.substring(0,
 					namespace.length() - 1)), Ontology.class);
 		return manager
-				.createNamed(URIImpl.createURI(namespace), Ontology.class);
+				.createNamed(URIs.createURI(namespace), Ontology.class);
 	}
 
 	public Collection<Class<?>> getBaseClasses() {

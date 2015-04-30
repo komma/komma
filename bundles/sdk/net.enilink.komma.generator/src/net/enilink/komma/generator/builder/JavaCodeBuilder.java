@@ -61,7 +61,7 @@ import net.enilink.komma.generator.source.JavaPropertyBuilder;
 import net.enilink.komma.generator.source.JavaSourceBuilder;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 public class JavaCodeBuilder {
 	private static final String OWL = "http://www.w3.org/2002/07/owl#";
@@ -85,7 +85,7 @@ public class JavaCodeBuilder {
 	public void packageInfo(CodeOntology ontology, String namespace) {
 		comment(out, ontology);
 		out.annotateStrings(Iri.class, singletonList(namespace));
-		out.pkg(resolver.getPackageName(URIImpl.createURI(namespace)));
+		out.pkg(resolver.getPackageName(URIs.createURI(namespace)));
 	}
 
 	public void interfaceHeader(CodeClass concept) {

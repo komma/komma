@@ -50,7 +50,7 @@ import net.enilink.komma.generator.source.JavaClassBuilder;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 
 /**
  * Creates profiles with constants for classes and properties.
@@ -117,7 +117,7 @@ public class ConstantsClassesGenerator implements IGenerator {
 
 			jcb.staticStringField("NAMESPACE", entry.getKey().toString());
 			jcb.code("\tpublic static final ").code(jcb.imports(URI.class))
-					.code(" NAMESPACE_URI = ").code(jcb.imports(URIImpl.class))
+					.code(" NAMESPACE_URI = ").code(jcb.imports(URIs.class))
 					.code(".createURI(NAMESPACE);\n\n");
 
 			for (IEntity entity : entry.getValue()) {

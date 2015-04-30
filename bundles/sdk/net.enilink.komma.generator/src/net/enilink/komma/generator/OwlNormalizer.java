@@ -54,7 +54,7 @@ import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.vocab.owl.Class;
 import net.enilink.vocab.owl.OWL;
@@ -244,7 +244,7 @@ public class OwlNormalizer {
 		if (prefix != null) {
 			localName = initcap(prefix) + initcap(localName);
 		}
-		URI nc = URIImpl.createURI(findNamespace(ont)).appendLocalPart(
+		URI nc = URIs.createURI(findNamespace(ont)).appendLocalPart(
 				localName);
 		aliases.put(nc, obj);
 		if (obj.equals(RDFS.TYPE_RESOURCE)) {
@@ -591,7 +591,7 @@ public class OwlNormalizer {
 				}
 				clazz.getRdfsSubClassOf().addAll(common);
 				for (IEntity bean : unionOf) {
-					Class of = manager.designateEntity(bean, Class.class);
+					Class of = manager.assignTypes(bean, Class.class);
 					if (bean instanceof Datatype && bean.getURI() != null) {
 						// don't use anonymous class for datatypes
 						rename(clazz, bean.getURI());
@@ -760,7 +760,7 @@ public class OwlNormalizer {
 		}
 		sb.setLength(sb.length() - and.length());
 		return rename(clazz,
-				URIImpl.createURI(namespace).appendLocalPart(sb.toString()));
+				URIs.createURI(namespace).appendLocalPart(sb.toString()));
 	}
 
 	private void renameClass(URI obj, URI nc) {
@@ -784,7 +784,7 @@ public class OwlNormalizer {
 			stmts.close();
 		}
 		if (obj.equals(RDFS.TYPE_RESOURCE)) {
-			Class base = manager.createNamed(URIImpl.createURI(nc.toString()),
+			Class base = manager.createNamed(URIs.createURI(nc.toString()),
 					Class.class);
 			addBaseClass(base, Class.class);
 		}

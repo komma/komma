@@ -50,7 +50,7 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.core.visitor.IDataVisitor;
 import net.enilink.komma.literals.LiteralConverter;
 import net.enilink.vocab.owl.OWL;
@@ -81,13 +81,13 @@ public class OwlGenerator {
 	private URI createURI(Class<?> beanClass) {
 		if (beanClass.isAnnotationPresent(Iri.class)) {
 			String value = beanClass.getAnnotation(Iri.class).value();
-			return URIImpl.createURI(value);
+			return URIs.createURI(value);
 		}
 		String ns = findNamespace(beanClass);
 		if (ns == null)
-			return URIImpl.createURI("java:" + beanClass.getName());
+			return URIs.createURI("java:" + beanClass.getName());
 		String localName = beanClass.getSimpleName();
-		return URIImpl.createURI(ns + localName);
+		return URIs.createURI(ns + localName);
 	}
 
 	public Set<URI> exportOntology(List<Class<?>> beans, IDataVisitor<?> handler)
@@ -203,7 +203,7 @@ public class OwlGenerator {
 			handleStatement(uri, RDF.PROPERTY_TYPE, OWL.TYPE_CLASS);
 		}
 		handleLabel(uri, desc);
-		URI ns = URIImpl.createURI(getNamespace(beanClass));
+		URI ns = URIs.createURI(getNamespace(beanClass));
 		handleStatement(uri, RDFS.PROPERTY_ISDEFINEDBY, ns);
 		Class<?> sup = beanClass.getSuperclass();
 		if (sup != null && !sup.equals(Object.class))
@@ -218,11 +218,11 @@ public class OwlGenerator {
 		URI uri;
 		if (desc.getReadMethod().isAnnotationPresent(Iri.class)) {
 			Iri ann = desc.getReadMethod().getAnnotation(Iri.class);
-			uri = URIImpl.createURI(ann.value());
+			uri = URIs.createURI(ann.value());
 		} else {
 			uri = domain.appendLocalPart(desc.getName());
 		}
-		URI ns = URIImpl.createURI(getNamespace(desc.getReadMethod()
+		URI ns = URIs.createURI(getNamespace(desc.getReadMethod()
 				.getDeclaringClass()));
 		Class<?> range = getPropertyType(desc);
 		if (range.equals(Set.class)) {

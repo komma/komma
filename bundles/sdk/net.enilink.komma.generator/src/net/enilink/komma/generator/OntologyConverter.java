@@ -67,7 +67,7 @@ import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.KommaModule.Association;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIImpl;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.core.visitor.IDataVisitor;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
@@ -602,7 +602,7 @@ public class OntologyConverter implements IApplication {
 				String namespace = e.getKey();
 				String pkgName = e.getValue();
 				String prefix = pkgName.substring(pkgName.lastIndexOf('.') + 1);
-				dm.setNamespace(prefix, URIImpl.createURI(namespace));
+				dm.setNamespace(prefix, URIs.createURI(namespace));
 				gen.setNamespace(pkgName, prefix, namespace);
 			}
 			Set<URI> ontologies = gen.exportOntology(beans,
@@ -981,17 +981,17 @@ public class OntologyConverter implements IApplication {
 		try {
 			Statement st = first(conn, RDF.TYPE, OWL.ONTOLOGY);
 			if (st != null)
-				return URIImpl.createURI(st.getSubject().stringValue());
+				return URIs.createURI(st.getSubject().stringValue());
 			st = first(conn, RDFS.ISDEFINEDBY, null);
 			if (st != null)
-				return URIImpl.createURI(st.getObject().stringValue());
+				return URIs.createURI(st.getObject().stringValue());
 			st = first(conn, RDF.TYPE, OWL.CLASS);
 			if (st != null)
-				return URIImpl.createURI(((org.openrdf.model.URI) st
+				return URIs.createURI(((org.openrdf.model.URI) st
 						.getSubject()).getNamespace());
 			st = first(conn, RDF.TYPE, RDFS.CLASS);
 			if (st != null)
-				return URIImpl.createURI(((org.openrdf.model.URI) st
+				return URIs.createURI(((org.openrdf.model.URI) st
 						.getSubject()).getNamespace());
 			return null;
 		} finally {
