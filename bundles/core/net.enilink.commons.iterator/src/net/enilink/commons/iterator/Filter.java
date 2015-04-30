@@ -27,52 +27,14 @@
 
 package net.enilink.commons.iterator;
 
-import java.util.Iterator;
-
 /**
  * Boolean functions wrapped to be used in filtering iterators.
  */
-public abstract class Filter<T> {
+public interface Filter<T> {
 	/**
 	 * Answer true iff the object <code>o</code> is acceptable. This method may
 	 * also throw an exception if the argument is of a wrong type; it is not
 	 * required to return <code>false</code> in such a case.
 	 */
-	public abstract boolean accept(T o);
-
-	public IExtendedIterator<T> filterKeep(Iterator<T> it) {
-		return new FilterKeepIterator<T>(this, it);
-	}
-
-	public Filter<T> and(final Filter<? super T> other) {
-		return other == any() ? this : new Filter<T>() {
-			public boolean accept(T x) {
-				return Filter.this.accept(x) && other.accept(x);
-			}
-		};
-	}
-
-	/**
-	 * A Filter that accepts everything it's offered.
-	 */
-	private static final Filter<?> anyFilter = new Filter<Object>() {
-		public final boolean accept(Object o) {
-			return true;
-		}
-
-		@SuppressWarnings("unchecked")
-		public Filter<Object> and(Filter<? super Object> other) {
-			return (Filter<Object>) other;
-		}
-
-		public IExtendedIterator<Object> filterKeep(Iterator<Object> it) {
-			return WrappedIterator.create(it);
-		}
-	};
-
-	@SuppressWarnings("unchecked")
-	public static <T> Filter<T> any() {
-		return (Filter<T>) anyFilter;
-	}
-
+	boolean accept(T o);
 }
