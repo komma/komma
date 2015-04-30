@@ -27,6 +27,7 @@
 		<module>../../net.enilink.komma.parser</module>
 		<module>../../net.enilink.komma.query</module>
 		<module>../../net.enilink.komma.sesame</module>
+		<module>../../net.enilink.vocab.foaf</module>
 		<module>../../net.enilink.vocab.komma</module>
 		<module>../../net.enilink.vocab.owl</module>
 		<module>../../net.enilink.vocab.rdfs</module>
