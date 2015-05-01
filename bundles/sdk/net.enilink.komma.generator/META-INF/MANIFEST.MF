@@ -11,7 +11,10 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.literals,
  org.eclipse.jdt.core;resolution:=optional,
  net.enilink.komma.sesame,
- org.openrdf.sesame
+ org.openrdf.sesame,
+ org.aopalliance;bundle-version="1.0.0",
+ org.objectweb.asm;bundle-version="5.0.1",
+ net.enilink.composition.properties.komma
 Bundle-ClassPath: ., lib/commons-cli-1.1.jar
 Import-Package: com.google.common.base;version="17.0.0",
  com.google.inject;version="2.0.0",
