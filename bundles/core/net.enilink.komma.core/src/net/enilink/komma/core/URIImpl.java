@@ -638,7 +638,8 @@ final class URIImpl implements URI {
 			return createURI(toString() + localPart, true);
 		}
 		String last = lastSegment();
-		if (last == null || last != null && last.length() > 0) {
+		if (last == null && !hasAbsolutePath() || last != null
+				&& last.length() > 0) {
 			return appendFragment(localPart);
 		}
 		return trimSegments(1).appendSegment(encodeSegment(localPart, true));
