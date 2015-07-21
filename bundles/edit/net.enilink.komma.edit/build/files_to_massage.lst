@@ -1,0 +1,8 @@
+# This is a list of files in this plugin (relative to the plugin)
+# that contains names of plugins (e.g. org.eclipse.emf.ecore) which need
+# to be appended with version number (e.g. org.eclipse.emf.ecore_1.0.1)
+# during packaging.
+
+# .ecore and .genmodel no longer need to be massaged (as of Eclipse 3.1.0.M7 / EMF 2.1.0.I200505191347)
+
+model/Tree.mdl

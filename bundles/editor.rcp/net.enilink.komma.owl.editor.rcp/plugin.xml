@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<!--
+    Copyright (c) 2009 Fraunhofer IWU and others.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+   
+    Contributors:
+        Fraunhofer IWU - initial API and implementation
+ -->
+
+<plugin>
+
+<extension point="org.eclipse.ui.editors">
+      <editor
+            id="net.enilink.komma.owl.editor.OWLEditor"
+            name="%_UI_OWLEditor_label"
+            icon="icons/full/obj16/OWLEditor.png"
+            class="net.enilink.komma.owl.editor.rcp.OWLEditor"
+            contributorClass="net.enilink.komma.owl.editor.OWLActionBarContributor">
+         <contentTypeBinding
+               contentTypeId="net.enilink.komma.contenttype.n3">
+         </contentTypeBinding>
+         <contentTypeBinding
+               contentTypeId="net.enilink.komma.contenttype.ntriples">
+         </contentTypeBinding>
+         <contentTypeBinding
+               contentTypeId="net.enilink.komma.contenttype.rdfxml">
+         </contentTypeBinding>
+         <contentTypeBinding
+               contentTypeId="net.enilink.komma.contenttype.trix">
+         </contentTypeBinding>
+         <contentTypeBinding
+               contentTypeId="net.enilink.komma.contenttype.turtle">
+         </contentTypeBinding>
+      </editor>
+</extension>
+
+<extension
+      point="org.eclipse.ui.newWizards">
+   <wizard
+         category="net.enilink.komma.owl.editor.wizards.category.rdf"
+         class="net.enilink.komma.owl.editor.rcp.wizards.NewOntologyWizard"
+         icon="icons/full/obj16/OWLFile.png"
+         id="net.enilink.komma.owl.editor.wizards.new.ontology"
+         name="Ontology">
+      <description>
+         Create a new Ontology
+      </description>
+   </wizard>
+   <category
+         id="net.enilink.komma.owl.editor.wizards.category.rdf"
+         name="RDF">
+   </category>
+</extension>
+
+</plugin>

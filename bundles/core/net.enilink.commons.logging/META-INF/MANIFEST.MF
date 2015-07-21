@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Commons Logging Plug-in
+Bundle-SymbolicName: net.enilink.commons.logging;singleton:=true
+Bundle-Version: 1.1.0.qualifier
+Bundle-Vendor: enilink.net
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
+Export-Package: 
+ net.enilink.commons.logging,
+ org.slf4j;version="1.7.6",
+ org.slf4j.helpers;version="1.7.6",
+ org.slf4j.spi;version="1.7.6"
+Bundle-ClassPath: .,
+ lib/logback-access-1.1.1.jar,
+ lib/logback-classic-1.1.1.jar,
+ lib/logback-core-1.1.1.jar,
+ lib/slf4j-api-1.7.6.jar
+Require-Bundle: org.eclipse.core.runtime
+Bundle-Activator: net.enilink.commons.logging.LoggingPlugin

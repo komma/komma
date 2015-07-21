@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+    Copyright (c) 2010 Fraunhofer IWU and others.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+   
+    Contributors:
+        Fraunhofer IWU - initial API and implementation
+ -->
+
+<plugin>
+   <extension-point id="models" name="Base Models" schema="schema/models.exsd"/>
+   
+   <extension-point id="extensionFactories" name="Extension Factories" schema="schema/extensionFactories.exsd"/>
+   <extension-point id="protocolFactories" name="Protocol Factories" schema="schema/protocolFactories.exsd"/>
+   <extension-point id="contentFactories" name="Content Factories" schema="schema/contentFactories.exsd"/>
+   <extension-point id="contentHandlers" name="Content Handlers" schema="schema/contentHandlers.exsd"/>
+   <extension-point id="uriMapRules" name="uriMapRules" schema="schema/uriMapRules.exsd" />
+   <extension-point id="modelModules" name="Extension Modules for ModelSets and Models." schema="schema/modelModules.exsd"/>
+   <extension-point id="modules" name="Extension Modules" schema="schema/modules.exsd"/>
+   
+   <extension
+         point="net.enilink.komma.model.models">
+      <model
+            namespace="http://enilink.net/vocab/komma#"
+            prefix="komma"/>
+      <model
+            namespace="http://enilink.net/vocab/komma/models#"
+            prefix="models">
+      </model>
+   </extension>
+   <extension
+         point="net.enilink.komma.model.extensionFactories">
+      <factory
+            class="net.enilink.komma.model.mem.SerializableModelFactory"
+            type="*">
+      </factory>
+   </extension>
+   <extension
+         point="net.enilink.komma.model.uriMapRules">
+      <rule
+            ifPattern="^(file|platform)"
+            pattern="^.*$"
+            priority="50"
+            replacement="$0.owl"
+            unlessPattern="\.[^/]+$">
+      </rule>
+      <rule
+            pattern="http://enilink.net/vocab/komma/models"
+            priority="5"
+            replacement="platform:/plugin/net.enilink.komma.model/META-INF/ontologies/models">
+      </rule>
+   </extension>
+   <extension
+         point="net.enilink.komma.model.modelModules">
+      <module
+            class="net.enilink.komma.internal.model.ModelModule">
+      </module>
+         
+   </extension>
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            base-type="net.enilink.komma.contenttype.rdf"
+            default-charset="UTF-8"
+            describer="org.eclipse.core.runtime.content.XMLRootElementContentDescriber2:RDF"
+            file-extensions="rdf,rdfs,owl,xml"
+            id="net.enilink.komma.contenttype.rdfxml"
+            name="RDF/XML"
+            priority="normal">
+         <property
+               default="application/rdf+xml"
+               name="mimeType">
+         </property>
+         <property
+               default="true"
+               name="hasWriter">
+         </property>
+      </content-type>
+      <content-type
+            base-type="net.enilink.komma.contenttype.rdf"
+            default-charset="US-ASCII"
+            file-extensions="nt"
+            id="net.enilink.komma.contenttype.ntriples"
+            name="N-TRIPLES"
+            priority="normal">
+         <property
+               default="text/plain"
+               name="mimeType">
+         </property>
+         <property
+               default="true"
+               name="hasWriter">
+         </property>
+      </content-type>
+      <content-type
+            base-type="net.enilink.komma.contenttype.rdf"
+            default-charset="UTF-8"
+            file-extensions="ttl"
+            id="net.enilink.komma.contenttype.turtle"
+            name="Turtle"
+            priority="normal">
+         <property
+               default="text/turtle"
+               name="mimeType">
+         </property>
+         <property
+               default="true"
+               name="hasWriter">
+         </property>
+      </content-type>
+      <content-type
+            base-type="net.enilink.komma.contenttype.rdf"
+            default-charset="UTF-8"
+            file-extensions="n3"
+            id="net.enilink.komma.contenttype.n3"
+            name="N3"
+            priority="normal">
+         <property
+               default="text/rdf+n3"
+               name="mimeType">
+         </property>
+         <property
+               default="true"
+               name="hasWriter">
+         </property>
+      </content-type>
+      <content-type
+            base-type="net.enilink.komma.contenttype.rdf"
+            default-charset="UTF-8"
+            file-extensions="trix"
+            id="net.enilink.komma.contenttype.trix"
+            name="TriX"
+            priority="normal">
+         <property
+               default="application/x-trig"
+               name="mimeType">
+         </property>
+         <property
+               default="true"
+               name="hasWriter">
+         </property>
+      </content-type>
+      <content-type
+            base-type="net.enilink.komma.contenttype.rdf"
+            default-charset="UTF-8"
+            file-extensions="xhtml"
+            id="net.enilink.komma.contenttype.rdfa"
+            name="RDFa"
+            priority="low">
+         <property
+               default="application/xhtml+xml"
+               name="mimeType">
+         </property>
+         <property
+               default="false"
+               name="hasWriter">
+         </property>
+      </content-type>
+      <content-type
+            base-type="org.eclipse.core.runtime.text"
+            id="net.enilink.komma.contenttype.rdf"
+            name="RDF"
+            priority="normal">
+      </content-type>
+   </extension>
+      <extension
+         point="net.enilink.komma.model.contentHandlers">
+      <contentHandler
+            class="net.enilink.komma.model.eclipse.PlatformContentHandler">
+      </contentHandler>
+      <contentHandler
+            class="net.enilink.komma.model.base.ContentHandler"
+            priority="1000">
+      </contentHandler>
+   </extension>
+</plugin>

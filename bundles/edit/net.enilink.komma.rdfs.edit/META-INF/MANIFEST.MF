@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RDFS Edit Plugin
+Bundle-SymbolicName: net.enilink.komma.rdfs.edit;singleton:=true
+Bundle-Version: 1.1.0.qualifier
+Bundle-Vendor: enilink.net
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.core.runtime,
+ net.enilink.komma.em,
+ net.enilink.komma.edit,
+ org.eclipse.core.commands
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: net.enilink.komma.rdfs.edit.RDFSEditPlugin$Implementation
+Export-Package: net.enilink.komma.rdfs.edit
+Import-Package: com.google.inject;version="4.0.0"

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/net.enilink.komma.codegen/src/main/java/net.enilink.komma/converter/OntologyConverter.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="net.enilink.komma.converter.OntologyConverter"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-b net.enilink.vocab.owl=http://www.w3.org/2002/07/owl#&#13;&#10;-e net.enilink.komma.core.IEntity&#13;&#10;-j ${workspace_loc:net.enilink.komma.owl}\lib\owl.jar&#13;&#10;${workspace_loc:net.enilink.komma.owl}\src\main\resources\ontologies\owl-schema.rdf"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="net.enilink.komma.codegen"/>
+</launchConfiguration>

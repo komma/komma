@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Tabbed
+Bundle-SymbolicName: net.enilink.komma.edit.ui.properties.tabbed;singleton:=true
+Bundle-Version: 1.1.0.qualifier
+Bundle-Vendor: enilink.net
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.eclipse.core.runtime,
+ net.enilink.komma.em,
+ net.enilink.komma.edit.ui,
+ net.enilink.commons.ui,
+ net.enilink.commons.util,
+ org.eclipse.ui.views.properties.tabbed,
+ net.enilink.komma.edit.ui.properties

@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.7.0
+Created-By: 10.0-b22 (Sun Microsystems Inc.)
+Bundle-ManifestVersion: 2
+Bundle-Name: KOMA Concepts Plug-in
+Bundle-SymbolicName: net.enilink.vocab.komma;singleton:=true
+Bundle-Version: 1.1.0.qualifier
+Bundle-Vendor: enilink.net
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.eclipse.core.runtime,
+ net.enilink.commons.iterator,
+ net.enilink.komma.core,
+ net.enilink.vocab.owl,
+ net.enilink.vocab.rdfs,
+ net.enilink.komma.common
+Export-Package: net.enilink.vocab.komma
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: .
+
