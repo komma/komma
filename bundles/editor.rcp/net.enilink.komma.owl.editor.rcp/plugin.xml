@@ -38,4 +38,22 @@
       </editor>
 </extension>
 
+<extension
+      point="org.eclipse.ui.newWizards">
+   <wizard
+         category="net.enilink.komma.owl.editor.wizards.category.rdf"
+         class="net.enilink.komma.owl.editor.rcp.wizards.NewOntologyWizard"
+         icon="icons/full/obj16/OWLFile.png"
+         id="net.enilink.komma.owl.editor.wizards.new.ontology"
+         name="Ontology">
+      <description>
+         Create a new Ontology
+      </description>
+   </wizard>
+   <category
+         id="net.enilink.komma.owl.editor.wizards.category.rdf"
+         name="RDF">
+   </category>
+</extension>
+
 </plugin>
