@@ -11,14 +11,14 @@
 	<modules>
 		<module>../komma-edit-feature</module>
 
-		<module>../../net.enilink.commons.ui</module>
-		<module>../../net.enilink.komma.common.ui</module>
-		<module>../../net.enilink.komma.edit.ui.properties</module>
-		<module>../../net.enilink.komma.edit.ui</module>
-		<module>../../net.enilink.komma.sparql.ui</module>
+		<module>../../bundles/ui/net.enilink.commons.ui</module>
+		<module>../../bundles/ui/net.enilink.komma.common.ui</module>
+		<module>../../bundles/ui/net.enilink.komma.edit.ui.properties</module>
+		<module>../../bundles/ui/net.enilink.komma.edit.ui</module>
+		<module>../../bundles/ui/net.enilink.komma.sparql.ui</module>
 
-		<module>../../net.enilink.komma.owl.editor</module>
+		<module>../../bundles/editor/net.enilink.komma.owl.editor</module>
 
-		<module>../../komma-features/net.enilink.komma.rap.feature</module>
+		<module>../../features/net.enilink.komma.rap.feature</module>
 	</modules>
 </project>

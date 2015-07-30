@@ -6,7 +6,7 @@
     <groupId>net.enilink</groupId>
     <artifactId>komma-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../komma-releng/pom.xml</relativePath>
+    <relativePath>../../../releng/pom.xml</relativePath>
   </parent>
   <groupId>net.enilink</groupId>
   <artifactId>net.enilink.komma.edit.ui</artifactId>

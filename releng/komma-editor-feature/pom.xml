@@ -11,9 +11,9 @@
 	<modules>
 		<module>../komma-edit-ui-feature</module>
 
-		<module>../../net.enilink.komma.owl.editor</module>
-		<module>../../net.enilink.komma.owl.editor.rcp</module>
+		<module>../../bundles/editor/net.enilink.komma.owl.editor</module>
+		<module>../../bundles/editor.rcp/net.enilink.komma.owl.editor.rcp</module>
 
-		<module>../../komma-features/net.enilink.komma.editor.feature</module>
+		<module>../../features/net.enilink.komma.editor.feature</module>
 	</modules>
 </project>

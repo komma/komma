@@ -15,7 +15,7 @@
 			<module>../komma-edit-ui-feature</module -->
 		<module>../komma-editor-feature</module>
 
-		<module>../../komma-features/net.enilink.komma.updatesite</module>
+		<module>../../features/net.enilink.komma.updatesite</module>
 	</modules>
 
 	<build>

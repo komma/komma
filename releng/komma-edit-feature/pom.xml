@@ -11,11 +11,11 @@
 	<modules>
 		<module>../komma-feature</module>
 
-		<module>../../net.enilink.komma.edit</module>
-		<module>../../net.enilink.komma.owl.edit</module>
-		<module>../../net.enilink.komma.rdfs.edit</module>
-		<module>../../net.enilink.komma.workbench</module>
+		<module>../../bundles/edit/net.enilink.komma.edit</module>
+		<module>../../bundles/edit/net.enilink.komma.owl.edit</module>
+		<module>../../bundles/edit/net.enilink.komma.rdfs.edit</module>
+		<module>../../bundles/edit/net.enilink.komma.workbench</module>
 
-		<module>../../komma-features/net.enilink.komma.edit.feature</module>
+		<module>../../features/net.enilink.komma.edit.feature</module>
 	</modules>
 </project>
