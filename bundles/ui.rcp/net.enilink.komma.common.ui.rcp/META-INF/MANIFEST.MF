@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: KOMMA UI RCP extensions
+Bundle-SymbolicName: net.enilink.komma.common.ui.rcp;singleton:=true
+Bundle-Version: 1.1.0.qualifier
+Bundle-Vendor: enilink.net
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.eclipse.core.runtime,
+ net.enilink.komma.common,
+ org.eclipse.core.resources;resolution:=optional,
+ net.enilink.komma.core,
+ net.enilink.commons.ui,
+ net.enilink.komma.common.ui
+Export-Package: net.enilink.komma.common.ui.rcp.dialogs,
+ net.enilink.komma.common.ui.rcp.wizards

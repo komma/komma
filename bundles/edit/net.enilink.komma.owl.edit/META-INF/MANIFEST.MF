@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Edit
+Bundle-SymbolicName: net.enilink.komma.owl.edit;singleton:=true
+Bundle-Version: 1.1.0.qualifier
+Bundle-Vendor: enilink.net
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.commands,
+ net.enilink.komma.em,
+ net.enilink.komma.edit,
+ net.enilink.komma.rdfs.edit
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: net.enilink.komma.owl.edit.OWLEditPlugin$Implementation
+Export-Package: net.enilink.komma.owl.edit
+Import-Package: com.google.inject;version="4.0.0"

@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Ui Plug-in
+Bundle-SymbolicName: net.enilink.commons.ui
+Bundle-Version: 1.1.0.qualifier
+Bundle-Vendor: enilink.net
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-Activator: net.enilink.commons.ui.CommonsUi
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources;visibility:=reexport,
+ net.enilink.commons.util,
+ org.eclipse.ui;visibility:=reexport,
+ org.eclipse.ui.forms;visibility:=reexport,
+ org.eclipse.ui.ide;visibility:=reexport,
+ org.eclipse.ui.views;visibility:=reexport
+Export-Package: net.enilink.commons.ui,
+ net.enilink.commons.ui.dialogs,
+ net.enilink.commons.ui.editor,
+ net.enilink.commons.ui.jface.table,
+ net.enilink.commons.ui.jface.viewers,
+ net.enilink.commons.ui.progress
+Bundle-ClassPath: .
+Bundle-ActivationPolicy: lazy

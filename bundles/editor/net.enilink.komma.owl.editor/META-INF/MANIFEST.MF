@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: OWL Editor
+Bundle-SymbolicName: net.enilink.komma.owl.editor;singleton:=true
+Bundle-Version: 1.1.0.qualifier
+Bundle-Vendor: enilink.net
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.core.runtime,
+ net.enilink.komma.em,
+ net.enilink.komma.edit,
+ org.eclipse.core.commands,
+ org.eclipse.core.runtime,
+ net.enilink.komma.edit.ui,
+ org.eclipse.core.resources,
+ net.enilink.komma.owl.edit,
+ net.enilink.komma.edit.ui.properties,
+ net.enilink.commons.util,
+ net.enilink.commons.ui,
+ net.enilink.komma.workbench
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: net.enilink.komma.owl.editor.OWLEditorPlugin$Implementation
+Export-Package: net.enilink.komma.owl.editor,
+ net.enilink.komma.owl.editor.classes,
+ net.enilink.komma.owl.editor.instances,
+ net.enilink.komma.owl.editor.ontology,
+ net.enilink.komma.owl.editor.properties

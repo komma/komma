@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+	xmlns="http://enilink.net/vocab/komma/models#"
+	xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+	xmlns:komma="http://enilink.net/vocab/komma#"
+	xmlns:owl="http://www.w3.org/2002/07/owl#"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xml:base="http://enilink.net/vocab/komma/models">
+<owl:Ontology rdf:about="">
+	<owl:imports rdf:resource="http://enilink.net/vocab/komma"/>
+</owl:Ontology>
+<owl:Class rdf:about="#Diagnostic">
+	<rdfs:comment>A noteworthy issue in a document.</rdfs:comment>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode4">
+			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+			<owl:onProperty rdf:resource="#line"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode5">
+			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+			<owl:onProperty rdf:resource="#message"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode6">
+			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+			<owl:onProperty rdf:resource="#column"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode7">
+			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+			<owl:onProperty rdf:resource="#location"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+</owl:Class>
+<owl:Class rdf:about="#Model">
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode10">
+			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+			<owl:onProperty rdf:resource="#persistent"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode11">
+			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+			<owl:onProperty rdf:resource="#modified"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode12">
+			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+			<owl:onProperty rdf:resource="#loading"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode13">
+			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+			<owl:onProperty rdf:resource="#loaded"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode8">
+			<owl:allValuesFrom rdf:resource="#Diagnostic"/>
+			<owl:onProperty rdf:resource="#warning"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode9">
+			<owl:allValuesFrom rdf:resource="#Diagnostic"/>
+			<owl:onProperty rdf:resource="#error"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+</owl:Class>
+<owl:Class rdf:about="#ModelSet">
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode2">
+			<owl:allValuesFrom rdf:resource="#Model"/>
+			<owl:onProperty rdf:resource="#model"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode3">
+			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+			<owl:onProperty rdf:resource="#persistent"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+</owl:Class>
+<owl:Class rdf:about="#ModelSetContainer">
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode1">
+			<owl:allValuesFrom rdf:resource="#ModelSet"/>
+			<owl:onProperty rdf:resource="#containsModelSet"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+</owl:Class>
+<owl:Class rdf:about="#Namespace">
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode64">
+			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int">1</owl:cardinality>
+			<owl:onProperty rdf:resource="#prefix"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+	<rdfs:subClassOf>
+		<owl:Restriction rdf:nodeID="b088aa36be7ce409b8d119d312257c00fnode65">
+			<owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int">1</owl:cardinality>
+			<owl:onProperty rdf:resource="#uri"/>
+		</owl:Restriction>
+	</rdfs:subClassOf>
+</owl:Class>
+<owl:DatatypeProperty rdf:about="#column">
+	<rdfs:comment>Returns the column location of the issue within the source. Column 1 is the first column.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Diagnostic"/>
+	<rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+</owl:DatatypeProperty>
+<rdf:Property rdf:about="#containsModelSet">
+	<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+	<rdfs:subPropertyOf rdf:resource="http://enilink.net/vocab/komma#contains"/>
+</rdf:Property>
+<owl:ObjectProperty rdf:about="#error">
+	<rdfs:comment>A set of the errors in a model.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Model"/>
+	<rdfs:range rdf:resource="#Diagnostic"/>
+</owl:ObjectProperty>
+<owl:DatatypeProperty rdf:about="#line">
+	<rdfs:comment>Returns the line location of the issue within the source. Line 1 is the first line.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Diagnostic"/>
+	<rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+</owl:DatatypeProperty>
+<owl:DatatypeProperty rdf:about="#loaded">
+	<rdfs:comment>Indicates whether the model has finished loading.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Model"/>
+	<rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+</owl:DatatypeProperty>
+<owl:DatatypeProperty rdf:about="#loading">
+	<rdfs:comment>Indicates whether the model is currently being loaded.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Model"/>
+	<rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+</owl:DatatypeProperty>
+<owl:DatatypeProperty rdf:about="#location">
+	<rdfs:comment>Returns the source location of the issue.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Diagnostic"/>
+	<rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+</owl:DatatypeProperty>
+<owl:DatatypeProperty rdf:about="#message">
+	<rdfs:comment>Returns a translated message describing the issue.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Diagnostic"/>
+	<rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+</owl:DatatypeProperty>
+<owl:ObjectProperty rdf:about="#metaDataContext">
+	<rdfs:domain rdf:resource="#ModelSet"/>
+	<rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Resource"/>
+</owl:ObjectProperty>
+<owl:ObjectProperty rdf:about="#model">
+	<rdfs:domain rdf:resource="#ModelSet"/>
+	<rdfs:range rdf:resource="#Model"/>
+</owl:ObjectProperty>
+<owl:DatatypeProperty rdf:about="#modified">
+	<rdfs:comment>Returns whether a model has been modified.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Model"/>
+	<rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+</owl:DatatypeProperty>
+<owl:ObjectProperty rdf:about="#namespace">
+	<rdfs:range rdf:resource="#Namespace"/>
+</owl:ObjectProperty>
+<owl:DatatypeProperty rdf:about="#persistent">
+	<rdfs:comment>Returns whether a model or model set is persistent.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Model"/>
+	<rdfs:domain rdf:resource="#ModelSet"/>
+	<rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+</owl:DatatypeProperty>
+<owl:DatatypeProperty rdf:about="#prefix">
+	<rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+</owl:DatatypeProperty>
+<owl:ObjectProperty rdf:about="#uri"/>
+<owl:ObjectProperty rdf:about="#warning">
+	<rdfs:comment>A set of the warnings in a model.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Model"/>
+	<rdfs:range rdf:resource="#Diagnostic"/>
+</owl:ObjectProperty>
+<owl:AnnotationProperty rdf:about="http://www.w3.org/2000/01/rdf-schema#comment"/>
+
+</rdf:RDF>

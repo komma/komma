@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Literal Converters
+Bundle-SymbolicName: net.enilink.komma.literals
+Bundle-Version: 1.1.0.qualifier
+Bundle-Vendor: enilink.net
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: net.enilink.komma.core,
+ net.enilink.vocab.rdfs
+Import-Package: com.google.inject;version="4.0.0",
+ org.slf4j
+Export-Package: net.enilink.komma.literals

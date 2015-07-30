@@ -1,0 +1,125 @@
+gunit Ontology;
+
+@header {
+    package com.sparkleg;
+}
+
+testcase1:
+
+<<
+Ontology: <http://www.co-ode.org/ontologies/pizza/pizza.owl> <tolle-version>
+
+Annotations: 
+        rdfs:comment "A property created to be used with the ValuePartition - Spiciness."@en,
+        owl:versionInfo "v.1.5. Removed protege.owl import and references."@en
+
+
+ObjectProperty: hasBase
+        Annotations: 
+             rdfs:comment "Hat eine Basis"@en
+        
+        Domain: 
+            Pizza,
+            Teigwaren
+            
+        Range: 
+           PizzaBase        
+          
+       Characteristics: 
+           Functional,
+           InverseFunctional
+        
+        SubPropertyOf: 
+           hasIngredient      
+           
+        EquivalentTo: 
+            hasAgeInYears
+    
+        DisjointWith: 
+            hasSSN
+        
+        InverseOf:
+        	Nudeln 
+
+
+
+Class: UnclosedPizza
+	Annotations:
+         rdfs:comment "I belong to the Class"@en
+    
+    DisjointUnionOf:
+         Spagetti,
+         Reis
+    
+Class: TestPizza
+	Annotations:
+         rdfs:comment "I belong to the Class"@en
+    
+        
+Datatype: NegInt
+   Annotations: 
+         rdfs:comment "ein negativer Integer."@de
+
+   EquivalentTo: 
+        integer[< 0]  
+   
+
+DataProperty: hasAge
+    
+    Annotations: 
+         rdfs:comment "hat ein alter."@en
+    
+    Domain: 
+         Person
+    
+    Range: 
+         integer
+     
+    Characteristics: 
+         Functional   
+    
+    SubPropertyOf: 
+         hasVerifiedAge,
+         Einkaufswagen
+    
+    EquivalentTo: 
+         hasAgeInYears     
+    
+    DisjointWith: 
+         hasSSN
+         
+AnnotationProperty: creator
+     
+     Annotations: 
+           rdfs:comment "be cool"@en
+     
+     Domain:
+     	LOLDomain
+     	
+     Range: 
+        integer 	
+     
+     SubPropertyOf: 
+           initialCreator
+           
+           
+Individual: John
+    Annotations: 
+        rdfs:comment "little John is back in town"@en
+    
+    Types: 
+        Person, 
+        hasFirstName value "John"
+    
+    Facts: 
+        hasWife Mary, 
+        not hasChild Petra, 
+        hasAge 33
+    
+    SameAs: 
+        Jack
+    
+    DifferentFrom: 
+        Peter
+        
+>> OK
