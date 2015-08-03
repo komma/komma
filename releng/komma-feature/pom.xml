@@ -9,6 +9,8 @@
 	<packaging>pom</packaging>
 
 	<modules>
+		<module>../../libraries/ch.qos.logback</module>
+		<module>../../libraries/ch.qos.logback.slf4j</module>
 		<module>../../libraries/com.google.guava</module>
 		<module>../../libraries/com.google.inject</module>
 		<module>../../bundles/core/net.enilink.commons.iterator</module>
@@ -32,6 +34,7 @@
 		<module>../../bundles/vocab/net.enilink.vocab.owl</module>
 		<module>../../bundles/vocab/net.enilink.vocab.rdfs</module>
 		<module>../../libraries/org.aopalliance</module>
+		<module>../../libraries/org.apache.commons.io</module>
 		<module>../../libraries/org.infinispan</module>
 		<module>../../libraries/org.objectweb.asm</module>
 		<module>../../libraries/org.openrdf.sesame</module>

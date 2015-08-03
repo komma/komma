@@ -13,4 +13,5 @@
       <category name="rdf"/>
    </feature>
    <category-def name="rdf" label="RDF"/>
+   <repository-reference location="http://download.eclipse.org/tools/orbit/downloads/drops/R20150519210750/repository/" enabled="true" />
 </site>
