@@ -1,0 +1,8 @@
+= KOMMA
+
+This is the main repository for the KOMMA project.
+
+KOMMA (Knowledge Modeling and Management Architecture) is an adaptable framework for the management and editing of RDF, RDFS and OWL. 
+It provides Object-Triple-Mapping (comparable to JPA), an Editing framework as well as
+Eclipse RCP and RAP integration. In short: KOMMA is for RDF+OWL what the Eclipse Modeling Framework (EMF) is
+for ECore/MOF.
