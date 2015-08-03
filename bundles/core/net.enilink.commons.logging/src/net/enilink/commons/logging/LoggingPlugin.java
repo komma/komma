@@ -56,16 +56,17 @@ public class LoggingPlugin extends Plugin {
 		init();
 	}
 
-	public static void init() {
+	public static synchronized void init() {
 		if (!initialized) {
-			// assume SLF4J is bound to logback in the current environment
-			LoggerContext context = (LoggerContext) LoggerFactory
-					.getILoggerFactory();
-			loadConfiguration(context);
-			StatusPrinter.printInCaseOfErrorsOrWarnings(context);
-			if (isTrue("net.enilink.logger.captureSystemOut")) {
-				redirectStdoutToLogInfo();
-				redirectStdoutToLogError();
+			if (LoggerFactory.getILoggerFactory() instanceof LoggerContext) {
+				// SLF4J is bound to logback in the current environment
+				LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+				loadConfiguration(context);
+				StatusPrinter.printInCaseOfErrorsOrWarnings(context);
+				if (isTrue("net.enilink.logger.captureSystemOut")) {
+					redirectStdoutToLogInfo();
+					redirectStdoutToLogError();
+				}
 			}
 			initialized = true;
 		}
@@ -126,8 +127,7 @@ public class LoggingPlugin extends Plugin {
 
 	private static InputStream getLoggingFileFromWorkspace() {
 		if (Platform.isRunning()) {
-			String path = Platform.getInstanceLocation().getURL().getPath()
-					+ LOGBACK_CONFIG_FILE;
+			String path = Platform.getInstanceLocation().getURL().getPath() + LOGBACK_CONFIG_FILE;
 			try {
 				return new FileInputStream(path);
 			} catch (FileNotFoundException e) {
@@ -140,8 +140,7 @@ public class LoggingPlugin extends Plugin {
 
 	private static InputStream getLoggingFileFromInstallationPath() {
 		if (Platform.isRunning()) {
-			String path = Platform.getInstallLocation().getURL().getPath()
-					+ LOGBACK_CONFIG_FILE;
+			String path = Platform.getInstallLocation().getURL().getPath() + LOGBACK_CONFIG_FILE;
 			try {
 				return new FileInputStream(path);
 			} catch (FileNotFoundException e) {
