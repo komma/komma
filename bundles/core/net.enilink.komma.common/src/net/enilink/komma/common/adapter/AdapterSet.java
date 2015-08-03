@@ -10,25 +10,17 @@
  *******************************************************************************/
 package net.enilink.komma.common.adapter;
 
-import net.enilink.komma.common.util.ExtensibleHashSet;
+import java.util.AbstractSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
-public class AdapterSet extends ExtensibleHashSet<IAdapter> implements
-		IAdapterSet {
-	private static final long serialVersionUID = 1L;
-	private Object target;
+public class AdapterSet extends AbstractSet<IAdapter>implements IAdapterSet {
+	protected final Set<IAdapter> adapters = new HashSet<>();
+	protected final Object target;
 
 	public AdapterSet(Object target) {
 		this.target = target;
-	}
-
-	@Override
-	protected void addedValue(IAdapter value) {
-		value.addTarget(target);
-	}
-
-	@Override
-	protected void removedValue(IAdapter value) {
-		value.removeTarget(target);
 	}
 
 	public IAdapter getAdapter(Object type) {
@@ -38,5 +30,56 @@ public class AdapterSet extends ExtensibleHashSet<IAdapter> implements
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public boolean add(IAdapter e) {
+		if (adapters.add(e)) {
+			e.addTarget(target);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean remove(Object o) {
+		if (adapters.remove(o)) {
+			if (o instanceof IAdapter) {
+				((IAdapter) o).removeTarget(target);
+			}
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public Iterator<IAdapter> iterator() {
+		return new Iterator<IAdapter>() {
+			IAdapter current;
+			final Iterator<IAdapter> base = adapters.iterator();
+
+			@Override
+			public boolean hasNext() {
+				return base.hasNext();
+			}
+
+			@Override
+			public IAdapter next() {
+				return current = base.next();
+			}
+
+			@Override
+			public void remove() {
+				if (current != null) {
+					base.remove();
+					current.removeTarget(target);
+				}
+			}
+		};
+	}
+
+	@Override
+	public int size() {
+		return adapters.size();
 	}
 }

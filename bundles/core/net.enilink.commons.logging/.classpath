@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="lib/logback-access-1.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/logback-classic-1.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/logback-core-1.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.7.6.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="output" path="bin"/>

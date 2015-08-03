@@ -49,6 +49,15 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.MapMaker;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Provider;
+import com.google.inject.name.Named;
+
 import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.IExtendedIterator;
@@ -97,23 +106,12 @@ import net.enilink.komma.literals.LiteralConverter;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
 
-import org.apache.commons.collections.map.ReferenceIdentityMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Provider;
-import com.google.inject.name.Named;
-
 /**
  * Handles operations of {@link IEntityManager}.
  */
-public abstract class AbstractEntityManager implements IEntityManager,
-		IEntityManagerInternal {
+public abstract class AbstractEntityManager implements IEntityManager, IEntityManagerInternal {
 
-	protected static Logger log = LoggerFactory
-			.getLogger(AbstractEntityManager.class);
+	protected static Logger log = LoggerFactory.getLogger(AbstractEntityManager.class);
 
 	private static final URI RESULT_NODE = RESULTS.TYPE_RESULT;
 
@@ -135,9 +133,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	private RoleMapper<URI> mapper;
 
-	@SuppressWarnings("unchecked")
-	private Map<Object, IReference> merged = new ReferenceIdentityMap(
-			ReferenceIdentityMap.WEAK, ReferenceIdentityMap.HARD, true);
+	private Map<Object, IReference> merged = new MapMaker().weakKeys().makeMap();
 
 	private volatile ResourceManager resourceManager;
 
@@ -160,32 +156,24 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@Override
-	public void add(Iterable<? extends IStatement> statements,
-			boolean ignoreImports) {
-		dm.add(new ConvertingIterator<IStatement, IStatement>(statements
-				.iterator()) {
+	public void add(Iterable<? extends IStatement> statements, boolean ignoreImports) {
+		dm.add(new ConvertingIterator<IStatement, IStatement>(statements.iterator()) {
 			@Override
 			protected IStatement convert(IStatement stmt) {
-				if (!(stmt.getSubject() instanceof Behaviour || stmt
-						.getPredicate() instanceof Behaviour)
+				if (!(stmt.getSubject() instanceof Behaviour || stmt.getPredicate() instanceof Behaviour)
 						&& stmt.getObject() instanceof IValue) {
 					return stmt;
 				}
-				return new Statement(getReference(stmt.getSubject()),
-						getReference(stmt.getPredicate()), toValue(stmt
-								.getObject()), stmt.getContext(), stmt
-								.isInferred());
+				return new Statement(getReference(stmt.getSubject()), getReference(stmt.getPredicate()),
+						toValue(stmt.getObject()), stmt.getContext(), stmt.isInferred());
 			}
 		}, ignoreImports ? modifyContexts : readContexts, modifyContexts);
 	}
 
-	private <C extends Collection<URI>> C addConcept(IReference resource,
-			Class<?> role, C set) {
+	private <C extends Collection<URI>> C addConcept(IReference resource, Class<?> role, C set) {
 		URI type = mapper.findType(role);
 		if (type == null) {
-			throw new KommaException(
-					"Concept is anonymous or is not registered: "
-							+ role.getSimpleName());
+			throw new KommaException("Concept is anonymous or is not registered: " + role.getSimpleName());
 		}
 		getTypeManager().addType(resource, type);
 		set.add(type);
@@ -205,16 +193,15 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				}
 			}
 		} else {
-			throw new KommaException("Concept not registered: "
-					+ concept.getSimpleName());
+			throw new KommaException("Concept not registered: " + concept.getSimpleName());
 		}
 	}
 
 	private boolean assertConceptsRecorded(IEntity bean, Class<?>... concepts) {
 		for (Class<?> concept : concepts) {
-			assert !concept.isInterface()
+			assert!concept.isInterface()
 					|| concept.isAssignableFrom(bean.getClass()) : "Concept has not been recorded: "
-					+ concept.getSimpleName();
+							+ concept.getSimpleName();
 		}
 		return true;
 	}
@@ -300,15 +287,12 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@SuppressWarnings("unchecked")
-	public IEntity createBean(IReference resource, Collection<URI> entityTypes,
-			Collection<Class<?>> concepts, boolean restrictTypes,
-			boolean initialize, IGraph graph) {
+	public IEntity createBean(IReference resource, Collection<URI> entityTypes, Collection<Class<?>> concepts,
+			boolean restrictTypes, boolean initialize, IGraph graph) {
 		if (resource == null) {
-			throw new IllegalArgumentException(
-					"Resource argument must not be null.");
+			throw new IllegalArgumentException("Resource argument must not be null.");
 		}
-		entityTypes = entityTypes != null ? new HashSet<URI>(entityTypes)
-				: new HashSet<URI>();
+		entityTypes = entityTypes != null ? new HashSet<URI>(entityTypes) : new HashSet<URI>();
 		if (!restrictTypes) {
 			boolean retrieveTypes = true;
 			if (graph != null) {
@@ -329,8 +313,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		}
 		if (concepts != null && !concepts.isEmpty()) {
 			for (Class<?> concept : concepts) {
-				if (IValue.class == concept || IReference.class == concept
-						|| IEntity.class == concept || Object.class == concept) {
+				if (IValue.class == concept || IReference.class == concept || IEntity.class == concept
+						|| Object.class == concept) {
 					continue;
 				}
 
@@ -343,8 +327,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			}
 		}
 
-		IEntity bean = createBeanForClass(resource,
-				classResolver.resolveComposite(entityTypes));
+		IEntity bean = createBeanForClass(resource, classResolver.resolveComposite(entityTypes));
 		if (initialize) {
 			if (bean instanceof Initializable) {
 				// bean knows how to initialize itself
@@ -385,8 +368,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T createNamed(net.enilink.komma.core.URI uri, Class<T> concept,
-			Class<?>... concepts) {
+	public <T> T createNamed(net.enilink.komma.core.URI uri, Class<T> concept, Class<?>... concepts) {
 		IReference resource = getResourceManager().createResource(uri);
 		Set<URI> types = new HashSet<URI>();
 		boolean isActive = false;
@@ -412,15 +394,13 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			throw new KommaException(e);
 		}
 		Class<?>[] allConcepts = combine(concept, concepts);
-		IEntity bean = createBean(resource, types, Arrays.asList(allConcepts),
-				true, false, null);
+		IEntity bean = createBean(resource, types, Arrays.asList(allConcepts), true, false, null);
 		assert assertConceptsRecorded(bean, allConcepts);
 		return (T) bean;
 	}
 
 	@Override
-	public IEntity createNamed(net.enilink.komma.core.URI uri,
-			IReference... concepts) {
+	public IEntity createNamed(net.enilink.komma.core.URI uri, IReference... concepts) {
 		IReference resource = getResourceManager().createResource(uri);
 		try {
 			boolean active = dm.getTransaction().isActive();
@@ -428,8 +408,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 				dm.getTransaction().begin();
 			}
 			for (IReference concept : concepts) {
-				dm.add(new Statement(resource, RDF.PROPERTY_TYPE, concept),
-						modifyContexts);
+				dm.add(new Statement(resource, RDF.PROPERTY_TYPE, concept), modifyContexts);
 			}
 			if (!active) {
 				dm.getTransaction().commit();
@@ -466,12 +445,10 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		return createQuery(query, null, includeInferred);
 	}
 
-	public IQuery<?> createQuery(String query, String baseURI,
-			boolean includeInferred) {
+	public IQuery<?> createQuery(String query, String baseURI, boolean includeInferred) {
 		log.debug("Query: {}", query);
 
-		IQuery<?> result = new Query<Object>(this, dm.createQuery(query,
-				baseURI, includeInferred, readContexts));
+		IQuery<?> result = new Query<Object>(this, dm.createQuery(query, baseURI, includeInferred, readContexts));
 		injector.injectMembers(result);
 		if (properties != null) {
 			// set properties on the query object
@@ -495,12 +472,10 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		return dm.blankNode(id);
 	}
 
-	public IUpdate createUpdate(String update, String baseURI,
-			boolean includeInferred) {
+	public IUpdate createUpdate(String update, String baseURI, boolean includeInferred) {
 		log.debug("Update: {}", update);
 
-		IDataManagerUpdate dmUpdate = dm.createUpdate(update, baseURI,
-				includeInferred, readContexts, modifyContexts);
+		IDataManagerUpdate dmUpdate = dm.createUpdate(update, baseURI, includeInferred, readContexts, modifyContexts);
 		injector.injectMembers(dmUpdate);
 		IUpdate result = new Update(this, dmUpdate);
 		injector.injectMembers(result);
@@ -509,8 +484,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> T assignTypes(Object entity, Class<T> concept,
-			Class<?>... concepts) {
+	public <T> T assignTypes(Object entity, Class<T> concept, Class<?>... concepts) {
 		IReference resource = getReference(entity);
 		Collection<URI> types = new ArrayList<URI>();
 
@@ -545,13 +519,12 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	protected <T> IExtendedIterator<T> filterResultNode(Set<T> values) {
-		return WrappedIterator.create(values.iterator()).filterDrop(
-				new Filter<T>() {
-					@Override
-					public boolean accept(T o) {
-						return RESULT_NODE.equals(o);
-					}
-				});
+		return WrappedIterator.create(values.iterator()).filterDrop(new Filter<T>() {
+			@Override
+			public boolean accept(T o) {
+				return RESULT_NODE.equals(o);
+			}
+		});
 	}
 
 	@Override
@@ -561,8 +534,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> T find(IReference reference, Class<T> concept,
-			Class<?>... concepts) {
+	public <T> T find(IReference reference, Class<T> concept, Class<?>... concepts) {
 		Class<?>[] allConcepts = Arrays.copyOf(concepts, concepts.length + 1);
 		allConcepts[allConcepts.length - 1] = concept;
 		return (T) find(reference, Arrays.asList(allConcepts));
@@ -577,27 +549,22 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		querySb.append("SELECT DISTINCT ?subj WHERE {");
 		appendFilter(concept, querySb);
 		querySb.append("}");
-		return createQuery(querySb.toString()).bindResultType(concept)
-				.evaluate();
+		return createQuery(querySb.toString()).bindResultType(concept).evaluate();
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> T findRestricted(IReference reference, Class<T> concept,
-			Class<?>... concepts) {
-		return (T) findRestricted(reference,
-				Arrays.asList(combine(concept, concepts)));
+	public <T> T findRestricted(IReference reference, Class<T> concept, Class<?>... concepts) {
+		return (T) findRestricted(reference, Arrays.asList(combine(concept, concepts)));
 	}
 
 	@Override
-	public IReference findRestricted(IReference reference,
-			Collection<Class<?>> concepts) {
+	public IReference findRestricted(IReference reference, Collection<Class<?>> concepts) {
 		// if type is restricted to IReference then simply return the
 		// corresponding reference value
 		if (concepts.size() == 1) {
 			Class<?> concept = concepts.iterator().next();
-			if ((IValue.class.equals(concept) || IReference.class
-					.equals(concept))) {
+			if ((IValue.class.equals(concept) || IReference.class.equals(concept))) {
 				return reference;
 			}
 		}
@@ -614,8 +581,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		return dm.getInferencing();
 	}
 
-	protected List<Object> getInstances(Iterator<?> values, Class<?> type,
-			IGraph graph) {
+	protected List<Object> getInstances(Iterator<?> values, Class<?> type, IGraph graph) {
 		List<Object> instances = new ArrayList<Object>();
 		while (values.hasNext()) {
 			instances.add(toInstance(values.next(), type, graph));
@@ -668,8 +634,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	public Map<String, Object> getProperties() {
-		return properties == null ? Collections.<String, Object> emptyMap()
-				: Collections.unmodifiableMap(properties);
+		return properties == null ? Collections.<String, Object> emptyMap() : Collections.unmodifiableMap(properties);
 	}
 
 	protected IReference getReference(Object bean) {
@@ -713,10 +678,8 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@Override
-	public boolean hasMatch(IReference subject, IReference predicate,
-			Object object) {
-		return dm.hasMatch(subject, predicate, toValue(object), true,
-				readContexts);
+	public boolean hasMatch(IReference subject, IReference predicate, Object object) {
+		return dm.hasMatch(subject, predicate, toValue(object), true, readContexts);
 	}
 
 	protected void initializeBean(IEntity bean, IGraph graph) {
@@ -725,19 +688,16 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		}
 		try {
 			if (bean instanceof PropertySetOwner) {
-				for (IReference predicate : new ArrayList<IReference>(graph
-						.filter(bean, null, null).predicates())) {
+				for (IReference predicate : new ArrayList<IReference>(graph.filter(bean, null, null).predicates())) {
 					if (graph.contains(bean, predicate, null)) {
 						PropertySet<Object> propertySet = ((PropertySetOwner) bean)
 								.getPropertySet(predicate.toString());
 						if (propertySet != null) {
 							Set<Object> objects = new LinkedHashSet<Object>(
-									graph.filter(bean, predicate, null)
-											.objects());
+									graph.filter(bean, predicate, null).objects());
 							graph.remove(bean, predicate, null);
-							propertySet.init(getInstances(
-									filterResultNode(objects),
-									propertySet.getElementType(), graph));
+							propertySet
+									.init(getInstances(filterResultNode(objects), propertySet.getElementType(), graph));
 						}
 					}
 				}
@@ -768,16 +728,14 @@ public abstract class AbstractEntityManager implements IEntityManager,
 						collection = new ArrayList<Object>();
 					} else if (Collection.class.isAssignableFrom(returnType)) {
 						collection = new ArrayList<Object>();
-					} else if (Boolean.class.equals(returnType)
-							|| Boolean.TYPE.equals(returnType)) {
+					} else if (Boolean.class.equals(returnType) || Boolean.TYPE.equals(returnType)) {
 						isBoolean = true;
 					}
 
 					if (collection != null || isBoolean) {
 						URI keyUri = URIs.createURI(cacheable.key());
 						if (graph.contains(bean, keyUri, null)) {
-							Set<Object> objects = new LinkedHashSet<Object>(
-									graph.filter(bean, keyUri, null).objects());
+							Set<Object> objects = new LinkedHashSet<Object>(graph.filter(bean, keyUri, null).objects());
 							graph.remove(bean, keyUri, null);
 
 							IExtendedIterator<Object> valuesIt = filterResultNode(objects);
@@ -790,13 +748,11 @@ public abstract class AbstractEntityManager implements IEntityManager,
 								if (t instanceof ParameterizedType) {
 									ParameterizedType pt = (ParameterizedType) t;
 									Type[] args = pt.getActualTypeArguments();
-									if (args.length == 1
-											&& args[0] instanceof Class<?>) {
+									if (args.length == 1 && args[0] instanceof Class<?>) {
 										valueType = (Class<?>) args[0];
 									}
 								}
-								collection.addAll(getInstances(valuesIt,
-										valueType, graph));
+								collection.addAll(getInstances(valuesIt, valueType, graph));
 								if (isIterator) {
 									value = collection.iterator();
 								} else {
@@ -847,30 +803,23 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@Override
-	public void lock(Object entity, LockModeType lockMode,
-			Map<String, Object> properties) {
+	public void lock(Object entity, LockModeType lockMode, Map<String, Object> properties) {
 		lock(entity, lockMode);
 	}
 
 	@Override
-	public IExtendedIterator<IStatement> match(IReference subject,
-			IReference predicate, Object object) {
-		return dm
-				.match(subject, predicate, toValue(object), true, readContexts);
+	public IExtendedIterator<IStatement> match(IReference subject, IReference predicate, Object object) {
+		return dm.match(subject, predicate, toValue(object), true, readContexts);
 	}
 
 	@Override
-	public IExtendedIterator<IStatement> matchAsserted(IReference subject,
-			IReference predicate, IValue object) {
-		return dm.match(subject, predicate, toValue(object), false,
-				readContexts);
+	public IExtendedIterator<IStatement> matchAsserted(IReference subject, IReference predicate, IValue object) {
+		return dm.match(subject, predicate, toValue(object), false, readContexts);
 	}
 
 	@Override
-	public boolean hasMatchAsserted(IReference subject, IReference predicate,
-			Object object) {
-		return dm.hasMatch(subject, predicate, toValue(object), false,
-				readContexts);
+	public boolean hasMatchAsserted(IReference subject, IReference predicate, Object object) {
+		return dm.hasMatch(subject, predicate, toValue(object), false, readContexts);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -909,8 +858,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 						getTypeManager().addType(resource, type);
 					}
 				}
-				Object result = createBean(resource, types, null, false, true,
-						null);
+				Object result = createBean(resource, types, null, false, true, null);
 				if (result instanceof Mergeable) {
 					((Mergeable) result).merge(bean);
 				}
@@ -941,8 +889,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@Override
-	public void refresh(Object entity, LockModeType lockMode,
-			Map<String, Object> properties) {
+	public void refresh(Object entity, LockModeType lockMode, Map<String, Object> properties) {
 		refresh(entity);
 	}
 
@@ -953,20 +900,18 @@ public abstract class AbstractEntityManager implements IEntityManager,
 
 	@Override
 	public void remove(Iterable<? extends IStatementPattern> statements) {
-		dm.remove(new ConvertingIterator<IStatementPattern, IStatementPattern>(
-				statements.iterator()) {
+		dm.remove(new ConvertingIterator<IStatementPattern, IStatementPattern>(statements.iterator()) {
 			@Override
 			protected IStatementPattern convert(IStatementPattern stmt) {
-				if (!(stmt.getSubject() instanceof Behaviour || stmt
-						.getPredicate() instanceof Behaviour)
+				if (!(stmt.getSubject() instanceof Behaviour || stmt.getPredicate() instanceof Behaviour)
 						&& stmt.getObject() instanceof IValue) {
 					return stmt;
 				}
 				IReference s = getReference(stmt.getSubject());
 				IReference p = getReference(stmt.getPredicate());
 				IValue o = toValue(stmt.getObject());
-				return stmt instanceof IStatement ? new Statement(s, p, o, stmt
-						.getContext(), ((IStatement) stmt).isInferred())
+				return stmt instanceof IStatement
+						? new Statement(s, p, o, stmt.getContext(), ((IStatement) stmt).isInferred())
 						: new StatementPattern(s, p, o, stmt.getContext());
 			}
 		}, modifyContexts);
@@ -981,8 +926,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		}
 	}
 
-	private boolean canDelete(IReference deletedSubject, Object object,
-			boolean anonymousOnly) {
+	private boolean canDelete(IReference deletedSubject, Object object, boolean anonymousOnly) {
 		if (!(object instanceof IReference && (((IReference) object).getURI() == null || !anonymousOnly))) {
 			return false;
 		}
@@ -990,8 +934,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		// if (! em.hasMatchAsserted(null, null, node))
 		// { ... }
 		// iff no transaction is running
-		IExtendedIterator<IStatement> refs = matchAsserted(null, null,
-				(IReference) object);
+		IExtendedIterator<IStatement> refs = matchAsserted(null, null, (IReference) object);
 		boolean canDelete = true;
 		for (IStatement refStmt : refs) {
 			if (!refStmt.getSubject().equals(deletedSubject)) {
@@ -1075,11 +1018,9 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		IReference after = getResourceManager().createResource(uri);
 		getResourceManager().renameResource(before, after);
 		T newBean = (T) createBean(after, null, null, false, true, null);
-		Object renamed = bean instanceof Behaviour<?> ? ((Behaviour<?>) bean)
-				.getBehaviourDelegate() : bean;
+		Object renamed = bean instanceof Behaviour<?> ? ((Behaviour<?>) bean).getBehaviourDelegate() : bean;
 		if (renamed instanceof IEntityManagerAware) {
-			((IEntityManagerAware) renamed)
-					.initReference(((IReferenceable) newBean).getReference());
+			((IEntityManagerAware) renamed).initReference(((IReferenceable) newBean).getReference());
 		}
 		return newBean;
 	}
@@ -1109,18 +1050,14 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@Inject(optional = true)
-	protected void setContexts(
-			@Named("modifyContexts") Set<URI> modifyContexts,
+	protected void setContexts(@Named("modifyContexts") Set<URI> modifyContexts,
 			@Named("readContexts") Set<URI> readContexts) {
-		this.modifyContexts = modifyContexts.toArray(new URI[modifyContexts
-				.size()]);
+		this.modifyContexts = modifyContexts.toArray(new URI[modifyContexts.size()]);
 
-		LinkedHashSet<URI> readAndModifyContexts = new LinkedHashSet<URI>(
-				readContexts);
+		LinkedHashSet<URI> readAndModifyContexts = new LinkedHashSet<URI>(readContexts);
 		readAndModifyContexts.retainAll(modifyContexts);
 		readAndModifyContexts.addAll(readContexts);
-		this.readContexts = readAndModifyContexts
-				.toArray(new URI[readAndModifyContexts.size()]);
+		this.readContexts = readAndModifyContexts.toArray(new URI[readAndModifyContexts.size()]);
 	}
 
 	/**
@@ -1131,8 +1068,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	 *            The current child entity manager factory.
 	 */
 	@Inject(optional = true)
-	protected void setCurrentFactory(
-			@Named("currentFactory") IEntityManagerFactory factory) {
+	protected void setCurrentFactory(@Named("currentFactory") IEntityManagerFactory factory) {
 		this.factory = factory;
 	}
 
@@ -1155,8 +1091,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 	}
 
 	@Inject(optional = true)
-	protected void setProperties(
-			@Named("net.enilink.komma.properties") Map<String, Object> properties) {
+	protected void setProperties(@Named("net.enilink.komma.properties") Map<String, Object> properties) {
 		ensureProperties().putAll(properties);
 	}
 
@@ -1192,11 +1127,9 @@ public abstract class AbstractEntityManager implements IEntityManager,
 					types = Collections.singleton(typeUri);
 				}
 			}
-			IEntity bean = createBean((IReference) value, types, null, false,
-					true, graph);
+			IEntity bean = createBean((IReference) value, types, null, false, true, graph);
 			if (log.isTraceEnabled()) {
-				if (!createQuery("ASK {?s ?p ?o}").setParameter("s",
-						(IReference) value).getBooleanResult()) {
+				if (!createQuery("ASK {?s ?p ?o}").setParameter("s", (IReference) value).getBooleanResult()) {
 					log.trace("Warning: Unknown entity: " + value);
 				}
 			}
@@ -1206,8 +1139,7 @@ public abstract class AbstractEntityManager implements IEntityManager,
 		ILiteral literal = (ILiteral) value;
 		Object instance;
 		if (type != null && IValue.class.isAssignableFrom(type)) {
-			instance = createLiteral(literal.getLabel(), literal.getDatatype(),
-					literal.getLanguage());
+			instance = createLiteral(literal.getLabel(), literal.getDatatype(), literal.getLanguage());
 		} else {
 			instance = literalConverter.createObject(literal);
 			if (type != null) {
@@ -1215,12 +1147,10 @@ public abstract class AbstractEntityManager implements IEntityManager,
 					if (type.isPrimitive()) {
 						instance = ConversionUtil.convertValue(type, 0, null);
 					}
-				} else if (!type.isAssignableFrom(ConversionUtil
-						.wrapperType(instance.getClass()))) {
+				} else if (!type.isAssignableFrom(ConversionUtil.wrapperType(instance.getClass()))) {
 					// convert instance if actual type is not compatible
 					// with valueType
-					instance = ConversionUtil.convertValue(type, instance,
-							instance);
+					instance = ConversionUtil.convertValue(type, instance, instance);
 				}
 			}
 		}
@@ -1255,7 +1185,6 @@ public abstract class AbstractEntityManager implements IEntityManager,
 			return toValue(merge(instance));
 		}
 
-		return literalConverter.createLiteral(String.valueOf(instance),
-				XMLSCHEMA.TYPE_STRING);
+		return literalConverter.createLiteral(String.valueOf(instance), XMLSCHEMA.TYPE_STRING);
 	}
 }

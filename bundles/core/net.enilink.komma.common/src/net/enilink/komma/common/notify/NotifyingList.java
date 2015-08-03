@@ -21,8 +21,7 @@ import net.enilink.komma.common.util.ExtensibleList;
 /**
  * An extensible implementation of a notifying list.
  */
-public class NotifyingList<E> extends ExtensibleList<E> implements
-		INotifyingList<E> {
+public class NotifyingList<E> extends ExtensibleList<E>implements INotifyingList<E> {
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -127,8 +126,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 	 *            the chain of accumulating notifications.
 	 * @return the <code>notifications</code>.
 	 */
-	protected INotificationChain shadowAdd(E object,
-			INotificationChain notifications) {
+	protected INotificationChain shadowAdd(E object, INotificationChain notifications) {
 		return notifications;
 	}
 
@@ -142,8 +140,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 	 *            the chain of accumulating notifications.
 	 * @return the <code>notifications</code>.
 	 */
-	protected INotificationChain shadowRemove(E object,
-			INotificationChain notifications) {
+	protected INotificationChain shadowRemove(E object, INotificationChain notifications) {
 		return notifications;
 	}
 
@@ -159,8 +156,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 	 *            the chain of accumulating notifications.
 	 * @return the <code>notifications</code>.
 	 */
-	protected INotificationChain shadowSet(E oldObject, E newObject,
-			INotificationChain notifications) {
+	protected INotificationChain shadowSet(E oldObject, E newObject, INotificationChain notifications) {
 		return notifications;
 	}
 
@@ -174,8 +170,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 	 *            the chain of accumulating notifications.
 	 * @return the <code>notifications</code>.
 	 */
-	protected INotificationChain inverseAdd(E object,
-			INotificationChain notifications) {
+	protected INotificationChain inverseAdd(E object, INotificationChain notifications) {
 		return notifications;
 	}
 
@@ -189,8 +184,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 	 *            the chain of accumulating notifications.
 	 * @return the <code>notifications</code>.
 	 */
-	protected INotificationChain inverseRemove(E object,
-			INotificationChain notifications) {
+	protected INotificationChain inverseRemove(E object, INotificationChain notifications) {
 		return notifications;
 	}
 
@@ -208,10 +202,9 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 	 *            the position at which the change occurred.
 	 * @return a new notification.
 	 */
-	protected PropertyNotification createNotification(int eventType,
-			Object oldObject, Object newObject, int index, boolean wasSet) {
-		return new PropertyNotification(eventType, oldObject, newObject, index,
-				wasSet) {
+	protected PropertyNotification createNotification(int eventType, Object oldObject, Object newObject, int index,
+			boolean wasSet) {
+		return new PropertyNotification(eventType, oldObject, newObject, index, wasSet) {
 			@Override
 			public Object getSubject() {
 				return NotifyingList.this.getNotifier();
@@ -231,8 +224,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 	 */
 	@SuppressWarnings("unchecked")
 	protected INotificationChain createNotificationChain(int capacity) {
-		return capacity < 100 ? null : new NotificationChain(
-				(INotificationBroadcaster) getNotifier(), capacity);
+		return capacity < 100 ? null : new NotificationChain((INotificationBroadcaster) getNotifier(), capacity);
 	}
 
 	/**
@@ -243,8 +235,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 	 */
 	@SuppressWarnings("unchecked")
 	protected void dispatchNotification(IPropertyNotification notification) {
-		((INotificationBroadcaster) getNotifier()).fireNotifications(Arrays
-				.asList(notification));
+		((INotificationBroadcaster) getNotifier()).fireNotifications(Arrays.asList(notification));
 	}
 
 	/**
@@ -265,8 +256,8 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 			int index = size;
 			boolean oldIsSet = isSet();
 			doAddUnique(object);
-			PropertyNotification notification = createNotification(
-					IPropertyNotification.ADD, null, object, index, oldIsSet);
+			PropertyNotification notification = createNotification(IPropertyNotification.ADD, null, object, index,
+					oldIsSet);
 			if (hasInverse()) {
 				INotificationChain notifications = inverseAdd(object, null);
 				if (hasShadow()) {
@@ -321,8 +312,8 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 		if (isNotificationRequired()) {
 			boolean oldIsSet = isSet();
 			doAddUnique(index, object);
-			PropertyNotification notification = createNotification(
-					IPropertyNotification.ADD, null, object, index, oldIsSet);
+			PropertyNotification notification = createNotification(IPropertyNotification.ADD, null, object, index,
+					oldIsSet);
 			if (hasInverse()) {
 				INotificationChain notifications = inverseAdd(object, null);
 				if (hasShadow()) {
@@ -409,11 +400,10 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 			if (isNotificationRequired()) {
 				boolean oldIsSet = isSet();
 				doAddAllUnique(index, collection);
-				PropertyNotification notification = collectionSize == 1 ? createNotification(
-						IPropertyNotification.ADD, null, collection.iterator()
-								.next(), index, oldIsSet)
-						: createNotification(IPropertyNotification.ADD_MANY,
-								null, collection, index, oldIsSet);
+				PropertyNotification notification = collectionSize == 1
+						? createNotification(IPropertyNotification.ADD, null, collection.iterator().next(), index,
+								oldIsSet)
+						: createNotification(IPropertyNotification.ADD_MANY, null, collection, index, oldIsSet);
 				if (hasInverse()) {
 					INotificationChain notifications = createNotificationChain(collectionSize);
 					int lastIndex = index + collectionSize;
@@ -462,8 +452,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 	 *            the collection of objects to be added.
 	 * @return whether any objects were added.
 	 */
-	protected boolean doAddAllUnique(int index,
-			Collection<? extends E> collection) {
+	protected boolean doAddAllUnique(int index, Collection<? extends E> collection) {
 		return super.addAllUnique(index, collection);
 	}
 
@@ -541,22 +530,18 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 				doAddAllUnique(index, objects, start, end);
 				PropertyNotification notification;
 				if (collectionSize == 1) {
-					notification = createNotification(
-							IPropertyNotification.ADD, null, objects[0], index,
-							oldIsSet);
+					notification = createNotification(IPropertyNotification.ADD, null, objects[0], index, oldIsSet);
 				} else {
 					if (start != 0 || end != objects.length) {
 						Object[] actualObjects = new Object[collectionSize];
 						for (int i = 0, j = start; j < end; ++i, ++j) {
 							actualObjects[i] = objects[j];
 						}
-						notification = createNotification(
-								IPropertyNotification.ADD_MANY, null, Arrays
-										.asList(actualObjects), index, oldIsSet);
+						notification = createNotification(IPropertyNotification.ADD_MANY, null,
+								Arrays.asList(actualObjects), index, oldIsSet);
 					} else {
-						notification = createNotification(
-								IPropertyNotification.ADD_MANY, null, Arrays
-										.asList(objects), index, oldIsSet);
+						notification = createNotification(IPropertyNotification.ADD_MANY, null, Arrays.asList(objects),
+								index, oldIsSet);
 					}
 				}
 				if (hasInverse()) {
@@ -611,8 +596,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 	 *            the index past the last object to be added.
 	 * @return whether any objects were added.
 	 */
-	protected boolean doAddAllUnique(int index, Object[] objects, int start,
-			int end) {
+	protected boolean doAddAllUnique(int index, Object[] objects, int start, int end) {
 		return super.addAllUnique(index, objects, start, end);
 	}
 
@@ -629,15 +613,13 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 	 * @see #hasInverse
 	 * @see #inverseAdd
 	 */
-	@SuppressWarnings("unchecked")
-	public INotificationChain basicAdd(E object,
-			INotificationChain notifications) {
+	public INotificationChain basicAdd(E object, INotificationChain notifications) {
 		if (isNotificationRequired()) {
 			int index = size;
 			boolean oldIsSet = isSet();
 			doAddUnique(index, object);
-			PropertyNotification notification = createNotification(
-					IPropertyNotification.ADD, null, object, index, oldIsSet);
+			PropertyNotification notification = createNotification(IPropertyNotification.ADD, null, object, index,
+					oldIsSet);
 			if (notifications == null) {
 				notifications = notification;
 			} else {
@@ -673,9 +655,8 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 				notifications = shadowRemove(basicGet(index), null);
 			}
 			E oldObject;
-			PropertyNotification notification = createNotification(
-					IPropertyNotification.REMOVE, oldObject = doRemove(index),
-					null, index, oldIsSet);
+			PropertyNotification notification = createNotification(IPropertyNotification.REMOVE,
+					oldObject = doRemove(index), null, index, oldIsSet);
 			if (hasInverse() && oldObject != null) {
 				notifications = inverseRemove(oldObject, notifications);
 				if (notifications == null) {
@@ -696,8 +677,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 		} else {
 			E oldObject = doRemove(index);
 			if (hasInverse() && oldObject != null) {
-				INotificationChain notifications = inverseRemove(oldObject,
-						null);
+				INotificationChain notifications = inverseRemove(oldObject, null);
 				if (notifications != null)
 					notifications.dispatch();
 			}
@@ -746,8 +726,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 
 				// Copy to a list and allocate positions.
 				//
-				ExtensibleList<Object> list = new ExtensibleList<Object>(
-						collection);
+				ExtensibleList<Object> list = new ExtensibleList<Object>(collection);
 				Object[] objects = list.data();
 				positions = new int[listSize];
 				int count = 0;
@@ -779,8 +758,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 						}
 					}
 				} else {
-					ExtensibleList<Object> resultList = new ExtensibleList<Object>(
-							listSize);
+					ExtensibleList<Object> resultList = new ExtensibleList<Object>(listSize);
 
 					// Count up the objects that will be removed.
 					// The objects are exchanged to produce this list's order
@@ -795,8 +773,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 									if (positions.length <= count) {
 										int[] oldPositions = positions;
 										positions = new int[2 * positions.length];
-										System.arraycopy(oldPositions, 0,
-												positions, 0, count);
+										System.arraycopy(oldPositions, 0, positions, 0, count);
 									}
 									positions[count++] = i;
 									resultList.add(objects[j]);
@@ -870,11 +847,11 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 		if (result) {
 			if (positions != null) {
 				int collectionSize = collection.size();
-				PropertyNotification notification = (collectionSize == 1 ? createNotification(
-						IPropertyNotification.REMOVE, collection.iterator()
-								.next(), null, positions[0], oldIsSet)
-						: createNotification(IPropertyNotification.REMOVE_MANY,
-								collection, positions, positions[0], oldIsSet));
+				PropertyNotification notification = (collectionSize == 1
+						? createNotification(IPropertyNotification.REMOVE, collection.iterator().next(), null,
+								positions[0], oldIsSet)
+						: createNotification(IPropertyNotification.REMOVE_MANY, collection, positions, positions[0],
+								oldIsSet));
 
 				INotificationChain notifications = createNotificationChain(collectionSize);
 				if (hasInverse()) {
@@ -898,8 +875,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 					}
 				}
 			} else if (hasInverse()) {
-				INotificationChain notifications = createNotificationChain(collection
-						.size());
+				INotificationChain notifications = createNotificationChain(collection.size());
 				for (Iterator<?> i = collection.iterator(); i.hasNext();) {
 					@SuppressWarnings("unchecked")
 					E object = (E) i.next();
@@ -953,16 +929,14 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 	 * @see #hasInverse
 	 * @see #inverseRemove
 	 */
-	public INotificationChain basicRemove(Object object,
-			INotificationChain notifications) {
+	public INotificationChain basicRemove(Object object, INotificationChain notifications) {
 		int index = indexOf(object);
 		if (index != -1) {
 			if (isNotificationRequired()) {
 				boolean oldIsSet = isSet();
 				Object oldObject = doRemove(index);
-				PropertyNotification notification = createNotification(
-						IPropertyNotification.REMOVE, oldObject, null, index,
-						oldIsSet);
+				PropertyNotification notification = createNotification(IPropertyNotification.REMOVE, oldObject, null,
+						index, oldIsSet);
 				if (notifications == null) {
 					notifications = notification;
 				} else {
@@ -1003,11 +977,9 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 				}
 
 				doClear();
-				PropertyNotification notification = (collectionSize == 1 ? createNotification(
-						IPropertyNotification.REMOVE, collection.get(0), null,
-						0, oldIsSet)
-						: createNotification(IPropertyNotification.REMOVE_MANY,
-								collection, null,
+				PropertyNotification notification = (collectionSize == 1
+						? createNotification(IPropertyNotification.REMOVE, collection.get(0), null, 0, oldIsSet)
+						: createNotification(IPropertyNotification.REMOVE_MANY, collection, null,
 								IPropertyNotification.NO_INDEX, oldIsSet));
 
 				if (hasInverse()) {
@@ -1030,9 +1002,7 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 				}
 			} else {
 				doClear();
-				dispatchNotification(createNotification(
-						IPropertyNotification.REMOVE_MANY,
-						Collections.EMPTY_LIST, null,
+				dispatchNotification(createNotification(IPropertyNotification.REMOVE_MANY, Collections.EMPTY_LIST, null,
 						IPropertyNotification.NO_INDEX, oldIsSet));
 			}
 		} else if (hasInverse()) {
@@ -1088,9 +1058,8 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 			INotificationChain notifications = null;
 			boolean oldIsSet = isSet();
 			E oldObject;
-			PropertyNotification notification = createNotification(
-					IPropertyNotification.SET, oldObject = doSetUnique(index,
-							object), object, index, oldIsSet);
+			PropertyNotification notification = createNotification(IPropertyNotification.SET,
+					oldObject = doSetUnique(index, object), object, index, oldIsSet);
 			if (hasInverse() && !equalObjects(oldObject, object)) {
 				if (oldObject != null) {
 					notifications = inverseRemove(oldObject, notifications);
@@ -1168,13 +1137,11 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 	 * @see #inverseAdd
 	 * @see #inverseRemove
 	 */
-	public INotificationChain basicSet(int index, E object,
-			INotificationChain notifications) {
+	public INotificationChain basicSet(int index, E object, INotificationChain notifications) {
 		if (isNotificationRequired()) {
 			boolean oldIsSet = isSet();
-			PropertyNotification notification = createNotification(
-					IPropertyNotification.SET, doSetUnique(index, object),
-					object, index, oldIsSet);
+			PropertyNotification notification = createNotification(IPropertyNotification.SET,
+					doSetUnique(index, object), object, index, oldIsSet);
 			if (notifications == null) {
 				notifications = notification;
 			} else {
@@ -1206,8 +1173,8 @@ public class NotifyingList<E> extends ExtensibleList<E> implements
 		if (isNotificationRequired()) {
 			boolean oldIsSet = isSet();
 			E object = doMove(targetIndex, sourceIndex);
-			dispatchNotification(createNotification(IPropertyNotification.MOVE,
-					sourceIndex, object, targetIndex, oldIsSet));
+			dispatchNotification(
+					createNotification(IPropertyNotification.MOVE, sourceIndex, object, targetIndex, oldIsSet));
 			return object;
 		} else {
 			return doMove(targetIndex, sourceIndex);

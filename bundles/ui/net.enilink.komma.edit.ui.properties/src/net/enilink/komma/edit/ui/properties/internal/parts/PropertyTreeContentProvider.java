@@ -13,30 +13,30 @@ package net.enilink.komma.edit.ui.properties.internal.parts;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.map.ReferenceMap;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
+import com.google.common.collect.MapMaker;
+
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.komma.edit.ui.provider.reflective.ModelContentProvider;
-import net.enilink.komma.em.concepts.IProperty;
-import net.enilink.komma.em.concepts.IResource;
-import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
+import net.enilink.komma.edit.ui.provider.reflective.ModelContentProvider;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
+import net.enilink.komma.em.util.ISparqlConstants;
 
-public class PropertyTreeContentProvider extends ModelContentProvider implements
-		ITreeContentProvider {
+public class PropertyTreeContentProvider extends ModelContentProvider implements ITreeContentProvider {
 	private PropertyNode.Options options = new PropertyNode.Options();
+
 	{
 		options.includeInferred = true;
 	}
@@ -64,10 +64,8 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + (inverse ? 1231 : 1237);
-			result = prime * result
-					+ ((predicate == null) ? 0 : predicate.hashCode());
-			result = prime * result
-					+ ((resource == null) ? 0 : resource.hashCode());
+			result = prime * result + ((predicate == null) ? 0 : predicate.hashCode());
+			result = prime * result + ((resource == null) ? 0 : resource.hashCode());
 			return result;
 		}
 
@@ -104,10 +102,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 	/**
 	 * Maps (subject, predicate) pairs to their corresponding property nodes
 	 */
-	@SuppressWarnings("unchecked")
-	protected Map<Key, PropertyNode> resourcePredicateToNode = Collections
-			.synchronizedMap(new ReferenceMap(ReferenceMap.HARD,
-					ReferenceMap.WEAK, true));
+	protected Map<Key, PropertyNode> resourcePredicateToNode = new MapMaker().weakValues().makeMap();
 
 	/**
 	 * Handle additions or removals of statements by refreshing the
@@ -120,13 +115,10 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 	 * @return <code>true</code> if other pending notifications should be
 	 *         processed, else <code>false</code>
 	 */
-	protected boolean addedOrRemovedStatement(IStatement stmt,
-			Collection<Runnable> runnables, boolean added) {
-		PropertyNode existing = resourcePredicateToNode.get(new Key(stmt
-				.getSubject(), stmt.getPredicate(), false));
+	protected boolean addedOrRemovedStatement(IStatement stmt, Collection<Runnable> runnables, boolean added) {
+		PropertyNode existing = resourcePredicateToNode.get(new Key(stmt.getSubject(), stmt.getPredicate(), false));
 		if (existing == null && stmt.getObject() instanceof IReference) {
-			resourcePredicateToNode.get(new Key(stmt.getSubject(), stmt
-					.getPredicate(), true));
+			resourcePredicateToNode.get(new Key(stmt.getSubject(), stmt.getPredicate(), true));
 		}
 		if (existing != null) {
 			if (!added) {
@@ -143,8 +135,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 	}
 
 	@Override
-	protected boolean addedStatement(IStatement stmt,
-			Collection<Runnable> runnables) {
+	protected boolean addedStatement(IStatement stmt, Collection<Runnable> runnables) {
 		return addedOrRemovedStatement(stmt, runnables, true);
 	}
 
@@ -154,8 +145,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 			return ((PropertyNode) parent).getChildren().toArray();
 		}
 
-		if (parent instanceof StatementNode
-				&& ((StatementNode) parent).getValue() instanceof IResource) {
+		if (parent instanceof StatementNode && ((StatementNode) parent).getValue() instanceof IResource) {
 			return getElements(((StatementNode) parent).getValue());
 		}
 
@@ -165,14 +155,12 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 	public Object[] getElements(Object inputElement) {
 		if (inputElement instanceof IResource) {
 			String SELECT_PROPERTIES = ISparqlConstants.PREFIX //
-					+ "SELECT DISTINCT ?property "
-					+ (includeInverse ? "?invProperty " : "") //
+					+ "SELECT DISTINCT ?property " + (includeInverse ? "?invProperty " : "") //
 					+ "WHERE { " //
 					+ "{ ?resource ?property ?object }" //
 					+ (includeInverse ? " UNION { ?subject ?invProperty ?resource FILTER (?subject != ?resource) }"
 							: "")//
-					+ "} ORDER BY ?property "
-					+ (includeInverse ? "?invProperty" : "");
+					+ "} ORDER BY ?property " + (includeInverse ? "?invProperty" : "");
 
 			IQuery<?> query = ((IEntity) inputElement).getEntityManager()
 					.createQuery(SELECT_PROPERTIES, options.includeInferred)
@@ -182,8 +170,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 			query.bindResultType("invProperty", IProperty.class);
 
 			@SuppressWarnings("rawtypes")
-			IExtendedIterator<IBindings> result = (IExtendedIterator<IBindings>) query
-					.evaluate(IBindings.class);
+			IExtendedIterator<IBindings> result = (IExtendedIterator<IBindings>) query.evaluate(IBindings.class);
 			Map<Key, PropertyNode> nodes = new LinkedHashMap<Key, PropertyNode>();
 			List<IProperty> invProperties = new ArrayList<IProperty>();
 			for (IBindings<?> bindings : result) {
@@ -192,8 +179,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 					createNode(nodes, (IResource) inputElement, property, false);
 				}
 				if (includeInverse) {
-					IProperty invProperty = (IProperty) bindings
-							.get("invProperty");
+					IProperty invProperty = (IProperty) bindings.get("invProperty");
 					if (invProperty != null) {
 						invProperties.add(invProperty);
 					}
@@ -207,10 +193,9 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 		return getChildren(inputElement);
 	}
 
-	protected PropertyNode createNode(Map<Key, PropertyNode> nodes,
-			IResource resource, IProperty property, boolean inverse) {
-		Key key = new Key(resource.getReference(), property.getReference(),
-				inverse);
+	protected PropertyNode createNode(Map<Key, PropertyNode> nodes, IResource resource, IProperty property,
+			boolean inverse) {
+		Key key = new Key(resource.getReference(), property.getReference(), inverse);
 		PropertyNode node = resourcePredicateToNode.get(key);
 		if (node == null) {
 			node = new PropertyNode(resource, property, inverse, options);
@@ -231,15 +216,13 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 
 	@Override
 	public boolean hasChildren(Object element) {
-		return element instanceof PropertyNode
-				&& !((PropertyNode) element).isIncomplete()
-				|| (element instanceof StatementNode && ((StatementNode) element)
-						.getStatement().getObject() instanceof IResource);
+		return element instanceof PropertyNode && !((PropertyNode) element).isIncomplete()
+				|| (element instanceof StatementNode
+						&& ((StatementNode) element).getStatement().getObject() instanceof IResource);
 	}
 
 	@Override
-	protected void internalInputChanged(Viewer viewer, Object oldInput,
-			Object newInput) {
+	protected void internalInputChanged(Viewer viewer, Object oldInput, Object newInput) {
 		if (input == null || !input.equals(newInput)) {
 			if (newInput instanceof IResource) {
 				// reuse existing property nodes to preserve expanded state
@@ -263,8 +246,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 	 */
 	private void mapPropertyNodes(IEntity oldInput, IResource newInput) {
 		List<PropertyNode> nodes2keep = new ArrayList<PropertyNode>();
-		for (Iterator<PropertyNode> it = resourcePredicateToNode.values()
-				.iterator(); it.hasNext();) {
+		for (Iterator<PropertyNode> it = resourcePredicateToNode.values().iterator(); it.hasNext();) {
 			PropertyNode node = it.next();
 			if (node.getResource().equals(oldInput)) {
 				node.setResource(newInput);
@@ -273,8 +255,7 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 		}
 		resourcePredicateToNode.clear();
 		for (PropertyNode node : nodes2keep) {
-			Key key = new Key(node.getResource().getReference(), node
-					.getProperty().getReference(), node.isInverse());
+			Key key = new Key(node.getResource().getReference(), node.getProperty().getReference(), node.isInverse());
 			resourcePredicateToNode.put(key, node);
 		}
 	}
@@ -284,16 +265,14 @@ public class PropertyTreeContentProvider extends ModelContentProvider implements
 	 * predicate) to <code>node</code> association.
 	 */
 	public void registerPropertyNode(PropertyNode node) {
-		Key key = new Key(node.getResource().getReference(), node.getProperty()
-				.getReference(), node.isInverse());
+		Key key = new Key(node.getResource().getReference(), node.getProperty().getReference(), node.isInverse());
 		if (!resourcePredicateToNode.containsKey(key)) {
 			resourcePredicateToNode.put(key, node);
 		}
 	}
 
 	@Override
-	protected boolean removedStatement(IStatement stmt,
-			Collection<Runnable> runnables) {
+	protected boolean removedStatement(IStatement stmt, Collection<Runnable> runnables) {
 		return addedOrRemovedStatement(stmt, runnables, false);
 	}
 
