@@ -4,5 +4,40 @@ This is the main repository for the KOMMA project.
 
 KOMMA (Knowledge Modeling and Management Architecture) is an adaptable framework for the management and editing of RDF, RDFS and OWL. 
 It provides Object-Triple-Mapping (comparable to JPA), an Editing framework as well as
-Eclipse RCP and RAP integration. In short: KOMMA is for RDF+OWL what the Eclipse Modeling Framework (EMF) is
-for ECore/MOF.
+Eclipse RCP and RAP integration. 
+
+*In short:* KOMMA is for RDF+OWL what the Eclipse Modeling Framework (EMF) is for ECore/MOF.
+
+* *Website:* http://komma.enilink.net
+* *Documentation:* http://komma.enilink.net/docs
+* *Eclipse Marketplace:* http://marketplace.eclipse.org/content/komma-rdf-eclipse
+* *Eclipse Update Site:* http://komma.enilink.net/updates/1.1.0
+
+== Get the sources
+
+[source,text]
+----
+git clone --recursive https://github.com/komma/komma-rdf
+----
+
+NOTE: The `--recursive` option is required to fetch the git submodules that are contained within the KOMMA repository.
+
+== Build KOMMA with Maven
+
+KOMMA can be build with Maven by leveraging https://eclipse.org/tycho/[Eclipse Tycho]. You can simply use `mvn package` to compile and package all modules or `mvn install` to install them within your local Maven repository.
+
+If you like to build an Eclipse update site (or rather a P2 repository) for KOMMA then use
+
+[source,text]
+----
+cd releng/komma-updatesite
+mvn package
+----
+
+to create it. Afterwards an archive file with the contents can be found within the `target-maven` subdirectory.
+The uncompressed P2 repository can be found at `features/net.enilink.komma.updatesite/target-maven/repository`.
+
+== Develop KOMMA with Eclipse
+For working with the sources we suggest you to download a recent version of 
+http://www.eclipse.org/downloads/[Eclipse]. You can import the KOMMA projects into your workspace by executing 
+__File > Import > Existing Projects into Workspace__.
