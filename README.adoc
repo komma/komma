@@ -17,7 +17,7 @@ Eclipse RCP and RAP integration.
 
 [source,text]
 ----
-git clone --recursive https://github.com/komma/komma-rdf
+git clone --recursive https://github.com/komma/komma
 ----
 
 NOTE: The `--recursive` option is required to fetch the git submodules that are contained within the KOMMA repository.
