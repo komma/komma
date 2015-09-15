@@ -200,6 +200,9 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		if (obj == null) {
 			return null;
 		}
+		if (obj instanceof ILiteral) {
+			return ((ILiteral) obj).getLabel();
+		}
 		return obj.toString();
 	}
 
@@ -896,6 +899,9 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 			Object obj = objectValue();
 			if (obj == null) {
 				return null;
+			}
+			if (obj instanceof ILiteral) {
+				return ((ILiteral) obj).getLabel();
 			}
 			return obj.toString();
 		}
