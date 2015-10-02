@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -21,12 +22,14 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
 
 import net.enilink.commons.util.extensions.RegistryFactoryHelper;
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.internal.model.Messages;
 import net.enilink.komma.internal.model.ModelModule;
 import net.enilink.komma.internal.model.extensions.ContentFactoriesRegistryReader;
@@ -43,7 +46,6 @@ import net.enilink.komma.model.base.URIMapRuleSet;
 import net.enilink.komma.model.validation.Diagnostician;
 import net.enilink.komma.model.validation.IValidator;
 import net.enilink.komma.model.validation.ValidatorRegistry;
-import net.enilink.komma.core.KommaModule;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -61,6 +63,7 @@ public class ModelPlugin extends AbstractKommaPlugin {
 	public static final String PLUGIN_ID = "net.enilink.komma.model";
 
 	private static final ModelPlugin INSTANCE = new ModelPlugin();
+
 	static {
 		if (!IS_ECLIPSE_RUNNING) {
 			readExtensions();
@@ -258,6 +261,43 @@ public class ModelPlugin extends AbstractKommaPlugin {
 				workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 			}
 			readExtensions();
+		}
+
+		/**
+		 * Stops this plugin.
+		 * <p>
+		 * Calls save() on the workspace to avoid it being closed in an
+		 * unsynchronized state when not running the Eclipse IDE.
+		 * <p>
+		 * If running the Eclipse IDE, this is redundant [1], because the IDE
+		 * application calls this in its postShutdown() hook, but it should not
+		 * cause harm, either, because
+		 * "The workspace is saved before any plug-ins start to shut down ..."
+		 * [2]
+		 * 
+		 * @see <a href=
+		 *      "https://wiki.eclipse.org/FAQ_How_and_when_do_I_save_the_workspace%3F">
+		 *      [1] Eclipse wiki: FAQ entry on WS save()</a>
+		 * @see <a href=
+		 *      "https://wiki.eclipse.org/FAQ_How_can_I_be_notified_when_the_workspace_is_being_saved%3F">
+		 *      [2] Eclipse wiki: FAQ entry on WS notifications</a>
+		 * 
+		 */
+		@Override
+		public void stop(BundleContext ctx) throws Exception {
+			if (IS_RESOURCES_BUNDLE_AVAILABLE) {
+				IStatus status;
+				try {
+					IWorkspace ws = workspaceRoot.getWorkspace();
+					status = ws.save(true, new NullProgressMonitor());
+				} catch (CoreException e) {
+					status = e.getStatus();
+				}
+				if (!status.isOK()) {
+					logErrorStatus("workspace could not be saved", status);
+				}
+			}
+			super.stop(ctx);
 		}
 	}
 
