@@ -1,5 +1,7 @@
 package net.enilink.komma.em;
 
+import org.osgi.framework.BundleContext;
+
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.common.util.IResourceLocator;
 
@@ -45,6 +47,12 @@ public class KommaEM extends AbstractKommaPlugin {
 		 */
 		public Implementation() {
 			plugin = this;
+		}
+
+		@Override
+		public void stop(BundleContext context) throws Exception {
+			CacheModule.stop();
+			super.stop(context);
 		}
 	}
 }

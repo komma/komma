@@ -224,4 +224,11 @@ public class CacheModule extends AbstractModule {
 				.addInternalChangeListener(refreshListener);
 		return entityCache;
 	}
+
+	public static void stop() {
+		if (cacheContainer != null) {
+			cacheContainer.stop();
+			cacheContainer = null;
+		}
+	}
 }
