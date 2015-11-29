@@ -11,7 +11,7 @@
 		<moduleSet>
 			<!-- includeSubModules>false</includeSubModules -->
 			<includes>
-				<include>net.enilink:*updatesite*</include>
+				<include>net.enilink.*:*updatesite*</include>
 			</includes>
 			<binaries>
 				<unpack>false</unpack>
