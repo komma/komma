@@ -8,11 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Activator: net.enilink.commons.ui.CommonsUi
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources;visibility:=reexport,
- net.enilink.commons.util,
- org.eclipse.ui;visibility:=reexport,
- org.eclipse.ui.forms;visibility:=reexport,
- org.eclipse.ui.ide;visibility:=reexport,
- org.eclipse.ui.views;visibility:=reexport
+ net.enilink.commons.util
 Export-Package: net.enilink.commons.ui,
  net.enilink.commons.ui.dialogs,
  net.enilink.commons.ui.editor,
@@ -21,3 +17,27 @@ Export-Package: net.enilink.commons.ui,
  net.enilink.commons.ui.progress
 Bundle-ClassPath: .
 Bundle-ActivationPolicy: lazy
+Import-Package: org.eclipse.core.commands, 
+ org.eclipse.jface,
+ org.eclipse.jface.action,
+ org.eclipse.jface.bindings.keys,
+ org.eclipse.jface.dialogs,
+ org.eclipse.jface.fieldassist,
+ org.eclipse.jface.operation,
+ org.eclipse.jface.resource,
+ org.eclipse.jface.util,
+ org.eclipse.jface.viewers,
+ org.eclipse.jface.window,
+ org.eclipse.swt,
+ org.eclipse.swt.custom,
+ org.eclipse.swt.events,
+ org.eclipse.swt.graphics,
+ org.eclipse.swt.layout,
+ org.eclipse.swt.widgets,
+ org.eclipse.ui,
+ org.eclipse.ui.dialogs,
+ org.eclipse.ui.forms,
+ org.eclipse.ui.forms.events,
+ org.eclipse.ui.forms.widgets,
+ org.eclipse.ui.part,
+ org.eclipse.ui.plugin
