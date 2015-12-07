@@ -31,10 +31,7 @@ else
   pushd .
 fi
 
-FILES=*
-BINARYDIR=binary/*
-PLUGINDIR=plugins/*
-FEATUREDIR=features/*
+FILES=(content.jar artifacts.jar plugins/* features/* binary/*)
 
 BINTRAY_PATH="$BINTRAY_OWNER/$BINTRAY_REPO/$BINTRAY_PCK_NAME/$BINTRAY_PCK_VERSION"
 BINTRAY_OPTS="bt_package=$BINTRAY_PCK_NAME;bt_version=$BINTRAY_PCK_VERSION;publish=0"
@@ -43,43 +40,13 @@ BINTRAY_OPTS="bt_package=$BINTRAY_PCK_NAME;bt_version=$BINTRAY_PCK_VERSION;publi
 curl -X POST -u ${BINTRAY_USER}:${BINTRAY_API_KEY} "${API}/packages/$BINTRAY_OWNER/$BINTRAY_REPO/$BINTRAY_PCK_NAME/versions" -d "{ \"name\": \"$BINTRAY_PCK_VERSION\" }" -H "Content-Type: application/json"
 
 # upload files
-for f in $FILES
+for f in ${FILES[@]}
 do
-if [ ! -d $f ]; then
-  if [[ "$f" == *content.jar ]] || [[ "$f" == *artifacts.jar ]] 
-  then
-    echo "Processing p2 metadata file: $f"
-    curl -X PUT -T $f -u ${BINTRAY_USER}:${BINTRAY_API_KEY} "${API}/content/$BINTRAY_PATH/$f;$BINTRAY_OPTS"
-  fi
+if [ -f $f ]; then
+  echo "Processing file: $f"
+  curl -X PUT -T $f -u ${BINTRAY_USER}:${BINTRAY_API_KEY} "${API}/content/$BINTRAY_PATH/$f;$BINTRAY_OPTS"
 fi
 done
-
-echo "Processing features dir $FEATUREDIR ..."	
-for f in $FEATUREDIR
-do
-  echo "Processing feature file: $f"
-  curl -X PUT -T $f -u ${BINTRAY_USER}:${BINTRAY_API_KEY} "${API}/content/$BINTRAY_PATH/$f;$BINTRAY_OPTS"
-done
-
-echo "Processing plugin dir $PLUGINDIR ..."
-
-for f in $PLUGINDIR
-do
-  # take action on each file. $f store current file name
-  echo "Processing plugin file: $f"
-  curl -X PUT -T $f -u ${BINTRAY_USER}:${BINTRAY_API_KEY} "${API}/content/$BINTRAY_PATH/$f;$BINTRAY_OPTS"
-done
-
-if [ -d $BINARYDIR ]
-then
-  echo "Processing binary dir $BINARYDIR ..."
-  for f in $BINARYDIR
-  do
-    # take action on each file. $f store current file name
-    echo "Processing binary file: $f"
-    curl -X PUT -T $f -u ${BINTRAY_USER}:${BINTRAY_API_KEY} "${API}/content/$BINTRAY_PATH/$f;$BINTRAY_OPTS"
-  done
-fi
 
 echo "Publishing the new version"
 curl -X POST -u ${BINTRAY_USER}:${BINTRAY_API_KEY} "${API}/content/$BINTRAY_OWNER/$BINTRAY_REPO/$BINTRAY_PCK_NAME/$BINTRAY_PCK_VERSION/publish" -d "{ \"discard\": \"false\" }" -H "Content-Type: application/json"
