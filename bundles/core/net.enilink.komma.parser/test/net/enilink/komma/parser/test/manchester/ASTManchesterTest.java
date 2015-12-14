@@ -5,21 +5,19 @@ import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.Set;
 
-import net.enilink.komma.parser.manchester.ManchesterActions;
-import net.enilink.komma.parser.manchester.ManchesterSyntaxParser;
-import net.enilink.komma.parser.test.GUnitBaseTestCase;
-
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ComparisonFailure;
 import org.junit.Test;
-import org.parboiled.Parboiled;
-import org.parboiled.buffers.DefaultInputBuffer;
-import org.parboiled.buffers.InputBuffer;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
+import com.github.fge.grappa.Grappa;
+import com.github.fge.grappa.run.ListeningParseRunner;
+import com.github.fge.grappa.run.ParsingResult;
 import com.google.common.base.Joiner;
+
+import net.enilink.komma.parser.manchester.ManchesterActions;
+import net.enilink.komma.parser.manchester.ManchesterSyntaxParser;
+import net.enilink.komma.parser.test.GUnitBaseTestCase;
 
 public class ASTManchesterTest extends GUnitBaseTestCase {
 
@@ -27,35 +25,31 @@ public class ASTManchesterTest extends GUnitBaseTestCase {
 
 	@BeforeClass
 	public static void before() {
-		parser = Parboiled.createParser(ManchesterSyntaxParser.class,
-				new ManchesterActions());
+		parser = Grappa.createParser(ManchesterSyntaxParser.class, new ManchesterActions());
 	}
 
 	@Test
 	public void ast() throws Exception {
-		BufferedReader in = new BufferedReader(new InputStreamReader(getClass()
-				.getResourceAsStream("Ontology_AST.gunit")));
+		BufferedReader in = new BufferedReader(
+				new InputStreamReader(getClass().getResourceAsStream("Ontology_AST.gunit")));
 
 		int failures = 0;
 		for (TextInfo textInfo : getTextInfos(in)) {
-			ParsingResult<Object> result = new ReportingParseRunner<Object>(
-					parser.OntologyDocument()).run(textInfo.text);
+			ParsingResult<Object> result = new ListeningParseRunner<Object>(parser.OntologyDocument())
+					.run(textInfo.text);
 
-			InputBuffer inputBuffer = new DefaultInputBuffer(
-					textInfo.text.toCharArray());
+			InputBuffer inputBuffer = new DefaultInputBuffer(textInfo.text.toCharArray());
 
-			boolean passed = result.hasErrors()
-					&& textInfo.result == Result.FAIL || !result.hasErrors()
-					&& textInfo.result == Result.OK;
+			boolean passed = !result.isSuccess() && textInfo.result == Result.FAIL
+					|| result.isSuccess() && textInfo.result == Result.OK;
 
-			if (result.hasErrors() && textInfo.result == Result.OK) {
+			if (result.isSuccess() && textInfo.result == Result.OK) {
 				System.out.println(Joiner.on("---\n").join(result.parseErrors));
 			}
 
 			if (textInfo.pathCheck.size() > 0) {
 				Set<String> keySet = textInfo.pathCheck.keySet();
-				for (Iterator<String> iterator = keySet.iterator(); iterator
-						.hasNext();) {
+				for (Iterator<String> iterator = keySet.iterator(); iterator.hasNext();) {
 					String pfad = iterator.next();
 					String expected = textInfo.pathCheck.get(pfad);
 

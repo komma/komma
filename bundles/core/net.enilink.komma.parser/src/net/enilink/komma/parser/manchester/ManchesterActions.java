@@ -1,6 +1,6 @@
 package net.enilink.komma.parser.manchester;
 
-import org.parboiled.BaseActions;
+import com.github.fge.grappa.parsers.BaseActions;
 
 public class ManchesterActions extends BaseActions<Object> implements
 		IManchesterActions {

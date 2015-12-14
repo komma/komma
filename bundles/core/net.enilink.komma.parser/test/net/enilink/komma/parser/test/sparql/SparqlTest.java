@@ -13,17 +13,16 @@ package net.enilink.komma.parser.test.sparql;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import net.enilink.komma.parser.sparql.SparqlParser;
-import net.enilink.komma.parser.test.GUnitBaseTestCase;
-
 import org.junit.Assert;
 import org.junit.Test;
-import org.parboiled.Parboiled;
-import org.parboiled.errors.ErrorUtils;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
+import com.github.fge.grappa.Grappa;
+import com.github.fge.grappa.run.ListeningParseRunner;
+import com.github.fge.grappa.run.ParsingResult;
 import com.github.parboiled1.grappa.stack.DefaultValueStack;
+
+import net.enilink.komma.parser.sparql.SparqlParser;
+import net.enilink.komma.parser.test.GUnitBaseTestCase;
 
 /**
  * Simple JUnit Test for the SPARQL Parser
@@ -31,25 +30,21 @@ import com.github.parboiled1.grappa.stack.DefaultValueStack;
  * @author Ken Wenzel
  */
 public class SparqlTest extends GUnitBaseTestCase {
-	SparqlParser parser = Parboiled.createParser(SparqlParser.class);
+	SparqlParser parser = Grappa.createParser(SparqlParser.class);
 
 	@Test
 	public void test() throws Exception {
 		int failures = 0;
-		BufferedReader in = new BufferedReader(new InputStreamReader(getClass()
-				.getResourceAsStream("Sparql.gunit")));
+		BufferedReader in = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("Sparql.gunit")));
 
 		for (TextInfo textInfo : getTextInfos(in)) {
-			ParsingResult<Object> result = new ReportingParseRunner<Object>(
-					parser.Query()).withValueStack(
-					new DefaultValueStack<Object>()).run(
-					(CharSequence) textInfo.text);
+			ParsingResult<Object> result = new ListeningParseRunner<Object>(parser.Query())
+					.run((CharSequence) textInfo.text);
 
-			boolean passed = result.hasErrors()
-					&& textInfo.result == Result.FAIL || !result.hasErrors()
-					&& textInfo.result == Result.OK;
+			boolean passed = !result.isSuccess() && textInfo.result == Result.FAIL
+					|| result.isSuccess() && textInfo.result == Result.OK;
 
-			if (result.hasErrors() && textInfo.result == Result.OK) {
+			if (!result.isSuccess() && textInfo.result == Result.OK) {
 				// System.out.println("Parse Tree:\n"
 				// + GraphUtils.printTree(result.parseTreeRoot,
 				// new ToStringFormatter<org.parboiled.Node<Node>>(

@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.github.fge.grappa.rules.Rule;
+import com.github.fge.grappa.support.Var;
+
 import net.enilink.komma.parser.BaseRdfParser;
 import net.enilink.komma.parser.sparql.tree.AbstractGraphNode;
 import net.enilink.komma.parser.sparql.tree.AskQuery;
@@ -54,9 +57,6 @@ import net.enilink.komma.parser.sparql.tree.expr.NumericExpr;
 import net.enilink.komma.parser.sparql.tree.expr.NumericOperator;
 import net.enilink.komma.parser.sparql.tree.expr.RelationalExpr;
 import net.enilink.komma.parser.sparql.tree.expr.RelationalOperator;
-
-import org.parboiled.Rule;
-import org.parboiled.support.Var;
 
 /**
  * SPARQL Parser

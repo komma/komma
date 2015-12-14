@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.github.fge.grappa.parsers.BaseParser;
+import com.github.fge.grappa.rules.Rule;
+
 import net.enilink.komma.parser.sparql.tree.BNode;
 import net.enilink.komma.parser.sparql.tree.BooleanLiteral;
 import net.enilink.komma.parser.sparql.tree.DoubleLiteral;
@@ -12,10 +15,6 @@ import net.enilink.komma.parser.sparql.tree.GraphNode;
 import net.enilink.komma.parser.sparql.tree.IntegerLiteral;
 import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.QName;
-
-import org.parboiled.BaseParser;
-import org.parboiled.Rule;
-import org.parboiled.annotations.SuppressNode;
 
 public abstract class BaseRdfParser extends BaseParser<Object> {
 	public static Object LIST_BEGIN = new Object();
@@ -95,7 +94,6 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 				push(new BNode((String) pop())));
 	}
 
-	@SuppressNode
 	public Rule WS() {
 		return zeroOrMore(firstOf(COMMENT(), WS_NO_COMMENT()));
 	}

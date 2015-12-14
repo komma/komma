@@ -5,7 +5,15 @@ Bundle-SymbolicName: net.enilink.komma.parser
 Bundle-Version: 1.2.0.qualifier
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Import-Package: com.google.common.base;version="17.0.0",
+Import-Package: com.github.fge.grappa;version="2.0.3",
+ com.github.fge.grappa.annotations;version="2.0.3",
+ com.github.fge.grappa.misc;version="2.0.3",
+ com.github.fge.grappa.parsers;version="2.0.3",
+ com.github.fge.grappa.rules;version="2.0.3",
+ com.github.fge.grappa.run;version="2.0.3",
+ com.github.fge.grappa.support;version="2.0.3",
+ com.github.parboiled1.grappa.stack,
+ com.google.common.base;version="17.0.0",
  com.google.common.collect;version="17.0.0",
  org.junit;version="4.0.0";resolution:=optional
 Export-Package: net.enilink.komma.parser,
@@ -21,5 +29,4 @@ DynamicImport-Package: org.parboiled.*
 Require-Bundle: net.enilink.vocab.rdfs,
  net.enilink.vocab.owl,
  net.enilink.commons.iterator,
- net.enilink.komma.core,
- org.parboiled
+ net.enilink.komma.core

@@ -3,6 +3,9 @@ package net.enilink.komma.parser.manchester;
 import java.util.Collection;
 import java.util.List;
 
+import com.github.fge.grappa.rules.Rule;
+import com.github.fge.grappa.support.Var;
+
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 import net.enilink.komma.parser.BaseRdfParser;
@@ -17,9 +20,6 @@ import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
-
-import org.parboiled.Rule;
-import org.parboiled.support.Var;
 
 /**
  * Parser for Manchester OWL Syntax

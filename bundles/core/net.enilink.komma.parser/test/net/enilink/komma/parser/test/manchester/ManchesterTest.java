@@ -8,13 +8,9 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.ComparisonFailure;
 import org.junit.Test;
-import org.parboiled.Parboiled;
-import org.parboiled.buffers.DefaultInputBuffer;
-import org.parboiled.buffers.InputBuffer;
-import org.parboiled.errors.ErrorUtils;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParseTreeUtils;
-import org.parboiled.support.ParsingResult;
+
+import com.github.fge.grappa.run.ListeningParseRunner;
+import com.github.fge.grappa.run.ParsingResult;
 
 import net.enilink.komma.parser.manchester.ManchesterActions;
 import net.enilink.komma.parser.manchester.ManchesterSyntaxParser;
@@ -85,17 +81,17 @@ public class ManchesterTest extends GUnitBaseTestCase {
 		for (TextInfo textInfo : getTextInfos(in)) {
 			System.out.println(textInfo.text);
 
-			ParsingResult<Object> result = new ReportingParseRunner<Object>(
+			ParsingResult<Object> result = new ListeningParseRunner<Object>(
 					parser.OntologyDocument()).run(textInfo.text);
 
 			InputBuffer inputBuffer = new DefaultInputBuffer(
 					textInfo.text.toCharArray());
 
-			boolean passed = result.hasErrors()
-					&& textInfo.result == Result.FAIL || !result.hasErrors()
+			boolean passed = !result.isSuccess()
+					&& textInfo.result == Result.FAIL || result.isSuccess()
 					&& textInfo.result == Result.OK;
 
-			if (result.hasErrors() && textInfo.result == Result.OK) {
+			if (!result.isSuccess() && textInfo.result == Result.OK) {
 				System.out.println(ErrorUtils.printParseErrors(result));
 			}
 

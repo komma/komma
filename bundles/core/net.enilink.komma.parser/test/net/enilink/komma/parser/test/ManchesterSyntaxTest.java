@@ -1,5 +1,12 @@
 package net.enilink.komma.parser.test;
 
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.github.fge.grappa.Grappa;
+import com.github.fge.grappa.run.ListeningParseRunner;
+import com.github.fge.grappa.run.ParsingResult;
+
 import net.enilink.komma.core.URI;
 import net.enilink.komma.parser.manchester.ManchesterSyntaxParser;
 import net.enilink.komma.parser.sparql.tree.BNode;
@@ -8,12 +15,6 @@ import net.enilink.komma.parser.sparql.tree.GenericLiteral;
 import net.enilink.komma.parser.sparql.tree.IntegerLiteral;
 import net.enilink.komma.parser.sparql.tree.QName;
 import net.enilink.vocab.owl.OWL;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.parboiled.Parboiled;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 public class ManchesterSyntaxTest extends Assert {
 
@@ -27,8 +28,7 @@ public class ManchesterSyntaxTest extends Assert {
 			@Override
 			public void validate(URI type, QName property, Object value) {
 				String label = ((GenericLiteral) value).getLabel();
-				String datatype = ((GenericLiteral) value).getDatatype()
-						.toString();
+				String datatype = ((GenericLiteral) value).getDatatype().toString();
 
 				assertEquals(OWL.PROPERTY_HASVALUE, type);
 				assertEquals("{}property", ((QName) property).toString());
@@ -65,10 +65,8 @@ public class ManchesterSyntaxTest extends Assert {
 	}
 
 	private void testRestriction(String input, final IValidator validator) {
-		final ManchesterSyntaxParser parser = Parboiled
-				.createParser(ManchesterSyntaxParser.class);
-		ParsingResult<Object> result = new ReportingParseRunner<Object>(
-				parser.Description()).run(input);
-		assertTrue(BNode.class.equals(result.resultValue.getClass()));
+		final ManchesterSyntaxParser parser = Grappa.createParser(ManchesterSyntaxParser.class);
+		ParsingResult<Object> result = new ListeningParseRunner<Object>(parser.Description()).run(input);
+		assertTrue(BNode.class.equals(result.getTopStackValue().getClass()));
 	}
 }

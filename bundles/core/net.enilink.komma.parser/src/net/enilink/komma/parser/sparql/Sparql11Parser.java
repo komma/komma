@@ -1,7 +1,7 @@
 package net.enilink.komma.parser.sparql;
 
-import org.parboiled.Rule;
-import org.parboiled.support.Var;
+import com.github.fge.grappa.rules.Rule;
+import com.github.fge.grappa.support.Var;
 
 import net.enilink.komma.parser.sparql.tree.Graph;
 import net.enilink.komma.parser.sparql.tree.GraphPattern;
