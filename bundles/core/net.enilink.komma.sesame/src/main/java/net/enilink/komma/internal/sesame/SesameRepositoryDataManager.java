@@ -299,15 +299,19 @@ public class SesameRepositoryDataManager implements IDataManager {
 			IReference... modifyContexts) {
 		readContexts = addNullContext(includeInferred, readContexts);
 		if (changeSupport.isEnabled(this)) {
-			return new SesameUpdate(this, update, baseURI, includeInferred,
-					readContexts, modifyContexts);
+			SesameUpdate result = new SesameUpdate(this, update, baseURI,
+					includeInferred, readContexts, modifyContexts);
+			injector.injectMembers(result);
+			return result;
 		} else {
 			try {
 				Update updateOp = getConnection().prepareUpdate(
 						QueryLanguage.SPARQL, update);
 				setDataset(updateOp, readContexts, modifyContexts);
 				updateOp.setIncludeInferred(includeInferred);
-				return new SesameUpdateRemote(updateOp);
+				SesameUpdateRemote result = new SesameUpdateRemote(updateOp);
+				injector.injectMembers(result);
+				return result;
 			} catch (Exception e) {
 				throw new KommaException(e);
 			}
