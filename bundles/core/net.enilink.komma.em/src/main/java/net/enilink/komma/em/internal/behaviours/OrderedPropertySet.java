@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.RandomAccess;
+import java.util.Spliterator;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
@@ -264,6 +265,11 @@ public class OrderedPropertySet<E> extends KommaPropertySet<E> implements
 	@Override
 	public List<E> subList(int fromIndex, int toIndex) {
 		return internalList.subList(fromIndex, toIndex);
+	}
+
+	@Override
+	public Spliterator<E> spliterator() {
+		return internalList.spliterator();
 	}
 
 }
