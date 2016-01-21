@@ -7,17 +7,11 @@ Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.core.runtime,
- net.enilink.komma.em,
- net.enilink.komma.edit,
  org.eclipse.core.commands,
  org.eclipse.core.runtime,
  net.enilink.komma.edit.ui,
- org.eclipse.core.resources,
  net.enilink.komma.owl.edit,
- net.enilink.komma.edit.ui.properties,
- net.enilink.commons.util,
- net.enilink.commons.ui,
- net.enilink.komma.workbench
+ net.enilink.komma.edit.ui.properties
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: net.enilink.komma.owl.editor.OWLEditorPlugin$Implementation
 Export-Package: net.enilink.komma.owl.editor,
@@ -25,3 +19,21 @@ Export-Package: net.enilink.komma.owl.editor,
  net.enilink.komma.owl.editor.instances,
  net.enilink.komma.owl.editor.ontology,
  net.enilink.komma.owl.editor.properties
+Import-Package: org.eclipse.core.commands,
+ org.eclipse.jface.action,
+ org.eclipse.jface.dialogs,
+ org.eclipse.jface.fieldassist,
+ org.eclipse.jface.viewers,
+ org.eclipse.jface.window,
+ org.eclipse.jface.wizard,
+ org.eclipse.swt,
+ org.eclipse.swt.custom,
+ org.eclipse.swt.events,
+ org.eclipse.swt.graphics,
+ org.eclipse.swt.layout,
+ org.eclipse.swt.widgets,
+ org.eclipse.ui,
+ org.eclipse.ui.dialogs,
+ org.eclipse.ui.forms.widgets,
+ org.eclipse.ui.part,
+ org.eclipse.ui.views.properties

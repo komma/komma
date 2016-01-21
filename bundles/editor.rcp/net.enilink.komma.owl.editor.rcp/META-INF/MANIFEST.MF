@@ -7,23 +7,24 @@ Bundle-Version: 1.2.0.qualifier
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: org.eclipse.core.runtime,
- net.enilink.komma.em,
- net.enilink.komma.edit,
- org.eclipse.core.commands,
  org.eclipse.core.runtime,
  net.enilink.komma.edit.ui,
- org.eclipse.core.resources,
- net.enilink.komma.owl.edit,
- net.enilink.komma.edit.ui.properties,
- net.enilink.commons.util,
- net.enilink.commons.ui,
- net.enilink.komma.workbench,
  org.eclipse.ui.views.properties.tabbed,
  net.enilink.komma.edit.ui.rcp
 Import-Package: com.google.inject;version="4.0.0",
  net.enilink.komma.owl.editor,
  net.enilink.komma.owl.editor.classes,
  net.enilink.komma.owl.editor.ontology,
- net.enilink.komma.owl.editor.properties
+ net.enilink.komma.owl.editor.properties,
+ org.eclipse.jface.dialogs,
+ org.eclipse.jface.viewers,
+ org.eclipse.swt,
+ org.eclipse.swt.events,
+ org.eclipse.swt.layout,
+ org.eclipse.swt.widgets,
+ org.eclipse.ui,
+ org.eclipse.ui.dialogs,
+ org.eclipse.ui.ide,
+ org.eclipse.ui.wizards.newresource
 Export-Package: net.enilink.komma.owl.editor.rcp
 Bundle-ActivationPolicy: lazy
