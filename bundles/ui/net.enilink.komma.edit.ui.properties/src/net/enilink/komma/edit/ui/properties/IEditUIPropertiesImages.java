@@ -21,6 +21,7 @@ public interface IEditUIPropertiesImages {
 
 	static String CHECKED = "full/clcl16/checked.gif";
 	static String ADD = "full/clcl16/add.png";
+	static String ADD_ANONYMOUS = "full/clcl16/add_anonymous.png";
 	static String REMOVE = "full/clcl16/delete.png";
 	static String EDIT = "full/clcl16/edit.png";
 	static String REFRESH = "full/clcl16/refresh.png";

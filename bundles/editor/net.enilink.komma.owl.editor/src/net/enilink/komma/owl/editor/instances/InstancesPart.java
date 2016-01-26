@@ -60,7 +60,7 @@ public class InstancesPart extends AbstractEditingDomainPart {
 	private StructuredViewer viewer;
 	private IAdapterFactory adapterFactory;
 	private IClass input;
-	Action deleteItemAction, addItemAction;
+	Action deleteItemAction, addItemAction, addAnonymousItemAction;
 
 	@Override
 	public void createContents(Composite parent) {
@@ -146,7 +146,7 @@ public class InstancesPart extends AbstractEditingDomainPart {
 
 		addItemAction = new Action("Add") {
 			public void run() {
-				addItem();
+				addItem(true);
 			}
 		};
 		addItemAction.setImageDescriptor(ExtendedImageRegistry.getInstance()
@@ -154,6 +154,17 @@ public class InstancesPart extends AbstractEditingDomainPart {
 						KommaEditUIPropertiesPlugin.INSTANCE
 								.getImage(IEditUIPropertiesImages.ADD)));
 		toolBarManager.add(addItemAction);
+
+		addAnonymousItemAction = new Action("Add anonymous") {
+			public void run() {
+				addItem(false);
+			}
+		};
+		addAnonymousItemAction.setImageDescriptor(ExtendedImageRegistry.getInstance()
+				.getImageDescriptor(
+						KommaEditUIPropertiesPlugin.INSTANCE
+								.getImage(IEditUIPropertiesImages.ADD_ANONYMOUS)));
+		toolBarManager.add(addAnonymousItemAction);
 
 		deleteItemAction = new Action("Remove") {
 			public void run() {
@@ -184,42 +195,42 @@ public class InstancesPart extends AbstractEditingDomainPart {
 		}
 	}
 
-	void addItem() {
+	void addItem(boolean requireName) {
 		if (input instanceof IClass) {
-			final IClass parent = (IClass) input;
-			NewObjectWizard wizard = new NewObjectWizard(
-					((IObject) parent).getModel()) {
-				@Override
-				public boolean performFinish() {
-					final URI resourceName = getObjectName();
-					try {
-						ICommand cmd = new SimpleCommand("Create instance") {
-							@Override
-							protected CommandResult doExecuteWithResult(
-									IProgressMonitor progressMonitor,
-									IAdaptable info) throws ExecutionException {
-								final IResource individual = parent
-										.newInstance(resourceName);
-								return CommandResult
-										.newOKCommandResult(individual);
-							}
-						};
-						getEditingDomain().getCommandStack().execute(cmd, null,
-								null);
-						if (cmd.getCommandResult().getStatus().isOK()) {
-							viewer.setSelection(new StructuredSelection(cmd
-									.getCommandResult().getReturnValue()));
-						}
-					} catch (ExecutionException e) {
-						OWLEditorPlugin.INSTANCE.log(e);
+			final IClass clazz = (IClass) input;
+			if (requireName) {
+				NewObjectWizard wizard = new NewObjectWizard(((IObject) clazz).getModel()) {
+					@Override
+					public boolean performFinish() {
+						final URI name = getObjectName();
+						createItem(clazz, name);
+						return true;
 					}
+				};
+				WizardDialog wizardDialog = new WizardDialog(getShell(), wizard);
+				wizardDialog.open();
+			} else {
+				createItem(clazz, null);
+			}
+		}
+	}
 
-					return true;
+	void createItem(final IClass clazz, URI name) {
+		try {
+			ICommand cmd = new SimpleCommand("Create instance") {
+				@Override
+				protected CommandResult doExecuteWithResult(IProgressMonitor progressMonitor, IAdaptable info)
+						throws ExecutionException {
+					final IResource individual = clazz.newInstance(name);
+					return CommandResult.newOKCommandResult(individual);
 				}
 			};
-
-			WizardDialog wizardDialog = new WizardDialog(getShell(), wizard);
-			wizardDialog.open();
+			getEditingDomain().getCommandStack().execute(cmd, null, null);
+			if (cmd.getCommandResult().getStatus().isOK()) {
+				viewer.setSelection(new StructuredSelection(cmd.getCommandResult().getReturnValue()));
+			}
+		} catch (ExecutionException e) {
+			OWLEditorPlugin.INSTANCE.log(e);
 		}
 	}
 
