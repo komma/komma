@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>net.enilink.komma</groupId>
+    <artifactId>komma-dependencies-p2</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0.0</version>
+
+    <build>
+	<defaultGoal>p2:site</defaultGoal>
+        <plugins>
+            <plugin>
+                <groupId>org.reficio</groupId>
+                <artifactId>p2-maven-plugin</artifactId>
+                <version>1.2.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <id>default-cli</id>
+                        <!--
+                        This is the configuration for the creation of a P2 update site.
+
+                        Expected behavior:
+                          - specified dependencies will be fetched
+                          - transitive dependencies will be fetched (no default exclusions)
+                          - jars containing source source code will NOT be fetched
+                          - jars that are NOT OSGi bundles will be "bundled" using bnd tool,
+                            if you specify instructions for these jars they will be APPLIED
+                          - jars that are OSGi bundles will be simply included
+                            if you specify instructions for these jars they will be IGNORED (see <override> option)
+                          - p2 site will be generated
+
+                        How the instructions works:
+                          - instructions are applied only to the root artifact that you specify!
+                          - instructions are not applied to the TRANSITIVE dependencies!
+                          - transitive dependencies are never overridden (see <override> option)
+                          - transitive dependencies are bundled using the default instructions:
+                              <instructions>
+                                  <Import-Package>*;resolution:=optional</Import-Package>
+                                  <Export-Package>*</Export-Package>
+                              </instructions>
+                          - other instructions, such as, Bundle-SymbolicName, Bundle-Name, Bundle-Version, etc.
+                            are calculated according to the following rules:
+                            http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html
+                          - if you specify any instructions they will be applied only if
+                            the jar is not already an OSGi bundle - otherwise you have to use the override
+                            option - please see the /examples/override/pom.xml example
+
+                        The following definition of an artifact:
+                            <artifact>
+                                <id>commons-io:commons-io:2.1</id>
+                            </artifact>
+
+                        is an equivalent of the following definition:
+                            <artifact>
+                                <id>commons-io:commons-io:2.1</id>
+                                <transitive>true</transitive>
+                                <source>false</source>
+                                <override>false</override>
+                                <instructions>
+                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                    <Export-Package>*</Export-Package>
+                                </instructions>
+                                <excludes/>
+                            </artifact>
+
+                        To run the example please invoke: mvn p2:site
+                        -->
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <id>ch.qos.logback:logback-access:1.1.3</id>
+                                    <transitive>false</transitive>
+                                </artifact>
+                                <artifact>
+                                    <id>ch.qos.logback:logback-classic:1.1.3</id>
+                                    <transitive>false</transitive>
+                                </artifact>
+                                <artifact>
+                                    <id>ch.qos.logback:logback-core:1.1.3</id>
+                                    <transitive>false</transitive>
+                                </artifact>
+                                <artifact>
+                                    <id>org.openrdf.sesame:sesame-runtime-osgi:2.8.9</id>
+                                    <transitive>false</transitive>
+                                </artifact>
+                                <artifact>
+                                    <id>org.openrdf.sesame:sesame-queryrender:2.8.9</id>
+                                    <transitive>false</transitive>
+                                </artifact>
+                                <artifact>
+                                    <id>com.google.guava:guava:18.0</id>
+                                    <transitive>false</transitive>
+                                </artifact>
+                                <artifact>
+                                    <id>com.google.inject:guice:4.0</id>
+                                    <transitive>false</transitive>
+                                </artifact>
+                                <artifact>
+                                    <id>com.google.inject.extensions:guice-multibindings:4.0</id>
+                                    <transitive>false</transitive>
+                                </artifact>
+                                <artifact>
+                                    <id>org.infinispan:infinispan-tree:8.1.0.Final</id>
+                                    <transitive>true</transitive>
+                                </artifact>
+				<artifact>
+                                    <id>org.ow2.asm:asm-all:5.0.4</id>
+                                    <transitive>false</transitive>
+                                </artifact>
+				<artifact>
+                                    <id>aopalliance:aopalliance:1.0</id>
+                                    <transitive>false</transitive>
+                                </artifact>
+				<artifact>
+                                    <id>commons-io:commons-io:2.4</id>
+                                    <transitive>false</transitive>
+                                </artifact>
+				<artifact>
+                                    <id>com.github.parboiled1:grappa:1.0.4</id>
+                                    <transitive>false</transitive>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>reficio</id>
+            <url>http://repo.reficio.org/maven/</url>
+        </pluginRepository>
+    </pluginRepositories>
+</project>
