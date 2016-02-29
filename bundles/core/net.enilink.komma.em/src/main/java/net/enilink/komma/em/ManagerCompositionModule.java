@@ -59,12 +59,17 @@ public class ManagerCompositionModule extends AbstractModule {
 						.to(SparqlBehaviourMethodProcessor.class)
 						.in(Singleton.class);
 			}
-
-			protected RoleMapper<URI> provideRoleMapper(
-					TypeFactory<URI> typeFactory) {
-				RoleMapper<URI> roleMapper = new ComposedRoleMapper<URI>(
+			
+			@Override
+			protected RoleMapper<URI> createRoleMapper(TypeFactory<URI> typeFactory) {
+				return new ComposedRoleMapper<URI>(
 						typeFactory);
-
+			}
+			
+			@Override
+			protected void initRoleMapper(RoleMapper<URI> roleMapper, TypeFactory<URI> typeFactory) {
+				super.initRoleMapper(roleMapper, typeFactory);
+				
 				for (KommaModule.Association e : module.getAnnotations()) {
 					roleMapper.addAnnotation(e.getJavaClass(),
 							typeFactory.createType(e.getRdfType()));
@@ -90,9 +95,8 @@ public class ManagerCompositionModule extends AbstractModule {
 				roleMapper
 						.addBehaviour(EntitySupport.class, RDFS.TYPE_RESOURCE);
 
-				return roleMapper;
 			}
-
+			
 			@Override
 			protected void bindClassDefiner() {
 				// do not bind the class definer here

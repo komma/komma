@@ -77,6 +77,10 @@ public class CompositionModule<T> extends AbstractModule {
 
 		bindClassDefiner();
 	}
+	
+	protected RoleMapper<T> createRoleMapper(TypeFactory<T> typeFactory) {
+		return new DefaultRoleMapper<T>(typeFactory);
+	}
 
 	protected void initRoleMapper(RoleMapper<T> roleMapper,
 			TypeFactory<T> typeFactory) {
@@ -85,7 +89,7 @@ public class CompositionModule<T> extends AbstractModule {
 	@Provides
 	@Singleton
 	protected RoleMapper<T> provideRoleMapper(TypeFactory<T> typeFactory) {
-		RoleMapper<T> roleMapper = new DefaultRoleMapper<T>(typeFactory);
+		RoleMapper<T> roleMapper = createRoleMapper(typeFactory);
 		initRoleMapper(roleMapper, typeFactory);
 		return roleMapper;
 	}

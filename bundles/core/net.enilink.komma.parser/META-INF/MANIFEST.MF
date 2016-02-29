@@ -22,4 +22,4 @@ Require-Bundle: net.enilink.vocab.rdfs,
  net.enilink.vocab.owl,
  net.enilink.commons.iterator,
  net.enilink.komma.core,
- org.parboiled
+ com.github.parboiled1.grappa

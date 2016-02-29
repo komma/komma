@@ -11,5 +11,5 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.em,
  net.enilink.komma.edit,
  net.enilink.komma.edit.ui,
- org.parboiled
+ com.github.parboiled1.grappa
 Bundle-Activator: net.enilink.komma.sparql.ui.SparqlUI

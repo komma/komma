@@ -22,12 +22,12 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.common;visibility:=reexport,
  net.enilink.komma.model;visibility:=reexport,
  net.enilink.commons.util,
- org.parboiled
+ com.github.parboiled1.grappa
 Eclipse-LazyStart: true
 Bundle-ActivationPolicy: lazy
 Import-Package: com.google.common.base;version="17.0.0",
  com.google.common.collect;version="17.0.0",
- com.google.inject;version="4.0.0",
- com.google.inject.binder;version="4.0.0",
- com.google.inject.multibindings;version="4.0.0",
- com.google.inject.util;version="4.0.0"
+ com.google.inject;version="1.4",
+ com.google.inject.binder;version="1.4",
+ com.google.inject.multibindings;version="1.4",
+ com.google.inject.util;version="1.4"

@@ -6,9 +6,9 @@ Bundle-Version: 1.2.0.qualifier
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: com.google.common.base;version="17.0.0",
- com.google.inject;version="4.0.0",
- com.google.inject.binder;version="4.0.0",
- com.google.inject.multibindings;version="4.0.0",
+ com.google.inject;version="1.4",
+ com.google.inject.binder;version="1.4",
+ com.google.inject.multibindings;version="1.4",
  net.enilink.composition,
  net.enilink.composition.annotations,
  net.enilink.composition.asm,

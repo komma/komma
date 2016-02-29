@@ -9,6 +9,7 @@
 	<packaging>pom</packaging>
 	<properties>
 		<tycho-version>0.22.0</tycho-version>
+                <path.to.root>../../..</path.to.root>
 	</properties>
 	<build>
 		<directory>target-maven</directory>
@@ -71,6 +72,11 @@
 			<id>mars</id>
 			<layout>p2</layout>
 			<url>http://download.eclipse.org/releases/mars/</url>
+		</repository>
+		<repository>
+			<id>libraries-p2</id>
+			<layout>p2</layout>
+			<url>${project.baseUri}${path.to.root}/libraries-p2/target/repository/</url>
 		</repository>
 	</repositories>
 
