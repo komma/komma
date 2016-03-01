@@ -7,7 +7,6 @@ Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Activator: net.enilink.commons.ui.CommonsUi
 Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.resources;visibility:=reexport,
  net.enilink.commons.util
 Export-Package: net.enilink.commons.ui,
  net.enilink.commons.ui.dialogs,
@@ -34,10 +33,10 @@ Import-Package: org.eclipse.core.commands,
  org.eclipse.swt.graphics,
  org.eclipse.swt.layout,
  org.eclipse.swt.widgets,
- org.eclipse.ui,
- org.eclipse.ui.dialogs,
+ org.eclipse.ui;ui.workbench="split",
+ org.eclipse.ui.dialogs;ui.workbench="split",
  org.eclipse.ui.forms,
  org.eclipse.ui.forms.events,
  org.eclipse.ui.forms.widgets,
- org.eclipse.ui.part,
+ org.eclipse.ui.part;ui.workbench="split",
  org.eclipse.ui.plugin

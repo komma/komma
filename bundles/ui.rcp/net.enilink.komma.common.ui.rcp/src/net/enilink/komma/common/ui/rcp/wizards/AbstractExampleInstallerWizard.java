@@ -72,7 +72,6 @@ import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.common.util.DiagnosticException;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
 
 /**
  * <p>

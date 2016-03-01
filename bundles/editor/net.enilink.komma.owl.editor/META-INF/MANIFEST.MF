@@ -32,8 +32,8 @@ Import-Package: org.eclipse.core.commands,
  org.eclipse.swt.graphics,
  org.eclipse.swt.layout,
  org.eclipse.swt.widgets,
- org.eclipse.ui,
- org.eclipse.ui.dialogs,
+ org.eclipse.ui;ui.workbench="split",
+ org.eclipse.ui.dialogs;ui.workbench="split",
  org.eclipse.ui.forms.widgets,
- org.eclipse.ui.part,
- org.eclipse.ui.views.properties
+ org.eclipse.ui.part;ui.workbench="split",
+ org.eclipse.ui.views.properties;ui.views="split"

@@ -38,6 +38,6 @@ Import-Package: org.eclipse.core.commands,
  org.eclipse.swt.graphics,
  org.eclipse.swt.layout,
  org.eclipse.swt.widgets,
- org.eclipse.ui,
- org.eclipse.ui.part,
+ org.eclipse.ui;ui.workbench="split",
+ org.eclipse.ui.part;ui.workbench="split",
  org.eclipse.ui.plugin

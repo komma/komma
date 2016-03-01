@@ -7,7 +7,7 @@ Bundle-Version: 1.2.0.qualifier
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.runtime,
+ org.eclipse.core.resources,
  net.enilink.komma.edit.ui,
  org.eclipse.ui.views.properties.tabbed,
  net.enilink.komma.edit.ui.rcp
