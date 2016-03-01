@@ -12,13 +12,12 @@ package net.enilink.komma.em.internal;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
-import org.infinispan.tree.Fqn;
-import org.infinispan.tree.TreeCache;
-import net.enilink.composition.cache.IPropertyCache;
-
+import com.google.common.cache.Cache;
 import com.google.inject.Inject;
 
+import net.enilink.composition.cache.IPropertyCache;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
 import net.enilink.komma.core.IGraph;
@@ -31,7 +30,7 @@ public class CachingEntityManager extends DecoratingEntityManager {
 	Fqn contextKey;
 
 	@Inject
-	TreeCache<Object, Object> cache;
+	Cache<Object, CachedEntity> cache;
 
 	@Inject
 	IPropertyCache propertyCache;
@@ -41,14 +40,10 @@ public class CachingEntityManager extends DecoratingEntityManager {
 		super(decorators);
 	}
 
-	protected Fqn fqnFor(IReference resource) {
-		return Fqn.fromElements(resource);
-	}
-
-	public IEntity createBean(IReference resource, Collection<URI> types,
-			Collection<Class<?>> concepts, boolean restrictTypes,
-			boolean initialize, IGraph graph) {
-		Object element = cache.get(fqnFor(resource), contextKey);
+	public IEntity createBean(IReference resource, Collection<URI> types, Collection<Class<?>> concepts,
+			boolean restrictTypes, boolean initialize, IGraph graph) {
+		CachedEntity cached = cache.getIfPresent(resource);
+		Object element = cached != null ? cached.getSelf(contextKey) : null;
 		if (element != null) {
 			boolean hasValidTypes = true;
 			if (concepts != null && !concepts.isEmpty()) {
@@ -66,26 +61,33 @@ public class CachingEntityManager extends DecoratingEntityManager {
 				return (IEntity) element;
 			}
 		}
-		IEntity entity = super.createBean(resource, types, concepts,
-				restrictTypes, initialize, graph);
+		IEntity entity = super.createBean(resource, types, concepts, restrictTypes, initialize, graph);
 		// do not cache entities created during transactions or with restricted
 		// types
 		if (!(restrictTypes || getTransaction().isActive())) {
-			cache.put(fqnFor(resource), contextKey, entity);
+			try {
+				CachedEntity cachedEntity = cache.get(resource, CachedEntity.FACTORY);
+				cachedEntity.setSelf(contextKey, entity);
+			} catch (ExecutionException e) {
+				log.error("Exception while caching entity.", e);
+			}
 		}
 		return entity;
 	}
 
 	@Override
 	protected void initializeCache(IEntity entity, Object property, Object value) {
-		log.trace("init cache for {}/{}: {}", new Object[] { entity, property,
-				value });
+		log.trace("init cache for {}/{}: {}", new Object[] { entity, property, value });
 		propertyCache.put(entity, property, new Object[0], value);
 	}
 
 	@Override
 	public void refresh(Object entity) {
 		super.refresh(entity);
-		cache.removeNode(Fqn.fromElements(entity, "properties"));
+		CachedEntity cachedEntity = cache.getIfPresent(entity);
+		if (cachedEntity != null) {
+			cachedEntity.clearProperties();
+			// TODO clear only properties for the current context?
+		}
 	}
 }

@@ -15,16 +15,12 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
-import org.infinispan.Cache;
-import org.infinispan.tree.Fqn;
-import org.infinispan.tree.TreeCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import net.enilink.composition.asm.BehaviourMethodProcessor;
-import net.enilink.composition.cache.IPropertyCache;
-import net.enilink.composition.cache.behaviours.CacheBehaviourMethodProcessor;
-import net.enilink.composition.properties.PropertySet;
-
+import com.google.common.cache.Cache;
 import com.google.inject.Inject;
 import com.google.inject.Key;
 import com.google.inject.Provides;
@@ -33,21 +29,26 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 
 import net.enilink.commons.iterator.WrappedIterator;
-import net.enilink.komma.em.internal.CachingEntityManager;
+import net.enilink.composition.asm.BehaviourMethodProcessor;
+import net.enilink.composition.cache.IPropertyCache;
+import net.enilink.composition.cache.behaviours.CacheBehaviourMethodProcessor;
+import net.enilink.composition.properties.PropertySet;
 import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.IReferenceable;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.em.internal.CachedEntity;
+import net.enilink.komma.em.internal.CachingEntityManager;
+import net.enilink.komma.em.internal.Fqn;
 
 public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 	@Override
 	protected void configure() {
 		super.configure();
 
-		requireBinding(new Key<Cache<Object, Object>>() {
+		requireBinding(new Key<Cache<Object, CachedEntity>>() {
 		});
 
-		Multibinder<BehaviourMethodProcessor> multibinder = Multibinder
-				.newSetBinder(binder(), BehaviourMethodProcessor.class);
+		Multibinder<BehaviourMethodProcessor> multibinder = Multibinder.newSetBinder(binder(),
+				BehaviourMethodProcessor.class);
 		multibinder.addBinding().to(CacheBehaviourMethodProcessor.class);
 	}
 
@@ -55,9 +56,9 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 	@Inject(optional = true)
 	Fqn provideContextKey(@Named("modifyContexts") Set<URI> modifyContexts) {
 		if (modifyContexts != null) {
-			return Fqn.fromElements(modifyContexts.toArray());
+			return new Fqn(modifyContexts.toArray());
 		}
-		return Fqn.root();
+		return new Fqn();
 	}
 
 	/**
@@ -65,11 +66,13 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 	 * .
 	 */
 	static class PropertyCache implements IPropertyCache {
-		final TreeCache<Object, Object> treeCache;
+		protected static Logger log = LoggerFactory.getLogger(PropertyCache.class);
+
+		final Cache<Object, CachedEntity> cache;
 		final Fqn contextKey;
 
-		PropertyCache(TreeCache<Object, Object> treeCache, Fqn contextKey) {
-			this.treeCache = treeCache;
+		PropertyCache(Cache<Object, CachedEntity> cache, Fqn contextKey) {
+			this.cache = cache;
 			this.contextKey = contextKey;
 		}
 
@@ -77,15 +80,8 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 		class IteratorList extends ArrayList<Object> {
 		};
 
-		Fqn fqnFor(Object entity, Object property) {
-			return Fqn.fromElements(((IReferenceable) entity).getReference(),
-					"properties", contextKey, property);
-		}
-
 		@Override
-		public Object put(Object entity, Object property, Object[] parameters,
-				Object value) {
-			Fqn fqn = fqnFor(entity, property);
+		public Object put(Object entity, Object property, Object[] parameters, Object value) {
 			boolean isIterator = value instanceof Iterator<?>;
 			if (isIterator) {
 				// usually an iterator cannot be cached
@@ -97,7 +93,13 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 				}
 				value = itValues;
 			}
-			treeCache.put(fqn, Arrays.asList(parameters), value);
+			try {
+				CachedEntity cached = cache.get(entity, CachedEntity.FACTORY);
+				cached.put(contextKey, new Fqn(property, Arrays.asList(parameters)), value);
+			} catch (ExecutionException e) {
+				log.error("Error while caching property data.", e);
+			}
+
 			if (isIterator) {
 				return WrappedIterator.create(((List<?>) value).iterator());
 			}
@@ -106,21 +108,23 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 
 		@Override
 		public Object get(Object entity, Object property, Object[] parameters) {
-			Fqn fqn = fqnFor(entity, property);
-			Object value = treeCache.get(fqn, Arrays.asList(parameters));
-			boolean isIterator = value instanceof IteratorList;
-			if (isIterator) {
-				return WrappedIterator.create(((List<?>) value).iterator());
+			CachedEntity cached = cache.getIfPresent(entity);
+			if (cached != null) {
+				Object value = cached.get(contextKey, new Fqn(property, Arrays.asList(parameters)));
+				boolean isIterator = value instanceof IteratorList;
+				if (isIterator) {
+					return WrappedIterator.create(((List<?>) value).iterator());
+				}
+				return value;
 			}
-			return value;
+			return null;
 		}
 	}
 
 	@Singleton
 	@Provides
-	IPropertyCache providePropertyCache(
-			final TreeCache<Object, Object> treeCache, final Fqn contextKey) {
-		return new PropertyCache(treeCache, contextKey);
+	IPropertyCache providePropertyCache(final Cache<Object, CachedEntity> cache, final Fqn contextKey) {
+		return new PropertyCache(cache, contextKey);
 	}
 
 	@Override

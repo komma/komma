@@ -271,5 +271,4 @@ public class OrderedPropertySet<E> extends KommaPropertySet<E> implements
 	public Spliterator<E> spliterator() {
 		return internalList.spliterator();
 	}
-
 }
