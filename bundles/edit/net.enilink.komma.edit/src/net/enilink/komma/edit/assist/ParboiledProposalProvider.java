@@ -50,13 +50,11 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 		ISemanticProposalProvider proposalProvider;
 
 		Map<ISemanticProposal, String> semanticProposals;
-		Characters separators = Characters.of(' ', '\n', '\r', '\t', '\f',
-				Chars.EOI);
+		Characters separators = Characters.of(' ', '\n', '\r', '\t', '\f', Chars.EOI);
 		StringBuilder word;
 		LinkedHashSet<Proposal> words = new LinkedHashSet<Proposal>();
 
-		public CollectProposalsVisitor(
-				ISemanticProposalProvider proposalProvider,
+		public CollectProposalsVisitor(ISemanticProposalProvider proposalProvider,
 				Map<ISemanticProposal, String> semanticProposals) {
 			this.proposalProvider = proposalProvider;
 			this.semanticProposals = semanticProposals;
@@ -67,8 +65,7 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 				return false;
 			}
 
-			ISemanticProposal proposal = proposalProvider.getProposal(matcher
-					.getLabel());
+			ISemanticProposal proposal = proposalProvider.getProposal(matcher.getLabel());
 			if (proposal != null && !semanticProposals.containsKey(proposal)) {
 				semanticProposals.put(proposal, prefix);
 				return true;
@@ -81,8 +78,7 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 				if (word.equals(prefix)) {
 					return;
 				}
-				String content = prefix == null ? word : word.substring(prefix
-						.length());
+				String content = prefix == null ? word : word.substring(prefix.length());
 				words.add(new Proposal(content, word));
 			}
 		}
@@ -102,8 +98,7 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 			return optional > 0;
 		}
 
-		public void process(String prefix, boolean includeSemanticProposals,
-				Matcher matcher) {
+		public void process(String prefix, boolean includeSemanticProposals, Matcher matcher) {
 			active.clear();
 			this.prefix = prefix;
 			this.includeSemanticProposals = includeSemanticProposals;
@@ -271,8 +266,7 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result
-					+ ((content == null) ? 0 : content.hashCode());
+			result = prime * result + ((content == null) ? 0 : content.hashCode());
 			result = prime * result + ((label == null) ? 0 : label.hashCode());
 			return result;
 		}
@@ -292,8 +286,7 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 
 		CollectProposalsVisitor visitor;
 
-		ProposalParseRunner(Rule rule, int proposalIndex,
-				ISemanticProposalProvider proposalProvider) {
+		ProposalParseRunner(Rule rule, int proposalIndex, ISemanticProposalProvider proposalProvider) {
 			super(rule);
 			this.proposalIndex = proposalIndex;
 			this.proposalProvider = proposalProvider;
@@ -310,8 +303,7 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 		}
 
 		private String getPrefix(MatcherContext<?> context) {
-			return context.getInputBuffer().extract(context.getStartIndex(),
-					proposalIndex);
+			return context.getInputBuffer().extract(context.getStartIndex(), proposalIndex);
 		}
 
 		public Map<ISemanticProposal, String> getSemanticProposals() {
@@ -322,7 +314,7 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 			return new TreeSet<Proposal>(visitor.getWords());
 		}
 
-		public boolean match(MatcherContext<?> context) {
+		public <V> boolean match(MatcherContext<V> context) {
 			boolean matched = context.getMatcher().match(context);
 
 			if (!matched) {
@@ -336,18 +328,15 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 			}
 			if (proposalIndex == context.getCurrentIndex()) {
 				String lastWord = getLastWord(context);
-				List<Matcher> matchers = new FollowMatchersVisitor()
-						.getFollowMatchers(context);
+				List<Matcher> matchers = new FollowMatchersVisitor().getFollowMatchers(context);
 				for (Matcher matcher : matchers) {
 					visitor.process(lastWord, true, matcher);
 				}
 
 				if (proposalProvider != null) {
 					do {
-						ISemanticProposal proposal = proposalProvider
-								.getProposal(context.getMatcher().getLabel());
-						if (proposal != null
-								&& !semanticProposals.containsKey(proposal)) {
+						ISemanticProposal proposal = proposalProvider.getProposal(context.getMatcher().getLabel());
+						if (proposal != null && !semanticProposals.containsKey(proposal)) {
 							semanticProposals.put(proposal, getPrefix(context));
 							break;
 						}
@@ -361,8 +350,7 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 
 		@Override
 		public ParsingResult<Object> run(InputBuffer inputBuffer) {
-			visitor = new CollectProposalsVisitor(proposalProvider,
-					semanticProposals);
+			visitor = new CollectProposalsVisitor(proposalProvider, semanticProposals);
 			return super.run(inputBuffer);
 		}
 	}
@@ -370,8 +358,7 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 	Rule rule;
 	ISemanticProposalProvider semanticProposalProvider;
 
-	public ParboiledProposalProvider(Rule rule,
-			ISemanticProposalProvider semanticProposalProvider) {
+	public ParboiledProposalProvider(Rule rule, ISemanticProposalProvider semanticProposalProvider) {
 		this.rule = rule;
 		this.semanticProposalProvider = semanticProposalProvider;
 	}
@@ -379,18 +366,15 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 	@Override
 	public IContentProposal[] getProposals(String contents, int position) {
 		List<IContentProposal> proposals = new ArrayList<IContentProposal>();
-		ProposalParseRunner runner = new ProposalParseRunner(rule, position,
-				semanticProposalProvider);
+		ProposalParseRunner runner = new ProposalParseRunner(rule, position, semanticProposalProvider);
 		ParsingResult<Object> result = runner.run(contents);
 		// if (result.hasErrors() || result.resultValue == null) {
 		// result = new RecoveringParseRunner<Object>(parser.Query())
 		// .run(contents);
 		// }
 
-		for (Map.Entry<ISemanticProposal, String> entry : runner
-				.getSemanticProposals().entrySet()) {
-			IContentProposal[] computedProposals = entry.getKey().compute(
-					result, position, entry.getValue());
+		for (Map.Entry<ISemanticProposal, String> entry : runner.getSemanticProposals().entrySet()) {
+			IContentProposal[] computedProposals = entry.getKey().compute(result, position, entry.getValue());
 			if (computedProposals != null) {
 				for (IContentProposal proposal : computedProposals) {
 					proposals.add(proposal);
@@ -399,8 +383,7 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 		}
 
 		for (Proposal proposal : runner.getWords()) {
-			proposals.add(new ContentProposal(proposal.content, proposal.label,
-					proposal.label));
+			proposals.add(new ContentProposal(proposal.content, proposal.label, proposal.label));
 		}
 
 		return proposals.toArray(new IContentProposal[proposals.size()]);
