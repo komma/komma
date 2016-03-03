@@ -155,6 +155,7 @@
                                     <override>true</override>
                                     <instructions>
                                         <DynamicImport-Package>*</DynamicImport-Package>
+                                        <Import-Package>!javax.*,com.google.*;version="17.0.0", *</Import-Package>
                                     </instructions>
                                 </artifact>
                             </artifacts>
