@@ -1,3 +1,6 @@
+jdk:
+  - oraclejdk8
+
 script: mvn -f libraries-p2/pom.xml p2:site && mvn -P release verify
 
 deploy:
