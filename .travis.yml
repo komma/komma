@@ -1,0 +1,15 @@
+script: mvn -f libraries-p2/pom.xml p2:site && mvn -P release verify
+
+deploy:
+- provider: script
+  skip_cleanup: true
+  script: releng/publish/pushToBintray.sh features/net.enilink.komma.updatesite/target-maven/repository/
+  on:
+    tags: true
+
+env:
+  global:
+  - BINTRAY_USER: kenwenzel
+  - BINTRAY_OWNER: komma
+  - BINTRAY_REPO: updates
+  - BINTRAY_PCK_NAME: komma

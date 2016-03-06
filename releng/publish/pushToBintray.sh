@@ -44,12 +44,12 @@ for f in ${FILES[@]}
 do
 if [ -f $f ]; then
   echo "Processing file: $f"
-  curl -X PUT -T $f -u ${BINTRAY_USER}:${BINTRAY_API_KEY} "${API}/content/$BINTRAY_PATH/$f;$BINTRAY_OPTS"
+  curl -X PUT -T $f --retry 3 -u ${BINTRAY_USER}:${BINTRAY_API_KEY} "${API}/content/$BINTRAY_PATH/$f;$BINTRAY_OPTS"
 fi
 done
 
 echo "Publishing the new version"
-curl -X POST -u ${BINTRAY_USER}:${BINTRAY_API_KEY} "${API}/content/$BINTRAY_OWNER/$BINTRAY_REPO/$BINTRAY_PCK_NAME/$BINTRAY_PCK_VERSION/publish" -d "{ \"discard\": \"false\" }" -H "Content-Type: application/json"
+curl -X POST --retry 3 -u ${BINTRAY_USER}:${BINTRAY_API_KEY} "${API}/content/$BINTRAY_OWNER/$BINTRAY_REPO/$BINTRAY_PCK_NAME/$BINTRAY_PCK_VERSION/publish" -d "{ \"discard\": \"false\" }" -H "Content-Type: application/json"
 
 popd
 }
