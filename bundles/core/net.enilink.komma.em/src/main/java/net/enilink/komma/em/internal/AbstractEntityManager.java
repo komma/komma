@@ -199,7 +199,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 
 	private boolean assertConceptsRecorded(IEntity bean, Class<?>... concepts) {
 		for (Class<?> concept : concepts) {
-			assert!concept.isInterface()
+			assert !concept.isInterface()
 					|| concept.isAssignableFrom(bean.getClass()) : "Concept has not been recorded: "
 							+ concept.getSimpleName();
 		}
@@ -361,7 +361,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	}
 
 	public ILiteral createLiteral(String label, URI datatype, String language) {
-		if (datatype == null && language != null) {
+		if (language != null) {
 			return new Literal(label, language);
 		}
 		return createLiteral(label, datatype);

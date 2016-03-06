@@ -17,14 +17,15 @@ public class SesameLiteral implements ILiteral {
 
 	@Override
 	public URI getDatatype() {
-		if (datatype != null) {
-			return datatype;
+		if (datatype == null) {
+			if (literal.getDatatype() != null) {
+				datatype = URIs.createURI(literal.getDatatype().toString());
+			} else {
+				datatype = literal.getLanguage() == null ? net.enilink.komma.core.Literal.TYPE_STRING
+						: net.enilink.komma.core.Literal.TYPE_LANGSTRING;
+			}
 		}
-		if (literal.getDatatype() != null) {
-			return datatype = URIs.createURI(literal.getDatatype()
-					.toString());
-		}
-		return null;
+		return datatype;
 	}
 
 	@Override

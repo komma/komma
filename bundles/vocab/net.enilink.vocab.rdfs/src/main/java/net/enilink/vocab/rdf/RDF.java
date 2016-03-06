@@ -29,11 +29,13 @@ public interface RDF {
 	public static final URI TYPE_SEQ = NAMESPACE_URI.appendFragment("Seq");
 
 	public static final URI TYPE_ALT = NAMESPACE_URI.appendFragment("Alt");
-
+	
 	public static final URI TYPE_LIST = NAMESPACE_URI.appendFragment("List");
 
-	public static final URI TYPE_RDFRESOURCE = NAMESPACE_URI.appendFragment("RdfResource");
-
+	public static final URI TYPE_HTML = NAMESPACE_URI.appendFragment("HTML");
+	
+	public static final URI TYPE_LANGSTRING = NAMESPACE_URI.appendFragment("langString");
+	
 	public static final URI TYPE_XMLLITERAL = NAMESPACE_URI.appendFragment("XMLLiteral");
 	
 	public static final URI PROPERTY_LI = NAMESPACE_URI.appendFragment("li");

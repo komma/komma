@@ -11,6 +11,12 @@
 package net.enilink.komma.core;
 
 public class Literal implements ILiteral {
+	public static final URI RDF_NAMESPACE_URI = URIs.createURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+	public static final URI XMLSCHEMA_NAMESPACE_URI = URIs.createURI("http://www.w3.org/2001/XMLSchema#");
+
+	public static final URI TYPE_STRING = XMLSCHEMA_NAMESPACE_URI.appendFragment("string");
+	public static final URI TYPE_LANGSTRING = RDF_NAMESPACE_URI.appendFragment("langString");
+
 	protected URI datatype;
 	protected String language;
 	protected String label;
@@ -22,7 +28,7 @@ public class Literal implements ILiteral {
 	 *            The value for the literal, must not be <tt>null</tt>.
 	 */
 	public Literal(String label) {
-		this(label, null, null);
+		this(label, TYPE_STRING, null);
 	}
 
 	/**
@@ -34,7 +40,7 @@ public class Literal implements ILiteral {
 	 *            The language tag for the literal.
 	 */
 	public Literal(String label, String language) {
-		this(label, null, language);
+		this(label, TYPE_LANGSTRING, language);
 	}
 
 	/**
@@ -59,6 +65,9 @@ public class Literal implements ILiteral {
 		this.label = label;
 		if (language != null) {
 			this.language = language.toLowerCase();
+		}
+		if (datatype == null) {
+			datatype = language == null ? TYPE_STRING : TYPE_LANGSTRING;
 		}
 		this.datatype = datatype;
 	}

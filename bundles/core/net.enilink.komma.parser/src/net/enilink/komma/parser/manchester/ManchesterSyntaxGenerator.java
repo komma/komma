@@ -8,6 +8,7 @@ import java.util.Map;
 
 import net.enilink.vocab.owl.DataRange;
 import net.enilink.vocab.owl.Restriction;
+import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.Class;
 import net.enilink.vocab.rdfs.Datatype;
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
@@ -18,20 +19,18 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
 
 /**
- * Generator for the <a
- * href="http://www.w3.org/2007/OWL/wiki/ManchesterSyntax">Manchester OWL
+ * Generator for the
+ * <a href="http://www.w3.org/2007/OWL/wiki/ManchesterSyntax">Manchester OWL
  * Syntax</a>.
  */
 public class ManchesterSyntaxGenerator {
 	static final String FACET_QUERY = createFacetQuery();
 
 	private static String createFacetQuery() {
-		StringBuilder sb = new StringBuilder("PREFIX xsd: <"
-				+ XMLSCHEMA.NAMESPACE + ">\n");
+		StringBuilder sb = new StringBuilder("PREFIX xsd: <" + XMLSCHEMA.NAMESPACE + ">\n");
 		sb.append("select ?facet ?value where {\n");
-		Iterator<String> facets = Arrays.asList("length", "minLength",
-				"maxLength", "pattern", "langPattern", "minInclusive",
-				"minExclusive", "maxInclusive", "maxExclusive").iterator();
+		Iterator<String> facets = Arrays.asList("length", "minLength", "maxLength", "pattern", "langPattern",
+				"minInclusive", "minExclusive", "maxInclusive", "maxExclusive").iterator();
 		while (facets.hasNext()) {
 			String facet = "xsd:" + facets.next();
 			sb.append("\t{ ?s ").append(facet).append(" ?value\n");
@@ -46,6 +45,7 @@ public class ManchesterSyntaxGenerator {
 
 	// maps XSD facets to shorthand notations
 	static final Map<String, String> FACET_SHORTHANDS = new HashMap<String, String>();
+
 	static {
 		FACET_SHORTHANDS.put("minInclusive", "<=");
 		FACET_SHORTHANDS.put("minExclusive", "<");
@@ -71,18 +71,15 @@ public class ManchesterSyntaxGenerator {
 		if (clazz.getURI() == null) {
 			if (clazz instanceof Restriction) {
 				return restriction((Restriction) clazz, prio);
-			} else if (clazz instanceof Datatype
-					&& ((Datatype) clazz).getOwlOnDatatype() != null) {
+			} else if (clazz instanceof Datatype && ((Datatype) clazz).getOwlOnDatatype() != null) {
 				append(toString(((Datatype) clazz).getOwlOnDatatype()));
-				return datatypeRestrictions(((Datatype) clazz)
-						.getOwlWithRestrictions());
+				return datatypeRestrictions(((Datatype) clazz).getOwlWithRestrictions());
 			} else if (clazz instanceof net.enilink.vocab.owl.Class) {
 				net.enilink.vocab.owl.Class owlClass = (net.enilink.vocab.owl.Class) clazz;
 				if (owlClass.getOwlUnionOf() != null) {
 					return setOfClasses(owlClass.getOwlUnionOf(), "or", 1, prio);
 				} else if (owlClass.getOwlIntersectionOf() != null) {
-					return setOfClasses(owlClass.getOwlIntersectionOf(), "and",
-							2, prio);
+					return setOfClasses(owlClass.getOwlIntersectionOf(), "and", 2, prio);
 				} else if (owlClass.getOwlComplementOf() != null) {
 					append("not ");
 					return clazz(owlClass.getOwlComplementOf(), 3);
@@ -113,18 +110,14 @@ public class ManchesterSyntaxGenerator {
 			Iterator<? extends Object> it = list.iterator();
 			while (it.hasNext()) {
 				IEntity dtRestriction = (IEntity) it.next();
-				for (IBindings<?> bindings : dtRestriction.getEntityManager()
-						.createQuery(FACET_QUERY)
-						.setParameter("s", dtRestriction)
-						.evaluate(IBindings.class)) {
+				for (IBindings<?> bindings : dtRestriction.getEntityManager().createQuery(FACET_QUERY)
+						.setParameter("s", dtRestriction).evaluate(IBindings.class)) {
 					IReference facet = (IReference) bindings.get("facet");
-					String facetShortHand = FACET_SHORTHANDS.get(facet.getURI()
-							.localPart());
+					String facetShortHand = FACET_SHORTHANDS.get(facet.getURI().localPart());
 					if (facetShortHand == null) {
 						facetShortHand = facet.getURI().localPart();
 					}
-					append(facetShortHand).append(
-							toString(bindings.get("value")));
+					append(facetShortHand).append(toString(bindings.get("value")));
 					if (it.hasNext()) {
 						append(", ");
 					}
@@ -161,8 +154,7 @@ public class ManchesterSyntaxGenerator {
 		return this;
 	}
 
-	public ManchesterSyntaxGenerator restriction(Restriction restriction,
-			int prio) {
+	public ManchesterSyntaxGenerator restriction(Restriction restriction, int prio) {
 		if (restriction.getURI() == null) {
 			int operatorPrio = 4;
 			if (restriction.getOwlOnProperty() != null) {
@@ -223,8 +215,8 @@ public class ManchesterSyntaxGenerator {
 		return value(restriction);
 	}
 
-	private ManchesterSyntaxGenerator setOfClasses(List<? extends Class> set,
-			String operator, int operatorPrio, int prio) {
+	private ManchesterSyntaxGenerator setOfClasses(List<? extends Class> set, String operator, int operatorPrio,
+			int prio) {
 		Iterator<? extends Class> it = set.iterator();
 		if (operatorPrio < prio && set.size() > 1) {
 			append("(");
@@ -247,17 +239,15 @@ public class ManchesterSyntaxGenerator {
 	}
 
 	protected String escapeLiteral(String label) {
-		return label.replace("\\", "\\\\").replace("\t", "\\t")
-				.replace("\n", "\\n").replace("\r", "\\r")
-				.replace("\"", "\\\"");
+		return label.replace("\\", "\\\\").replace("\t", "\\t").replace("\n", "\\n").replace("\r", "\\r").replace("\"",
+				"\\\"");
 	}
 
 	protected ManchesterSyntaxGenerator value(Object value) {
 		if (value instanceof ILiteral) {
 			ILiteral literal = (ILiteral) value;
-			boolean quoted = XMLSCHEMA.TYPE_STRING
-					.equals(literal.getDatatype())
-					|| literal.getDatatype() == null;
+			boolean quoted = XMLSCHEMA.TYPE_STRING.equals(literal.getDatatype())
+					|| RDF.TYPE_LANGSTRING.equals(literal.getDatatype()) || literal.getDatatype() == null;
 			if (quoted) {
 				append("\"");
 			}
@@ -265,7 +255,9 @@ public class ManchesterSyntaxGenerator {
 			if (quoted) {
 				append("\"");
 			}
-			if (literal.getDatatype() != null) {
+			if (literal.getLanguage() != null) {
+				append("@").append(toString(literal.getLanguage()));
+			} else if (literal.getDatatype() != null) {
 				append("^^").append(toString(literal.getDatatype()));
 			}
 		} else {
@@ -276,8 +268,7 @@ public class ManchesterSyntaxGenerator {
 
 	protected String getPrefix(IReference reference) {
 		if (reference instanceof IEntity) {
-			return ((IEntity) reference).getEntityManager().getPrefix(
-					reference.getURI().namespace());
+			return ((IEntity) reference).getEntityManager().getPrefix(reference.getURI().namespace());
 		}
 		return null;
 	}
@@ -288,8 +279,7 @@ public class ManchesterSyntaxGenerator {
 			if (uri != null) {
 				String prefix = getPrefix((IReference) value);
 				String localPart = uri.localPart();
-				boolean hasLocalPart = localPart != null
-						&& localPart.length() > 0;
+				boolean hasLocalPart = localPart != null && localPart.length() > 0;
 				StringBuilder text = new StringBuilder();
 				if (prefix != null && prefix.length() > 0 && hasLocalPart) {
 					text.append(prefix).append(":");

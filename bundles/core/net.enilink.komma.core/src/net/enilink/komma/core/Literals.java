@@ -69,11 +69,9 @@ public class Literals {
 		final int prime = 31;
 		int result = 1;
 		URI datatype = literal.getDatatype();
-		result = prime * result
-				+ ((datatype == null) ? 0 : datatype.hashCode());
+		result = prime * result + ((datatype == null) ? 0 : datatype.hashCode());
 		String language = literal.getLanguage();
-		result = prime * result
-				+ ((language == null) ? 0 : language.hashCode());
+		result = prime * result + ((language == null) ? 0 : language.hashCode());
 		result = prime * result + literal.getLabel().hashCode();
 		return result;
 	}
@@ -89,12 +87,14 @@ public class Literals {
 		StringBuilder result = new StringBuilder("\"");
 		escapeTurtle(result, literal.getLabel());
 		result.append("\"");
-		URI datatype = literal.getDatatype();
 		String language = literal.getLanguage();
-		if (datatype != null) {
-			result.append("^^<").append(datatype.toString()).append(">");
-		} else if (language != null) {
+		if (language != null) {
 			result.append("@").append(language);
+		} else {
+			URI datatype = literal.getDatatype();
+			if (datatype != null) {
+				result.append("^^<").append(datatype.toString()).append(">");
+			}
 		}
 		return result.toString();
 	}
