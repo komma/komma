@@ -20,6 +20,26 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.core.runtime.content.IContentDescription;
+import org.eclipse.core.runtime.content.IContentType;
+import org.eclipse.core.runtime.content.IContentTypeManager;
+import org.openrdf.model.BNode;
+import org.openrdf.model.Statement;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFHandler;
+import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.RDFParserRegistry;
+import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.RDFWriterFactory;
+import org.openrdf.rio.RDFWriterRegistry;
+import org.openrdf.rio.Rio;
+
 import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
 import net.enilink.komma.core.BlankNode;
@@ -39,25 +59,6 @@ import net.enilink.komma.sesame.SesameValueConverter;
 import net.enilink.vocab.rdf.Property;
 import net.enilink.vocab.rdfs.Class;
 import net.enilink.vocab.rdfs.Resource;
-
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.QualifiedName;
-import org.eclipse.core.runtime.content.IContentDescription;
-import org.eclipse.core.runtime.content.IContentType;
-import org.eclipse.core.runtime.content.IContentTypeManager;
-import org.openrdf.model.BNode;
-import org.openrdf.model.Statement;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFHandler;
-import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.RDFWriter;
-import org.openrdf.rio.RDFWriterFactory;
-import org.openrdf.rio.RDFWriterRegistry;
-import org.openrdf.rio.Rio;
 
 public class ModelUtil {
 	/**
@@ -151,7 +152,7 @@ public class ModelUtil {
 			String mimeType, String charset) throws IOException {
 		RDFFormat format = RDFFormat.RDFXML;
 		if (mimeType != null) {
-			format = RDFFormat.forMIMEType(mimeType, format);
+			format = Rio.getParserFormatForMIMEType(mimeType, format);
 		}
 		if (RDFFormat.RDFXML.equals(format)) {
 			// use a special pretty writer in case of RDF/XML
@@ -251,7 +252,7 @@ public class ModelUtil {
 	private static RDFFormat determineFormat(String mimeType, InputStream in) {
 		RDFFormat format = RDFFormat.RDFXML;
 		if (mimeType != null) {
-			format = RDFFormat.forMIMEType(mimeType, format);
+			format = Rio.getParserFormatForMIMEType(mimeType, format);
 		} else if (in.markSupported()) {
 			// try to distinguish RDF/XML and Turtle
 			in.mark(2048);
@@ -493,7 +494,7 @@ public class ModelUtil {
 				}
 			}
 		} else {
-			for (RDFFormat format : RDFFormat.values()) {
+			for (RDFFormat format : RDFParserRegistry.getInstance().getKeys()) {
 				for (String mimeType : format.getMIMETypes()) {
 					mimeTypes.put(mimeType.toString(),
 							priorityForMimeType(mimeType.toString()));
@@ -541,7 +542,7 @@ public class ModelUtil {
 			}
 		}
 		if (mimeType == null) {
-			RDFFormat format = RDFFormat.forFileName(fileName);
+			RDFFormat format = Rio.getParserFormatForFileName(fileName);
 			if (format != null) {
 				mimeType = format.getDefaultMIMEType();
 			}

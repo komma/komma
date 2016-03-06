@@ -29,6 +29,7 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.Rio;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.openrdf.sail.memory.MemoryStore;
@@ -133,7 +134,7 @@ public class ModelSetModule extends AbstractModule {
 	}
 
 	private RDFFormat formatForFileName(String filename) {
-		RDFFormat format = RDFFormat.forFileName(filename);
+		RDFFormat format = Rio.getWriterFormatForFileName(filename);
 		if (format != null)
 			return format;
 		if (filename.endsWith(".owl"))
