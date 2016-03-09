@@ -9,7 +9,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>../../libraries/ch.qos.logback.slf4j</module>
+		<module>../../bundles/core/org.slf4j.logback</module>
 		
 		<module>../../bundles/core/net.enilink.commons.iterator</module>
 		<module>../../bundles/core/net.enilink.commons.logging</module>
