@@ -2,7 +2,7 @@
 <feature
       id="net.enilink.komma.license.feature"
       label="KOMMA - Framework License"
-      version="1.2.0.qualifier">
+      version="1.2.1">
 
    <description>
       KOMMA Framework License Information
