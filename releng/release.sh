@@ -26,7 +26,7 @@ done
 mvn -Dtycho.mode=maven tycho-versions:set-version -DnewVersion=$RELEASEVERSION
 
 git commit -a -m "prepare release $RELEASEVERSION"
-git tag v$RELEASEVERSION
+git tag v$RELEASEVERSION -m "KOMMA release $RELEASEVERSION"
 
 mvn -Dtycho.mode=maven tycho-versions:set-version -DnewVersion=$DEVELOPMENTVERSION
 
