@@ -3,7 +3,7 @@ Bundle-Localization: plugin
 Bundle-ManifestVersion: 2
 Bundle-Name: OWL Editor RCP
 Bundle-SymbolicName: net.enilink.komma.owl.editor.rcp;singleton:=true
-Bundle-Version: 1.2.2.qualifier
+Bundle-Version: 1.2.2
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: org.eclipse.core.runtime,
