@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Literal Converters
 Bundle-SymbolicName: net.enilink.komma.literals
-Bundle-Version: 1.2.2
+Bundle-Version: 1.2.3.qualifier
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: net.enilink.komma.core,
