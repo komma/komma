@@ -1,17 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
    <feature url="features/net.enilink.komma.feature_1.2.3.qualifier.jar" id="net.enilink.komma.feature" version="1.2.3.qualifier">
-      <category name="rdf"/>
+      <category name="komma-rdf"/>
    </feature>
    <feature url="features/net.enilink.komma.edit.feature_1.2.3.qualifier.jar" id="net.enilink.komma.edit.feature" version="1.2.3.qualifier">
-      <category name="rdf"/>
+      <category name="komma-rdf"/>
    </feature>
    <feature url="features/net.enilink.komma.edit.ui.feature_1.2.3.qualifier.jar" id="net.enilink.komma.edit.ui.feature" version="1.2.3.qualifier">
-      <category name="rdf"/>
+      <category name="komma-rdf"/>
    </feature>
    <feature url="features/net.enilink.komma.editor.feature_1.2.3.qualifier.jar" id="net.enilink.komma.editor.feature" version="1.2.3.qualifier">
-      <category name="rdf"/>
+      <category name="komma-rdf"/>
    </feature>
-   <category-def name="rdf" label="RDF"/>
+   <category-def name="komma-rdf" label="KOMMA RDF Framework"/>
+
+   <feature url="features/net.enilink.komma.feature.source_1.2.3.qualifier.jar" id="net.enilink.komma.feature.source" version="1.2.3.qualifier">
+      <category name="komma-rdf-sdk"/>
+   </feature>
+   <feature url="features/net.enilink.komma.edit.feature.source_1.2.3.qualifier.jar" id="net.enilink.komma.edit.feature.source" version="1.2.3.qualifier">
+      <category name="komma-rdf-sdk"/>
+   </feature>
+   <feature url="features/net.enilink.komma.edit.ui.feature.source_1.2.3.qualifier.jar" id="net.enilink.komma.edit.ui.feature.source" version="1.2.3.qualifier">
+      <category name="komma-rdf-sdk"/>
+   </feature>
+   <feature url="features/net.enilink.komma.editor.feature.source_1.2.3.qualifier.jar" id="net.enilink.komma.editor.feature.source" version="1.2.3.qualifier">
+      <category name="komma-rdf-sdk"/>
+   </feature>
+   <category-def name="komma-rdf-sdk" label="KOMMA RDF Framework SDK"/>
+
    <repository-reference location="http://download.eclipse.org/tools/orbit/downloads/drops/R20150519210750/repository/" enabled="true" />
 </site>
