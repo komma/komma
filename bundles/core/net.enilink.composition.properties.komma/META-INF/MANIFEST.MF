@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: KOMMA Property Mappers
 Bundle-SymbolicName: net.enilink.composition.properties.komma
-Bundle-Version: 1.2.3.qualifier
+Bundle-Version: 1.2.3
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: com.google.inject;version="1.4",

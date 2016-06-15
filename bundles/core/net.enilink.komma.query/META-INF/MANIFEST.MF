@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Query
 Bundle-SymbolicName: net.enilink.komma.query
-Bundle-Version: 1.2.3.qualifier
+Bundle-Version: 1.2.3
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: net.enilink.komma.parser;visibility:=reexport,

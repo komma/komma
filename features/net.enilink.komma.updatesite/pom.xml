@@ -6,10 +6,10 @@
 	<parent>
 		<groupId>net.enilink.komma</groupId>
 		<artifactId>komma-features</artifactId>
-		<version>1.2.3-SNAPSHOT</version>
+		<version>1.2.3</version>
 	</parent>
 	<groupId>net.enilink.komma</groupId>
 	<artifactId>net.enilink.komma.updatesite</artifactId>
-	<version>1.2.3-SNAPSHOT</version>
+	<version>1.2.3</version>
 	<packaging>eclipse-repository</packaging>
 </project>

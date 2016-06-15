@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Composition Cache
 Bundle-SymbolicName: net.enilink.composition.cache
-Bundle-Version: 1.2.3.qualifier
+Bundle-Version: 1.2.3
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: com.google.common.base;version="17.0.0",

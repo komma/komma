@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/net.enilink.komma.feature_1.2.3.qualifier.jar" id="net.enilink.komma.feature" version="1.2.3.qualifier">
+   <feature url="features/net.enilink.komma.feature_1.2.3.jar" id="net.enilink.komma.feature" version="1.2.3">
       <category name="komma-rdf"/>
    </feature>
-   <feature url="features/net.enilink.komma.edit.feature_1.2.3.qualifier.jar" id="net.enilink.komma.edit.feature" version="1.2.3.qualifier">
+   <feature url="features/net.enilink.komma.edit.feature_1.2.3.jar" id="net.enilink.komma.edit.feature" version="1.2.3">
       <category name="komma-rdf"/>
    </feature>
-   <feature url="features/net.enilink.komma.edit.ui.feature_1.2.3.qualifier.jar" id="net.enilink.komma.edit.ui.feature" version="1.2.3.qualifier">
+   <feature url="features/net.enilink.komma.edit.ui.feature_1.2.3.jar" id="net.enilink.komma.edit.ui.feature" version="1.2.3">
       <category name="komma-rdf"/>
    </feature>
-   <feature url="features/net.enilink.komma.editor.feature_1.2.3.qualifier.jar" id="net.enilink.komma.editor.feature" version="1.2.3.qualifier">
+   <feature url="features/net.enilink.komma.editor.feature_1.2.3.jar" id="net.enilink.komma.editor.feature" version="1.2.3">
       <category name="komma-rdf"/>
    </feature>
    <category-def name="komma-rdf" label="KOMMA RDF Framework"/>
