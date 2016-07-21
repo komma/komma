@@ -427,6 +427,12 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	}
 
 	@Override
+	public Object getSingle(IReference property) {
+		PropertyInfo propertyInfo = ensurePropertyInfo(property);
+		return propertyInfo.getPropertySet().getSingle();
+	}
+
+	@Override
 	public boolean hasApplicableProperty(IReference property) {
 		IQuery<?> query = getEntityManager().createQuery(
 				HAS_APPLICABLE_PROPERTY);

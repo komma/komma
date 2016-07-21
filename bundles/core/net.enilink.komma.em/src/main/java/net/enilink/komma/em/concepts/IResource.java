@@ -115,6 +115,8 @@ public interface IResource extends Resource {
 
 	Object get(IReference property);
 
+	Object getSingle(IReference property);
+
 	Set<Object> getAsSet(IReference property);
 
 	void refresh(IReference property);
