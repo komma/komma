@@ -5,11 +5,11 @@
   <parent>
     <groupId>net.enilink.komma</groupId>
     <artifactId>komma-parent</artifactId>
-    <version>1.2.4-SNAPSHOT</version>
+    <version>1.2.4</version>
     <relativePath>../../../pom.xml</relativePath>
   </parent>
   <groupId>net.enilink.komma</groupId>
   <artifactId>net.enilink.komma.edit.ui</artifactId>
-  <version>1.2.4-SNAPSHOT</version>
+  <version>1.2.4</version>
   <packaging>eclipse-plugin</packaging>
 </project>
