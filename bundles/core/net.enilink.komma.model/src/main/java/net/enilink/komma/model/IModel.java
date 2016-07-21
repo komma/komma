@@ -202,12 +202,12 @@ public interface IModel {
 	 * Loads the model using the specified options.
 	 * <p>
 	 * Options are handled generically as feature-to-setting entries; the
-	 * resource will ignore options it doesn't recognize. The options could even
+	 * model will ignore options it doesn't recognize. The options could even
 	 * include things like an Eclipse progress monitor...
 	 * </p>
 	 * <p>
 	 * An implementation typically uses the {@link IModelSet#getURIConverter URI
-	 * converter} of the {@link #getModelSet() containing} resource set to
+	 * converter} of the {@link #getModelSet() containing} model set to
 	 * {@link IURIConverter#createInputStream(URI, Map) create} an input stream,
 	 * and then delegates to {@link #load(InputStream, Map) load(InputStream,
 	 * Map)}.
@@ -241,19 +241,26 @@ public interface IModel {
 	 * @return the resolved URI for the given local part.
 	 */
 	URI resolveURI(String localPart);
+	
+	/**
+	 * Loads the model from the URI using the specified options.
+	 * 
+	 * @see #load(Map)
+	 * @see #load(InputStream)
+	 * @param options
+	 *            the load options.
+	 */
+	void load(URI uri, Map<?, ?> options) throws IOException;
 
 	/**
 	 * Loads the model from the input stream using the specified options.
-	 * <p>
-	 * Usually, {@link #load(Map) load(Map)} is called directly and it calls
-	 * this.
-	 * </p>
 	 * 
 	 * @param inputStream
 	 *            the stream
 	 * @param options
 	 *            the load options.
 	 * @see #load(Map)
+	 * @see #load(URI)
 	 * @see #save(OutputStream, Map)
 	 */
 	void load(InputStream inputStream, Map<?, ?> options) throws IOException;

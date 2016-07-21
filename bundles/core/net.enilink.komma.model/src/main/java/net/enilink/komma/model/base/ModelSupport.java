@@ -690,51 +690,51 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	/*
 	 * documentation inherited
 	 */
-	protected boolean isNotificationRequired() {
-		return true;
+	@Override
+	public void load(Map<?, ?> options) throws IOException {
+		if (!isLoaded()) {
+			loadInternal(getURI(), options);
+		}
 	}
-
+	
 	/*
 	 * documentation inherited
 	 */
 	@Override
-	public void load(Map<?, ?> options) throws IOException {
-		if (!isLoaded()) {
-			IURIConverter uriConverter = getURIConverter();
-			Map<?, ?> response = options == null ? null : (Map<?, ?>) options
-					.get(IURIConverter.OPTION_RESPONSE);
-			if (response == null) {
-				response = new HashMap<Object, Object>();
-			}
-
-			InputStream inputStream = null;
-			try {
-				inputStream = uriConverter.createInputStream(getURI(),
-						new ExtensibleURIConverter.OptionsMap(
-								IURIConverter.OPTION_RESPONSE, response,
-								options));
-			} catch (IOException exception) {
-				setModelLoaded(true);
-				setModelLoading(true);
-				getErrors().clear();
-				getWarnings().clear();
-				setModelLoading(false);
-				setModified(false);
-				throw exception;
-			}
-
-			try {
-				getBehaviourDelegate().load(inputStream, options);
-			} finally {
-				inputStream.close();
-				Long timeStamp = (Long) response
-						.get(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY);
-				if (timeStamp != null) {
-					// setTimeStamp(timeStamp);
-				}
-			}
+	public void load(URI uri, Map<?, ?> options) throws IOException {
+		loadInternal(uri, options);
+	}
+	
+	protected void loadInternal(URI uri, Map<?, ?> options) throws IOException {
+		IURIConverter uriConverter = getURIConverter();
+		Map<?, ?> response = options == null ? null : (Map<?, ?>) options.get(IURIConverter.OPTION_RESPONSE);
+		if (response == null) {
+			response = new HashMap<Object, Object>();
 		}
 
+		InputStream inputStream = null;
+		try {
+			inputStream = uriConverter.createInputStream(uri,
+					new ExtensibleURIConverter.OptionsMap(IURIConverter.OPTION_RESPONSE, response, options));
+		} catch (IOException exception) {
+			setModelLoaded(true);
+			setModelLoading(true);
+			getErrors().clear();
+			getWarnings().clear();
+			setModelLoading(false);
+			setModified(false);
+			throw exception;
+		}
+
+		try {
+			getBehaviourDelegate().load(inputStream, options);
+		} finally {
+			inputStream.close();
+			Long timeStamp = (Long) response.get(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY);
+			if (timeStamp != null) {
+				// setTimeStamp(timeStamp);
+			}
+		}
 	}
 
 	/*
