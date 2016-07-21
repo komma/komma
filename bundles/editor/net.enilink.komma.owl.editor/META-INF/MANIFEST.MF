@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: OWL Editor
 Bundle-SymbolicName: net.enilink.komma.owl.editor;singleton:=true
-Bundle-Version: 1.2.4
+Bundle-Version: 1.2.5.qualifier
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Localization: plugin

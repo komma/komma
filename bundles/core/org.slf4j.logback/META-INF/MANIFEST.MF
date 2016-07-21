@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Logback implementation for SLF4J
 Bundle-SymbolicName: org.slf4j.logback
-Bundle-Version: 1.2.4
+Bundle-Version: 1.2.5.qualifier
 Bundle-Vendor: enilink.net
 Fragment-Host: org.slf4j.api;bundle-version="[1.7.2,1.7.3)"
 Import-Package: org.slf4j.impl;version="[1.7.0,1.8.0)"

@@ -2,10 +2,10 @@
 <feature
       id="net.enilink.komma.edit.feature"
       label="KOMMA - Editing Framework"
-      version="1.2.4"
+      version="1.2.5.qualifier"
       provider-name="enilink.net"
       license-feature="net.enilink.komma.license.feature"
-      license-feature-version="1.2.4">
+      license-feature-version="1.2.5.qualifier">
 
    <description>
       KOMMA - Base components for editing support
