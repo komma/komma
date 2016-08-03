@@ -378,11 +378,11 @@ public class ResourceEditingSupport implements IEditingSupport {
 		}
 
 		final URI[] name = { null };
-		boolean createNew = false;
+		final boolean[] createNew = { false };
 		ParsingResult<Object> ctor = new BasicParseRunner<Object>(
 				createConstructorParser().Constructor()).run(valueStr);
 		if (ctor.matched) {
-			createNew = true;
+			createNew[0] = true;
 			IndexRange range = (IndexRange) ctor.resultValue;
 			valueStr = valueStr.substring(range.start, range.end);
 			// check if a name for the new resource is given
@@ -409,10 +409,14 @@ public class ResourceEditingSupport implements IEditingSupport {
 				protected CommandResult doExecuteWithResult(
 						IProgressMonitor progressMonitor, IAdaptable info)
 						throws ExecutionException {
-					if (name[0] != null) {
-						// create a new resource
+					if (createNew[0] && name[0] != null) {
+						// create a new named resource
 						return CommandResult.newOKCommandResult(entityManager
 								.createNamed(name[0], uri));
+					} else if (createNew[0]) {
+						// create a new blank node resource
+						return CommandResult.newOKCommandResult(entityManager
+								.create(uri));
 					} else {
 						return CommandResult.newOKCommandResult(entityManager
 								.find(uri));
@@ -436,10 +440,10 @@ public class ResourceEditingSupport implements IEditingSupport {
 					1);
 		}
 		Iterator<Match> matches = new ResourceFinder().findAnyResources(
-				options.forPredicate(createNew ? null : property)).iterator();
+				options.forPredicate(createNew[0] ? null : property)).iterator();
 		if (matches.hasNext()) {
 			final IEntity resource = matches.next().resource;
-			if (createNew && getLabel(resource).equals(valueStr)) {
+			if (createNew[0] && getLabel(resource).equals(valueStr)) {
 				// create a new object
 				return new SimpleCommand() {
 					@Override
