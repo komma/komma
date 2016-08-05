@@ -32,6 +32,7 @@ Import-Package: com.google.inject;version="1.4",
  org.openrdf.repository.sail.helpers,
  org.openrdf.rio,
  org.openrdf.rio.helpers,
+ org.openrdf.rio.turtle,
  org.openrdf.sail,
  org.openrdf.sail.memory,
  org.slf4j

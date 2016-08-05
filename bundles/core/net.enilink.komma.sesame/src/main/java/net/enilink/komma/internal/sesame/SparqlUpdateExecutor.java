@@ -16,6 +16,8 @@
  */
 package net.enilink.komma.internal.sesame;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,6 +52,7 @@ import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.queryrender.sparql.SparqlTupleExprRenderer;
 import org.openrdf.repository.sail.helpers.SPARQLUpdateDataBlockParser;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -248,28 +251,40 @@ public class SparqlUpdateExecutor {
 		}
 	}
 
-	protected List<IStatement> dataBlockToStatements(String dataBlock) {
+	protected List<IStatement> dataBlockToStatements(String dataBlock, boolean allowBNodes, UpdateContext uc)
+			throws KommaException {
 		List<IStatement> stmts = new ArrayList<>();
 		SPARQLUpdateDataBlockParser parser = new SPARQLUpdateDataBlockParser(vf);
-		parser.setAllowBlankNodes(false); // no blank nodes allowed
+		// blank nodes are OK w/ INSERT DATA but not allowed w/ DELETE DATA
+		parser.setAllowBlankNodes(allowBNodes);
 		parser.setRDFHandler(new RDFHandlerBase() {
 			@Override
 			public void handleStatement(Statement stmt) throws RDFHandlerException {
-				new net.enilink.komma.core.Statement((IReference) valueConverter.fromSesame(stmt.getSubject()),
-						(IReference) valueConverter.fromSesame(stmt.getPredicate()),
-						valueConverter.fromSesame(stmt.getObject()),
-						(IReference) valueConverter.fromSesame(stmt.getContext()));
+				stmts.add(
+						new net.enilink.komma.core.Statement((IReference) valueConverter.fromSesame(stmt.getSubject()),
+								(IReference) valueConverter.fromSesame(stmt.getPredicate()),
+								valueConverter.fromSesame(stmt.getObject()),
+								(IReference) valueConverter.fromSesame(stmt.getContext())));
 			}
 		});
+		try {
+			parser.parse(new StringReader(dataBlock), uc.baseURI);
+		} catch (RDFParseException rpe) {
+			throw new KommaException(rpe);
+		} catch (RDFHandlerException rhe) {
+			throw new KommaException(rhe);
+		} catch (IOException ioe) {
+			throw new KommaException(ioe);
+		}
 		return stmts;
 	}
 
 	protected void executeInsertData(InsertData insertDataExpr, UpdateContext uc) throws KommaException {
-		dm.add(dataBlockToStatements(insertDataExpr.getDataBlock()), uc.modifyContexts);
+		dm.add(dataBlockToStatements(insertDataExpr.getDataBlock(), true, uc), uc.modifyContexts);
 	}
 
 	protected void executeDeleteData(DeleteData deleteDataExpr, UpdateContext uc) throws KommaException {
-		dm.remove(dataBlockToStatements(deleteDataExpr.getDataBlock()), uc.modifyContexts);
+		dm.remove(dataBlockToStatements(deleteDataExpr.getDataBlock(), false, uc), uc.modifyContexts);
 	}
 
 	protected IExtendedIterator<?> evaluateSparql(TupleExpr tupleExpr, UpdateContext uc) {
