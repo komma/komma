@@ -1,15 +1,15 @@
 package net.enilink.komma.internal.sesame;
 
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.Update;
+import org.eclipse.rdf4j.query.UpdateExecutionException;
+
+import com.google.inject.Inject;
+
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.dm.IDataManagerUpdate;
 import net.enilink.komma.sesame.SesameValueConverter;
-
-import org.openrdf.model.Value;
-import org.openrdf.query.Update;
-import org.openrdf.query.UpdateExecutionException;
-
-import com.google.inject.Inject;
 
 /**
  * Implements {@link IDataManagerUpdate} for {@link SesameRepositoryDataManager}
@@ -44,5 +44,4 @@ public class SesameUpdateRemote implements IDataManagerUpdate {
 		}
 		return this;
 	}
-
 }

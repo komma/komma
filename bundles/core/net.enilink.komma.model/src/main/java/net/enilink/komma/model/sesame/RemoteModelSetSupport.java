@@ -7,6 +7,23 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.http.HTTPRepository;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFParseException;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
+import com.google.inject.Module;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.util.Modules;
+
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.IMap;
 import net.enilink.composition.annotations.Iri;
@@ -30,23 +47,6 @@ import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.sesame.SesameDataManagerFactory;
 import net.enilink.komma.sesame.SesameModule;
-
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
-import org.openrdf.model.Resource;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.http.HTTPRepository;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParseException;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
-import com.google.inject.Module;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.util.Modules;
 
 @Iri(MODELS.NAMESPACE + "RemoteModelSet")
 public abstract class RemoteModelSetSupport implements IModelSet.Internal {

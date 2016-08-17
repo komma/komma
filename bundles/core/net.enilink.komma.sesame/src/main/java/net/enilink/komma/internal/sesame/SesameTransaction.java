@@ -28,12 +28,12 @@
  */
 package net.enilink.komma.internal.sesame;
 
-import org.openrdf.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
-import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.RollbackException;
+import net.enilink.komma.dm.change.IDataChangeSupport;
 
 /**
  * {@link ITransaction} interface for {@link SesameRepositoryDataManager}.

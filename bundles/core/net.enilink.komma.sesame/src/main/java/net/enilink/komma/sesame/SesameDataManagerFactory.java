@@ -1,17 +1,17 @@
 package net.enilink.komma.sesame;
 
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-import net.enilink.komma.dm.IDataManager;
-import net.enilink.komma.dm.IDataManagerFactory;
-import net.enilink.komma.internal.sesame.SesameRepositoryDataManager;
 import net.enilink.komma.core.IDialect;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.SparqlStandardDialect;
+import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.dm.IDataManagerFactory;
+import net.enilink.komma.internal.sesame.SesameRepositoryDataManager;
 
 public class SesameDataManagerFactory implements IDataManagerFactory {
 	@Inject

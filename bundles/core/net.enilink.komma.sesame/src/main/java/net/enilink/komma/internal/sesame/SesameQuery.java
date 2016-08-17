@@ -17,6 +17,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.BooleanQuery;
+import org.eclipse.rdf4j.query.GraphQuery;
+import org.eclipse.rdf4j.query.Query;
+import org.eclipse.rdf4j.query.TupleQuery;
+
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.KommaException;
@@ -26,15 +35,6 @@ import net.enilink.komma.internal.sesame.result.SesameBooleanResult;
 import net.enilink.komma.internal.sesame.result.SesameGraphResult;
 import net.enilink.komma.internal.sesame.result.SesameTupleResult;
 import net.enilink.komma.sesame.SesameValueConverter;
-
-import org.openrdf.model.Value;
-import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.GraphQuery;
-import org.openrdf.query.Query;
-import org.openrdf.query.TupleQuery;
-
-import com.google.inject.Inject;
-import com.google.inject.Injector;
 
 /**
  * Implements {@link IDataManagerQuery} for {@link SesameRepositoryDataManager}.
@@ -57,7 +57,7 @@ public class SesameQuery<R> implements IDataManagerQuery<R> {
 		this.query = query;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	@Override
 	public IExtendedIterator<R> evaluate() {
 		try {
@@ -114,7 +114,7 @@ public class SesameQuery<R> implements IDataManagerQuery<R> {
 		case Properties.TIMEOUT:
 			if (value instanceof Number) {
 				long timeout = ((Number) value).longValue();
-				query.setMaxQueryTime(timeout <= 0 ? 0 : (int) (timeout / 1000));
+				query.setMaxExecutionTime(timeout <= 0 ? 0 : (int) (timeout / 1000));
 				ensureProperties().put(propertyName, value);
 			} else
 				throw new IllegalArgumentException("Illegal argument '" + value

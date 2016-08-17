@@ -1,7 +1,7 @@
 package net.enilink.komma.model.sesame;
 
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 public interface IRepositoryModelSet {
 

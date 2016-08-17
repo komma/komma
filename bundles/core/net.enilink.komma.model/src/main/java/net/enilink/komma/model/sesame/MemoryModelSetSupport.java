@@ -17,6 +17,23 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFParseException;
+import org.eclipse.rdf4j.sail.inferencer.fc.ForwardChainingRDFSInferencer;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Module;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.traits.Behaviour;
 import net.enilink.komma.common.AbstractKommaPlugin;
@@ -27,23 +44,6 @@ import net.enilink.komma.em.KommaEM;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.sesame.SesameModule;
-
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
-import org.openrdf.model.Resource;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
-import org.openrdf.sail.memory.MemoryStore;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Module;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
 
 @Iri(MODELS.NAMESPACE + "MemoryModelSet")
 public abstract class MemoryModelSetSupport implements IModelSet,
@@ -101,7 +101,7 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 									Resource[] contexts = defaultGraph == null ? new Resource[0]
 											: new Resource[] { repository
 													.getValueFactory()
-													.createURI(
+													.createIRI(
 															defaultGraph
 																	.toString()) };
 									conn.add(in, "", RDFFormat.RDFXML, contexts);

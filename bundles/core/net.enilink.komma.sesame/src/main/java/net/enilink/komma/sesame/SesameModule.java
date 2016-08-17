@@ -1,7 +1,7 @@
 package net.enilink.komma.sesame;
 
-import org.openrdf.model.ValueFactory;
-import org.openrdf.repository.Repository;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.repository.Repository;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;

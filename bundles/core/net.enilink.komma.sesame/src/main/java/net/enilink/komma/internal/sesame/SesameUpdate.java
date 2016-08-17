@@ -1,5 +1,16 @@
 package net.enilink.komma.internal.sesame;
 
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.query.Dataset;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.UnsupportedQueryLanguageException;
+import org.eclipse.rdf4j.query.algebra.UpdateExpr;
+import org.eclipse.rdf4j.query.parser.ParsedUpdate;
+import org.eclipse.rdf4j.query.parser.QueryParserUtil;
+
+import com.google.inject.Inject;
+
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.KommaException;
@@ -7,17 +18,6 @@ import net.enilink.komma.core.LinkedHashBindings;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerUpdate;
 import net.enilink.komma.sesame.SesameValueConverter;
-
-import org.openrdf.model.ValueFactory;
-import org.openrdf.query.Dataset;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.UnsupportedQueryLanguageException;
-import org.openrdf.query.algebra.UpdateExpr;
-import org.openrdf.query.parser.ParsedUpdate;
-import org.openrdf.query.parser.QueryParserUtil;
-
-import com.google.inject.Inject;
 
 /**
  * Implements {@link IDataManagerUpdate} for {@link SesameRepositoryDataManager}

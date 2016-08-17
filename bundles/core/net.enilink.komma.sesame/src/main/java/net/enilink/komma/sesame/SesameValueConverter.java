@@ -5,6 +5,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.Dataset;
+import org.eclipse.rdf4j.query.impl.MapBindingSet;
+import org.eclipse.rdf4j.query.impl.SimpleDataset;
+
+import com.google.inject.Inject;
+
 import net.enilink.komma.core.BlankNode;
 import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.ILiteral;
@@ -17,23 +31,9 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.internal.sesame.SesameLiteral;
 import net.enilink.komma.internal.sesame.SesameReference;
 
-import org.openrdf.model.BNode;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
-import org.openrdf.query.impl.DatasetImpl;
-import org.openrdf.query.impl.MapBindingSet;
-
-import com.google.inject.Inject;
-
 public class SesameValueConverter {
-	private static final org.openrdf.model.URI[] EMPTY_URIS = {};
-	private static final org.openrdf.model.URI[] NULL_URI = { null };
+	private static final IRI[] EMPTY_URIS = {};
+	private static final IRI[] NULL_URI = { null };
 
 	protected ValueFactory valueFactory;
 	protected final Map<String, BNode> bnodeMap = new HashMap<>();
@@ -45,15 +45,15 @@ public class SesameValueConverter {
 
 	public Dataset createDataset(IReference[] readContexts,
 			IReference[] modifyContexts) {
-		DatasetImpl ds = new DatasetImpl();
-		for (org.openrdf.model.URI graph : toSesameURI(readContexts)) {
+		SimpleDataset ds = new SimpleDataset();
+		for (IRI graph : toSesameURI(readContexts)) {
 			ds.addDefaultGraph(graph);
 			if (graph != null) {
 				ds.addNamedGraph(graph);
 			}
 		}
-		org.openrdf.model.URI[] sesameContexts = toSesameURI(modifyContexts);
-		for (org.openrdf.model.URI graph : sesameContexts) {
+		IRI[] sesameContexts = toSesameURI(modifyContexts);
+		for (IRI graph : sesameContexts) {
 			ds.addDefaultRemoveGraph(graph);
 		}
 		if (sesameContexts.length > 0) {
@@ -85,7 +85,7 @@ public class SesameValueConverter {
 	}
 
 	public Statement toSesame(IStatement next) {
-		return new StatementImpl((Resource) toSesame(next.getSubject()),
+		return valueFactory.createStatement((Resource) toSesame(next.getSubject()),
 				toSesame(next.getPredicate().getURI()),
 				toSesame((IValue) next.getObject()));
 	}
@@ -154,7 +154,7 @@ public class SesameValueConverter {
 			} else {
 				return valueFactory
 						.createLiteral(literal.getLabel(),
-								(org.openrdf.model.URI) toSesame(literal
+								(IRI) toSesame(literal
 										.getDatatype()));
 			}
 		}
@@ -162,32 +162,33 @@ public class SesameValueConverter {
 				+ value.getClass().getName());
 	}
 
-	public org.openrdf.model.URI toSesame(URI uri) {
+	public IRI toSesame(URI uri) {
 		if (uri == null) {
 			return null;
 		}
-		return valueFactory.createURI(uri.toString());
+		// FIXME: check if simply replacing URI w/ IRI is applicable
+		return valueFactory.createIRI(uri.toString());
 	}
 
-	public org.openrdf.model.URI[] toSesameURI(IReference... references) {
+	public IRI[] toSesameURI(IReference... references) {
 		if (references.length == 0) {
 			return EMPTY_URIS;
 		} else if (references.length == 1 && references[0] == null) {
 			return NULL_URI;
 		}
-		List<org.openrdf.model.URI> uris = new ArrayList<org.openrdf.model.URI>(
+		List<IRI> uris = new ArrayList<IRI>(
 				references.length);
 		for (IReference ref : references) {
 			if (ref == null) {
 				uris.add(null);
 			} else {
 				Resource resource = toSesame(ref);
-				if (resource instanceof org.openrdf.model.URI) {
-					uris.add((org.openrdf.model.URI) resource);
+				if (resource instanceof IRI) {
+					uris.add((IRI) resource);
 				}
 			}
 		}
-		return uris.toArray(new org.openrdf.model.URI[uris.size()]);
+		return uris.toArray(new IRI[uris.size()]);
 	}
 
 	public void reset() {

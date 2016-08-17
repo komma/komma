@@ -14,7 +14,7 @@
             <plugin>
                 <groupId>org.reficio</groupId>
                 <artifactId>p2-maven-plugin</artifactId>
-                <version>1.2.0-SNAPSHOT</version>
+                <version>1.2.1</version>
                 <executions>
                     <execution>
                         <id>default-cli</id>
@@ -107,17 +107,16 @@
                                     <source>true</source>
                                 </artifact>
                                 <artifact>
-                                    <id>org.openrdf.sesame:sesame-runtime-osgi:2.8.9</id>
+                                    <id>org.eclipse.rdf4j:rdf4j-runtime-osgi:2.0M4</id>
                                     <transitive>false</transitive>
                                     <source>true</source>
                                     <override>true</override>
                                     <!-- Modify MANIFEST to make dependency on spatial4j optional -->
                                     <instructions>
-                                            <Bundle-SymbolicName>org.openrdf.sesame2</Bundle-SymbolicName>
-                                            <Export-Package>!*text-base,!*prop-base,org.openrdf.*;version=2.8.9,info.aduna.*;version=2.8.9</Export-Package>
+                                            <Bundle-SymbolicName>org.eclipse.rdf4j</Bundle-SymbolicName>
+                                            <Export-Package>!*text-base,!*prop-base,org.eclipse.rdf4j.*;version=2.0.0.M4</Export-Package>
                                             <Import-Package>
                                                 org.slf4j.*,
-                                                info.aduna.*,
                                                 javax.*;resolution:=optional,
                                                 org.apache.*;resolution:=optional,
                                                 org.springframework.*;resolution:=optional,
@@ -125,11 +124,6 @@
                                                 *
                                             </Import-Package>
                                     </instructions>
-                                </artifact>
-                                <artifact>
-                                    <id>org.openrdf.sesame:sesame-queryrender:2.8.9</id>
-                                    <transitive>false</transitive>
-                                    <source>true</source>
                                 </artifact>
 
                                 <artifact>
@@ -195,7 +189,7 @@
     <pluginRepositories>
         <pluginRepository>
             <id>reficio</id>
-            <url>http://repo.reficio.org/maven/</url>
+            <url>https://dl.bintray.com/enilink/maven/</url>
         </pluginRepository>
     </pluginRepositories>
 </project>

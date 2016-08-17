@@ -8,7 +8,27 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Properties;
+
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFParseException;
+import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.sail.NotifyingSail;
+import org.eclipse.rdf4j.sail.inferencer.fc.ForwardChainingRDFSInferencer;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.osgi.framework.Bundle;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 
 import net.enilink.komma.core.IProvider;
 import net.enilink.komma.core.IUnitOfWork;
@@ -21,25 +41,6 @@ import net.enilink.komma.em.ThreadLocalDataManager;
 import net.enilink.komma.em.util.KommaUtil;
 import net.enilink.komma.em.util.UnitOfWork;
 import net.enilink.komma.sesame.SesameModule;
-
-import org.eclipse.core.runtime.Platform;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.Rio;
-import org.openrdf.sail.NotifyingSail;
-import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
-import org.openrdf.sail.memory.MemoryStore;
-import org.osgi.framework.Bundle;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
 
 public class ModelSetModule extends AbstractModule {
 	private KommaModule parentModule;
@@ -134,9 +135,9 @@ public class ModelSetModule extends AbstractModule {
 	}
 
 	private RDFFormat formatForFileName(String filename) {
-		RDFFormat format = Rio.getWriterFormatForFileName(filename);
-		if (format != null)
-			return format;
+		Optional<RDFFormat> format = Rio.getWriterFormatForFileName(filename);
+		if (format.isPresent())
+			return format.get();
 		if (filename.endsWith(".owl"))
 			return RDFFormat.RDFXML;
 		throw new IllegalArgumentException("Unknow RDF format for " + filename);

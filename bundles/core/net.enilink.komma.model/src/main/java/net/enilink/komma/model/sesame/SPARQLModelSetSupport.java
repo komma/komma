@@ -1,11 +1,11 @@
 package net.enilink.komma.model.sesame;
 
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
+
 import net.enilink.composition.annotations.Iri;
 import net.enilink.komma.model.MODELS;
-
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sparql.SPARQLRepository;
 
 @Iri(MODELS.NAMESPACE + "SPARQLModelSet")
 public abstract class SPARQLModelSetSupport extends MemoryModelSetSupport {

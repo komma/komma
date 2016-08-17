@@ -1,6 +1,7 @@
 package net.enilink.komma.internal.sesame.result;
 
-import info.aduna.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+
 import net.enilink.commons.iterator.NiceIterator;
 import net.enilink.komma.core.KommaException;
 

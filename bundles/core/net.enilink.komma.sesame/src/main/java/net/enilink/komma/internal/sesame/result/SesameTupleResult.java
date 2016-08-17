@@ -2,17 +2,17 @@ package net.enilink.komma.internal.sesame.result;
 
 import java.util.List;
 
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+
+import com.google.inject.Inject;
+
 import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.ITupleResult;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.LinkedHashBindings;
 import net.enilink.komma.sesame.SesameValueConverter;
-
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.TupleQueryResult;
-
-import com.google.inject.Inject;
 
 public class SesameTupleResult extends
 		SesameResult<BindingSet, IBindings<IValue>> implements

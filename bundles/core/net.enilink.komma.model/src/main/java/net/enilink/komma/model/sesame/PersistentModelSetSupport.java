@@ -14,18 +14,18 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.sail.inferencer.fc.ForwardChainingRDFSInferencer;
+import org.eclipse.rdf4j.sail.nativerdf.NativeStore;
+
 import net.enilink.composition.annotations.Iri;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 import net.enilink.komma.model.MODELS;
-
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
-import org.openrdf.sail.nativerdf.NativeStore;
 
 @Iri(MODELS.NAMESPACE + "PersistentModelSet")
 public abstract class PersistentModelSetSupport extends MemoryModelSetSupport {

@@ -1,6 +1,7 @@
 package net.enilink.komma.internal.sesame.result;
 
-import info.aduna.iteration.SingletonIteration;
+import org.eclipse.rdf4j.common.iteration.SingletonIteration;
+
 import net.enilink.komma.core.IBooleanResult;
 
 public class SesameBooleanResult extends SesameResult<Boolean, Boolean>

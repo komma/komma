@@ -1,8 +1,7 @@
 package net.enilink.komma.internal.sesame.result;
 
-import info.aduna.iteration.CloseableIteration;
-
-import org.openrdf.model.Statement;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.model.Statement;
 
 import com.google.inject.Inject;
 

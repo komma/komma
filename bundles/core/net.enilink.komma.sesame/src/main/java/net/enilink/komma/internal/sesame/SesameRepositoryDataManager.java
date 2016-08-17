@@ -5,6 +5,22 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.Operation;
+import org.eclipse.rdf4j.query.Query;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.Update;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+
 import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.core.INamespace;
@@ -24,22 +40,6 @@ import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.internal.sesame.result.SesameGraphResult;
 import net.enilink.komma.internal.sesame.result.SesameResult;
 import net.enilink.komma.sesame.SesameValueConverter;
-
-import org.openrdf.model.Namespace;
-import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.Operation;
-import org.openrdf.query.Query;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.Update;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-
-import com.google.inject.Inject;
-import com.google.inject.Injector;
 
 public class SesameRepositoryDataManager implements IDataManager {
 	protected static final IReference[] NULL_CTX = { null };
@@ -94,8 +94,8 @@ public class SesameRepositoryDataManager implements IDataManager {
 		if (addContexts.length == 0) {
 			addContexts = NULL_CTX;
 		}
-		URI[] readCtx = valueConverter.toSesameURI(readContexts);
-		URI[] addCtx = valueConverter.toSesameURI(addContexts);
+		IRI[] readCtx = valueConverter.toSesameURI(readContexts);
+		IRI[] addCtx = valueConverter.toSesameURI(addContexts);
 		try {
 			Iterator<? extends IStatement> it = statements.iterator();
 
@@ -105,7 +105,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 				IStatement stmt = it.next();
 
 				Resource subject = valueConverter.toSesame(stmt.getSubject());
-				URI predicate = (URI) valueConverter.toSesame(stmt
+				IRI predicate = (IRI) valueConverter.toSesame(stmt
 						.getPredicate());
 				Value object = valueConverter.toSesame((IValue) stmt
 						.getObject());
@@ -399,7 +399,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 		try {
 			return getConnection().hasStatement(
 					(Resource) valueConverter.toSesame(subject),
-					(URI) valueConverter.toSesame(predicate),
+					(IRI) valueConverter.toSesame(predicate),
 					valueConverter.toSesame(object), includeInferred,
 					valueConverter.toSesameURI(contexts));
 		} catch (Exception e) {
@@ -420,7 +420,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 		try {
 			SesameGraphResult result = new SesameGraphResult(getConnection()
 					.getStatements(valueConverter.toSesame(subject),
-							(URI) valueConverter.toSesame(predicate),
+							(IRI) valueConverter.toSesame(predicate),
 							valueConverter.toSesame(object), includeInferred,
 							valueConverter.toSesameURI(contexts)));
 			injector.injectMembers(result);
@@ -455,7 +455,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 		if (contexts.length == 0) {
 			contexts = NULL_CTX;
 		}
-		URI[] removeContexts = valueConverter.toSesameURI(contexts);
+		IRI[] removeContexts = valueConverter.toSesameURI(contexts);
 		try {
 			RepositoryConnection conn = getConnection();
 			boolean trackChanges = changeSupport.isEnabled(this);
@@ -475,7 +475,7 @@ public class SesameRepositoryDataManager implements IDataManager {
 				} else {
 					Resource subject = valueConverter.toSesame(stmt
 							.getSubject());
-					URI predicate = (URI) valueConverter.toSesame(stmt
+					IRI predicate = (IRI) valueConverter.toSesame(stmt
 							.getPredicate());
 					Value object = valueConverter.toSesame((IValue) stmt
 							.getObject());

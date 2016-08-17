@@ -27,33 +27,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.query.algebra.Add;
-import org.openrdf.query.algebra.Clear;
-import org.openrdf.query.algebra.Copy;
-import org.openrdf.query.algebra.Create;
-import org.openrdf.query.algebra.DeleteData;
-import org.openrdf.query.algebra.InsertData;
-import org.openrdf.query.algebra.Load;
-import org.openrdf.query.algebra.Modify;
-import org.openrdf.query.algebra.Move;
-import org.openrdf.query.algebra.QueryRoot;
-import org.openrdf.query.algebra.SingletonSet;
-import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.StatementPattern.Scope;
-import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.UpdateExpr;
-import org.openrdf.query.algebra.ValueConstant;
-import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.helpers.StatementPatternCollector;
-import org.openrdf.queryrender.sparql.SparqlTupleExprRenderer;
-import org.openrdf.repository.sail.helpers.SPARQLUpdateDataBlockParser;
-import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.query.algebra.Add;
+import org.eclipse.rdf4j.query.algebra.Clear;
+import org.eclipse.rdf4j.query.algebra.Copy;
+import org.eclipse.rdf4j.query.algebra.Create;
+import org.eclipse.rdf4j.query.algebra.DeleteData;
+import org.eclipse.rdf4j.query.algebra.InsertData;
+import org.eclipse.rdf4j.query.algebra.Load;
+import org.eclipse.rdf4j.query.algebra.Modify;
+import org.eclipse.rdf4j.query.algebra.Move;
+import org.eclipse.rdf4j.query.algebra.QueryRoot;
+import org.eclipse.rdf4j.query.algebra.SingletonSet;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.StatementPattern.Scope;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.UpdateExpr;
+import org.eclipse.rdf4j.query.algebra.ValueConstant;
+import org.eclipse.rdf4j.query.algebra.Var;
+import org.eclipse.rdf4j.query.algebra.helpers.StatementPatternCollector;
+import org.eclipse.rdf4j.queryrender.sparql.SparqlTupleExprRenderer;
+import org.eclipse.rdf4j.repository.sail.helpers.SPARQLUpdateDataBlockParser;
+import org.eclipse.rdf4j.rio.RDFHandlerException;
+import org.eclipse.rdf4j.rio.RDFParseException;
+import org.eclipse.rdf4j.rio.helpers.AbstractRDFHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -257,7 +257,7 @@ public class SparqlUpdateExecutor {
 		SPARQLUpdateDataBlockParser parser = new SPARQLUpdateDataBlockParser(vf);
 		// blank nodes are OK w/ INSERT DATA but not allowed w/ DELETE DATA
 		parser.setAllowBlankNodes(allowBNodes);
-		parser.setRDFHandler(new RDFHandlerBase() {
+		parser.setRDFHandler(new AbstractRDFHandler() {
 			@Override
 			public void handleStatement(Statement stmt) throws RDFHandlerException {
 				stmts.add(

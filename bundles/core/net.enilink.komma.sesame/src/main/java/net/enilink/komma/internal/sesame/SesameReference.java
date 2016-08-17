@@ -10,22 +10,23 @@
  *******************************************************************************/
 package net.enilink.komma.internal.sesame;
 
-import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IReferenceable;
+import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 
 public class SesameReference implements IReference {
 	private Resource resource;
 
-	private net.enilink.komma.core.URI uri;
+	private URI uri;
 
 	public SesameReference(Resource resource) {
 		this.resource = resource;
-		if (resource instanceof URI) {
-			this.uri = URIs.createURI(((URI) resource).stringValue());
+		if (resource instanceof IRI) {
+			this.uri = URIs.createURI(((IRI) resource).stringValue());
 		}
 	}
 

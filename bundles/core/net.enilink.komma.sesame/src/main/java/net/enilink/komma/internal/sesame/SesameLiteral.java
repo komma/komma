@@ -1,11 +1,11 @@
 package net.enilink.komma.internal.sesame;
 
+import org.eclipse.rdf4j.model.Literal;
+
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.Literals;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
-
-import org.openrdf.model.Literal;
 
 public class SesameLiteral implements ILiteral {
 	protected URI datatype;
@@ -35,7 +35,7 @@ public class SesameLiteral implements ILiteral {
 
 	@Override
 	public String getLanguage() {
-		return literal.getLanguage();
+		return literal.getLanguage().orElse(null);
 	}
 
 	public Literal getSesameLiteral() {
