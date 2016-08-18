@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.text.Collator;
@@ -18,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.Platform;
@@ -25,20 +25,23 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.content.IContentTypeManager;
-import org.openrdf.model.BNode;
-import org.openrdf.model.Statement;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFHandler;
-import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.RDFParserRegistry;
-import org.openrdf.rio.RDFWriter;
-import org.openrdf.rio.RDFWriterFactory;
-import org.openrdf.rio.RDFWriterRegistry;
-import org.openrdf.rio.Rio;
+import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.OWL;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFHandler;
+import org.eclipse.rdf4j.rio.RDFHandlerException;
+import org.eclipse.rdf4j.rio.RDFParseException;
+import org.eclipse.rdf4j.rio.RDFParser;
+import org.eclipse.rdf4j.rio.RDFParserRegistry;
+import org.eclipse.rdf4j.rio.RDFWriter;
+import org.eclipse.rdf4j.rio.RDFWriterFactory;
+import org.eclipse.rdf4j.rio.RDFWriterRegistry;
+import org.eclipse.rdf4j.rio.Rio;
 
 import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
@@ -54,8 +57,7 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
 import net.enilink.komma.core.visitor.IDataVisitor;
-import net.enilink.komma.model.sesame.RDFXMLPrettyWriter;
-import net.enilink.komma.sesame.SesameValueConverter;
+import net.enilink.komma.rdf4j.RDF4JValueConverter;
 import net.enilink.vocab.rdf.Property;
 import net.enilink.vocab.rdfs.Class;
 import net.enilink.vocab.rdfs.Resource;
@@ -149,23 +151,15 @@ public class ModelUtil {
 	}
 
 	private static RDFWriter createWriter(OutputStream os, String baseURI,
-			String mimeType, String charset) throws IOException {
+			final String mimeType, String charset) throws IOException {
 		RDFFormat format = RDFFormat.RDFXML;
 		if (mimeType != null) {
-			format = Rio.getParserFormatForMIMEType(mimeType, format);
+			format = Rio.getParserFormatForMIMEType(mimeType).orElse(format);
 		}
-		if (RDFFormat.RDFXML.equals(format)) {
-			// use a special pretty writer in case of RDF/XML
-			RDFXMLPrettyWriter rdfXmlWriter = new RDFXMLPrettyWriter(
-					new OutputStreamWriter(os, charset != null ? charset
-							: "UTF-8"));
-			rdfXmlWriter.setBaseURI(baseURI);
-			return rdfXmlWriter;
-		} else {
-			RDFWriterFactory factory = RDFWriterRegistry.getInstance().get(
-					format);
-			return factory.getWriter(os);
-		}
+		// TODO: if necessary, re-implement RDF/XML pretty printing
+		RDFWriterFactory factory = RDFWriterRegistry.getInstance().get(format)
+				.orElseThrow(() -> new KommaException("No writer available for " + mimeType));
+		return factory.getWriter(os);
 	}
 
 	/**
@@ -252,7 +246,7 @@ public class ModelUtil {
 	private static RDFFormat determineFormat(String mimeType, InputStream in) {
 		RDFFormat format = RDFFormat.RDFXML;
 		if (mimeType != null) {
-			format = Rio.getParserFormatForMIMEType(mimeType, format);
+			format = Rio.getParserFormatForMIMEType(mimeType).orElse(format);
 		} else if (in.markSupported()) {
 			// try to distinguish RDF/XML and Turtle
 			in.mark(2048);
@@ -389,13 +383,9 @@ public class ModelUtil {
 			}
 
 			@Override
-			public void handleStatement(Statement stmt)
-					throws RDFHandlerException {
-				if (org.openrdf.model.vocabulary.RDF.TYPE.equals(stmt
-						.getPredicate())
-						&& org.openrdf.model.vocabulary.OWL.ONTOLOGY
-								.equals(stmt.getObject())) {
-					if (stmt.getSubject() instanceof org.openrdf.model.URI) {
+			public void handleStatement(Statement stmt) throws RDFHandlerException {
+				if (RDF.TYPE.equals(stmt.getPredicate()) && OWL.ONTOLOGY.equals(stmt.getObject())) {
+					if (stmt.getSubject() instanceof IRI) {
 						ontology[0] = stmt.getSubject().stringValue();
 						throw new RDFHandlerException("found ontology URI");
 					}
@@ -542,9 +532,9 @@ public class ModelUtil {
 			}
 		}
 		if (mimeType == null) {
-			RDFFormat format = Rio.getParserFormatForFileName(fileName);
-			if (format != null) {
-				mimeType = format.getDefaultMIMEType();
+			Optional<RDFFormat> format = Rio.getParserFormatForFileName(fileName);
+			if (format.isPresent()) {
+				mimeType = format.get().getDefaultMIMEType();
 			}
 		}
 		return mimeType;
@@ -582,7 +572,7 @@ public class ModelUtil {
 		if (mimeType == null && !in.markSupported()) {
 			in = new BufferedInputStream(in);
 		}
-		ValueFactory valueFactory = new ValueFactoryImpl() {
+		ValueFactory valueFactory = new SimpleValueFactory() {
 			@Override
 			public synchronized BNode createBNode() {
 				return super.createBNode(BlankNode.generateId("new-")
@@ -598,7 +588,7 @@ public class ModelUtil {
 				}
 			}
 		};
-		final SesameValueConverter valueConverter = new SesameValueConverter(
+		final RDF4JValueConverter valueConverter = new RDF4JValueConverter(
 				valueFactory);
 		final boolean handleNamespaces = dataVisitor instanceof IDataAndNamespacesVisitor<?>;
 		RDFParser parser = Rio.createParser(determineFormat(mimeType, in),
@@ -629,11 +619,11 @@ public class ModelUtil {
 					throws RDFHandlerException {
 				dataVisitor
 						.visitStatement(new net.enilink.komma.core.Statement(
-								(IReference) valueConverter.fromSesame(stmt
+								(IReference) valueConverter.fromRdf4j(stmt
 										.getSubject()),
-								(IReference) valueConverter.fromSesame(stmt
+								(IReference) valueConverter.fromRdf4j(stmt
 										.getPredicate()), valueConverter
-										.fromSesame(stmt.getObject())));
+										.fromRdf4j(stmt.getObject())));
 			}
 
 			@Override
@@ -727,8 +717,8 @@ public class ModelUtil {
 			final RDFWriter writer = createWriter(os, baseURI, mimeType,
 					charset);
 			return new IDataAndNamespacesVisitor<Void>() {
-				final SesameValueConverter valueConverter = new SesameValueConverter(
-						new ValueFactoryImpl());
+				final RDF4JValueConverter valueConverter = new RDF4JValueConverter(
+						SimpleValueFactory.getInstance());
 
 				void throwException(Exception e) {
 					throw new KommaException("Saving RDF failed", e);
@@ -768,7 +758,7 @@ public class ModelUtil {
 				@Override
 				public Void visitStatement(IStatement stmt) {
 					try {
-						writer.handleStatement(valueConverter.toSesame(stmt));
+						writer.handleStatement(valueConverter.toRdf4j(stmt));
 					} catch (RDFHandlerException e) {
 						throwException(e);
 					}

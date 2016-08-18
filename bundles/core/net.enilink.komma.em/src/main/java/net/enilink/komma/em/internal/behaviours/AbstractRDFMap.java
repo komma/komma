@@ -84,7 +84,7 @@ public abstract class AbstractRDFMap extends
 			Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
 			Map.Entry<?, ?> candidate;
 			try {
-				candidate = getEntryAsSesameMapEntry(e.getKey());
+				candidate = getEntryAsRDF4JMapEntry(e.getKey());
 			} catch (Exception e1) {
 				return false;
 			}
@@ -92,7 +92,7 @@ public abstract class AbstractRDFMap extends
 		}
 
 		public Iterator<Map.Entry<Object, Object>> iterator() {
-			return new SimpleSesameMapIterator();// newEntryIterator();
+			return new SimpleRDF4JMapIterator();// newEntryIterator();
 		}
 
 		public boolean remove(Object o) {
@@ -104,12 +104,12 @@ public abstract class AbstractRDFMap extends
 		}
 	}
 
-	private class SimpleSesameMapIterator implements
+	private class SimpleRDF4JMapIterator implements
 			Iterator<java.util.Map.Entry<Object, Object>> {
 
 		private Stack<Entry> elements;
 
-		public SimpleSesameMapIterator() {
+		public SimpleRDF4JMapIterator() {
 			elements = new Stack<Entry>();
 
 			IExtendedIterator<IValue> values = match(getBehaviourDelegate(),
@@ -243,7 +243,7 @@ public abstract class AbstractRDFMap extends
 		return null;
 	}
 
-	private AbstractRDFMap.Entry getEntryAsSesameMapEntry(Object key)
+	private AbstractRDFMap.Entry getEntryAsRDF4JMapEntry(Object key)
 			throws Exception {
 		return createMapEntry(getEntry(key));
 	}

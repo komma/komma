@@ -26,7 +26,7 @@
 		<module>../../bundles/core/net.enilink.komma.model</module>
 		<module>../../bundles/core/net.enilink.komma.parser</module>
 		<module>../../bundles/core/net.enilink.komma.query</module>
-		<module>../../bundles/core/net.enilink.komma.sesame</module>
+		<module>../../bundles/core/net.enilink.komma.rdf4j</module>
 		<module>../../bundles/vocab/net.enilink.vocab.foaf</module>
 		<module>../../bundles/vocab/net.enilink.vocab.komma</module>
 		<module>../../bundles/vocab/net.enilink.vocab.owl</module>

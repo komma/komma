@@ -4,7 +4,7 @@ Bundle-Name: Knowledge Management Architecture
 Bundle-SymbolicName: net.enilink.komma.em;singleton:=true
 Bundle-Version: 1.2.5.qualifier
 Bundle-Vendor: enilink.net
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: net.enilink.komma.em.KommaEM$Implementation
 Bundle-Localization: plugin
 Bundle-ActivationPolicy: lazy
@@ -24,7 +24,7 @@ Import-Package: com.google.common.base;version="17.0.0",
  com.google.inject.name;version="1.4",
  com.google.inject.spi;version="1.4",
  com.google.inject.util;version="1.4",
- net.enilink.komma.sesame;resolution:=optional,
+ net.enilink.komma.rdf4j;resolution:=optional,
  org.apache.commons.codec;version="1.6.0",
  org.apache.commons.codec.binary;version="1.6.0",
  org.junit;version="4.0.0";resolution:=optional,
