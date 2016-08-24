@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: FOAF vocabulary
 Bundle-SymbolicName: net.enilink.vocab.foaf
-Bundle-Version: 1.3.0
+Bundle-Version: 1.3.1.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: net.enilink.komma.core,
  net.enilink.vocab.owl,
