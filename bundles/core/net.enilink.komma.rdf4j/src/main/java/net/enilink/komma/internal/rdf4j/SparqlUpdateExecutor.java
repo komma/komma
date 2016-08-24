@@ -253,7 +253,7 @@ public class SparqlUpdateExecutor {
 
 	protected List<IStatement> dataBlockToStatements(String dataBlock, boolean allowBNodes, UpdateContext uc)
 			throws KommaException {
-		List<IStatement> stmts = new ArrayList<>();
+		final List<IStatement> stmts = new ArrayList<>();
 		SPARQLUpdateDataBlockParser parser = new SPARQLUpdateDataBlockParser(vf);
 		// blank nodes are OK w/ INSERT DATA but not allowed w/ DELETE DATA
 		parser.setAllowBlankNodes(allowBNodes);
