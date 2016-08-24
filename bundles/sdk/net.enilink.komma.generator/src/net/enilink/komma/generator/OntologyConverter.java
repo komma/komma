@@ -51,12 +51,53 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
+import org.eclipse.equinox.app.IApplication;
+import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.OWL;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFParseException;
+import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.Stage;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 
 import net.enilink.composition.mappers.ComposedRoleMapper;
 import net.enilink.composition.mappers.RoleMapper;
@@ -93,45 +134,7 @@ import net.enilink.komma.generator.support.CodePropertySupport;
 import net.enilink.komma.generator.support.ConceptSupport;
 import net.enilink.komma.generator.support.OntologySupport;
 import net.enilink.komma.literals.LiteralConverter;
-import net.enilink.komma.sesame.SesameModule;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
-import org.eclipse.equinox.app.IApplication;
-import org.eclipse.equinox.app.IApplicationContext;
-import org.openrdf.model.Statement;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.vocabulary.OWL;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.RepositoryResult;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.sail.memory.MemoryStore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.Stage;
-import com.google.inject.TypeLiteral;
-import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Named;
-import com.google.inject.name.Names;
+import net.enilink.komma.rdf4j.RDF4JModule;
 
 /**
  * A Facade to CodeGenerator and OwlGenerator classes. This class provides a
@@ -556,7 +559,7 @@ public class OntologyConverter implements IApplication {
 		ValueFactory uriFactory = repository.getValueFactory();
 		try {
 			String uri = url.toExternalForm();
-			conn.add(url, uri, format, uriFactory.createURI(uri));
+			conn.add(url, uri, format, uriFactory.createIRI(uri));
 		} catch (RDFParseException e) {
 			throw new RDFParseException("Unable to parse file " + url + ": "
 					+ e.getMessage(), e.getLineNumber(), e.getColumnNumber());
@@ -566,9 +569,9 @@ public class OntologyConverter implements IApplication {
 	}
 
 	private RDFFormat formatForFileName(String filename) {
-		RDFFormat format = RDFFormat.forFileName(filename);
-		if (format != null)
-			return format;
+		Optional<RDFFormat> format = Rio.getParserFormatForFileName(filename);
+		if (format.isPresent())
+			return format.get();
 		if (filename.endsWith(".owl"))
 			return RDFFormat.RDFXML;
 		throw new IllegalArgumentException("Unknow RDF format for " + filename);
@@ -703,7 +706,7 @@ public class OntologyConverter implements IApplication {
 					Repository provideRepository() {
 						return repository;
 					}
-				}, new SesameModule());
+				}, new RDF4JModule());
 
 		return factoryInjector.createChildInjector(
 				new ManagerCompositionModule(kommaModule),
@@ -1025,11 +1028,11 @@ public class OntologyConverter implements IApplication {
 				return URIs.createURI(st.getObject().stringValue());
 			st = first(conn, RDF.TYPE, OWL.CLASS);
 			if (st != null)
-				return URIs.createURI(((org.openrdf.model.URI) st.getSubject())
+				return URIs.createURI(((IRI) st.getSubject())
 						.getNamespace());
 			st = first(conn, RDF.TYPE, RDFS.CLASS);
 			if (st != null)
-				return URIs.createURI(((org.openrdf.model.URI) st.getSubject())
+				return URIs.createURI(((IRI) st.getSubject())
 						.getNamespace());
 			return null;
 		} finally {
@@ -1039,7 +1042,7 @@ public class OntologyConverter implements IApplication {
 	}
 
 	private Statement first(RepositoryConnection conn,
-			org.openrdf.model.URI pred, Value obj) throws RepositoryException {
+			IRI pred, Value obj) throws RepositoryException {
 		RepositoryResult<Statement> stmts = conn.getStatements(null, pred, obj,
 				true);
 		try {

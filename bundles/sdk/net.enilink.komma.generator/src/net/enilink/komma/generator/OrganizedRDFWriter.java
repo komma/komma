@@ -15,21 +15,17 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.RDFWriter;
-import org.openrdf.sail.memory.MemoryStore;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.rio.RDFHandlerException;
+import org.eclipse.rdf4j.rio.RDFWriter;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 
 import net.enilink.commons.iterator.IExtendedIterator;
-import net.enilink.vocab.rdf.RDF;
-import net.enilink.komma.dm.IDataManager;
-import net.enilink.komma.dm.IDataManagerFactory;
-import net.enilink.komma.dm.IDataManagerQuery;
 import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
@@ -40,8 +36,12 @@ import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.visitor.IDataAndNamespacesVisitor;
-import net.enilink.komma.sesame.SesameModule;
-import net.enilink.komma.sesame.SesameValueConverter;
+import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.dm.IDataManagerFactory;
+import net.enilink.komma.dm.IDataManagerQuery;
+import net.enilink.komma.rdf4j.RDF4JModule;
+import net.enilink.komma.rdf4j.RDF4JValueConverter;
+import net.enilink.vocab.rdf.RDF;
 
 /**
  * Writes RDF statements grouped by subject.
@@ -72,7 +72,7 @@ public class OrganizedRDFWriter implements IDataAndNamespacesVisitor<Void> {
 
 	private Set<URI> referenced = new LinkedHashSet<URI>();
 
-	private SesameValueConverter valueConverter;
+	private RDF4JValueConverter valueConverter;
 
 	private RDFWriter writer;
 
@@ -231,7 +231,7 @@ public class OrganizedRDFWriter implements IDataAndNamespacesVisitor<Void> {
 			writer.startRDF();
 
 			if (dm == null) {
-				dmFactory = Guice.createInjector(new SesameModule(),
+				dmFactory = Guice.createInjector(new RDF4JModule(),
 						new AbstractModule() {
 							@Override
 							protected void configure() {

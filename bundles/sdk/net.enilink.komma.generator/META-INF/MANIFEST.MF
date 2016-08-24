@@ -10,9 +10,9 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.vocab.owl,
  net.enilink.komma.literals,
  org.eclipse.jdt.core;resolution:=optional,
- net.enilink.komma.sesame,
- org.openrdf.sesame2,
- org.objectweb.asm;bundle-version="5.0.1",
+ net.enilink.komma.rdf4j,
+ org.eclipse.rdf4j,
+ org.objectweb.asm.all;bundle-version="5.0.1",
  net.enilink.composition.properties.komma
 Bundle-ClassPath: ., lib/commons-cli-1.1.jar
 Import-Package: com.google.common.base;version="17.0.0",

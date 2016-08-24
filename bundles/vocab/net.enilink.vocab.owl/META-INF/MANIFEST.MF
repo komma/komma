@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Owl Plug-in
 Bundle-SymbolicName: net.enilink.vocab.owl
-Bundle-Version: 1.2.5.qualifier
+Bundle-Version: 1.3.0
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: net.enilink.komma.core,

@@ -12,16 +12,16 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFWriter;
-import org.openrdf.rio.Rio;
-import org.openrdf.rio.rdfxml.util.RDFXMLPrettyWriter;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFWriter;
+import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.rdfxml.util.RDFXMLPrettyWriter;
 
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.Namespace;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.Namespace;
 
 /**
  * Prints RDF ontology data is an grouped by subject and type.

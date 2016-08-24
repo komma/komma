@@ -12,7 +12,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
-import org.openrdf.rio.rdfxml.util.RDFXMLPrettyWriter;
+import org.eclipse.rdf4j.rio.rdfxml.util.RDFXMLPrettyWriter;
 
 /**
  * Prints RDF/XML data is an grouped by subject and type.
