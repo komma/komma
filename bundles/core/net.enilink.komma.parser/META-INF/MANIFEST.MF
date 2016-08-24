@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Sparql
 Bundle-SymbolicName: net.enilink.komma.parser
-Bundle-Version: 1.3.1.qualifier
+Bundle-Version: 1.3.1
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: com.google.common.base;version="17.0.0",
