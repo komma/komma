@@ -30,6 +30,17 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionPoint;
+
+import com.google.inject.ConfigurationException;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
+
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.IMap;
 import net.enilink.commons.iterator.WrappedIterator;
@@ -42,6 +53,7 @@ import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityDecorator;
 import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaException;
@@ -68,20 +80,8 @@ import net.enilink.komma.model.event.NamespaceNotification;
 import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtensionPoint;
-
-import com.google.inject.ConfigurationException;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
-import com.google.inject.name.Names;
-
-public abstract class ModelSupport implements IModel, IModel.Internal,
-		INotificationBroadcaster<INotification>, Model,
-		Behaviour<IModel.Internal> {
+public abstract class ModelSupport
+		implements IModel, IModel.Internal, INotificationBroadcaster<INotification>, Model, Behaviour<IModel.Internal> {
 	class ModelInjector implements IEntityDecorator {
 		@Override
 		public void decorate(IEntity entity) {
@@ -112,12 +112,15 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 		KommaModule module;
 		KommaModule moduleClosure;
 		Set<URI> importedModels;
-		volatile WeakReference<IEntityManager> managerRef;
+		// cache the factory instance to quickly create thread-local entity managers
+		WeakReference<IEntityManagerFactory> factoryRef;
+		WeakReference<IEntityManager> managerRef;
 
 		void reset() {
 			module = null;
 			moduleClosure = null;
 			importedModels = null;
+			factoryRef = null;
 			if (managerRef != null) {
 				IEntityManager manager = managerRef.get();
 				if (manager != null) {
@@ -127,8 +130,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 		}
 
 		IEntityManager manager() {
-			IEntityManager manager = managerRef != null ? managerRef.get()
-					: null;
+			IEntityManager manager = managerRef != null ? managerRef.get() : null;
 			if (manager == null) {
 				synchronized (this) {
 					manager = managerRef != null ? managerRef.get() : null;
@@ -137,16 +139,20 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 							volatile Map<URI, String> uriToPrefix = new ConcurrentHashMap<>();
 							volatile Map<String, URI> prefixToUri = new ConcurrentHashMap<>();
 
+							@SuppressWarnings("resource")
 							@Override
 							protected IEntityManager initialValue() {
-								return getModelSet()
-										.getEntityManagerFactory()
-										// allow interception of call to
-										// getModule()
-										.createChildFactory(
-												getBehaviourDelegate()
-														.getModuleClosure())
-										.create(managerRef.get());
+								IEntityManagerFactory factory;
+								synchronized (State.this) {
+									factory = factoryRef != null ? factoryRef.get() : null;
+									if (factory == null) {
+										factory = getModelSet().getEntityManagerFactory()
+												// allow interception of call to getModuleClosure()
+												.createChildFactory(getBehaviourDelegate().getModuleClosure());
+										factoryRef = new WeakReference<>(factory);
+									}
+								}
+								return factory.create(managerRef.get());
 							}
 
 							@Override
@@ -154,14 +160,11 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 								if (prefix == null) {
 									prefix = "";
 								}
-								for (Namespace ns : new ArrayList<>(
-										getModelNamespaces())) {
+								for (Namespace ns : new ArrayList<>(getModelNamespaces())) {
 									if (prefix.equals(ns.getPrefix())) {
 										getModelNamespaces().remove(ns);
-										fireNotifications(Arrays
-												.asList(new NamespaceNotification(
-														prefix, ns.getURI(),
-														null)));
+										fireNotifications(
+												Arrays.asList(new NamespaceNotification(prefix, ns.getURI(), null)));
 										break;
 									}
 								}
@@ -180,8 +183,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 									oldUri = uri;
 								}
 								if (oldUri == null) {
-									for (Namespace ns : new ArrayList<>(
-											getModelNamespaces())) {
+									for (Namespace ns : new ArrayList<>(getModelNamespaces())) {
 										if (prefix.equals(ns.getPrefix())) {
 											ns.setPrefix(prefix);
 											oldUri = ns.getURI();
@@ -190,55 +192,38 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 									}
 								}
 								if (oldUri == null) {
-									Namespace ns = getEntityManager().create(
-											Namespace.class);
+									Namespace ns = getEntityManager().create(Namespace.class);
 									ns.setPrefix(prefix);
 									ns.setURI(uri);
 									getModelNamespaces().add(ns);
 								}
-								fireNotifications(Arrays
-										.asList(new NamespaceNotification(
-												prefix, oldUri, uri)));
+								fireNotifications(Arrays.asList(new NamespaceNotification(prefix, oldUri, uri)));
 								clearNamespaceCache();
 							}
 
 							@Override
 							public IExtendedIterator<INamespace> getNamespaces() {
 								Map<String, INamespace> prefixMap = new LinkedHashMap<>();
-								for (INamespace ns : WrappedIterator
-										.create(getAllModelNamespaces()
-												.iterator())
-										.andThen(
-												super.getNamespaces()
-														.mapWith(
-														// mark inherited
-														// namespaces as derived
-																new IMap<INamespace, INamespace>() {
-																	@Override
-																	public INamespace map(
-																			INamespace ns) {
-																		return new net.enilink.komma.core.Namespace(
-																				ns.getPrefix(),
-																				ns.getURI(),
-																				true);
-																	}
-																}))) {
+								for (INamespace ns : WrappedIterator.create(getAllModelNamespaces().iterator())
+										.andThen(super.getNamespaces().mapWith(
+												// mark inherited
+												// namespaces as derived
+												new IMap<INamespace, INamespace>() {
+									@Override
+									public INamespace map(INamespace ns) {
+										return new net.enilink.komma.core.Namespace(ns.getPrefix(), ns.getURI(), true);
+									}
+								}))) {
 									if (!prefixMap.containsKey(ns.getPrefix())) {
-										prefixMap
-												.put(ns.getPrefix(),
-														new net.enilink.komma.core.Namespace(
-																ns.getPrefix(),
-																ns.getURI(),
-																ns.isDerived()));
+										prefixMap.put(ns.getPrefix(), new net.enilink.komma.core.Namespace(
+												ns.getPrefix(), ns.getURI(), ns.isDerived()));
 									}
 								}
-								return WrappedIterator.create(prefixMap
-										.values().iterator());
+								return WrappedIterator.create(prefixMap.values().iterator());
 							}
 
 							List<INamespace> getAllModelNamespaces() {
-								List<INamespace> nsList = new ArrayList<INamespace>(
-										getModelNamespaces());
+								List<INamespace> nsList = new ArrayList<INamespace>(getModelNamespaces());
 								boolean emptyPrefix = false;
 								for (INamespace ns : nsList) {
 									if (ns.getPrefix().isEmpty()) {
@@ -247,14 +232,12 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 									}
 								}
 								if (!emptyPrefix) {
-									nsList.add(new net.enilink.komma.core.Namespace(
-											"", getURI().appendLocalPart("")));
+									nsList.add(new net.enilink.komma.core.Namespace("", getURI().appendLocalPart("")));
 								}
 								KommaModule module = moduleClosure;
 								if (module != null) {
 									for (INamespace ns : module.getNamespaces()) {
-										nsList.add(new net.enilink.komma.core.Namespace(
-												ns.getPrefix(), ns.getURI(),
+										nsList.add(new net.enilink.komma.core.Namespace(ns.getPrefix(), ns.getURI(),
 												true));
 									}
 								}
@@ -270,22 +253,19 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 									cacheNamespaces();
 								}
 								URI uri = prefixToUri.get(prefix);
-								return uri != null ? uri : super
-										.getNamespace(prefix);
+								return uri != null ? uri : super.getNamespace(prefix);
 							}
 
 							@Override
 							public String getPrefix(URI namespace) {
-								if (namespace.equals(getURI().appendLocalPart(
-										""))) {
+								if (namespace.equals(getURI().appendLocalPart(""))) {
 									return "";
 								}
 								if (uriToPrefix.isEmpty()) {
 									cacheNamespaces();
 								}
 								String prefix = uriToPrefix.get(namespace);
-								return prefix != null ? prefix : super
-										.getPrefix(namespace);
+								return prefix != null ? prefix : super.getPrefix(namespace);
 							}
 
 							protected void clearNamespaceCache() {
@@ -297,15 +277,11 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 								for (INamespace ns : getAllModelNamespaces()) {
 									// in case of many prefixes for the same URI
 									// use the lexicographically first prefix
-									String prefix = uriToPrefix
-											.get(ns.getURI());
-									if (prefix == null
-											|| prefix.compareTo(ns.getPrefix()) > 0) {
-										uriToPrefix.put(ns.getURI(),
-												ns.getPrefix());
+									String prefix = uriToPrefix.get(ns.getURI());
+									if (prefix == null || prefix.compareTo(ns.getPrefix()) > 0) {
+										uriToPrefix.put(ns.getURI(), ns.getPrefix());
 									}
-									prefixToUri
-											.put(ns.getPrefix(), ns.getURI());
+									prefixToUri.put(ns.getPrefix(), ns.getURI());
 								}
 							}
 
@@ -357,10 +333,8 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 					manager.getTransaction().begin();
 				}
 				IOntology ontology = getOntology();
-				if (!manager.hasMatch(ontology, RDF.PROPERTY_TYPE,
-						OWL.TYPE_ONTOLOGY)) {
-					manager.add(new Statement(ontology, RDF.PROPERTY_TYPE,
-							OWL.TYPE_ONTOLOGY));
+				if (!manager.hasMatch(ontology, RDF.PROPERTY_TYPE, OWL.TYPE_ONTOLOGY)) {
+					manager.add(new Statement(ontology, RDF.PROPERTY_TYPE, OWL.TYPE_ONTOLOGY));
 				}
 				if (prefix != null && prefix.trim().length() > 0) {
 					manager.setNamespace(prefix, uri.appendLocalPart(""));
@@ -386,8 +360,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	 */
 	@Override
 	public void delete(Map<?, ?> options) throws IOException {
-		getURIConverter().delete(getURI(),
-				mergeMaps(options, getDefaultDeleteOptions()));
+		getURIConverter().delete(getURI(), mergeMaps(options, getDefaultDeleteOptions()));
 		unload();
 		getModelSet().getModels().remove(this);
 	}
@@ -406,8 +379,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	 * documentation inherited
 	 */
 	@Override
-	public void fireNotifications(
-			Collection<? extends INotification> notifications) {
+	public void fireNotifications(Collection<? extends INotification> notifications) {
 		getModelSet().fireNotifications(notifications);
 	}
 
@@ -444,10 +416,8 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 		IModelSet.Internal modelSet = this.modelSet;
 		if (modelSet == null) {
 			this.modelSet = modelSet = (IModelSet.Internal) getEntityManager()
-					.createQuery(
-							"SELECT DISTINCT ?ms WHERE { ?ms <http://enilink.net/vocab/komma/models#model> ?m }")
-					.setParameter("m", getBehaviourDelegate())
-					.getSingleResult(IModelSet.class);
+					.createQuery("SELECT DISTINCT ?ms WHERE { ?ms <http://enilink.net/vocab/komma/models#model> ?m }")
+					.setParameter("m", getBehaviourDelegate()).getSingleResult(IModelSet.class);
 		}
 		return modelSet;
 	}
@@ -467,13 +437,11 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 							.createQuery(
 									ISparqlConstants.PREFIX
 											+ " SELECT ?import WHERE { ?ontology owl:imports ?import FILTER NOT EXISTS { ?import a owl:Ontology } }",
-									ontology.getURI().toString(), false,
-									ontology.getURI()).evaluate()
-							.mapWith(new IMap<Object, IReference>() {
+									ontology.getURI().toString(), false, ontology.getURI())
+							.evaluate().mapWith(new IMap<Object, IReference>() {
 								@Override
 								public IReference map(Object value) {
-									return (IReference) ((IBindings<?>) value)
-											.get("import");
+									return (IReference) ((IBindings<?>) value).get("import");
 								}
 							});
 					while (imports.hasNext()) {
@@ -511,15 +479,11 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			for (URI imported : model.getImports()) {
 				if (seen.add(imported)) {
 					try {
-						boolean demandLoad = getBehaviourDelegate()
-								.demandLoadImport(imported);
+						boolean demandLoad = getBehaviourDelegate().demandLoadImport(imported);
 						queue.add(getModelSet().getModel(imported, demandLoad));
 					} catch (Throwable e) {
-						getErrors().add(
-								new DiagnosticWrappedException(getURI()
-										.toString(), new KommaException(
-										"Error while loading import: "
-												+ imported, e)));
+						getErrors().add(new DiagnosticWrappedException(getURI().toString(),
+								new KommaException("Error while loading import: " + imported, e)));
 					}
 				}
 			}
@@ -531,8 +495,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	public synchronized KommaModule getModuleClosure() {
 		KommaModule moduleClosure = state().moduleClosure;
 		if (moduleClosure == null) {
-			state().moduleClosure = moduleClosure = new KommaModule(
-					ModelSupport.class.getClassLoader());
+			state().moduleClosure = moduleClosure = new KommaModule(ModelSupport.class.getClassLoader());
 			moduleClosure.addWritableGraph(getURI());
 
 			// add support for IObject interface
@@ -552,29 +515,22 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			queue.add(getBehaviourDelegate());
 			while (!queue.isEmpty()) {
 				IModel model = queue.remove();
-				moduleClosure.includeModule(((IModel.Internal) model)
-						.getModule());
+				moduleClosure.includeModule(((IModel.Internal) model).getModule());
 				for (URI imported : model.getImports()) {
 					if (seen.add(imported)) {
-						boolean demandLoad = getBehaviourDelegate()
-								.demandLoadImport(imported);
+						boolean demandLoad = getBehaviourDelegate().demandLoadImport(imported);
 						IModel importedModel = null;
 						try {
-							importedModel = getModelSet().getModel(imported,
-									demandLoad);
+							importedModel = getModelSet().getModel(imported, demandLoad);
 						} catch (Throwable e) {
-							getErrors().add(
-									new DiagnosticWrappedException(getURI()
-											.toString(), new KommaException(
-											"Error while loading import: "
-													+ imported, e)));
+							getErrors().add(new DiagnosticWrappedException(getURI().toString(),
+									new KommaException("Error while loading import: " + imported, e)));
 						}
 						// try to re-fetch model if load-on-demand is requested
 						// and
 						// the initial loading has been failed
 						if (demandLoad && importedModel == null) {
-							importedModel = getModelSet().getModel(imported,
-									false);
+							importedModel = getModelSet().getModel(imported, false);
 						}
 						if (importedModel != null) {
 							queue.add(importedModel);
@@ -590,8 +546,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	public synchronized KommaModule getModule() {
 		KommaModule module = state().module;
 		if (module == null) {
-			state().module = module = new KommaModule(
-					ModelSupport.class.getClassLoader());
+			state().module = module = new KommaModule(ModelSupport.class.getClassLoader());
 			module.addWritableGraph(getURI());
 
 			// record namespace declarations
@@ -602,30 +557,25 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			String modelUri = getURI().toString();
 
 			// support for registering KommaModules as extensions
-			IExtensionPoint extensionPoint = RegistryFactoryHelper
-					.getRegistry().getExtensionPoint(ModelPlugin.PLUGIN_ID,
-							"modules");
+			IExtensionPoint extensionPoint = RegistryFactoryHelper.getRegistry()
+					.getExtensionPoint(ModelPlugin.PLUGIN_ID, "modules");
 			if (extensionPoint != null) {
-				for (IConfigurationElement cfgElement : extensionPoint
-						.getConfigurationElements()) {
+				for (IConfigurationElement cfgElement : extensionPoint.getConfigurationElements()) {
 					String namespace = cfgElement.getAttribute("uri");
 					if (modelUri.equals(namespace)) {
 						try {
-							KommaModule extensionModule = (KommaModule) cfgElement
-									.createExecutableExtension("class");
+							KommaModule extensionModule = (KommaModule) cfgElement.createExecutableExtension("class");
 							module.includeModule(extensionModule);
 						} catch (CoreException e) {
-							throw new KommaException(
-									"Unable to instantiate extension module", e);
+							throw new KommaException("Unable to instantiate extension module", e);
 						}
 					}
 				}
 			}
 			// support for registering KommaModules via Guice
 			try {
-				for (KommaModule extensionModule : injector.getInstance(Key
-						.get(new TypeLiteral<Set<KommaModule>>() {
-						}, Names.named(modelUri)))) {
+				for (KommaModule extensionModule : injector.getInstance(Key.get(new TypeLiteral<Set<KommaModule>>() {
+				}, Names.named(modelUri)))) {
 					module.includeModule(extensionModule);
 				}
 			} catch (ConfigurationException ce) {
@@ -645,8 +595,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	 */
 	@Override
 	public IOntology getOntology() {
-		return getManager().find(getManager().getNamespace("").trimFragment(),
-				IOntology.class);
+		return getManager().find(getManager().getNamespace("").trimFragment(), IOntology.class);
 	}
 
 	IURIConverter getURIConverter() {
@@ -696,7 +645,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			loadInternal(getURI(), options);
 		}
 	}
-	
+
 	/*
 	 * documentation inherited
 	 */
@@ -704,7 +653,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	public void load(URI uri, Map<?, ?> options) throws IOException {
 		loadInternal(uri, options);
 	}
-	
+
 	protected void loadInternal(URI uri, Map<?, ?> options) throws IOException {
 		IURIConverter uriConverter = getURIConverter();
 		Map<?, ?> response = options == null ? null : (Map<?, ?>) options.get(IURIConverter.OPTION_RESPONSE);
@@ -754,8 +703,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 						manager.removeNamespace(namespace.getPrefix());
 					}
 				}
-				manager.remove(new Statement(getURI(), OWL.PROPERTY_IMPORTS,
-						importedOnt));
+				manager.remove(new Statement(getURI(), OWL.PROPERTY_IMPORTS, importedOnt));
 				if (!isActive) {
 					manager.getTransaction().commit();
 					unloadManager();
@@ -780,9 +728,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 		if (reference == null) {
 			return null;
 		}
-		if (reference instanceof IObject
-				&& getBehaviourDelegate().equals(
-						((IObject) reference).getModel())) {
+		if (reference instanceof IObject && getBehaviourDelegate().equals(((IObject) reference).getModel())) {
 			return (IObject) reference;
 		}
 		return (IObject) getManager().find(reference);
@@ -793,42 +739,33 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	 */
 	@Override
 	public void save(Map<?, ?> options) throws IOException {
-		Object saveOnlyIfChanged = options != null
-				&& options.containsKey(OPTION_SAVE_ONLY_IF_CHANGED) ? options
-				.get(OPTION_SAVE_ONLY_IF_CHANGED)
-				: getDefaultSaveOptions() != null ? getDefaultSaveOptions()
-						.get(OPTION_SAVE_ONLY_IF_CHANGED) : null;
-		if (saveOnlyIfChanged != null
-				&& options.get(IModel.OPTION_CONTENT_DESCRIPTION) == null) {
+		Object saveOnlyIfChanged = options != null && options.containsKey(OPTION_SAVE_ONLY_IF_CHANGED)
+				? options.get(OPTION_SAVE_ONLY_IF_CHANGED)
+				: getDefaultSaveOptions() != null ? getDefaultSaveOptions().get(OPTION_SAVE_ONLY_IF_CHANGED) : null;
+		if (saveOnlyIfChanged != null && options.get(IModel.OPTION_CONTENT_DESCRIPTION) == null) {
 			// add correct content type
-			Map<Object, Object> newOptions = new HashMap<>(
-					options != null ? options : Collections.emptyMap());
-			newOptions.put(IModel.OPTION_CONTENT_DESCRIPTION, ModelUtil
-					.determineContentDescription(getURI(), getModelSet()
-							.getURIConverter(), options));
+			Map<Object, Object> newOptions = new HashMap<>(options != null ? options : Collections.emptyMap());
+			newOptions.put(IModel.OPTION_CONTENT_DESCRIPTION,
+					ModelUtil.determineContentDescription(getURI(), getModelSet().getURIConverter(), options));
 			options = newOptions;
 		}
 		if (OPTION_SAVE_ONLY_IF_CHANGED_FILE_BUFFER.equals(saveOnlyIfChanged)) {
 			saveOnlyIfChangedWithFileBuffer(options);
-		} else if (OPTION_SAVE_ONLY_IF_CHANGED_MEMORY_BUFFER
-				.equals(saveOnlyIfChanged)) {
+		} else if (OPTION_SAVE_ONLY_IF_CHANGED_MEMORY_BUFFER.equals(saveOnlyIfChanged)) {
 			saveOnlyIfChangedWithMemoryBuffer(options);
 		} else {
-			Map<?, ?> response = options == null ? null : (Map<?, ?>) options
-					.get(IURIConverter.OPTION_RESPONSE);
+			Map<?, ?> response = options == null ? null : (Map<?, ?>) options.get(IURIConverter.OPTION_RESPONSE);
 			if (response == null) {
 				response = new HashMap<Object, Object>();
 			}
 			IURIConverter uriConverter = getURIConverter();
-			OutputStream outputStream = uriConverter.createOutputStream(
-					getURI(), new ExtensibleURIConverter.OptionsMap(
-							IURIConverter.OPTION_RESPONSE, response, options));
+			OutputStream outputStream = uriConverter.createOutputStream(getURI(),
+					new ExtensibleURIConverter.OptionsMap(IURIConverter.OPTION_RESPONSE, response, options));
 			try {
 				getBehaviourDelegate().save(outputStream, options);
 			} finally {
 				outputStream.close();
-				Long timeStamp = (Long) response
-						.get(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY);
+				Long timeStamp = (Long) response.get(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY);
 				if (timeStamp != null) {
 					// setTimeStamp(timeStamp);
 				}
@@ -840,14 +777,12 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	/*
 	 * documentation inherited
 	 */
-	protected void saveOnlyIfChangedWithFileBuffer(Map<?, ?> options)
-			throws IOException {
+	protected void saveOnlyIfChangedWithFileBuffer(Map<?, ?> options) throws IOException {
 		File temporaryFile = File.createTempFile("ModelSaveHelper", null);
 		try {
 			URI temporaryFileURI = URIs.createFileURI(temporaryFile.getPath());
 			IURIConverter uriConverter = getURIConverter();
-			OutputStream temporaryFileOutputStream = uriConverter
-					.createOutputStream(temporaryFileURI, null);
+			OutputStream temporaryFileOutputStream = uriConverter.createOutputStream(temporaryFileURI, null);
 			try {
 				save(temporaryFileOutputStream, options);
 			} finally {
@@ -857,24 +792,20 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			boolean equal = true;
 			InputStream oldContents = null;
 			try {
-				oldContents = uriConverter.createInputStream(getURI(),
-						getDefaultDeleteOptions());
+				oldContents = uriConverter.createInputStream(getURI(), getDefaultDeleteOptions());
 			} catch (IOException exception) {
 				equal = false;
 			}
 			byte[] newContentBuffer = new byte[4000];
 			if (oldContents != null) {
 				try {
-					InputStream newContents = uriConverter.createInputStream(
-							temporaryFileURI, null);
+					InputStream newContents = uriConverter.createInputStream(temporaryFileURI, null);
 					try {
 						byte[] oldContentBuffer = new byte[4000];
-						LOOP: for (int oldLength = oldContents
-								.read(oldContentBuffer), newLength = newContents
+						LOOP: for (int oldLength = oldContents.read(oldContentBuffer), newLength = newContents
 								.read(newContentBuffer); (equal = oldLength == newLength)
-								&& oldLength > 0; oldLength = oldContents
-								.read(oldContentBuffer), newLength = newContents
-								.read(newContentBuffer)) {
+										&& oldLength > 0; oldLength = oldContents.read(
+												oldContentBuffer), newLength = newContents.read(newContentBuffer)) {
 							for (int i = 0; i < oldLength; ++i) {
 								if (oldContentBuffer[i] != newContentBuffer[i]) {
 									equal = false;
@@ -891,23 +822,17 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 			}
 
 			if (!equal) {
-				Map<?, ?> response = options == null ? null
-						: (Map<?, ?>) options
-								.get(IURIConverter.OPTION_RESPONSE);
+				Map<?, ?> response = options == null ? null : (Map<?, ?>) options.get(IURIConverter.OPTION_RESPONSE);
 				if (response == null) {
 					response = new HashMap<Object, Object>();
 				}
-				OutputStream newContents = uriConverter.createOutputStream(
-						getURI(), new ExtensibleURIConverter.OptionsMap(
-								IURIConverter.OPTION_RESPONSE, response,
-								options));
+				OutputStream newContents = uriConverter.createOutputStream(getURI(),
+						new ExtensibleURIConverter.OptionsMap(IURIConverter.OPTION_RESPONSE, response, options));
 				try {
-					InputStream temporaryFileContents = uriConverter
-							.createInputStream(temporaryFileURI, null);
+					InputStream temporaryFileContents = uriConverter.createInputStream(temporaryFileURI, null);
 					try {
-						for (int length = temporaryFileContents
-								.read(newContentBuffer); length > 0; length = temporaryFileContents
-								.read(newContentBuffer)) {
+						for (int length = temporaryFileContents.read(
+								newContentBuffer); length > 0; length = temporaryFileContents.read(newContentBuffer)) {
 							newContents.write(newContentBuffer, 0, length);
 						}
 					} finally {
@@ -915,8 +840,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 					}
 				} finally {
 					newContents.close();
-					Long timeStamp = (Long) response
-							.get(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY);
+					Long timeStamp = (Long) response.get(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY);
 					if (timeStamp != null) {
 						// setTimeStamp(timeStamp);
 					}
@@ -930,8 +854,7 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 	/*
 	 * documentation inherited
 	 */
-	protected void saveOnlyIfChangedWithMemoryBuffer(Map<?, ?> options)
-			throws IOException {
+	protected void saveOnlyIfChangedWithMemoryBuffer(Map<?, ?> options) throws IOException {
 		IURIConverter uriConverter = getURIConverter();
 		class MyByteArrayOutputStream extends ByteArrayOutputStream {
 			public byte[] buffer() {
@@ -955,16 +878,14 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 		boolean equal = true;
 		InputStream oldContents = null;
 		try {
-			oldContents = uriConverter.createInputStream(getURI(),
-					getDefaultLoadOptions());
+			oldContents = uriConverter.createInputStream(getURI(), getDefaultLoadOptions());
 		} catch (IOException exception) {
 			equal = false;
 		}
 		if (oldContents != null) {
 			try {
 				byte[] oldContentBuffer = new byte[length];
-				if (oldContents.read(oldContentBuffer) == length
-						&& oldContents.read() == -1) {
+				if (oldContents.read(oldContentBuffer) == length && oldContents.read() == -1) {
 					for (int i = 0; i < length; ++i) {
 						if (oldContentBuffer[i] != newContentBuffer[i]) {
 							equal = false;
@@ -980,27 +901,24 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 		}
 
 		if (!equal) {
-			Map<?, ?> response = options == null ? null : (Map<?, ?>) options
-					.get(IURIConverter.OPTION_RESPONSE);
+			Map<?, ?> response = options == null ? null : (Map<?, ?>) options.get(IURIConverter.OPTION_RESPONSE);
 			if (response == null) {
 				response = new HashMap<Object, Object>();
 			}
-			OutputStream newContents = uriConverter.createOutputStream(
-					getURI(), new ExtensibleURIConverter.OptionsMap(
-							IURIConverter.OPTION_RESPONSE, response, options));
+			OutputStream newContents = uriConverter.createOutputStream(getURI(),
+					new ExtensibleURIConverter.OptionsMap(IURIConverter.OPTION_RESPONSE, response, options));
 			try {
 				newContents.write(newContentBuffer, 0, length);
 			} finally {
 				newContents.close();
-				Long timeStamp = (Long) response
-						.get(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY);
+				Long timeStamp = (Long) response.get(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY);
 				if (timeStamp != null) {
 					// setTimeStamp(timeStamp);
 				}
 			}
 		}
 	}
-	
+
 	@Override
 	public void setLoaded(boolean isLoaded) {
 		setModelLoaded(isLoaded);
@@ -1026,12 +944,10 @@ public abstract class ModelSupport implements IModel, IModel.Internal,
 				dm.getTransaction().begin();
 				getModelSet().getDataChangeSupport().setEnabled(dm, false);
 				dm.add(dm.match(null, null, null, false, oldURI), uri);
-				dm.remove(Collections.singleton(new StatementPattern(null,
-						null, null)), oldURI);
+				dm.remove(Collections.singleton(new StatementPattern(null, null, null)), oldURI);
 				dm.getTransaction().commit();
 			} finally {
-				if (dm.getTransaction() != null
-						&& dm.getTransaction().isActive()) {
+				if (dm.getTransaction() != null && dm.getTransaction().isActive()) {
 					dm.getTransaction().rollback();
 				}
 				dm.close();
