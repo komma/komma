@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,6 +34,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 import com.google.inject.ConfigurationException;
 import com.google.inject.Inject;
@@ -69,6 +72,7 @@ import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.komma.internal.model.IModelAware;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
+import net.enilink.komma.model.IModelStatusConstants;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.ModelPlugin;
@@ -672,6 +676,14 @@ public abstract class ModelSupport
 			getWarnings().clear();
 			setModelLoading(false);
 			setModified(false);
+			// avoid choking on unknown protocols, URNs, etc.
+			if (exception instanceof MalformedURLException) {
+				ModelPlugin.getDefault().log(
+						new Status(IStatus.WARNING, ModelPlugin.PLUGIN_ID,
+								IModelStatusConstants.INTERNAL_WARNING,
+								"Unable to load model '" + uri + "': " + exception.getMessage(), null));
+				return;
+			}
 			throw exception;
 		}
 

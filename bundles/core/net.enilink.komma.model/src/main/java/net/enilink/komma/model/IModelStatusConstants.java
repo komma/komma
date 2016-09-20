@@ -8,4 +8,5 @@ package net.enilink.komma.model;
  */
 public interface IModelStatusConstants {
 	public static final int INTERNAL_ERROR = 10001;
+	public static final int INTERNAL_WARNING = 10002;
 }
