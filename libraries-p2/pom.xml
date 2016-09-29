@@ -140,6 +140,22 @@
                                     <id>com.google.inject.extensions:guice-multibindings:4.0</id>
                                     <transitive>false</transitive>
                                     <source>true</source>
+				    <override>true</override>
+                                    <!-- Modify MANIFEST to set bundle-version of FRAGMENT-HOST -->
+                                    <instructions>
+                                            <Fragment-Host>com.google.inject;bundle-version=4.0.0</Fragment-Host>
+		                            <Bundle-RequiredExecutionEnvironment>JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
+		                            <Import-Package>!com.google.inject.*,*</Import-Package>
+		                            <Export-Package>!*.internal.*,com.google.inject.multibindings.*;version=1.4.0</Export-Package>
+		                            <_nouses>true</_nouses>
+                                            <_removeheaders>
+                                              Embed-Dependency,Embed-Transitive,
+                                              Built-By,Tool,Created-By,Build-Jdk,
+                                              Originally-Created-By,Archiver-Version,
+                                              Include-Resource,Private-Package,
+		                              Ignore-Package,Bnd-LastModified
+		                            </_removeheaders>
+                                    </instructions>
                                 </artifact>
 
 				<artifact>
@@ -188,7 +204,7 @@
 
     <pluginRepositories>
         <pluginRepository>
-            <id>reficio</id>
+            <id>enilink-maven</id>
             <url>https://dl.bintray.com/enilink/maven/</url>
         </pluginRepository>
     </pluginRepositories>
