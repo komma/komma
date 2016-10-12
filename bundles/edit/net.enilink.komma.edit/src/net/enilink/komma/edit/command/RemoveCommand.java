@@ -45,31 +45,14 @@ import net.enilink.komma.core.IReference;
  * creation of an instance of this class.
  * 
  * <p>
- * The implementation of this class is low-level and KOMA specific; it allows
- * one or more objects to be removed from a many-valued feature of an owner.
+ * The implementation of this class is low-level and KOMMA specific; it allows
+ * one or more objects to be removed from a many-valued property of an owner.
  * i.e., it is almost equivalent of the call
  * 
  * <pre>
- * ((EList) ((EObject) owner).eGet((EStructuralFeature) feature))
+ * ((Collection) ((IResource) owner).get(property)
  * 		.removeAll((Collection) collection);
  * </pre>
- * 
- * <p>
- * It can also be used as a near-equivalent to the call
- * 
- * <pre>
- * ((EList) extent).removeAll((Collection) collection);
- * </pre>
- * 
- * which is how root objects are removed from the contents of a resource.
- * 
- * <p>
- * The one difference is that, while <code>EList.removeAll(Collection)</code>
- * removes all values equal to a value in the collection, this command will
- * remove no more than one value per value in the collection. When duplicates
- * are allowed and present in the list, this command will first look for
- * identical (<code>==</code>) values, in order, and failing that, equal values
- * (<code>.equals()</code>).
  * 
  * <p>
  * Like all the low-level commands in this package, the remove command is
@@ -88,11 +71,11 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 
 	/**
 	 * This creates a command to remove a particular value from the specified
-	 * feature of the owner.
+	 * property of the owner.
 	 */
 	public static ICommand create(IEditingDomain domain, Object owner,
-			Object feature, Object value) {
-		return create(domain, owner, feature, Collections.singleton(value));
+			Object property, Object value) {
+		return create(domain, owner, property, Collections.singleton(value));
 	}
 
 	/**
@@ -108,10 +91,10 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 	 * specified feature of the owner.
 	 */
 	public static ICommand create(final IEditingDomain domain,
-			final Object owner, final Object feature,
+			final Object owner, final Object property,
 			final Collection<?> collection) {
 		return domain.createCommand(RemoveCommand.class, new CommandParameter(
-				owner, feature, collection));
+				owner, property, collection));
 	}
 
 	/**
@@ -394,7 +377,7 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 	public String toString() {
 		StringBuffer result = new StringBuffer(super.toString());
 		result.append(" (owner: " + owner + ")");
-		result.append(" (feature: " + property + ")");
+		result.append(" (property: " + property + ")");
 		result.append(" (ownerList: " + ownerList + ")");
 		result.append(" (collection: " + collection + ")");
 		result.append(" (indices: " + Arrays.toString(indices) + ")");

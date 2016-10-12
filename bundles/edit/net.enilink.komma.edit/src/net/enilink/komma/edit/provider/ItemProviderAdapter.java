@@ -717,27 +717,45 @@ public class ItemProviderAdapter extends
 	 * This adds to <code>newChildDescriptors</code>, a collection of new child
 	 * descriptors. Typically,
 	 * {@link net.enilink.komma.edit.command.CommandParameter}s will be used as
-	 * descriptors. This implementation adds nothing to the collection, but
-	 * derived classes should override this method, invoking the superclass
-	 * implementation and then adding to the collection.
+	 * descriptors.
+	 * 
+	 * @param newChildDescriptors
+	 *            The collector for child descriptors
+	 * @param object
+	 *            The target object for which new children should be created
 	 */
-	protected void collectNewChildDescriptors(
-			ICollector<Object> newChildDescriptors, Object object) {
+	protected void collectNewChildDescriptors(ICollector<Object> newChildDescriptors, Object object) {
+		collectNewChildDescriptors(newChildDescriptors, object, false);
+	}
+
+	/**
+	 * This adds to <code>newChildDescriptors</code>, a collection of new child
+	 * descriptors. Typically,
+	 * {@link net.enilink.komma.edit.command.CommandParameter}s will be used as
+	 * descriptors.
+	 * 
+	 * @param newChildDescriptors
+	 *            The collector for child descriptors
+	 * @param object
+	 *            The target object for which new children should be created
+	 * @param includeOnlyDirectClasses
+	 *            Controls if only the direct range classes of the computed
+	 *            properties should be returned or all of their sub-classes
+	 */
+	protected void collectNewChildDescriptors(ICollector<Object> newChildDescriptors, Object object,
+			boolean includeOnlyDirectClasses) {
 		// Subclasses may override to add descriptors.
 		if (object instanceof IResource) {
-			for (IProperty property : ((IResource) object)
-					.getApplicableChildProperties()) {
+			for (IProperty property : ((IResource) object).getApplicableChildProperties()) {
 				if (newChildDescriptors.cancelled()) {
 					return;
 				}
 
-				if (((IResource) object).getApplicableCardinality(property)
-						.getSecond() > 0) {
-					Set<IClass> ranges = new HashSet<IClass>(property
-							.getNamedRanges((IResource) object, true).toList());
+				if (((IResource) object).getApplicableCardinality(property).getSecond() > 0) {
+					Set<IClass> ranges = new HashSet<IClass>(
+							property.getNamedRanges((IResource) object, includeOnlyDirectClasses).toList());
 
-					IClass[] rangeArray = ranges.toArray(new IClass[ranges
-							.size()]);
+					IClass[] rangeArray = ranges.toArray(new IClass[ranges.size()]);
 					Arrays.sort(rangeArray, new Comparator<IClass>() {
 						@Override
 						public int compare(IClass c1, IClass c2) {
@@ -759,11 +777,9 @@ public class ItemProviderAdapter extends
 					});
 
 					for (net.enilink.vocab.rdfs.Class rangeClass : rangeArray) {
-						newChildDescriptors.add(createChildParameter(
-								property,
-								new ChildDescriptor(Arrays.asList(rangeClass),
-										childRequiresName((IResource) object,
-												property, rangeClass))));
+						newChildDescriptors
+								.add(createChildParameter(property, new ChildDescriptor(Arrays.asList(rangeClass),
+										childRequiresName((IResource) object, property, rangeClass))));
 					}
 				}
 			}
@@ -2375,8 +2391,8 @@ public class ItemProviderAdapter extends
 	 * it returns <code>false</code>.
 	 * 
 	 * <p>
-	 * This implementation consults {@link #getChildrenFeatures
-	 * getChildrenFeatures}, returning true if any feature map or simple
+	 * This implementation consults {@link #getChildrenProperties
+	 * getChildrenProperties}, returning true if any feature map or simple
 	 * attributes contribute children. This provides backwards compatibility
 	 * with pre-2.0 subclasses and enables the more useful new default behaviour
 	 * for attributes, which were previously not allowed. Subclasses may

@@ -161,10 +161,7 @@ public class EditingDomainActionBarContributor extends
 
 	/**
 	 * This determines whether or not the delete action should clean up all
-	 * references to the deleted objects. It is false by default, to provide the
-	 * same beahviour, by default, as in EMF 2.1 and before. You should probably
-	 * override this method to return true, in order to get the new, more useful
-	 * beahviour.
+	 * references to the deleted objects. It is false by default.
 	 */
 	protected boolean removeAllReferencesOnDelete() {
 		return true;

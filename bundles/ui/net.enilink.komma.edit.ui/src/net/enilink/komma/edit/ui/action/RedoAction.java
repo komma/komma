@@ -25,8 +25,8 @@ import org.eclipse.ui.IWorkbenchPart;
 
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.ICommandStackListener;
+import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 
 /**
@@ -65,16 +65,16 @@ public class RedoAction extends AbstractActionHandler implements
 			}
 
 			this.domain = domain;
-			this.domain.getCommandStack().addCommandStackListener(this);
+
+			if (this.domain != null) {
+				this.domain.getCommandStack().addCommandStackListener(this);
+			}
 		}
 	}
 
 	public void setWorkbenchPart(IWorkbenchPart workbenchPart) {
 		super.setWorkbenchPart(workbenchPart);
-		if (workbenchPart instanceof IEditingDomainProvider) {
-			setEditingDomain(((IEditingDomainProvider) workbenchPart)
-					.getEditingDomain());
-		}
+		setEditingDomain(AdapterFactoryEditingDomain.getEditingDomainFor(workbenchPart));
 	}
 
 	@Override

@@ -120,9 +120,12 @@ public class CommandActionHandler extends AbstractActionHandler {
 	@Override
 	protected void setWorkbenchPart(IWorkbenchPart workbenchPart) {
 		super.setWorkbenchPart(workbenchPart);
-		if (workbenchPart instanceof IEditingDomainProvider) {
-			setEditingDomain(((IEditingDomainProvider) workbenchPart)
-					.getEditingDomain());
+		IEditingDomainProvider provider = null;
+		if (workbenchPart != null) {
+			provider = workbenchPart.getAdapter(IEditingDomainProvider.class);
+		}
+		if (provider != null) {
+			setEditingDomain(provider.getEditingDomain());
 		} else {
 			// ensures that action is disabled for parts without editing domain
 			setEditingDomain(null);

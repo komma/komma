@@ -41,6 +41,7 @@ import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
+import net.enilink.komma.edit.ui.util.EditUIUtil;
 
 /**
  * This class is used to implement a selection-based {@link IAction} on the
@@ -153,25 +154,8 @@ public class CommandAction extends AbstractActionDelegate implements
 	 * provider, its editing domain.
 	 */
 	public void setWorkbenchPart(IWorkbenchPart workbenchPart) {
-		// If the workbench part changes...
 		if (this.workbenchPart != workbenchPart) {
-			// Discard the old editing domain.
-			//
-			editingDomain = null;
-
-			// If there is a new one...
-			//
-			if (workbenchPart != null) {
-				// Does this part provide an editing domain?
-				//
-				if (workbenchPart instanceof IEditingDomainProvider) {
-					editingDomain = ((IEditingDomainProvider) workbenchPart)
-							.getEditingDomain();
-				}
-			}
-
-			// Record the part.
-			//
+			editingDomain = AdapterFactoryEditingDomain.getEditingDomainFor(workbenchPart);
 			this.workbenchPart = workbenchPart;
 		}
 	}

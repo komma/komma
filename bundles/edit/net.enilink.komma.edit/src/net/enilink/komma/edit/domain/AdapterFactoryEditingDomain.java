@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import org.eclipse.core.runtime.IAdaptable;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
@@ -116,7 +118,7 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 	 * This returns the editing domain for the given arbitrary object, or null,
 	 * if it can't be determined. It is recommended that you always work
 	 * directly with an EditingDomain instance whenever possible. This is
-	 * implemented to checks if the object itself implements
+	 * implemented to check if the object itself implements
 	 * {@link net.enilink.komma.edit.domain.IEditingDomainProvider} and returns
 	 * that result. Otherwise it checks if it is valid to call
 	 * {@link #getEditingDomainFor(org.eclipse.emf.ecore.EObject)
@@ -131,16 +133,21 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 	 */
 	static public IEditingDomain getEditingDomainFor(Object object) {
 		if (object instanceof IEditingDomainProvider) {
-			IEditingDomain editingDomain = ((IEditingDomainProvider) object)
-					.getEditingDomain();
+			IEditingDomain editingDomain = ((IEditingDomainProvider) object).getEditingDomain();
 			return editingDomain;
 		} else if (object instanceof IWrapperItemProvider) {
-			return getEditingDomainFor(((IWrapperItemProvider) object)
-					.getValue());
-		} else if (object instanceof IObject) {
-			return getEditingDomainFor(((IObject) object).getModel()
-					.getModelSet().adapters()
-					.getAdapter(IEditingDomainProvider.class));
+			return getEditingDomainFor(((IWrapperItemProvider) object).getValue());
+		} else {
+			IEditingDomainProvider provider = null;
+			if (object instanceof IObject) {
+				provider = (IEditingDomainProvider) ((IObject) object).getModel().getModelSet().adapters()
+						.getAdapter(IEditingDomainProvider.class);
+			} else if (object instanceof IAdaptable) {
+				provider = ((IAdaptable) object).getAdapter(IEditingDomainProvider.class);
+			}
+			if (provider != null) {
+				return provider.getEditingDomain();
+			}
 		}
 		return null;
 	}

@@ -7,6 +7,7 @@
 package net.enilink.komma.owl.editor;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -26,20 +27,25 @@ import net.enilink.komma.common.ui.viewer.IViewerProvider;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.action.CreateChildrenActionContributor;
+import net.enilink.komma.edit.ui.action.DeleteAction;
 import net.enilink.komma.edit.ui.action.EditingDomainActionBarContributor;
 import net.enilink.komma.edit.ui.action.ValidateAction;
 
 /**
  * This is the action bar contributor for the OWL editor.
  */
-public class OWLActionBarContributor extends EditingDomainActionBarContributor
-		implements ISelectionChangedListener {
+public class OWLActionBarContributor extends EditingDomainActionBarContributor implements ISelectionChangedListener {
 	/**
 	 * This keeps track of the active editor.
 	 */
 	protected IEditorPart activeEditorPart;
 
 	protected CreateChildrenActionContributor createChildActionContributor = new CreateChildrenActionContributor();
+
+	/**
+	 * This is the action used to implement removal from parent.
+	 */
+	protected DeleteAction removeFromParentAction;
 
 	/**
 	 * This action refreshes the viewer of the current editor if the editor
@@ -55,8 +61,7 @@ public class OWLActionBarContributor extends EditingDomainActionBarContributor
 		@Override
 		public void run() {
 			if (activeEditorPart instanceof IViewerProvider) {
-				Viewer viewer = ((IViewerProvider) activeEditorPart)
-						.getViewer();
+				Viewer viewer = ((IViewerProvider) activeEditorPart).getViewer();
 				if (viewer != null) {
 					viewer.refresh();
 				}
@@ -73,8 +78,7 @@ public class OWLActionBarContributor extends EditingDomainActionBarContributor
 	 * This action opens the Properties view.
 	 */
 	protected IAction showPropertiesViewAction = new Action(
-			OWLEditorPlugin.INSTANCE
-					.getString("_UI_ShowPropertiesView_menu_item")) {
+			OWLEditorPlugin.INSTANCE.getString("_UI_ShowPropertiesView_menu_item")) {
 		@Override
 		public void run() {
 			try {
@@ -114,8 +118,7 @@ public class OWLActionBarContributor extends EditingDomainActionBarContributor
 	public void contributeToMenu(IMenuManager menuManager) {
 		super.contributeToMenu(menuManager);
 
-		IMenuManager submenuManager = new MenuManager(
-				OWLEditorPlugin.INSTANCE.getString("_UI_OWLEditor_menu"),
+		IMenuManager submenuManager = new MenuManager(OWLEditorPlugin.INSTANCE.getString("_UI_OWLEditor_menu"),
 				"owlMenuID");
 		menuManager.insertAfter("additions", submenuManager);
 		submenuManager.add(new Separator("settings"));
@@ -123,8 +126,7 @@ public class OWLActionBarContributor extends EditingDomainActionBarContributor
 		submenuManager.add(new Separator("additions"));
 		submenuManager.add(new Separator("additions-end"));
 
-		createChildActionContributor.contributeToMenu(submenuManager,
-				"additions");
+		createChildActionContributor.contributeToMenu(submenuManager, "additions");
 
 		// Force an update because Eclipse hides empty menus now.
 		submenuManager.addMenuListener(new IMenuListener() {
@@ -149,6 +151,7 @@ public class OWLActionBarContributor extends EditingDomainActionBarContributor
 	public void init(IActionBars bars, IWorkbenchPage page) {
 		super.init(bars, page);
 		validateAction = new ValidateAction(page);
+		removeFromParentAction = new DeleteAction(page, false);
 	}
 
 	/**
@@ -159,6 +162,7 @@ public class OWLActionBarContributor extends EditingDomainActionBarContributor
 		super.menuAboutToShow(menuManager);
 
 		createChildActionContributor.menuAboutToShow(menuManager, "edit");
+		menuManager.appendToGroup("edit", new ActionContributionItem(removeFromParentAction));
 	}
 
 	/**
@@ -180,11 +184,9 @@ public class OWLActionBarContributor extends EditingDomainActionBarContributor
 	 * updating the menus accordingly.
 	 */
 	public void selectionChanged(SelectionChangedEvent event) {
-		IEditingDomain domain = ((IEditingDomainProvider) activeEditorPart)
-				.getEditingDomain();
+		IEditingDomain domain = ((IEditingDomainProvider) activeEditorPart).getEditingDomain();
 
-		createChildActionContributor.selectionChanged(activeEditorPart, domain,
-				event.getSelection());
+		createChildActionContributor.selectionChanged(activeEditorPart, domain, event.getSelection());
 	}
 
 	/**
@@ -213,8 +215,7 @@ public class OWLActionBarContributor extends EditingDomainActionBarContributor
 			// Fake a selection changed event to update the menus.
 			//
 			if (selectionProvider.getSelection() != null) {
-				selectionChanged(new SelectionChangedEvent(selectionProvider,
-						selectionProvider.getSelection()));
+				selectionChanged(new SelectionChangedEvent(selectionProvider, selectionProvider.getSelection()));
 			}
 		}
 	}

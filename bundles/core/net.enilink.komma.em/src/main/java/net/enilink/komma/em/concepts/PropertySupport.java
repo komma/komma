@@ -10,6 +10,7 @@
  *******************************************************************************/
 package net.enilink.komma.em.concepts;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -211,14 +212,15 @@ public abstract class PropertySupport extends BehaviorBase implements
 
 			String query = PREFIX
 					+ "SELECT DISTINCT ?r WHERE {"
-					+ "?o a ?c . ?c rdfs:subClassOf ?restriction . ?restriction owl:onProperty ?p . "
-					+ "{{ ?restriction owl:allValuesFrom ?r } UNION { ?restriction owl:someValuesFrom ?r } FILTER NOT EXISTS { ?r owl:intersectionOf ?x }}"
+					+ "?s a [ rdfs:subClassOf* ?restriction ] . ?restriction owl:onProperty [ rdfs:subPropertyOf* ?p ] . "
+					+ "{{ ?restriction owl:allValuesFrom ?someClass } UNION { ?restriction owl:someValuesFrom ?someClass } FILTER NOT EXISTS { ?someClass owl:intersectionOf ?x }} ."
+					+ "?r rdfs:subClassOf ?someClass"
 					+ "}";
 
 			@SuppressWarnings("unchecked")
 			IExtendedIterator<? extends IClass> it = (IExtendedIterator<IClass>) subject
 					.getEntityManager().createQuery(query)
-					.setParameter("o", object).setParameter("p", this)
+					.setParameter("s", subject).setParameter("p", this)
 					.evaluate();
 
 			if (it.hasNext()) {
@@ -246,9 +248,11 @@ public abstract class PropertySupport extends BehaviorBase implements
 						queue.addAll(unionOf);
 					}
 				}
-
+				
+				// TODO Is this really required?
 				KommaUtil.removeSuperClasses(rangeClasses);
-				for (IReference typeClass : ((IResource) object).getRdfTypes()) {
+				
+				for (IReference typeClass : new ArrayList<>(((IResource) object).getRdfTypes())) {
 					if (rangeClasses.contains(typeClass)) {
 						return true;
 					}

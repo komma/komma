@@ -39,6 +39,7 @@ import java.util.Set;
 import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.commons.iterator.NiceIterator;
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.composition.properties.Filterable;
 import net.enilink.composition.properties.PropertySet;
@@ -448,11 +449,11 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		}
 	}
 
-	public Iterator<E> iterator() {
+	public IExtendedIterator<E> iterator() {
 		List<E> cache = getCache();
 		if (isCacheComplete(cache)) {
 			final Iterator<E> iter = cache.iterator();
-			return new Iterator<E>() {
+			return new NiceIterator<E>() {
 				private E e;
 
 				public boolean hasNext() {

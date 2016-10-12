@@ -18,8 +18,8 @@ import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryContentProvider;
+import net.enilink.komma.edit.ui.util.EditUIUtil;
 
 public class ExtendedAdvancedPropertiesSection extends AdvancedPropertySection {
 	private boolean propertySourceProviderSet = false;
@@ -27,27 +27,21 @@ public class ExtendedAdvancedPropertiesSection extends AdvancedPropertySection {
 	@Override
 	public void setInput(IWorkbenchPart part, ISelection selection) {
 		if (!propertySourceProviderSet) {
-			if (part instanceof IEditingDomainProvider) {
-				IEditingDomain editingDomain = ((IEditingDomainProvider) part)
-						.getEditingDomain();
-				if (editingDomain instanceof AdapterFactoryEditingDomain) {
-					AdapterFactoryContentProvider adapterFactoryContentProvider = new AdapterFactoryContentProvider(
-							((AdapterFactoryEditingDomain) editingDomain)
-									.getAdapterFactory());
+			IEditingDomain editingDomain = AdapterFactoryEditingDomain.getEditingDomainFor(part);
+			if (editingDomain instanceof AdapterFactoryEditingDomain) {
+				AdapterFactoryContentProvider adapterFactoryContentProvider = new AdapterFactoryContentProvider(
+						((AdapterFactoryEditingDomain) editingDomain).getAdapterFactory());
 
-					page
-							.setPropertySourceProvider(adapterFactoryContentProvider);
-					propertySourceProviderSet = true;
-				}
+				page.setPropertySourceProvider(adapterFactoryContentProvider);
+				propertySourceProviderSet = true;
 			}
 		}
-        
+
 		super.setInput(part, selection);
 	}
 
 	@Override
-	public void createControls(Composite parent,
-			TabbedPropertySheetPage tabbedPropertySheetPage) {
+	public void createControls(Composite parent, TabbedPropertySheetPage tabbedPropertySheetPage) {
 		super.createControls(parent, tabbedPropertySheetPage);
 	}
 }

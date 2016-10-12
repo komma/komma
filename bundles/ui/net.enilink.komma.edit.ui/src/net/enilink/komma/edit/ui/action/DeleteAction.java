@@ -18,13 +18,16 @@ package net.enilink.komma.edit.ui.action;
 
 import java.util.Collection;
 
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeSelection;
+import org.eclipse.jface.viewers.TreePath;
+import org.eclipse.ui.IWorkbenchPage;
+
 import net.enilink.komma.common.command.CompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.edit.command.DeleteCommand;
 import net.enilink.komma.edit.command.RemoveCommand;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
-
-import org.eclipse.ui.IWorkbenchPage;
 
 /**
  * A delete action removes objects from their parent containers, optionally
@@ -39,13 +42,34 @@ public class DeleteAction extends CommandActionHandler {
 
 	public DeleteAction(IWorkbenchPage page, boolean removeAllReferences) {
 		super(page, KommaEditUIPlugin.INSTANCE
-				.getString(removeAllReferences ? "_UI_Delete_menu_item"
-						: "_UI_DeleteFromParent_menu_item"));
+				.getString(removeAllReferences ? "_UI_Delete_menu_item" : "_UI_DeleteFromParent_menu_item"));
 		this.removeAllReferences = removeAllReferences;
 	}
 
 	public DeleteAction(IWorkbenchPage page) {
 		this(page, false);
+	}
+
+	@Override
+	protected boolean updateSelection(IStructuredSelection selection) {
+		// use knowledge about current tree view to create a "remove this from
+		// its parent element" command
+		if (selection instanceof ITreeSelection && !removeAllReferences) {
+			ITreeSelection treeSelection = (ITreeSelection) selection;
+			CompositeCommand command = new CompositeCommand();
+			for (TreePath treePath : treeSelection.getPaths()) {
+				int segments = treePath.getSegmentCount();
+				if (segments > 1) {
+					command.add(RemoveCommand.create(domain, treePath.getSegment(segments - 2), null,
+							treePath.getSegment(segments - 1)));
+				} else {
+					command.add(RemoveCommand.create(domain, treePath.getLastSegment()));
+				}
+			}
+			this.command = command;
+			return command.canExecute();
+		}
+		return super.updateSelection(selection);
 	}
 
 	@Override

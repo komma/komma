@@ -34,7 +34,6 @@ import net.enilink.komma.edit.command.ICommandActionDelegate;
 import net.enilink.komma.edit.command.IInputCallback;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.editor.InputCallbackDialog;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
 
@@ -77,11 +76,7 @@ public abstract class StaticSelectionCommandAction extends
 	public StaticSelectionCommandAction(IWorkbenchPart workbenchPart,
 			ISelection selection) {
 		super(workbenchPart, selection);
-		// try to get editing domain from workbench part
-		if (workbenchPart instanceof IEditingDomainProvider) {
-			editingDomain = ((IEditingDomainProvider) workbenchPart)
-					.getEditingDomain();
-		}
+		editingDomain = AdapterFactoryEditingDomain.getEditingDomainFor(workbenchPart);
 	}
 
 	/**

@@ -52,6 +52,7 @@ import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.provider.IItemLabelProvider;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.edit.ui.util.EditUIMarkerHelper;
+import net.enilink.komma.edit.ui.util.EditUIUtil;
 import net.enilink.komma.em.concepts.IClass;
 import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.model.IModel;
@@ -337,10 +338,6 @@ public class ValidateAction extends AbstractActionHandler {
 
 	public void setWorkbenchPart(IWorkbenchPart workbenchPart) {
 		super.setWorkbenchPart(workbenchPart);
-
-		if (workbenchPart instanceof IEditingDomainProvider) {
-			domain = ((IEditingDomainProvider) workbenchPart)
-					.getEditingDomain();
-		}
+		domain = AdapterFactoryEditingDomain.getEditingDomainFor(workbenchPart);
 	}
 }

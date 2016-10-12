@@ -177,7 +177,7 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 	}
 
 	@Override
-	public Iterator<String> iterator() {
+	public IExtendedIterator<String> iterator() {
 		return new ConvertingIterator<ILiteral, String>(bestValues().iterator()) {
 			ILiteral current;
 
