@@ -141,8 +141,8 @@ public abstract class ResourceSupport extends BehaviorBase implements
 			// select potential child properties
 			+ "{" //
 			+ "?resource a ?class ." //
-			+ "?class rdfs:subClassOf [owl:onProperty ?property] ." //
-			+ " { ?property rdfs:subPropertyOf komma:child } UNION { ?property rdfs:subPropertyOf komma:contains } ." //
+			+ "?class rdfs:subClassOf+ [owl:onProperty ?property] ." //
+			+ "{ ?property rdfs:subPropertyOf+ komma:child } UNION { ?property rdfs:subPropertyOf+ komma:contains } ." //
 			+ "FILTER NOT EXISTS {" //
 			+ "    ?otherProperty rdfs:subPropertyOf ?property ." //
 			+ "    ?class rdfs:subClassOf [owl:onProperty ?otherProperty]" //
@@ -151,7 +151,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 			// select already used child properties
 			+ "} UNION {" //
 			+ "    ?resource ?property ?someObject ." //
-			+ "    { ?property rdfs:subPropertyOf komma:child } UNION { ?property rdfs:subPropertyOf komma:contains } ." //
+			+ "    { ?property rdfs:subPropertyOf+ komma:child } UNION { ?property rdfs:subPropertyOf+ komma:contains } ." //
 			+ "    FILTER NOT EXISTS {" //
 			+ "        ?otherProperty rdfs:subPropertyOf ?property ." //
 			+ "        ?resource ?otherProperty ?someObject ." //

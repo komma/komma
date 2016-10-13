@@ -39,16 +39,14 @@ import net.enilink.vocab.rdfs.RDFS;
  * This adapter implementation provides reflective support that emulates the
  * behavior of a default generated item provider.
  */
-public class ReflectiveItemProvider extends ItemProviderAdapter implements
-		IEditingDomainItemProvider, IStructuredItemContentProvider,
-		ITreeItemContentProvider, IItemColorProvider, IItemFontProvider,
-		IItemLabelProvider, IItemPropertySource, ISearchableItemProvider {
+public class ReflectiveItemProvider extends ItemProviderAdapter
+		implements IEditingDomainItemProvider, IStructuredItemContentProvider, ITreeItemContentProvider,
+		IItemColorProvider, IItemFontProvider, IItemLabelProvider, IItemPropertySource, ISearchableItemProvider {
 
 	protected IResourceLocator resourceLocator;
 	protected Collection<? extends IReference> targetTypes;
 
-	public ReflectiveItemProvider(IAdapterFactory adapterFactory,
-			IResourceLocator resourceLocator,
+	public ReflectiveItemProvider(IAdapterFactory adapterFactory, IResourceLocator resourceLocator,
 			Collection<? extends IReference> targetTypes) {
 		super(adapterFactory);
 		this.resourceLocator = resourceLocator;
@@ -68,8 +66,7 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 	public void notifyChanged(Collection<? extends INotification> notifications) {
 		super.notifyChanged(notifications);
 
-		Collection<IViewerNotification> viewerNotifications = new ArrayList<IViewerNotification>(
-				0);
+		Collection<IViewerNotification> viewerNotifications = new ArrayList<IViewerNotification>(0);
 		for (INotification notification : notifications) {
 			if (notification instanceof IStatementNotification) {
 				IStatementNotification stmtNotification = (IStatementNotification) notification;
@@ -79,11 +76,9 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 						&& adapterFactory instanceof AdapterFactory) {
 					IEntity object = resolveReference(notification.getSubject());
 					if (object != null) {
-						viewerNotifications.add(new ViewerNotification(object,
-								true, true));
+						viewerNotifications.add(new ViewerNotification(object, true, true));
 					}
-					((AdapterFactory) adapterFactory)
-							.unlinkAdapter(stmtNotification.getSubject());
+					((AdapterFactory) adapterFactory).unlinkAdapter(stmtNotification.getSubject());
 				}
 				addViewerNotifications(viewerNotifications, stmtNotification);
 			}
@@ -99,15 +94,13 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 		return RDFS.PROPERTY_LABEL.equals(notification.getPredicate());
 	}
 
-	protected void addViewerNotifications(
-			Collection<IViewerNotification> viewerNotifications,
+	protected void addViewerNotifications(Collection<IViewerNotification> viewerNotifications,
 			IStatementNotification notification) {
 		IEntity object = resolveReference(notification.getSubject());
 		if (object instanceof IResource) {
 			((IResource) object).refresh(notification.getPredicate());
 			boolean labelUpdate = updateLabel(notification);
-			viewerNotifications.add(new ViewerNotification(object,
-					!labelUpdate, labelUpdate));
+			viewerNotifications.add(new ViewerNotification(object, !labelUpdate, labelUpdate));
 		}
 	}
 
@@ -132,38 +125,32 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 	}
 
 	@Override
-	public Object getCreateChildImage(Object owner, Object property,
-			Object childDescription, Collection<?> selection) {
+	public Object getCreateChildImage(Object owner, Object property, Object childDescription, Collection<?> selection) {
 		if (childDescription instanceof ChildDescriptor) {
 			childDescription = ((ChildDescriptor) childDescription).getValue();
 		}
 
-		String name = "full/ctool16/Create"
-				+ getTypes(owner).iterator().next().getURI().localPart() + "_"
+		String name = "full/ctool16/Create" + getTypes(owner).iterator().next().getURI().localPart() + "_"
 				+ ((IReference) property).getURI().localPart();
 
-		Object childType = childDescription instanceof Collection<?> ? ((Collection<?>) childDescription)
-				.iterator().next() : childDescription;
+		Object childType = childDescription instanceof Collection<?>
+				? ((Collection<?>) childDescription).iterator().next() : childDescription;
 
-		if (childType instanceof net.enilink.vocab.rdfs.Class
-				&& ((IReference) childType).getURI() != null) {
+		if (childType instanceof net.enilink.vocab.rdfs.Class && ((IReference) childType).getURI() != null) {
 			name += "_" + ((IReference) childType).getURI().localPart();
 		}
 
 		try {
-			return getResourceLocator().getImage(name);
+			return getImage(name);
 		} catch (Exception e) {
 			List<Object> images = new ArrayList<Object>();
 			IItemLabelProvider itemLabelProvider = (IItemLabelProvider) ((IComposeableAdapterFactory) adapterFactory)
-					.getRootAdapterFactory().adapt(childType,
-							IItemLabelProvider.class);
+					.getRootAdapterFactory().adapt(childType, IItemLabelProvider.class);
 
-			Object itemImage = itemLabelProvider != null ? itemLabelProvider
-					.getImage(childType) : null;
+			Object itemImage = itemLabelProvider != null ? itemLabelProvider.getImage(childType) : null;
 			if (itemImage != null) {
 				images.add(itemLabelProvider.getImage(childType));
-				images.add(KommaEditPlugin.INSTANCE
-						.getImage("full/ovr16/CreateChild"));
+				images.add(KommaEditPlugin.INSTANCE.getImage("full/ovr16/CreateChild"));
 				return new ComposedCreateChildImage(images);
 			}
 		}
@@ -174,10 +161,7 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 	public Object getForeground(Object object) {
 		if (object instanceof IEntity) {
 			URI uri = ((IObject) object).getReference().getURI();
-			if (uri != null
-					&& uri.namespace().equals(
-							((IEntity) object).getEntityManager().getNamespace(
-									""))) {
+			if (uri != null && uri.namespace().equals(((IEntity) object).getEntityManager().getNamespace(""))) {
 				return super.getForeground(object);
 			}
 			return IItemColorProvider.GRAYED_OUT_COLOR;
@@ -189,10 +173,7 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 	public Object getFont(Object object) {
 		if (object instanceof IEntity) {
 			URI uri = ((IObject) object).getReference().getURI();
-			if (uri != null
-					&& uri.namespace().equals(
-							((IEntity) object).getEntityManager().getNamespace(
-									""))) {
+			if (uri != null && uri.namespace().equals(((IEntity) object).getEntityManager().getNamespace(""))) {
 				return IItemFontProvider.BOLD_FONT;
 			}
 		}
@@ -203,10 +184,7 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 	public Object getImage(Object object) {
 		for (IReference type : getTypes(object)) {
 			try {
-				return overlayImage(
-						object,
-						getResourceLocator().getImage(
-								"full/obj16/" + type.getURI().localPart()));
+				return overlayImage(object, getImage("full/obj16/" + type.getURI().localPart()));
 			} catch (Exception missing) {
 				// ignore
 			}
@@ -214,8 +192,7 @@ public class ReflectiveItemProvider extends ItemProviderAdapter implements
 
 		try {
 			// try default image from provided resource locator
-			return overlayImage(object,
-					getResourceLocator().getImage("full/obj16/Item"));
+			return overlayImage(object, getImage("full/obj16/Item"));
 		} catch (Exception missing2) {
 			// fall back to image provided by edit plugin
 			return KommaEditPlugin.INSTANCE.getImage("full/obj16/Item");

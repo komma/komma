@@ -39,24 +39,29 @@ import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.StatementPattern;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
+import net.enilink.komma.edit.ui.provider.LazyAdapterFactoryContentProvider;
 import net.enilink.komma.edit.ui.provider.reflective.ObjectComparator;
-import net.enilink.komma.edit.ui.provider.reflective.StatementPatternContentProvider;
 import net.enilink.komma.edit.ui.util.SearchWidget;
 import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.edit.ui.wizards.NewObjectWizard;
 import net.enilink.komma.em.concepts.IClass;
 import net.enilink.komma.em.concepts.IResource;
+import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
-import net.enilink.vocab.rdf.RDF;
 
 public class InstancesPart extends AbstractEditingDomainPart {
+	class ContentProvider extends LazyAdapterFactoryContentProvider  {
+		public ContentProvider(IAdapterFactory adapterFactory) {
+			super(adapterFactory);
+		}
+	}
+
 	private StructuredViewer viewer;
 	private IAdapterFactory adapterFactory;
 	private IClass input;
@@ -74,22 +79,19 @@ public class InstancesPart extends AbstractEditingDomainPart {
 
 	private void createIndividualsPart(Composite parent) {
 		viewer = createViewer(parent);
-		viewer.getControl().setLayoutData(
-				new GridData(SWT.FILL, SWT.FILL, true, true));
+		viewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		viewer.setComparator(new ObjectComparator());
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
-				getForm().fireSelectionChanged(InstancesPart.this,
-						event.getSelection());
+				getForm().fireSelectionChanged(InstancesPart.this, event.getSelection());
 			}
 		});
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
 				if (deleteItemAction != null) {
-					deleteItemAction
-							.setEnabled(!event.getSelection().isEmpty());
+					deleteItemAction.setEnabled(!event.getSelection().isEmpty());
 				}
 			}
 		});
@@ -97,14 +99,11 @@ public class InstancesPart extends AbstractEditingDomainPart {
 		SearchWidget searchWidget = new SearchWidget();
 		searchWidget.setViewer(viewer);
 		searchWidget.createControl(parent);
-		searchWidget.getControl().setLayoutData(
-				new GridData(SWT.FILL, SWT.END, false, false));
+		searchWidget.getControl().setLayoutData(new GridData(SWT.FILL, SWT.END, false, false));
 	}
 
 	protected StructuredViewer createViewer(Composite parent) {
-		Table table = getWidgetFactory().createTable(parent,
-				SWT.V_SCROLL | SWT.VIRTUAL | SWT.MULTI);
-
+		Table table = getWidgetFactory().createTable(parent, SWT.V_SCROLL | SWT.VIRTUAL | SWT.MULTI);
 		viewer = new TableViewer(table) {
 			@SuppressWarnings("rawtypes")
 			@Override
@@ -123,8 +122,6 @@ public class InstancesPart extends AbstractEditingDomainPart {
 				super.setSelectionToWidget(existing, reveal);
 			}
 		};
-		viewer.setContentProvider(new StatementPatternContentProvider());
-
 		return viewer;
 	}
 
@@ -133,15 +130,13 @@ public class InstancesPart extends AbstractEditingDomainPart {
 	}
 
 	public void createActions(Composite parent) {
-		IToolBarManager toolBarManager = (IToolBarManager) getForm()
-				.getAdapter(IToolBarManager.class);
+		IToolBarManager toolBarManager = (IToolBarManager) getForm().getAdapter(IToolBarManager.class);
 		ToolBarManager ownManager = null;
 		if (toolBarManager == null) {
 			toolBarManager = ownManager = new ToolBarManager(SWT.HORIZONTAL);
 			ToolBar toolBar = ownManager.createControl(parent);
 			getWidgetFactory().adapt(toolBar);
-			toolBar.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true,
-					false));
+			toolBar.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
 		}
 
 		addItemAction = new Action("Add") {
@@ -150,9 +145,7 @@ public class InstancesPart extends AbstractEditingDomainPart {
 			}
 		};
 		addItemAction.setImageDescriptor(ExtendedImageRegistry.getInstance()
-				.getImageDescriptor(
-						KommaEditUIPropertiesPlugin.INSTANCE
-								.getImage(IEditUIPropertiesImages.ADD)));
+				.getImageDescriptor(KommaEditUIPropertiesPlugin.INSTANCE.getImage(IEditUIPropertiesImages.ADD)));
 		toolBarManager.add(addItemAction);
 
 		addAnonymousItemAction = new Action("Add anonymous") {
@@ -160,10 +153,8 @@ public class InstancesPart extends AbstractEditingDomainPart {
 				addItem(false);
 			}
 		};
-		addAnonymousItemAction.setImageDescriptor(ExtendedImageRegistry.getInstance()
-				.getImageDescriptor(
-						KommaEditUIPropertiesPlugin.INSTANCE
-								.getImage(IEditUIPropertiesImages.ADD_ANONYMOUS)));
+		addAnonymousItemAction.setImageDescriptor(ExtendedImageRegistry.getInstance().getImageDescriptor(
+				KommaEditUIPropertiesPlugin.INSTANCE.getImage(IEditUIPropertiesImages.ADD_ANONYMOUS)));
 		toolBarManager.add(addAnonymousItemAction);
 
 		deleteItemAction = new Action("Remove") {
@@ -172,9 +163,7 @@ public class InstancesPart extends AbstractEditingDomainPart {
 			}
 		};
 		deleteItemAction.setImageDescriptor(ExtendedImageRegistry.getInstance()
-				.getImageDescriptor(
-						KommaEditUIPropertiesPlugin.INSTANCE
-								.getImage(IEditUIPropertiesImages.REMOVE)));
+				.getImageDescriptor(KommaEditUIPropertiesPlugin.INSTANCE.getImage(IEditUIPropertiesImages.REMOVE)));
 		deleteItemAction.setEnabled(false);
 		toolBarManager.add(deleteItemAction);
 
@@ -185,16 +174,14 @@ public class InstancesPart extends AbstractEditingDomainPart {
 			}
 		};
 		refreshAction.setImageDescriptor(ExtendedImageRegistry.getInstance()
-				.getImageDescriptor(
-						KommaEditUIPropertiesPlugin.INSTANCE
-								.getImage(IEditUIPropertiesImages.REFRESH)));
+				.getImageDescriptor(KommaEditUIPropertiesPlugin.INSTANCE.getImage(IEditUIPropertiesImages.REFRESH)));
 		toolBarManager.add(refreshAction);
 
 		if (ownManager != null) {
 			ownManager.update(true);
 		}
 	}
-
+	
 	void addItem(boolean requireName) {
 		if (input instanceof IClass) {
 			final IClass clazz = (IClass) input;
@@ -240,22 +227,18 @@ public class InstancesPart extends AbstractEditingDomainPart {
 
 	void deleteItem() {
 		try {
-			getEditingDomain().getCommandStack().execute(
-					new SimpleCommand("Delete instance") {
-						@Override
-						protected CommandResult doExecuteWithResult(
-								IProgressMonitor progressMonitor,
-								IAdaptable info) throws ExecutionException {
-							final Object selected = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-							if (selected instanceof IResource) {
-								((IResource) selected).getEntityManager()
-										.remove((IResource) selected);
-								return CommandResult
-										.newOKCommandResult(selected);
-							}
-							return CommandResult.newCancelledCommandResult();
-						}
-					}, null, null);
+			getEditingDomain().getCommandStack().execute(new SimpleCommand("Delete instance") {
+				@Override
+				protected CommandResult doExecuteWithResult(IProgressMonitor progressMonitor, IAdaptable info)
+						throws ExecutionException {
+					final Object selected = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+					if (selected instanceof IResource) {
+						((IResource) selected).getEntityManager().remove((IResource) selected);
+						return CommandResult.newOKCommandResult(selected);
+					}
+					return CommandResult.newCancelledCommandResult();
+				}
+			}, null, null);
 		} catch (ExecutionException e) {
 			OWLEditorPlugin.INSTANCE.log(e);
 		}
@@ -308,18 +291,25 @@ public class InstancesPart extends AbstractEditingDomainPart {
 		super.refresh();
 	}
 
+	protected String instancesQuery() {
+		StringBuilder sb = new StringBuilder(ISparqlConstants.PREFIX)
+				.append("SELECT DISTINCT ?r WHERE { ?r a [ rdfs:subClassOf* ?c ] } ORDER BY ?r");
+		return sb.toString();
+	}
+
 	protected void setInputToViewer(StructuredViewer viewer, IClass input) {
 		if (input == null) {
 			viewer.setInput(null);
 		} else {
-			viewer.setInput(new StatementPattern(null, RDF.PROPERTY_TYPE, input));
+			List<IObject> instances = input.getEntityManager().createQuery(instancesQuery()).setParameter("c", input)
+					.evaluate(IObject.class).toList();
+			viewer.setInput(instances.toArray());
 		}
 	}
 
 	protected void adapterFactoryChanged() {
-		viewer.setLabelProvider(new AdapterFactoryLabelProvider(
-				getAdapterFactory()));
-
+		viewer.setLabelProvider(new AdapterFactoryLabelProvider(getAdapterFactory()));
+		viewer.setContentProvider(new ContentProvider(getAdapterFactory()));
 		createContextMenuFor(viewer);
 	}
 }
