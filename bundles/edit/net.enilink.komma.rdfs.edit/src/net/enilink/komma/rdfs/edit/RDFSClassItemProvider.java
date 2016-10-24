@@ -260,9 +260,9 @@ public class RDFSClassItemProvider extends ReflectiveItemProvider {
 			protected String getQueryFindPatterns(Object parent) {
 				if (RDFS.TYPE_RESOURCE.equals(parent)
 						|| OWL.TYPE_THING.equals(parent)) {
-					return "?s a rdfs:Class";
+					return "{ ?s a rdfs:Class } union { ?s a owl:Class }";
 				}
-				return "?s rdfs:subClassOf ?parent";
+				return "?s rdfs:subClassOf* ?parent";
 			}
 		};
 	}
