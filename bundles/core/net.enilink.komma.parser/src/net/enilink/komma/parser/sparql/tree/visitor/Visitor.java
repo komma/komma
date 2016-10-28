@@ -34,6 +34,7 @@ import net.enilink.komma.parser.sparql.tree.PropertyList;
 import net.enilink.komma.parser.sparql.tree.QName;
 import net.enilink.komma.parser.sparql.tree.Query;
 import net.enilink.komma.parser.sparql.tree.SelectQuery;
+import net.enilink.komma.parser.sparql.tree.SimplePropertyPath;
 import net.enilink.komma.parser.sparql.tree.UnionGraph;
 import net.enilink.komma.parser.sparql.tree.Variable;
 import net.enilink.komma.parser.sparql.tree.expr.BuiltInCall;
@@ -110,4 +111,6 @@ public interface Visitor<R, T> {
 	R variable(Variable variable, T data);
 
 	R graphPatternExpr(GraphPatternExpr graphPatternExpr, T data);
+	
+	R simplePropertyPath(SimplePropertyPath propertyPath, T data);
 }

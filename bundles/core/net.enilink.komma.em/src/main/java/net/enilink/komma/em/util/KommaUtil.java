@@ -203,27 +203,20 @@ public class KommaUtil implements ISparqlConstants {
 		return value;
 	}
 
+	/**
+	 * Removes any class <code>super</code> from <code>classes</code> where
+	 * <code>sub rdfs:subClassOf super</code> and
+	 * <code>classes.contains(sub)</code>.
+	 * 
+	 * @param classes The set of classes from which all super classes should be removed. 
+	 */
 	public static void removeSuperClasses(Set<IClass> classes) {
 		for (IClass typeClass : classes.toArray(new IClass[classes.size()])) {
 			for (Iterator<IClass> it = classes.iterator(); it.hasNext();) {
 				IClass otherClass = it.next();
-
-				if (typeClass != otherClass
-						&& typeClass.getRdfsSubClassOf().contains(otherClass)) {
+				if (typeClass != otherClass && typeClass.getRdfsSubClassOf().contains(otherClass)) {
 					it.remove();
 				}
-			}
-		}
-	}
-
-	public static void unfoldSubClasses(Set<IClass> classes) {
-		for (IClass typeClass : classes.toArray(new IClass[classes.size()])) {
-			IExtendedIterator<? extends IClass> leafSubClasses = typeClass
-					.getNamedLeafSubClasses(true);
-			if (leafSubClasses.hasNext()) {
-				classes.remove(typeClass);
-
-				classes.addAll(leafSubClasses.toSet());
 			}
 		}
 	}

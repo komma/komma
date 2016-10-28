@@ -42,6 +42,7 @@ import net.enilink.komma.parser.sparql.tree.QName;
 import net.enilink.komma.parser.sparql.tree.Query;
 import net.enilink.komma.parser.sparql.tree.QueryWithSolutionModifier;
 import net.enilink.komma.parser.sparql.tree.SelectQuery;
+import net.enilink.komma.parser.sparql.tree.SimplePropertyPath;
 import net.enilink.komma.parser.sparql.tree.UnionGraph;
 import net.enilink.komma.parser.sparql.tree.Variable;
 import net.enilink.komma.parser.sparql.tree.expr.BuiltInCall;
@@ -354,5 +355,10 @@ public class TreeWalker<T> implements Visitor<Boolean, T> {
 
 	public Boolean graphPatternExpr(GraphPatternExpr graphPatternExpr, T data) {
 		return graphPatternExpr.getPattern().accept(this, data);
+	}
+	
+	@Override
+	public Boolean simplePropertyPath(SimplePropertyPath propertyPath, T data) {
+		return true;
 	}
 }

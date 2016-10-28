@@ -61,19 +61,10 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	private final String SELECT_SUBCLASSES(boolean named) {
 		return PREFIX + "SELECT DISTINCT ?subClass WHERE { "
 				+ ((OWL.TYPE_THING.equals(this)) ? "?subClass a owl:Class . " //
-						: "?subClass rdfs:subClassOf ?superClass . " //
+						: "?subClass rdfs:subClassOf* ?superClass . " //
 				) + "FILTER (?subClass != ?superClass"
 				+ (named ? " && isIRI(?subClass)" : "")
 				+ ") } ORDER BY ?subClass";
-	};
-
-	private static final String SELECT_LEAF_SUBCLASSES(boolean named) {
-		return PREFIX + "SELECT DISTINCT ?subClass WHERE { "
-				+ "?subClass rdfs:subClassOf* ?superClass . OPTIONAL {"
-				+ "?otherSubClass rdfs:subClassOf ?subClass . "
-				+ "FILTER (?subClass != ?otherSubClass)" + "} FILTER ("
-				+ (named ? "isIRI(?subClass) && " : "")
-				+ "!bound(?otherSubClass)) } ORDER BY ?subClass";
 	};
 
 	private static final String SELECT_DIRECT_SUPERCLASSES(boolean named) {
@@ -106,7 +97,7 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 			+ "?instance a ?class ." + "}";
 
 	private static final String HAS_SUBCLASSES(boolean named) {
-		return PREFIX + "ASK { " + "?subClass rdfs:subClassOf ?superClass . "
+		return PREFIX + "ASK { ?subClass rdfs:subClassOf ?superClass . "
 				+ "FILTER (" + (named ? "isIRI(?subClass) && " : "")
 				+ "?subClass != ?superClass && ?subClass != owl:Nothing)}";
 	}
@@ -186,26 +177,6 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 		return getEntityManager()
 				.createQuery(HAS_NAMED_SUBCLASSES_DESC().toQueryString())
 				.setParameter("superClass", this).getBooleanResult();
-	}
-
-	@Override
-	public IExtendedIterator<IClass> getNamedLeafSubClasses(
-			boolean includeInferred) {
-		return getLeafSubClasses(includeInferred, true);
-	}
-
-	@Override
-	public IExtendedIterator<IClass> getLeafSubClasses(boolean includeInferred) {
-		return getLeafSubClasses(includeInferred, false);
-	}
-
-	protected IExtendedIterator<IClass> getLeafSubClasses(
-			boolean includeInferred, boolean named) {
-		IQuery<?> query = getEntityManager().createQuery(
-				SELECT_LEAF_SUBCLASSES(named), includeInferred);
-		query.setParameter("superClass", getBehaviourDelegate());
-
-		return query.evaluate(IClass.class);
 	}
 
 	@Override

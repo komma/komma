@@ -10,9 +10,7 @@
  *******************************************************************************/
 package net.enilink.komma.parser.sparql.tree;
 
-import net.enilink.komma.parser.sparql.tree.visitor.Visitable;
-
-public interface GraphNode extends Visitable {
+public interface GraphNode extends NodeOrPath {
 	PropertyList getPropertyList();
 	
 	GraphNode copy(boolean copyProperties);

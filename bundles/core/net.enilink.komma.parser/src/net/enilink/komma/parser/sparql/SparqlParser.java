@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.parboiled.Rule;
+import org.parboiled.support.Var;
+
 import net.enilink.komma.parser.BaseRdfParser;
 import net.enilink.komma.parser.sparql.tree.AbstractGraphNode;
 import net.enilink.komma.parser.sparql.tree.AskQuery;
@@ -30,6 +33,7 @@ import net.enilink.komma.parser.sparql.tree.IntegerLiteral;
 import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.LimitModifier;
 import net.enilink.komma.parser.sparql.tree.NamedGraph;
+import net.enilink.komma.parser.sparql.tree.NodeOrPath;
 import net.enilink.komma.parser.sparql.tree.NumericLiteral;
 import net.enilink.komma.parser.sparql.tree.OffsetModifier;
 import net.enilink.komma.parser.sparql.tree.OptionalGraph;
@@ -54,9 +58,6 @@ import net.enilink.komma.parser.sparql.tree.expr.NumericExpr;
 import net.enilink.komma.parser.sparql.tree.expr.NumericOperator;
 import net.enilink.komma.parser.sparql.tree.expr.RelationalExpr;
 import net.enilink.komma.parser.sparql.tree.expr.RelationalOperator;
-
-import org.parboiled.Rule;
-import org.parboiled.support.Var;
 
 /**
  * SPARQL Parser
@@ -375,7 +376,7 @@ public class SparqlParser extends BaseRdfParser {
 	}
 
 	public boolean addPropertyPatterns(PropertyList propertyList,
-			GraphNode predicate, List<GraphNode> objects) {
+			NodeOrPath predicate, List<GraphNode> objects) {
 		for (GraphNode object : objects) {
 			propertyList.add(new PropertyPattern(predicate, object));
 		}

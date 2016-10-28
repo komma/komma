@@ -33,6 +33,7 @@ import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.LimitModifier;
 import net.enilink.komma.parser.sparql.tree.MinusGraph;
 import net.enilink.komma.parser.sparql.tree.NamedGraph;
+import net.enilink.komma.parser.sparql.tree.NodeOrPath;
 import net.enilink.komma.parser.sparql.tree.OffsetModifier;
 import net.enilink.komma.parser.sparql.tree.OptionalGraph;
 import net.enilink.komma.parser.sparql.tree.OrderCondition;
@@ -45,6 +46,7 @@ import net.enilink.komma.parser.sparql.tree.QName;
 import net.enilink.komma.parser.sparql.tree.Query;
 import net.enilink.komma.parser.sparql.tree.QueryWithSolutionModifier;
 import net.enilink.komma.parser.sparql.tree.SelectQuery;
+import net.enilink.komma.parser.sparql.tree.SimplePropertyPath;
 import net.enilink.komma.parser.sparql.tree.UnionGraph;
 import net.enilink.komma.parser.sparql.tree.Variable;
 import net.enilink.komma.parser.sparql.tree.expr.BuiltInCall;
@@ -426,6 +428,9 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 			condition.getExpression().accept(this, data);
 
 			switch (condition.getDirection()) {
+			case ASC:
+				// do nothing
+				break;
 			case DESC:
 				data.append(" DESC");
 			}
@@ -465,7 +470,7 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 	@Override
 	public StringBuilder propertyList(PropertyList propertyList,
 			StringBuilder data) {
-		GraphNode lastPredicate = null;
+		NodeOrPath lastPredicate = null;
 		for (Iterator<PropertyPattern> it = propertyList.iterator(); it
 				.hasNext();) {
 			PropertyPattern pattern = it.next();
@@ -571,6 +576,12 @@ public class ToStringVisitor implements Visitor<StringBuilder, StringBuilder> {
 	public StringBuilder variable(Variable variable, StringBuilder data) {
 		data.append("?").append(variable.getName());
 		return variable.getPropertyList().accept(this, data);
+	}
+	
+	@Override
+	public StringBuilder simplePropertyPath(SimplePropertyPath propertyPath, StringBuilder data) {
+		data.append(propertyPath.getPathExpression());
+		return data;
 	}
 
 	@Override

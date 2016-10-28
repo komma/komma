@@ -356,7 +356,16 @@ public abstract class PropertySupport extends BehaviorBase implements
 
 			KommaUtil.removeSuperClasses(namedRangeClasses);
 			if (!direct) {
-				KommaUtil.unfoldSubClasses(namedRangeClasses);
+				// add all sub-classes of the given range classes
+				for (IClass typeClass : namedRangeClasses.toArray(new IClass[namedRangeClasses.size()])) {
+					IExtendedIterator<? extends IClass> subClasses = typeClass.getNamedSubClasses();
+					if (subClasses.hasNext()) {
+						if (typeClass.isAbstract()) {
+							namedRangeClasses.remove(typeClass);
+							namedRangeClasses.addAll(subClasses.toSet());
+						}
+					}
+				}
 			}
 			return WrappedIterator.create(namedRangeClasses.iterator());
 		}

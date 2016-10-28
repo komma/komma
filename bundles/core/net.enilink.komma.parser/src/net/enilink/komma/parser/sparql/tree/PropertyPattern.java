@@ -11,15 +11,15 @@
 package net.enilink.komma.parser.sparql.tree;
 
 public class PropertyPattern {
-	protected GraphNode predicate;
+	protected NodeOrPath predicate;
 	protected GraphNode object;
 
-	public PropertyPattern(GraphNode predicate, GraphNode object) {
+	public PropertyPattern(NodeOrPath predicate, GraphNode object) {
 		this.predicate = predicate;
 		this.object = object;
 	}
 
-	public GraphNode getPredicate() {
+	public NodeOrPath getPredicate() {
 		return predicate;
 	}
 

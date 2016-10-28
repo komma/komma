@@ -32,10 +32,6 @@ public interface IClass extends net.enilink.vocab.owl.Class, IResource {
 	IExtendedIterator<IClass> getSubClasses(boolean direct,
 			boolean includeInferred);
 
-	IExtendedIterator<IClass> getLeafSubClasses(boolean includeInferred);
-
-	IExtendedIterator<IClass> getNamedLeafSubClasses(boolean includeInferred);
-
 	@Cacheable
 	IExtendedIterator<IClass> getNamedSuperClasses();
 
