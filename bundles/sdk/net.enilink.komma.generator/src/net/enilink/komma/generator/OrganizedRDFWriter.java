@@ -136,7 +136,7 @@ public class OrganizedRDFWriter implements IDataAndNamespacesVisitor<Void> {
 
 	public void print(IStatement st) {
 		try {
-			writer.handleStatement(valueConverter.toSesame(st));
+			writer.handleStatement(valueConverter.toRdf4j(st));
 		} catch (RDFHandlerException e) {
 			throw new KommaException(e);
 		}

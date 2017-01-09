@@ -35,8 +35,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,18 +45,18 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import net.enilink.vocab.owl.OWL;
-import net.enilink.vocab.owl.Ontology;
-import net.enilink.vocab.rdfs.Datatype;
-import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.komma.generator.concepts.CodeClass;
-import net.enilink.komma.generator.concepts.CodeOntology;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
+import net.enilink.komma.generator.concepts.CodeClass;
+import net.enilink.komma.generator.concepts.CodeOntology;
+import net.enilink.vocab.owl.OWL;
+import net.enilink.vocab.owl.Ontology;
+import net.enilink.vocab.rdfs.Datatype;
+import net.enilink.vocab.rdfs.RDFS;
 
 /**
  * Converts OWL ontologies into JavaBeans. This class can be used to create Elmo
@@ -77,18 +78,6 @@ public class CodeGenerator implements IGenerator {
 
 	private Exception exception;
 
-	Runnable helper = new Runnable() {
-		public void run() {
-			try {
-				for (Runnable r = queue.take(); r != helper; r = queue.take()) {
-					r.run();
-				}
-			} catch (InterruptedException e) {
-				logger.error(e.toString(), e);
-			}
-		}
-	};
-
 	final Logger logger = LoggerFactory.getLogger(CodeGenerator.class);
 
 	@Inject
@@ -104,11 +93,7 @@ public class CodeGenerator implements IGenerator {
 
 	private String propertyNamesPrefix;
 
-	BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
-
 	private JavaNameResolver resolver;
-
-	private List<Thread> threads = new ArrayList<Thread>();
 
 	private void addBaseClass(IEntity bean) {
 		net.enilink.vocab.rdfs.Class klass;
@@ -181,12 +166,8 @@ public class CodeGenerator implements IGenerator {
 	 */
 	public void exportSourceCode(final SourceCodeHandler handler)
 			throws Exception {
-		for (int i = 0; i < 3; i++) {
-			threads.add(new Thread(helper));
-		}
-		for (Thread thread : threads) {
-			thread.start();
-		}
+		ExecutorService execSvc = Executors.newFixedThreadPool(3);
+		List<Callable<Void>> tasks = new ArrayList<>();
 
 		IQuery<?> query = manager.createQuery(SELECT_CLASSES);
 		for (Object o : query.getResultList()) {
@@ -197,23 +178,23 @@ public class CodeGenerator implements IGenerator {
 			if (packages.containsKey(namespace)) {
 				addBaseClass(bean);
 				final String pkg = packages.get(namespace);
-				queue.add(new Runnable() {
-					public void run() {
+				tasks.add(new Callable<Void>() {
+					public Void call() {
 						unitOfWork.begin();
 						buildClassOrDatatype(bean, pkg, handler);
 						unitOfWork.end();
+						return null;
 					}
 				});
 			}
 		}
-		for (int i = 0, n = threads.size(); i < n; i++) {
-			queue.add(helper);
-		}
+		query.close();
+
+		execSvc.invokeAll(tasks);
+		execSvc.shutdown();
+
 		for (String namespace : packages.keySet()) {
 			buildPackage(manager, namespace, handler);
-		}
-		for (Thread thread : threads) {
-			thread.join();
 		}
 
 		if (exception != null) {

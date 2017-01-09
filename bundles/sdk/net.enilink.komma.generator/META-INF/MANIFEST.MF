@@ -13,13 +13,15 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.rdf4j,
  org.eclipse.rdf4j,
  org.objectweb.asm.all;bundle-version="5.0.1",
- net.enilink.composition.properties.komma
+ net.enilink.composition.properties.komma,
+ net.enilink.commons.logging
 Bundle-ClassPath: ., lib/commons-cli-1.1.jar
 Import-Package: com.google.common.base;version="17.0.0",
  com.google.inject;version="1.4",
  com.google.inject.binder;version="1.4",
  com.google.inject.multibindings;version="1.4",
  com.google.inject.name;version="1.4",
+ org.apache.commons.io.input,
  org.eclipse.core.resources,
  org.eclipse.emf.codegen.merge.java;resolution:=optional,
  org.eclipse.emf.codegen.merge.java.facade;resolution:=optional,
