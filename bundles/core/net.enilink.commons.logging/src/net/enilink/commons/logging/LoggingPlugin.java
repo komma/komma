@@ -12,6 +12,7 @@ package net.enilink.commons.logging;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 
@@ -57,7 +58,11 @@ public class LoggingPlugin extends Plugin {
 	}
 
 	public static synchronized void init() {
-		if (!initialized) {
+		init(false);
+	}
+
+	public static synchronized void init(boolean force) {
+		if (!initialized || force) {
 			if (LoggerFactory.getILoggerFactory() instanceof LoggerContext) {
 				// SLF4J is bound to logback in the current environment
 				LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -72,6 +77,7 @@ public class LoggingPlugin extends Plugin {
 		}
 	}
 
+	@SuppressWarnings("resource")
 	private static void loadConfiguration(LoggerContext context) {
 		try {
 			JoranConfigurator configurator = new JoranConfigurator();
@@ -91,9 +97,13 @@ public class LoggingPlugin extends Plugin {
 			if (config != null) {
 				configurator.doConfigure(config);
 			}
+			if (config != null) {
+				config.close();
+			}
 
 		} catch (JoranException je) {
 			// StatusPrinter will handle this
+		} catch (IOException ignored) {
 		}
 	}
 
@@ -126,7 +136,7 @@ public class LoggingPlugin extends Plugin {
 	}
 
 	private static InputStream getLoggingFileFromWorkspace() {
-		if (Platform.isRunning()) {
+		if (Platform.isRunning() && Platform.getInstanceLocation().isSet()) {
 			String path = Platform.getInstanceLocation().getURL().getPath() + LOGBACK_CONFIG_FILE;
 			try {
 				return new FileInputStream(path);
