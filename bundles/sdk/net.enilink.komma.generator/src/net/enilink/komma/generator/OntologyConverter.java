@@ -359,6 +359,8 @@ public class OntologyConverter implements IApplication {
 
 	private URLClassLoader cl;
 
+	@Inject
+	@Named("propertyNamesPrefix")
 	private String propertyNamesPrefix;
 
 	private Collection<String> baseClasses;
