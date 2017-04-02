@@ -81,7 +81,7 @@ public class InstanceTreePart extends InstancesPart {
 		} else {
 			List<IObject> instances = input.getEntityManager()
 					.createQuery(instancesQuery()).setParameter("c", input)
-					.evaluate(IObject.class).toList();
+					.evaluateRestricted(IObject.class).toList();
 			viewer.setInput(instances.toArray());
 		}
 	}
