@@ -56,12 +56,6 @@ import net.enilink.komma.model.IObject;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
 
 public class InstancesPart extends AbstractEditingDomainPart {
-	class ContentProvider extends LazyAdapterFactoryContentProvider  {
-		public ContentProvider(IAdapterFactory adapterFactory) {
-			super(adapterFactory);
-		}
-	}
-
 	private StructuredViewer viewer;
 	private IAdapterFactory adapterFactory;
 	private IClass input;
@@ -302,14 +296,14 @@ public class InstancesPart extends AbstractEditingDomainPart {
 			viewer.setInput(null);
 		} else {
 			List<IObject> instances = input.getEntityManager().createQuery(instancesQuery()).setParameter("c", input)
-					.evaluate(IObject.class).toList();
+					.evaluateRestricted(IObject.class).toList();
 			viewer.setInput(instances.toArray());
 		}
 	}
 
 	protected void adapterFactoryChanged() {
 		viewer.setLabelProvider(new AdapterFactoryLabelProvider(getAdapterFactory()));
-		viewer.setContentProvider(new ContentProvider(getAdapterFactory()));
+		viewer.setContentProvider(new LazyAdapterFactoryContentProvider(getAdapterFactory()));
 		createContextMenuFor(viewer);
 	}
 }
