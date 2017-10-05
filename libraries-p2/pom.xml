@@ -8,6 +8,16 @@
     <packaging>pom</packaging>
     <version>1.0.0</version>
 
+
+    <properties>
+	<httpclient.version>4.5.2</httpclient.version>
+	<httpcore.version>4.4.4</httpcore.version>
+	<jackson.version>2.8.2</jackson.version>
+	<jsonldjava.version>0.8.3</jsonldjava.version>
+	<rdf4j.version>2.2.2</rdf4j.version>
+	<mapdb.version>1.0.8</mapdb.version>
+    </properties>
+
     <build>
 	<defaultGoal>p2:site</defaultGoal>
         <plugins>
@@ -71,50 +81,50 @@
                                     <transitive>false</transitive>
                                 </artifact-->
                                 <artifact>
-                                    <id>org.mapdb:mapdb:2.0-beta13</id>
+                                    <id>org.mapdb:mapdb:${mapdb.version}</id>
                                     <transitive>false</transitive>
                                     <override>true</override>
                                     <source>true</source>
                                 </artifact>
                                 <artifact>
-                                    <id>org.apache.httpcomponents:httpclient-osgi:4.5.2</id>
+                                    <id>org.apache.httpcomponents:httpclient-osgi:${httpclient.version}</id>
                                     <transitive>false</transitive>
                                     <source>true</source>
                                 </artifact>
                                 <artifact>
-                                    <id>org.apache.httpcomponents:httpcore-osgi:4.4.4</id>
+                                    <id>org.apache.httpcomponents:httpcore-osgi:${httpcore.version}</id>
                                     <transitive>false</transitive>
                                     <source>true</source>
                                 </artifact>
                                 <artifact>
-                                    <id>com.fasterxml.jackson.core:jackson-core:2.7.2</id>
+                                    <id>com.fasterxml.jackson.core:jackson-core:${jackson.version}</id>
                                     <transitive>false</transitive>
                                     <source>true</source>
                                 </artifact>
                                 <artifact>
-                                    <id>com.fasterxml.jackson.core:jackson-databind:2.7.2</id>
+                                    <id>com.fasterxml.jackson.core:jackson-databind:${jackson.version}</id>
                                     <transitive>false</transitive>
                                     <source>true</source>
                                 </artifact>
                                 <artifact>
-                                    <id>com.fasterxml.jackson.core:jackson-annotations:2.7.2</id>
+                                    <id>com.fasterxml.jackson.core:jackson-annotations:${jackson.version}</id>
                                     <transitive>false</transitive>
                                     <source>true</source>
                                 </artifact>
                                 <artifact>
-                                    <id>com.github.jsonld-java:jsonld-java:0.8.2</id>
+                                    <id>com.github.jsonld-java:jsonld-java:${jsonldjava.version}</id>
                                     <transitive>false</transitive>
                                     <source>true</source>
                                 </artifact>
                                 <artifact>
-                                    <id>org.eclipse.rdf4j:rdf4j-runtime-osgi:2.0</id>
+                                    <id>org.eclipse.rdf4j:rdf4j-runtime-osgi:${rdf4j.version}</id>
                                     <transitive>false</transitive>
                                     <source>true</source>
                                     <override>true</override>
                                     <!-- Modify MANIFEST to make dependency on spatial4j optional -->
                                     <instructions>
                                             <Bundle-SymbolicName>org.eclipse.rdf4j</Bundle-SymbolicName>
-                                            <Export-Package>!*text-base,!*prop-base,org.eclipse.rdf4j.*;version=2.0.0</Export-Package>
+                                            <Export-Package>!*text-base,!*prop-base,org.eclipse.rdf4j.*;version=${rdf4j.version}</Export-Package>
                                             <Import-Package>
                                                 org.slf4j.*,
                                                 javax.*;resolution:=optional,

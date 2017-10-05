@@ -42,6 +42,7 @@ import org.eclipse.rdf4j.rio.RDFWriter;
 import org.eclipse.rdf4j.rio.RDFWriterFactory;
 import org.eclipse.rdf4j.rio.RDFWriterRegistry;
 import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 
 import net.enilink.komma.common.util.BasicDiagnostic;
 import net.enilink.komma.common.util.Diagnostic;
@@ -156,10 +157,12 @@ public class ModelUtil {
 		if (mimeType != null) {
 			format = Rio.getParserFormatForMIMEType(mimeType).orElse(format);
 		}
-		// TODO: if necessary, re-implement RDF/XML pretty printing
 		RDFWriterFactory factory = RDFWriterRegistry.getInstance().get(format)
 				.orElseThrow(() -> new KommaException("No writer available for " + mimeType));
-		return factory.getWriter(os);
+		RDFWriter writer = factory.getWriter(os);
+		// explicitly disable pretty printing due to bugs in turtle writer
+		writer.set(BasicWriterSettings.PRETTY_PRINT, false);
+		return writer;
 	}
 
 	/**
