@@ -9,6 +9,11 @@ deploy:
   script: releng/publish/pushToBintray.sh features/net.enilink.komma.updatesite/target-maven/repository/
   on:
     tags: true
+- provider: script
+  skip_cleanup: true
+  script: releng/publish/pushToBintray.sh features/net.enilink.komma.updatesite/target-maven/repository/ "$BINTRAY_USER" "$BINTRAY_API_KEY" "$BINTRAY_OWNER" snapshots
+  on:
+    branch: snapshots
 
 env:
   global:
