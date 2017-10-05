@@ -21,14 +21,18 @@ echo "BINTRAY_PCK_VERSION=$BINTRAY_PCK_VERSION"
 TAG=$(git describe --tags --exact-match 2>/dev/null)
 TAG=${TAG#v}
 
-if [ ! -z "$TAG" ]; then
-  BINTRAY_PCK_VERSION=$TAG
-fi
-
 if [ ! -z "$REPOSITORY_PATH" ]; then
   pushd "$REPOSITORY_PATH"
 else
   pushd .
+fi
+
+if [ ! -z "$TAG" ]; then
+# use current tag as version
+  BINTRAY_PCK_VERSION=$TAG
+elif [ -e "version.txt" ]; then
+# read version from file
+  BINTRAY_PCK_VERSION=$(<version.txt)
 fi
 
 FILES=(content.jar artifacts.jar plugins/* features/* binary/*)
