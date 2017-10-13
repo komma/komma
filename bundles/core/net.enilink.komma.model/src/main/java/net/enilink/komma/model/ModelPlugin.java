@@ -11,7 +11,9 @@
 package net.enilink.komma.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IWorkspace;
@@ -27,6 +29,7 @@ import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
 
 import net.enilink.commons.util.extensions.RegistryFactoryHelper;
+import net.enilink.commons.util.extensions.RegistryReader;
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.KommaModule;
@@ -59,6 +62,12 @@ public class ModelPlugin extends AbstractKommaPlugin {
 
 	private IURIMapRuleSet uriMap = new URIMapRuleSet();
 
+	/**
+	 * Readers for the various extension points (URI mapping rules, content
+	 * types, protocols, ...).
+	 */
+	private List<RegistryReader> extensionReaders = Collections.emptyList();
+
 	// The plug-in ID
 	public static final String PLUGIN_ID = "net.enilink.komma.model";
 
@@ -66,7 +75,7 @@ public class ModelPlugin extends AbstractKommaPlugin {
 
 	static {
 		if (!IS_ECLIPSE_RUNNING) {
-			readExtensions();
+			getDefault().readExtensions();
 		}
 	}
 
@@ -87,9 +96,7 @@ public class ModelPlugin extends AbstractKommaPlugin {
 	}
 
 	public static void logErrorMessage(String message) {
-		getDefault().log(
-				new Status(IStatus.ERROR, PLUGIN_ID,
-						IModelStatusConstants.INTERNAL_ERROR, message, null));
+		getDefault().log(new Status(IStatus.ERROR, PLUGIN_ID, IModelStatusConstants.INTERNAL_ERROR, message, null));
 	}
 
 	public static void logErrorStatus(String message, IStatus status) {
@@ -97,17 +104,14 @@ public class ModelPlugin extends AbstractKommaPlugin {
 			logErrorMessage(message);
 			return;
 		}
-		MultiStatus multi = new MultiStatus(PLUGIN_ID,
-				IModelStatusConstants.INTERNAL_ERROR, message, null);
+		MultiStatus multi = new MultiStatus(PLUGIN_ID, IModelStatusConstants.INTERNAL_ERROR, message, null);
 		multi.add(status);
 		getDefault().log(multi);
 	}
 
 	public static void log(Throwable e) {
-		getDefault().log(
-				new Status(IStatus.ERROR, PLUGIN_ID,
-						IModelStatusConstants.INTERNAL_ERROR,
-						Messages.ModelCore_internal_error, e));
+		getDefault().log(new Status(IStatus.ERROR, PLUGIN_ID, IModelStatusConstants.INTERNAL_ERROR,
+				Messages.ModelCore_internal_error, e));
 	}
 
 	@Override
@@ -260,7 +264,7 @@ public class ModelPlugin extends AbstractKommaPlugin {
 			if (IS_RESOURCES_BUNDLE_AVAILABLE) {
 				workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 			}
-			readExtensions();
+			getDefault().readExtensions();
 		}
 
 		/**
@@ -271,9 +275,8 @@ public class ModelPlugin extends AbstractKommaPlugin {
 		 * <p>
 		 * If running the Eclipse IDE, this is redundant [1], because the IDE
 		 * application calls this in its postShutdown() hook, but it should not
-		 * cause harm, either, because
-		 * "The workspace is saved before any plug-ins start to shut down ..."
-		 * [2]
+		 * cause harm, either, because [2]
+		 * "The workspace is saved before any plug-ins start to shut down [...]"
 		 * 
 		 * @see <a href=
 		 *      "https://wiki.eclipse.org/FAQ_How_and_when_do_I_save_the_workspace%3F">
@@ -285,6 +288,9 @@ public class ModelPlugin extends AbstractKommaPlugin {
 		 */
 		@Override
 		public void stop(BundleContext ctx) throws Exception {
+			// remove extension registry listeners
+			getDefault().extensionReaders.forEach(reader -> reader.unregisterListener());
+
 			if (IS_RESOURCES_BUNDLE_AVAILABLE) {
 				IStatus status;
 				try {
@@ -304,18 +310,22 @@ public class ModelPlugin extends AbstractKommaPlugin {
 	/**
 	 * Initialize registered extensions.
 	 */
-	private static void readExtensions() {
-		IModel.Factory.Registry modelFactoryRegistry = ModelPlugin.getDefault()
-				.getModelFactoryRegistry();
-		new ExtensionFactoriesRegistryReader(modelFactoryRegistry)
-				.readRegistry();
-		new ProtocolFactoriesRegistryReader(modelFactoryRegistry)
-				.readRegistry();
-		new ContentFactoriesRegistryReader(modelFactoryRegistry).readRegistry();
-		new ContentHandlerRegistryReader(ModelPlugin.getDefault()
-				.getContentHandlerRegistry()).readRegistry();
-		new URIMappingRegistryReader(ModelPlugin.getDefault().getURIMap())
-				.readRegistry();
+	private void readExtensions() {
+		IModel.Factory.Registry modelFactoryRegistry = getDefault().getModelFactoryRegistry();
+		// keep track of extension registry readers, used as listeners
+		extensionReaders = Arrays.asList( //
+				new ExtensionFactoriesRegistryReader(modelFactoryRegistry),
+				new ProtocolFactoriesRegistryReader(modelFactoryRegistry),
+				new ContentFactoriesRegistryReader(modelFactoryRegistry),
+				new ContentHandlerRegistryReader(getDefault().getContentHandlerRegistry()),
+				new URIMappingRegistryReader(getDefault().getURIMap()));
+
+		extensionReaders.forEach(reader -> {
+			// read already existing elements from the extension registry
+			reader.readRegistry();
+			// listen to future updates
+			reader.registerListener();
+		});
 	}
 
 	/**
@@ -326,18 +336,14 @@ public class ModelPlugin extends AbstractKommaPlugin {
 	public static Collection<ModelDescription> getBaseModels() {
 		List<ModelDescription> descriptions = new ArrayList<ModelDescription>();
 
-		IExtensionPoint extensionPoint = RegistryFactoryHelper.getRegistry()
-				.getExtensionPoint(PLUGIN_ID, "models");
+		IExtensionPoint extensionPoint = RegistryFactoryHelper.getRegistry().getExtensionPoint(PLUGIN_ID, "models");
 		if (extensionPoint != null) {
 			// Loop through the config elements.
-			for (IConfigurationElement configElement : extensionPoint
-					.getConfigurationElements()) {
-				ModelDescription modelDescription = new ModelDescription(
-						configElement);
+			for (IConfigurationElement configElement : extensionPoint.getConfigurationElements()) {
+				ModelDescription modelDescription = new ModelDescription(configElement);
 
 				if (modelDescription.getNamespace() == null) {
-					logErrorMessage("Attribute namespace required for modelDescription: "
-							+ configElement);
+					logErrorMessage("Attribute namespace required for modelDescription: " + configElement);
 					continue;
 				}
 
@@ -352,12 +358,10 @@ public class ModelPlugin extends AbstractKommaPlugin {
 		KommaModule module = new KommaModule(classLoader);
 
 		module.addConcept(ModelSupport.class, MODELS.TYPE_MODEL.toString());
-		module.addConcept(ModelSetSupport.class,
-				MODELS.TYPE_MODELSET.toString());
-		module.addConcept(IModel.IDiagnostic.class,
-				MODELS.CLASS_DIAGNOSTIC.toString());
+		module.addConcept(ModelSetSupport.class, MODELS.TYPE_MODELSET.toString());
+		module.addConcept(IModel.IDiagnostic.class, MODELS.CLASS_DIAGNOSTIC.toString());
 
-		for (KommaModule modelModule : ModelPlugin.getModelModules()) {
+		for (KommaModule modelModule : getModelModules()) {
 			module.includeModule(modelModule);
 		}
 		return module;
@@ -372,23 +376,20 @@ public class ModelPlugin extends AbstractKommaPlugin {
 	public static Collection<? extends KommaModule> getModelModules() {
 		List<KommaModule> modules = new ArrayList<KommaModule>();
 		if (RegistryFactoryHelper.getRegistry() != null) {
-			IExtensionPoint extensionPoint = RegistryFactoryHelper
-					.getRegistry().getExtensionPoint(PLUGIN_ID, "modelModules");
+			IExtensionPoint extensionPoint = RegistryFactoryHelper.getRegistry().getExtensionPoint(PLUGIN_ID,
+					"modelModules");
 			if (extensionPoint != null) {
 				// Loop through the config elements.
-				for (IConfigurationElement configElement : extensionPoint
-						.getConfigurationElements()) {
+				for (IConfigurationElement configElement : extensionPoint.getConfigurationElements()) {
 					String className = configElement.getAttribute("class");
 
 					if (className == null) {
-						logErrorMessage("Attribute class required for module: "
-								+ configElement);
+						logErrorMessage("Attribute class required for module: " + configElement);
 						continue;
 					}
 
 					try {
-						modules.add((KommaModule) configElement
-								.createExecutableExtension("class"));
+						modules.add((KommaModule) configElement.createExecutableExtension("class"));
 					} catch (CoreException e) {
 						log(e);
 					}
