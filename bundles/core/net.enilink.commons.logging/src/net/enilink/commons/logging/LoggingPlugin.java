@@ -17,7 +17,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Plugin;
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ import ch.qos.logback.core.util.StatusPrinter;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class LoggingPlugin extends Plugin {
+public class LoggingPlugin implements BundleActivator {
 	static {
 		System.setProperty("org.jboss.logging.provider", "slf4j");
 	}
@@ -52,7 +52,6 @@ public class LoggingPlugin extends Plugin {
 	}
 
 	public void start(BundleContext context) throws Exception {
-		super.start(context);
 		plugin = this;
 		init();
 	}
@@ -77,7 +76,6 @@ public class LoggingPlugin extends Plugin {
 		}
 	}
 
-	@SuppressWarnings("resource")
 	private static void loadConfiguration(LoggerContext context) {
 		try {
 			JoranConfigurator configurator = new JoranConfigurator();
@@ -163,7 +161,6 @@ public class LoggingPlugin extends Plugin {
 
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
-		super.stop(context);
 	}
 
 	/**

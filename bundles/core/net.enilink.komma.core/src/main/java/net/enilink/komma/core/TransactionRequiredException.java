@@ -14,9 +14,10 @@ package net.enilink.komma.core;
  * Thrown by the persistence provider when a transaction is required but is not
  * active.
  * 
- * @since Java Persistence 1.0
  */
 public class TransactionRequiredException extends KommaException {
+
+	private static final long serialVersionUID = -646895638445144811L;
 
 	/**
 	 * Constructs a new <code>TransactionRequiredException</code> exception with

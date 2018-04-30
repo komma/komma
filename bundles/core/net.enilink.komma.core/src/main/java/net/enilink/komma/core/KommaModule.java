@@ -31,6 +31,8 @@ package net.enilink.komma.core;
 import static java.util.Collections.unmodifiableSet;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
@@ -43,13 +45,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import net.enilink.composition.annotations.Iri;
-
 /**
  * Defines the Scope of an {@link IEntityManager} and its factory. This includes
  * roles, literals, factories, datasets, and contexts.
  */
 public class KommaModule {
+	private static final String IRI_CLASS = "net.enilink.composition.annotations.Iri";
+
 	public static class Association {
 		private Class<?> javaClass;
 
@@ -94,10 +96,8 @@ public class KommaModule {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result
-					+ ((javaClass == null) ? 0 : javaClass.hashCode());
-			result = prime * result
-					+ ((rdfType == null) ? 0 : rdfType.hashCode());
+			result = prime * result + ((javaClass == null) ? 0 : javaClass.hashCode());
+			result = prime * result + ((rdfType == null) ? 0 : rdfType.hashCode());
 			return result;
 		}
 
@@ -120,8 +120,7 @@ public class KommaModule {
 			if (loader instanceof CombinedClassLoader) {
 				alternatives.add(loader.getParent());
 				if (((CombinedClassLoader) loader).alternatives != null) {
-					alternatives
-							.addAll(((CombinedClassLoader) loader).alternatives);
+					alternatives.addAll(((CombinedClassLoader) loader).alternatives);
 				}
 			} else {
 				alternatives.add(loader);
@@ -159,8 +158,7 @@ public class KommaModule {
 		}
 
 		@Override
-		protected Enumeration<URL> findResources(String name)
-				throws IOException {
+		protected Enumeration<URL> findResources(String name) throws IOException {
 			if (alternatives != null) {
 				Vector<URL> list = new Vector<URL>();
 				for (ClassLoader alt : alternatives) {
@@ -178,10 +176,8 @@ public class KommaModule {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result
-					+ ((getParent() == null) ? 0 : getParent().hashCode());
-			result = prime * result
-					+ ((alternatives == null) ? 0 : alternatives.hashCode());
+			result = prime * result + ((getParent() == null) ? 0 : getParent().hashCode());
+			result = prime * result + ((alternatives == null) ? 0 : alternatives.hashCode());
 			return result;
 		}
 
@@ -242,15 +238,20 @@ public class KommaModule {
 	public KommaModule addAnnotation(Class<?> annotation) {
 		String uri = null;
 		for (Method m : annotation.getDeclaredMethods()) {
-			if (m.isAnnotationPresent(Iri.class)) {
-				uri = m.getAnnotation(Iri.class).value();
-				break;
+			for (Annotation methodAnnotation : m.getAnnotations()) {
+				if (methodAnnotation.getClass().getName().equals(IRI_CLASS)) {
+					try {
+						uri = (String) methodAnnotation.getClass().getMethod("value").invoke(methodAnnotation);
+					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+							| NoSuchMethodException | SecurityException e) {
+						throw new RuntimeException(e);
+					}
+					break;
+				}
 			}
 		}
 		if (uri == null) {
-			throw new IllegalArgumentException(
-					"@Iri annotation required on method of "
-							+ annotation.getSimpleName());
+			throw new IllegalArgumentException("@Iri annotation required on method of " + annotation.getSimpleName());
 		}
 		addAnnotation(annotation, uri);
 		return this;
@@ -267,9 +268,7 @@ public class KommaModule {
 	public KommaModule addAnnotation(Class<?> annotation, String type) {
 		Association registered = annotations.get(annotation);
 		if (registered != null && !registered.getRdfType().equals(type)) {
-			throw new IllegalArgumentException(
-					"annotation is already associated to type "
-							+ registered.getRdfType());
+			throw new IllegalArgumentException("annotation is already associated to type " + registered.getRdfType());
 		}
 		annotations.put(annotation, new Association(annotation, type));
 		return this;
@@ -458,19 +457,13 @@ public class KommaModule {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((annotations == null) ? 0 : annotations.hashCode());
-		result = prime * result
-				+ ((behaviours == null) ? 0 : behaviours.hashCode());
+		result = prime * result + ((annotations == null) ? 0 : annotations.hashCode());
+		result = prime * result + ((behaviours == null) ? 0 : behaviours.hashCode());
 		result = prime * result + ((cl == null) ? 0 : cl.hashCode());
-		result = prime * result
-				+ ((concepts == null) ? 0 : concepts.hashCode());
-		result = prime * result
-				+ ((datatypes == null) ? 0 : datatypes.hashCode());
-		result = prime * result
-				+ ((readableGraphs == null) ? 0 : readableGraphs.hashCode());
-		result = prime * result
-				+ ((writableGraphs == null) ? 0 : writableGraphs.hashCode());
+		result = prime * result + ((concepts == null) ? 0 : concepts.hashCode());
+		result = prime * result + ((datatypes == null) ? 0 : datatypes.hashCode());
+		result = prime * result + ((readableGraphs == null) ? 0 : readableGraphs.hashCode());
+		result = prime * result + ((writableGraphs == null) ? 0 : writableGraphs.hashCode());
 		return result;
 	}
 

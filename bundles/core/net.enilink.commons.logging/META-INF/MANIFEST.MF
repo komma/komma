@@ -8,7 +8,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: 
  net.enilink.commons.logging
 Bundle-ClassPath: .
-Require-Bundle: org.eclipse.core.runtime
 Bundle-Activator: net.enilink.commons.logging.LoggingPlugin
 Import-Package: ch.qos.logback.classic;version="1.0.7",
  ch.qos.logback.classic.joran;version="1.0.7",
@@ -17,5 +16,8 @@ Import-Package: ch.qos.logback.classic;version="1.0.7",
  ch.qos.logback.core.joran.spi;version="1.0.7",
  ch.qos.logback.core.spi;version="1.0.7",
  ch.qos.logback.core.util;version="1.0.7",
+ org.eclipse.core.runtime;version="3.5.0",
+ org.eclipse.osgi.service.datalocation;version="1.3.0",
+ org.osgi.framework;version="1.8.0",
  org.slf4j;version="1.7.2"
 Bundle-ActivationPolicy: lazy
