@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>net.enilink.komma</groupId>
-    <artifactId>komma-parent</artifactId>
-    <version>1.3.3-SNAPSHOT</version>
-    <relativePath>../../../pom.xml</relativePath>
-  </parent>
-  <groupId>net.enilink.komma</groupId>
-  <artifactId>net.enilink.vocab.foaf</artifactId>
-  <version>1.3.3-SNAPSHOT</version>
-  <packaging>eclipse-plugin</packaging>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>net.enilink.komma</groupId>
+		<artifactId>komma-parent-new</artifactId>
+		<version>1.3.3-SNAPSHOT</version>
+		<relativePath>../../../new-parent/pom.xml</relativePath>
+	</parent>
+	<artifactId>net.enilink.vocab.foaf</artifactId>
+	<packaging>jar</packaging>
+
+	<dependencies>
+		<dependency>
+			<groupId>net.enilink.komma</groupId>
+			<artifactId>net.enilink.vocab.owl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
 </project>

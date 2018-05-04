@@ -12,11 +12,10 @@
 	<artifactId>net.enilink.komma.rdf4j</artifactId>
 	<packaging>jar</packaging>
 	
-	
 	<dependencies>
 		<dependency>
 			<groupId>org.eclipse.rdf4j</groupId>
-			<artifactId>rdf4j-runtime</artifactId>
+			<artifactId>rdf4j-runtime-osgi</artifactId>
 			<version>2.3.1</version>
 		</dependency>
 	</dependencies>

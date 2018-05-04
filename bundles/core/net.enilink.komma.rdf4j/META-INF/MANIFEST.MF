@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Sesame Plugin
+Bundle-Name: RDF4J Plugin
 Bundle-SymbolicName: net.enilink.komma.rdf4j
 Bundle-Version: 1.3.3.qualifier
 Bundle-Vendor: enilink.net
