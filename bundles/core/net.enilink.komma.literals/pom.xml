@@ -15,6 +15,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>net.enilink.komma</groupId>
+			<artifactId>net.enilink.vocab.rdfs</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.enilink.komma</groupId>
 			<artifactId>net.enilink.komma.core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
