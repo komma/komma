@@ -113,14 +113,13 @@ public class ResultTableViewer implements IResultViewer {
 		int sortDirection;
 		int sortColumn;
 
-		private TableViewerComparator(Comparator<?> comparator,
+		private TableViewerComparator(Comparator<? super String> comparator,
 				int sortDirection, int sortColumn) {
 			super(comparator);
 			this.sortDirection = sortDirection;
 			this.sortColumn = sortColumn;
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public int compare(Viewer viewer, Object e1, Object e2) {
 			int cat1 = category(e1);
