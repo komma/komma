@@ -203,10 +203,9 @@ public class ExtendedCompositeCommand extends CompositeCommand {
 	 * 
 	 * @return an unmodifiable view of the commands in the list.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public List<? extends ICommand> getCommandList() {
-		return (List<? extends ICommand>) Collections
-				.unmodifiableList(getChildren());
+		return (List) Collections.unmodifiableList(getChildren());
 	}
 
 	/**

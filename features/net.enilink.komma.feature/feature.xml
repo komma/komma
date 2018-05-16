@@ -250,7 +250,7 @@ http://www.eclipse.org/legal/epl-v10.html
          version="0.0.0"/>
 
    <plugin
-         id="com.github.parboiled1.grappa"
+         id="net.enilink.lib.parboiled"
          download-size="0"
          install-size="0"
          version="0.0.0"/>
@@ -281,12 +281,6 @@ http://www.eclipse.org/legal/epl-v10.html
          version="0.0.0"/>
 
    <plugin
-         id="me.qmx.jitescript"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
          id="org.apache.httpcomponents.httpclient"
          download-size="0"
          install-size="0"
@@ -301,7 +295,7 @@ http://www.eclipse.org/legal/epl-v10.html
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.rdf4j"
+         id="net.enilink.lib.rdf4j"
          download-size="0"
          install-size="0"
          version="0.0.0"/>

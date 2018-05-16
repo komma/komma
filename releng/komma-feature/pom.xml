@@ -10,6 +10,8 @@
 
 	<modules>
 		<module>../../bundles/core/org.slf4j.logback</module>
+		<module>../../bundles/vendor/net.enilink.lib.parboiled</module>
+		<module>../../bundles/vendor/net.enilink.lib.rdf4j</module>
 		
 		<module>../../bundles/core/net.enilink.commons.iterator</module>
 		<module>../../bundles/core/net.enilink.commons.logging</module>

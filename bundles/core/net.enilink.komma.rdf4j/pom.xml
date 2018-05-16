@@ -24,15 +24,9 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.rdf4j</groupId>
-			<artifactId>rdf4j-runtime-osgi</artifactId>
+			<groupId>net.enilink.komma</groupId>
+			<artifactId>net.enilink.lib.rdf4j</artifactId>
 			<version>2.3.1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	</dependencies>
 </project>

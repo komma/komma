@@ -239,14 +239,16 @@ public class KommaModule {
 		String uri = null;
 		for (Method m : annotation.getDeclaredMethods()) {
 			for (Annotation methodAnnotation : m.getAnnotations()) {
-				if (methodAnnotation.getClass().getName().equals(IRI_CLASS)) {
-					try {
-						uri = (String) methodAnnotation.getClass().getMethod("value").invoke(methodAnnotation);
-					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
-							| NoSuchMethodException | SecurityException e) {
-						throw new RuntimeException(e);
+				for (Class<?> itf : methodAnnotation.getClass().getInterfaces()) {
+					if (itf.getName().equals(IRI_CLASS)) {
+						try {
+							uri = (String) methodAnnotation.getClass().getMethod("value").invoke(methodAnnotation);
+						} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+								| NoSuchMethodException | SecurityException e) {
+							throw new RuntimeException(e);
+						}
+						break;
 					}
-					break;
 				}
 			}
 		}

@@ -64,6 +64,22 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>net.enilink.komma</groupId>
+			<artifactId>net.enilink.komma.rdf4j</artifactId>
+			<version>${project.version}</version>
+			<!-- only required for testing purposes -->
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.enilink.komma</groupId>
+			<artifactId>net.enilink.komma.rdf4j</artifactId>
+			<version>${project.version}</version>
+			<!-- only required for testing purposes -->
+			<scope>test</scope>
+			<!-- use tests library -->
+			<classifier>tests</classifier>
+		</dependency>
+		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 			<version>1.11</version>

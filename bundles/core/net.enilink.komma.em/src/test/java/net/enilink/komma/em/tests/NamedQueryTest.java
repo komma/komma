@@ -16,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.properties.annotations.Name;
@@ -27,6 +28,7 @@ import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIs;
 
+@Ignore
 public class NamedQueryTest extends EntityManagerTest {
 	private static final String NS = "urn:test:";
 	private static final String PREFIX = "PREFIX :<" + NS + ">\n";

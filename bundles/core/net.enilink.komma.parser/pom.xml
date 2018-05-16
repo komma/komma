@@ -14,8 +14,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.github.parboiled1</groupId>
-			<artifactId>grappa</artifactId>
+			<groupId>net.enilink.komma</groupId>
+			<artifactId>net.enilink.lib.parboiled</artifactId>
 			<version>1.0.4</version>
 		</dependency>
 		<dependency>
