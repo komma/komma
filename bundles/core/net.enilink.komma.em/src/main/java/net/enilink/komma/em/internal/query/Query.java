@@ -116,6 +116,13 @@ public class Query<R> extends QueryBase<IQuery<R>> implements IQuery<R> {
 						(ITupleResult<IBindings<IValue>>) result, max, info);
 			}
 		} else if (result instanceof IGraphResult) {
+			// resultType not given directly, check for bound result type
+			if (resultType == null && resultInfos != null) {
+				ResultInfo resultInfo = resultInfos.get(null);
+				if (resultInfo != null && resultInfo.types.size() > 0) {
+					resultType = (Class<T>) resultInfo.types.get(0);
+				}
+			}
 			if (resultType == null || IStatement.class.equals(resultType)) {
 				iter = new GraphIterator(manager, (IGraphResult) result, max,
 						resultInfos == null
