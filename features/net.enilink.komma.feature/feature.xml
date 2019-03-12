@@ -12,11 +12,11 @@
 <feature
       id="net.enilink.komma.feature"
       label="KOMMA - Core"
-      version="1.3.3.qualifier"
+      version="1.3.3"
       provider-name="enilink.net"
       plugin="net.enilink.komma.core"
       license-feature="net.enilink.komma.license.feature"
-      license-feature-version="1.3.3.qualifier">
+      license-feature-version="1.3.3">
 
    <description>
       KOMMA - Knowledge Modeling and Management Architecture
