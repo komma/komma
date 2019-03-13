@@ -69,8 +69,8 @@ import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.em.ThreadLocalEntityManager;
 import net.enilink.komma.em.concepts.IOntology;
 import net.enilink.komma.em.util.ISparqlConstants;
-import net.enilink.komma.internal.model.IModelAware;
 import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IModelAware;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelStatusConstants;
 import net.enilink.komma.model.IObject;
@@ -85,11 +85,11 @@ import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
 
 public abstract class ModelSupport
-		implements IModel, IModel.Internal, INotificationBroadcaster<INotification>, Model, Behaviour<IModel.Internal> {
+		implements IModel, IModelAware, IModel.Internal, INotificationBroadcaster<INotification>, Model, Behaviour<IModel.Internal> {
 	class ModelInjector implements IEntityDecorator {
 		@Override
 		public void decorate(IEntity entity) {
-			((IModelAware) entity).initModel(getBehaviourDelegate());
+			((net.enilink.komma.internal.model.IModelAware) entity).initModel(getBehaviourDelegate());
 		}
 	}
 
@@ -322,6 +322,20 @@ public abstract class ModelSupport
 			}
 			return s;
 		}
+	}
+
+	/*
+	 * Make Models usable as subjects for content providers, proposals etc.
+	 * Change existing code that uses ((IObject) arg).getModel() to
+	 * cast to IModelAware instead, to get it working with a model as argument.
+	 * 
+	 * FIXME: return meta-model instead?
+	 * 
+	 * @see net.enilink.komma.model.IModelAware#getModel()
+	 */
+	@Override
+	public IModel getModel() {
+		return this;
 	}
 
 	/*

@@ -19,7 +19,7 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.QueryFragment;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.em.util.ISparqlConstants;
-import net.enilink.komma.model.IObject;
+import net.enilink.komma.model.IModelAware;
 import net.enilink.vocab.rdf.RDF;
 
 public class ResourceFinder {
@@ -113,7 +113,7 @@ public class ResourceFinder {
 		if (!pattern.contains(":") && subject != null) {
 			// find resources within the current model first
 			for (Match match : retrieve(options.em, subject, predicate, type,
-					pattern, toUriRegex(pattern), null, ((IObject) subject)
+					pattern, toUriRegex(pattern), null, ((IModelAware) subject)
 							.getModel().getURI(), options.limit)) {
 				matches.put(match.resource, match);
 			}

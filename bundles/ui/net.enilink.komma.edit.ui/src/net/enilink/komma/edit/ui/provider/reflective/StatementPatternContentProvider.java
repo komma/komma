@@ -18,6 +18,17 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jface.viewers.AbstractTableViewer;
+import org.eclipse.jface.viewers.ColumnViewer;
+import org.eclipse.jface.viewers.IIndexableLazyContentProvider;
+import org.eclipse.jface.viewers.ILazyContentProvider;
+import org.eclipse.jface.viewers.ILazyTreeContentProvider;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.StructuredViewer;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.SWT;
+
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.NiceIterator;
 import net.enilink.komma.core.IEntityManager;
@@ -30,18 +41,8 @@ import net.enilink.komma.core.Statements;
 import net.enilink.komma.edit.provider.ISearchableItemProvider;
 import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
 import net.enilink.komma.model.IModel;
+import net.enilink.komma.model.IModelAware;
 import net.enilink.komma.model.IObject;
-
-import org.eclipse.jface.viewers.AbstractTableViewer;
-import org.eclipse.jface.viewers.ColumnViewer;
-import org.eclipse.jface.viewers.IIndexableLazyContentProvider;
-import org.eclipse.jface.viewers.ILazyContentProvider;
-import org.eclipse.jface.viewers.ILazyTreeContentProvider;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.StructuredViewer;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.swt.SWT;
 
 public class StatementPatternContentProvider extends ModelContentProvider
 		implements IStructuredContentProvider, ILazyContentProvider,
@@ -238,14 +239,14 @@ public class StatementPatternContentProvider extends ModelContentProvider
 			if (pattern.getContext() instanceof IModel) {
 				return (IModel) pattern.getContext();
 			}
-			if (pattern.getSubject() instanceof IObject) {
-				return ((IObject) pattern.getSubject()).getModel();
+			if (pattern.getSubject() instanceof IModelAware) {
+				return ((IModelAware) pattern.getSubject()).getModel();
 			}
-			if (pattern.getObject() instanceof IObject) {
-				return ((IObject) pattern.getObject()).getModel();
+			if (pattern.getObject() instanceof IModelAware) {
+				return ((IModelAware) pattern.getObject()).getModel();
 			}
-			if (pattern.getPredicate() instanceof IObject) {
-				return ((IObject) pattern.getPredicate()).getModel();
+			if (pattern.getPredicate() instanceof IModelAware) {
+				return ((IModelAware) pattern.getPredicate()).getModel();
 			}
 		}
 		return null;
