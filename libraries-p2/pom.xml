@@ -80,6 +80,12 @@
                                     <source>true</source>
                                 </artifact>
 
+                                <artifact>
+                                    <id>commons-codec:commons-codec:1.12</id>
+                                    <transitive>false</transitive>
+                                    <source>true</source>
+                                </artifact>
+
                                 <!-- RDF4J and its dependencies -->
                                 <artifact>
                                     <id>com.opencsv:opencsv:${opencsv.version}</id>

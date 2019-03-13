@@ -156,9 +156,9 @@
 
 	<repositories>
 		<repository>
-			<id>mars</id>
+			<id>eclipse-components</id>
 			<layout>p2</layout>
-			<url>http://download.eclipse.org/releases/mars/</url>
+			<url>https://download.eclipse.org/eclipse/updates/4.10/</url>
 		</repository>
 		<repository>
 			<id>libraries-p2</id>
