@@ -23,8 +23,8 @@ public class Sparql11Parser extends SparqlParser {
 	@Override
 	public Rule BuiltInCall() {
 		Var<Boolean> not = new Var<>(false);
-		return firstOf(
-				sequence(optional("NOT", not.set(true)), "EXISTS",
+		return FirstOf(
+				Sequence(Optional("NOT", not.set(true)), "EXISTS",
 						GroupGraphPattern(), //
 						push(new GraphPatternExpr(
 								not.get() ? GraphPatternExpr.Type.NOT_EXISTS
@@ -35,12 +35,12 @@ public class Sparql11Parser extends SparqlParser {
 	}
 
 	public Rule GraphPatternNotTriples() {
-		return firstOf(OptionalGraphPattern(), MinusGraphPattern(),
+		return FirstOf(OptionalGraphPattern(), MinusGraphPattern(),
 				GroupOrUnionGraphPattern(), GraphGraphPattern());
 	}
 
 	public Rule MinusGraphPattern() {
-		return sequence("MINUS", GroupGraphPattern(), push(new MinusGraph(
+		return Sequence("MINUS", GroupGraphPattern(), push(new MinusGraph(
 				(Graph) pop())));
 	}
 }

@@ -22,4 +22,5 @@ Require-Bundle: net.enilink.vocab.rdfs,
  net.enilink.vocab.owl,
  net.enilink.commons.iterator,
  net.enilink.komma.core,
- com.github.parboiled1.grappa
+ org.parboiled.java;bundle-version="1.3.0"
+ 

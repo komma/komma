@@ -68,10 +68,10 @@ public class SparqlParser extends BaseRdfParser {
 	public static String RDF_NIL = RDF_NAMESPACE + "nil";
 
 	public Rule Query() {
-		return sequence(
+		return Sequence(
 				WS(),
 				Prologue(),
-				firstOf(SelectQuery(), ConstructQuery(), DescribeQuery(),
+				FirstOf(SelectQuery(), ConstructQuery(), DescribeQuery(),
 						AskQuery()),
 				setPrologue((Prologue) pop(1), (Query) peek()), EOI);
 	}
@@ -86,19 +86,19 @@ public class SparqlParser extends BaseRdfParser {
 	public Rule Prologue() {
 		Var<IriRef> base = new Var<>();
 		Var<List<PrefixDecl>> prefixes = new Var<>();
-		return sequence(
+		return Sequence(
 				prefixes.set(new ArrayList<PrefixDecl>()),
-				optional(BaseDecl(), base.set((IriRef) pop())),
-				zeroOrMore(PrefixDecl(), prefixes.get().add((PrefixDecl) pop())), //
+				Optional(BaseDecl(), base.set((IriRef) pop())),
+				ZeroOrMore(PrefixDecl(), prefixes.get().add((PrefixDecl) pop())), //
 				push(new Prologue(base.get(), prefixes.get())));
 	}
 
 	public Rule BaseDecl() {
-		return sequence("BASE", IRI_REF());
+		return Sequence("BASE", IRI_REF());
 	}
 
 	public Rule PrefixDecl() {
-		return sequence("PREFIX", PNAME_NS(), WS(), IRI_REF(), //
+		return Sequence("PREFIX", PNAME_NS(), WS(), IRI_REF(), //
 				push(new PrefixDecl((String) pop(1), (IriRef) pop())));
 	}
 
@@ -107,21 +107,21 @@ public class SparqlParser extends BaseRdfParser {
 		Var<SelectQuery.Modifier> modifier = new Var<>();
 		Var<List<Variable>> projection = new Var<>();
 		Var<Dataset> dataset = new Var<>();
-		return sequence(
+		return Sequence(
 				"SELECT",
-				optional(firstOf(
+				Optional(FirstOf(
 						//
-						sequence("DISTINCT",
+						Sequence("DISTINCT",
 								modifier.set(SelectQuery.Modifier.DISTINCT)),
-						sequence("REDUCED",
+						Sequence("REDUCED",
 								modifier.set(SelectQuery.Modifier.REDUCED)))
 				//
 				),
 				push(LIST_BEGIN),
-				firstOf(oneOrMore(Var()), '*'),
+				FirstOf(OneOrMore(Var()), '*'),
 				projection.set(popList(Variable.class)), //
 				dataset.set(new Dataset()),
-				zeroOrMore(DatasetClause(dataset)),
+				ZeroOrMore(DatasetClause(dataset)),
 				WhereClause(),
 				SolutionModifier(), //
 				push(new SelectQuery(modifier.get(), projection.get(), dataset
@@ -132,8 +132,8 @@ public class SparqlParser extends BaseRdfParser {
 	@SuppressWarnings("unchecked")
 	public Rule ConstructQuery() {
 		Var<Dataset> dataset = new Var<>();
-		return sequence("CONSTRUCT", ConstructTemplate(),
-				dataset.set(new Dataset()), zeroOrMore(DatasetClause(dataset)),
+		return Sequence("CONSTRUCT", ConstructTemplate(),
+				dataset.set(new Dataset()), ZeroOrMore(DatasetClause(dataset)),
 				WhereClause(), SolutionModifier(), //
 				push(new ConstructQuery((List<GraphNode>) pop(2),
 						dataset.get(), (Graph) pop(1),
@@ -146,14 +146,14 @@ public class SparqlParser extends BaseRdfParser {
 		Var<List<GraphNode>> subjects = new Var<>();
 		Var<Dataset> dataset = new Var<>();
 		Var<Graph> where = new Var<>();
-		return sequence(
+		return Sequence(
 				"DESCRIBE",
 				push(LIST_BEGIN),
-				firstOf(oneOrMore(VarOrIRIref()), '*'),
+				FirstOf(OneOrMore(VarOrIRIref()), '*'),
 				subjects.set(popList(GraphNode.class)),
 				dataset.set(new Dataset()),
-				zeroOrMore(DatasetClause(dataset)),
-				optional(WhereClause(), where.set((Graph) pop())),
+				ZeroOrMore(DatasetClause(dataset)),
+				Optional(WhereClause(), where.set((Graph) pop())),
 				SolutionModifier(), //
 				push(new DescribeQuery(subjects.get(), dataset.get(), where
 						.get(), (List<SolutionModifier>) pop())) //
@@ -162,19 +162,19 @@ public class SparqlParser extends BaseRdfParser {
 
 	public Rule AskQuery() {
 		Var<Dataset> dataset = new Var<>();
-		return sequence("ASK", dataset.set(new Dataset()),
-				zeroOrMore(DatasetClause(dataset)), WhereClause(), //
+		return Sequence("ASK", dataset.set(new Dataset()),
+				ZeroOrMore(DatasetClause(dataset)), WhereClause(), //
 				push(new AskQuery(dataset.get(), (Graph) pop())) //
 		);
 	}
 
 	public Rule DatasetClause(Var<Dataset> dataset) {
-		return sequence(
+		return Sequence(
 				"FROM",
-				firstOf(//
-				sequence(DefaultGraphClause(),
+				FirstOf(//
+				Sequence(DefaultGraphClause(),
 						dataset.get().addDefaultGraph((Expression) pop())), //
-						sequence(NamedGraphClause(), dataset.get()
+						Sequence(NamedGraphClause(), dataset.get()
 								.addNamedGraph((Expression) pop()))));
 	}
 
@@ -183,7 +183,7 @@ public class SparqlParser extends BaseRdfParser {
 	}
 
 	public Rule NamedGraphClause() {
-		return sequence("NAMED", SourceSelector());
+		return Sequence("NAMED", SourceSelector());
 	}
 
 	public Rule SourceSelector() {
@@ -191,60 +191,60 @@ public class SparqlParser extends BaseRdfParser {
 	}
 
 	public Rule WhereClause() {
-		return sequence(optional("WHERE"), GroupGraphPattern());
+		return Sequence(Optional("WHERE"), GroupGraphPattern());
 	}
 
 	@SuppressWarnings("unchecked")
 	public Rule SolutionModifier() {
 		Var<List<SolutionModifier>> modifiers = new Var<>();
-		return sequence(
+		return Sequence(
 				modifiers.set(new ArrayList<SolutionModifier>()),
-				optional(OrderClause(),
+				Optional(OrderClause(),
 						modifiers.get().add((SolutionModifier) pop())),
-				optional(LimitOffsetClauses(),
+				Optional(LimitOffsetClauses(),
 						modifiers.get().addAll((List<SolutionModifier>) pop())),
 				push(modifiers.get()));
 	}
 
 	public Rule LimitOffsetClauses() {
-		return firstOf(
+		return FirstOf(
 				//
-				sequence(push(LIST_BEGIN), LimitClause(),
-						optional(OffsetClause()),
+				Sequence(push(LIST_BEGIN), LimitClause(),
+						Optional(OffsetClause()),
 						push(popList(SolutionModifier.class))), //
-				sequence(push(LIST_BEGIN), OffsetClause(),
-						optional(LimitClause()),
+				Sequence(push(LIST_BEGIN), OffsetClause(),
+						Optional(LimitClause()),
 						push(popList(SolutionModifier.class))));
 	}
 
 	public Rule OrderClause() {
-		return sequence("ORDER", "BY", push(LIST_BEGIN),
-				oneOrMore(OrderCondition()), push(new OrderModifier(
+		return Sequence("ORDER", "BY", push(LIST_BEGIN),
+				OneOrMore(OrderCondition()), push(new OrderModifier(
 						popList(OrderCondition.class))));
 	}
 
 	public Rule OrderCondition() {
-		return firstOf(
-				sequence(
-						firstOf("ASC", "DESC"),
+		return FirstOf(
+				Sequence(
+						FirstOf("ASC", "DESC"),
 						push(match()),
 						BrackettedExpression(),
 						push(new OrderCondition("asc".equals(((String) pop(1))
 								.toLowerCase()) ? OrderCondition.Direction.ASC
 								: OrderCondition.Direction.DESC,
 								(Expression) pop()))), //
-				sequence(firstOf(Constraint(), Var()), push(new OrderCondition(
+				Sequence(FirstOf(Constraint(), Var()), push(new OrderCondition(
 						OrderCondition.Direction.ASC, (Expression) pop()))));
 	}
 
 	public Rule LimitClause() {
-		return sequence("LIMIT", INTEGER(), //
+		return Sequence("LIMIT", INTEGER(), //
 				push(new LimitModifier(((IntegerLiteral) pop()).getValue())) //
 		);
 	}
 
 	public Rule OffsetClause() {
-		return sequence("OFFSET", INTEGER(), //
+		return Sequence("OFFSET", INTEGER(), //
 				push(new OffsetModifier(((IntegerLiteral) pop()).getValue())) //
 		);
 	}
@@ -253,21 +253,21 @@ public class SparqlParser extends BaseRdfParser {
 	public Rule GroupGraphPattern() {
 		Var<List<Graph>> patterns = new Var<>();
 		Var<List<Expression>> filters = new Var<>();
-		return sequence(
+		return Sequence(
 				'{',
 				patterns.set(new ArrayList<Graph>()),
 				filters.set(new ArrayList<Expression>()),
-				optional(
+				Optional(
 						TriplesBlock(), //
 						patterns.get().add(
 								new BasicGraphPattern((List<GraphNode>) pop()))),
-				zeroOrMore(
-						firstOf(sequence(GraphPatternNotTriples(), patterns
+				ZeroOrMore(
+						FirstOf(Sequence(GraphPatternNotTriples(), patterns
 								.get().add((Graph) pop())),
-								sequence(Filter(),
+								Sequence(Filter(),
 										filters.get().add((Expression) pop()))),
-						optional('.'),
-						optional(
+						Optional('.'),
+						Optional(
 								TriplesBlock(), //
 								patterns.get().add(
 										new BasicGraphPattern(
@@ -279,86 +279,86 @@ public class SparqlParser extends BaseRdfParser {
 	@SuppressWarnings("unchecked")
 	public Rule TriplesBlock() {
 		Var<List<GraphNode>> nodes = new Var<>();
-		return sequence(
+		return Sequence(
 				TriplesSameSubject(), //
 				nodes.set(new ArrayList<GraphNode>()),
 				nodes.get().add((GraphNode) pop()), //
-				optional(
+				Optional(
 						'.',
-						optional(TriplesBlock(),
+						Optional(TriplesBlock(),
 								nodes.get().addAll((List<GraphNode>) pop()))), //
 				push(nodes.get()));
 	}
 
 	public Rule GraphPatternNotTriples() {
-		return firstOf(OptionalGraphPattern(), GroupOrUnionGraphPattern(),
+		return FirstOf(OptionalGraphPattern(), GroupOrUnionGraphPattern(),
 				GraphGraphPattern());
 	}
 
 	public Rule OptionalGraphPattern() {
-		return sequence("OPTIONAL", GroupGraphPattern(),
+		return Sequence("Optional", GroupGraphPattern(),
 				push(new OptionalGraph((Graph) pop())));
 	}
 
 	public Rule GraphGraphPattern() {
-		return sequence("GRAPH", VarOrIRIref(), GroupGraphPattern(),
+		return Sequence("GRAPH", VarOrIRIref(), GroupGraphPattern(),
 				push(new NamedGraph((GraphNode) pop(1), (Graph) pop())));
 	}
 
 	public Rule GroupOrUnionGraphPattern() {
-		return sequence(
+		return Sequence(
 				GroupGraphPattern(),
-				sequence(push(LIST_BEGIN),
-						zeroOrMore("UNION", GroupGraphPattern()),
+				Sequence(push(LIST_BEGIN),
+						ZeroOrMore("UNION", GroupGraphPattern()),
 						push(new UnionGraph(popList(Graph.class, 1)))));
 	}
 
 	public Rule Filter() {
-		return sequence("FILTER", Constraint());
+		return Sequence("FILTER", Constraint());
 	}
 
 	public Rule Constraint() {
-		return firstOf(BrackettedExpression(), BuiltInCall(), FunctionCall());
+		return FirstOf(BrackettedExpression(), BuiltInCall(), FunctionCall());
 	}
 
 	@SuppressWarnings("unchecked")
 	public Rule FunctionCall() {
-		return sequence(IriRef(), ArgList(), //
+		return Sequence(IriRef(), ArgList(), //
 				push(new FunctionCall((Expression) pop(1),
 						(List<Expression>) pop())));
 	}
 
 	public Rule ArgList() {
 		Var<List<Expression>> args = new Var<>();
-		return firstOf(
+		return FirstOf(
 				//
-				sequence('(', ')', push(Collections.emptyList())), //
-				sequence(
+				Sequence('(', ')', push(Collections.emptyList())), //
+				Sequence(
 						'(',
 						args.set(new ArrayList<Expression>()),
 						Expression(),
 						args.get().add((Expression) pop()),
-						zeroOrMore(',', Expression(),
+						ZeroOrMore(',', Expression(),
 								args.get().add((Expression) pop())), ')', //
 						push(args.get())) //
 		);
 	}
 
 	public Rule ConstructTemplate() {
-		return sequence(push(null), '{', optional(ConstructTriples(), drop(1)),
+		return Sequence(push(null), '{', Optional(ConstructTriples(), drop(1)),
 				'}');
 	}
 
 	@SuppressWarnings("unchecked")
 	public Rule ConstructTriples() {
 		Var<List<GraphNode>> nodes = new Var<>();
-		return sequence(
+		return Sequence(
 				TriplesSameSubject(),
 				nodes.set(new ArrayList<GraphNode>()), //
 				nodes.get().add((GraphNode) pop()),
-				optional(
+				Optional(
 						'.',
-						optional(ConstructTriples(),
+						Optional(ConstructTriples(),
 								nodes.get().addAll((List<GraphNode>) pop())//
 						)), //
 				push(nodes.get()));
@@ -366,10 +366,10 @@ public class SparqlParser extends BaseRdfParser {
 
 	public Rule TriplesSameSubject() {
 		Var<GraphNode> subject = new Var<>();
-		return firstOf(
-				sequence(VarOrTerm(), subject.set((GraphNode) peek()),
+		return FirstOf(
+				Sequence(VarOrTerm(), subject.set((GraphNode) peek()),
 						PropertyListNotEmpty(subject)), //
-				sequence(TriplesNode(), subject.set((GraphNode) peek()),
+				Sequence(TriplesNode(), subject.set((GraphNode) peek()),
 						PropertyList(subject)) //
 		);
 	}
@@ -395,15 +395,15 @@ public class SparqlParser extends BaseRdfParser {
 	@SuppressWarnings("unchecked")
 	public Rule PropertyListNotEmpty(Var<GraphNode> subject) {
 		Var<PropertyList> propertyList = new Var<>();
-		return sequence(
+		return Sequence(
 				Verb(),
 				ObjectList(), //
 				propertyList.set(createPropertyList(subject.get())),
 				addPropertyPatterns(propertyList.get(), (GraphNode) pop(1),
 						(List<GraphNode>) pop()), //
-				zeroOrMore(
+				ZeroOrMore(
 						';',
-						optional(Verb(),
+						Optional(Verb(),
 								ObjectList(), //
 								addPropertyPatterns(propertyList.get(),
 										(GraphNode) pop(1),
@@ -412,13 +412,13 @@ public class SparqlParser extends BaseRdfParser {
 	}
 
 	public Rule PropertyList(Var<GraphNode> subject) {
-		return optional(PropertyListNotEmpty(subject));
+		return Optional(PropertyListNotEmpty(subject));
 	}
 
 	public Rule ObjectList() {
-		return sequence(
+		return Sequence(
 				Object(),
-				sequence(push(LIST_BEGIN), zeroOrMore(',', Object()),
+				Sequence(push(LIST_BEGIN), ZeroOrMore(',', Object()),
 						push(popList(GraphNode.class, 1))));
 	}
 
@@ -427,45 +427,45 @@ public class SparqlParser extends BaseRdfParser {
 	}
 
 	public Rule Verb() {
-		return firstOf(VarOrIRIref(), sequence('a', push(new IriRef(RDF_TYPE))));
+		return FirstOf(VarOrIRIref(), Sequence('a', push(new IriRef(RDF_TYPE))));
 	}
 
 	public Rule TriplesNode() {
-		return firstOf(Collection(), BlankNodePropertyList());
+		return FirstOf(Collection(), BlankNodePropertyList());
 	}
 
 	public Rule BlankNodePropertyList() {
 		Var<GraphNode> subject = new Var<>();
-		return sequence('[', push(new BNodePropertyList()),
+		return Sequence('[', push(new BNodePropertyList()),
 				subject.set((GraphNode) peek()), PropertyListNotEmpty(subject),
 				']');
 	}
 
 	public Rule Collection() {
-		return sequence('(', push(LIST_BEGIN), oneOrMore(GraphNode()), //
+		return Sequence('(', push(LIST_BEGIN), OneOrMore(GraphNode()), //
 				push(new Collection(popList(GraphNode.class))), ')');
 	}
 
 	public Rule GraphNode() {
-		return firstOf(VarOrTerm(), TriplesNode());
+		return FirstOf(VarOrTerm(), TriplesNode());
 	}
 
 	public Rule VarOrTerm() {
-		return firstOf(Var(), GraphTerm());
+		return FirstOf(Var(), GraphTerm());
 	}
 
 	public Rule VarOrIRIref() {
-		return firstOf(Var(), IriRef());
+		return FirstOf(Var(), IriRef());
 	}
 
 	public Rule Var() {
-		return firstOf(VAR1(), VAR2());
+		return FirstOf(VAR1(), VAR2());
 	}
 
 	public Rule GraphTerm() {
-		return firstOf(IriRef(), RdfLiteral(), NumericLiteral(),
+		return FirstOf(IriRef(), RdfLiteral(), NumericLiteral(),
 				BooleanLiteral(), BlankNode(),
-				sequence('(', ')', push(new IriRef(RDF_NIL))));
+				Sequence('(', ')', push(new IriRef(RDF_NIL))));
 	}
 
 	public Rule Expression() {
@@ -473,20 +473,20 @@ public class SparqlParser extends BaseRdfParser {
 	}
 
 	public Rule ConditionalOrExpression() {
-		return sequence(
+		return Sequence(
 				ConditionalAndExpression(),
-				optional(
+				Optional(
 						push(LIST_BEGIN),
-						oneOrMore("||", ConditionalAndExpression()), //
+						OneOrMore("||", ConditionalAndExpression()), //
 						push(new LogicalExpr(LogicalOperator.OR, popList(
 								Expression.class, 1)))));
 	}
 
 	public Rule ConditionalAndExpression() {
-		return sequence(
+		return Sequence(
 				ValueLogical(),
-				optional(push(LIST_BEGIN),
-						oneOrMore("&&", ValueLogical()), //
+				Optional(push(LIST_BEGIN),
+						OneOrMore("&&", ValueLogical()), //
 						push(new LogicalExpr(LogicalOperator.AND, popList(
 								Expression.class, 1)))));
 	}
@@ -496,15 +496,15 @@ public class SparqlParser extends BaseRdfParser {
 	}
 
 	public Rule RelationalExpression() {
-		return sequence(
+		return Sequence(
 				NumericExpression(), //
-				optional(RelationalOperator(), NumericExpression(), //
+				Optional(RelationalOperator(), NumericExpression(), //
 						push(new RelationalExpr((RelationalOperator) pop(1),
 								(Expression) pop(1), (Expression) pop()))));
 	}
 
 	public Rule RelationalOperator() {
-		return sequence(firstOf('=', "!=", "<=", ">=", '<', '>'),
+		return Sequence(FirstOf('=', "!=", "<=", ">=", '<', '>'),
 				push(RelationalOperator.fromSymbol(match().trim())));
 	}
 
@@ -514,21 +514,21 @@ public class SparqlParser extends BaseRdfParser {
 
 	public Rule AdditiveExpression() {
 		Var<Expression> expr = new Var<>();
-		return sequence(
+		return Sequence(
 				MultiplicativeExpression(),
 				expr.set((Expression) pop()), //
-				zeroOrMore(firstOf(
+				ZeroOrMore(FirstOf(
 						//
-						sequence('+', MultiplicativeExpression(), expr
+						Sequence('+', MultiplicativeExpression(), expr
 								.set(new NumericExpr(NumericOperator.ADD, expr
 										.get(), (Expression) pop()))), //
-						sequence('-', MultiplicativeExpression(), expr
+						Sequence('-', MultiplicativeExpression(), expr
 								.set(new NumericExpr(NumericOperator.SUB, expr
 										.get(), (Expression) pop()))), //
-						sequence(NumericLiteralPositive(), expr
+						Sequence(NumericLiteralPositive(), expr
 								.set(new NumericExpr(NumericOperator.ADD, expr
 										.get(), (Expression) pop()))), //
-						sequence(NumericLiteralNegative(), expr
+						Sequence(NumericLiteralNegative(), expr
 								.set(new NumericExpr(NumericOperator.SUB, expr
 										.get(), ((NumericLiteral) pop())
 										.negate()))))), push(expr.get()));
@@ -536,39 +536,39 @@ public class SparqlParser extends BaseRdfParser {
 
 	public Rule MultiplicativeExpression() {
 		Var<Expression> expr = new Var<>();
-		return sequence(UnaryExpression(),
+		return Sequence(UnaryExpression(),
 				expr.set((Expression) pop()), //
-				zeroOrMore(firstOf(
+				ZeroOrMore(FirstOf(
 						//
-						sequence('*', UnaryExpression(), expr
+						Sequence('*', UnaryExpression(), expr
 								.set(new NumericExpr(NumericOperator.MUL, expr
 										.get(), (Expression) pop()))), //
-						sequence('/', UnaryExpression(), expr
+						Sequence('/', UnaryExpression(), expr
 								.set(new NumericExpr(NumericOperator.DIV, expr
 										.get(), (Expression) pop()))) //
 				)), push(expr.get()));
 	}
 
 	public Rule UnaryExpression() {
-		return firstOf(
-				sequence('!',
+		return FirstOf(
+				Sequence('!',
 						PrimaryExpression(), //
 						push(new LogicalExpr(LogicalOperator.NOT, Collections
 								.singletonList((Expression) pop())))), //
-				sequence('+', PrimaryExpression()), //
-				sequence('-', PrimaryExpression(), //
+				Sequence('+', PrimaryExpression()), //
+				Sequence('-', PrimaryExpression(), //
 						push(new NegateExpr((Expression) pop()))), //
 				PrimaryExpression());
 	}
 
 	public Rule PrimaryExpression() {
-		return firstOf(BrackettedExpression(), BuiltInCall(),
+		return FirstOf(BrackettedExpression(), BuiltInCall(),
 				IriRefOrFunction(), RdfLiteral(), NumericLiteral(),
 				BooleanLiteral(), Var());
 	}
 
 	public Rule BrackettedExpression() {
-		return sequence('(', Expression(), ')');
+		return Sequence('(', Expression(), ')');
 	}
 
 	public boolean beginExprList() {
@@ -579,27 +579,27 @@ public class SparqlParser extends BaseRdfParser {
 
 	public Rule BuiltInCall() {
 		Var<List<Expression>> args = new Var<>();
-		return sequence(
-				firstOf(sequence("STR", beginExprList(), '(', Expression(), ')'), //
-						sequence("LANG", beginExprList(), '(', Expression(),
+		return Sequence(
+				FirstOf(Sequence("STR", beginExprList(), '(', Expression(), ')'), //
+						Sequence("LANG", beginExprList(), '(', Expression(),
 								')'), //
-						sequence("LANGMATCHES", beginExprList(), '(',
+						Sequence("LANGMATCHES", beginExprList(), '(',
 								Expression(), ',', Expression(), ')'), //
-						sequence("DATATYPE", beginExprList(), '(',
+						Sequence("DATATYPE", beginExprList(), '(',
 								Expression(), ')'), //
-						sequence("BOUND", beginExprList(), '(', Var(), ')'), //
-						sequence("SAMETERM", beginExprList(), '(',
+						Sequence("BOUND", beginExprList(), '(', Var(), ')'), //
+						Sequence("SAMETERM", beginExprList(), '(',
 								Expression(), ',', Expression(), ')'), //
-						sequence("ISIRI", beginExprList(), '(', Expression(),
+						Sequence("ISIRI", beginExprList(), '(', Expression(),
 								')'), //
-						sequence("ISURI", beginExprList(), '(', Expression(),
+						Sequence("ISURI", beginExprList(), '(', Expression(),
 								')'), //
-						sequence("ISBLANK", beginExprList(), '(', Expression(),
+						Sequence("ISBLANK", beginExprList(), '(', Expression(),
 								')'), //
-						sequence("ISLITERAL", beginExprList(), '(',
+						Sequence("ISLITERAL", beginExprList(), '(',
 								Expression(), ')'), //
-						sequence("REGEX", beginExprList(), '(', Expression(),
-								',', Expression(), optional(',', Expression()),
+						Sequence("REGEX", beginExprList(), '(', Expression(),
+								',', Expression(), Optional(',', Expression()),
 								')') //
 				), //
 				args.set(popList(Expression.class)), //
@@ -609,32 +609,32 @@ public class SparqlParser extends BaseRdfParser {
 
 	@SuppressWarnings("unchecked")
 	public Rule IriRefOrFunction() {
-		return sequence(
+		return Sequence(
 				IriRef(), //
-				optional(ArgList(), push(new FunctionCall((Expression) pop(1),
+				Optional(ArgList(), push(new FunctionCall((Expression) pop(1),
 						(List<Expression>) pop()))));
 	}
 
 	public Rule VAR1() {
-		return sequence(ch('?'), VARNAME());
+		return Sequence(Ch('?'), VARNAME());
 	}
 
 	public Rule VAR2() {
-		return sequence(ch('$'), VARNAME());
+		return Sequence(Ch('$'), VARNAME());
 	}
 
 	public Rule VARNAME() {
-		return sequence(
-				sequence(
-						firstOf(PN_CHARS_U(), DIGIT()),
-						zeroOrMore(firstOf(PN_CHARS_U(), DIGIT(), ch('\u00B7'),
-								charRange('\u0300', '\u036F'),
-								charRange('\u203F', '\u2040')))),
+		return Sequence(
+				Sequence(
+						FirstOf(PN_CHARS_U(), DIGIT()),
+						ZeroOrMore(FirstOf(PN_CHARS_U(), DIGIT(), Ch('\u00B7'),
+								CharRange('\u0300', '\u036F'),
+								CharRange('\u203F', '\u2040')))),
 				push(new Variable(match())), WS());
 	}
 
 	@Override
 	protected Rule fromStringLiteral(String string) {
-		return sequence(ignoreCase(string), WS());
+		return Sequence(IgnoreCase(string), WS());
 	}
 }

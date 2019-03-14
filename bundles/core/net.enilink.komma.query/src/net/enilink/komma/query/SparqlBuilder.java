@@ -24,6 +24,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.parboiled.Parboiled;
+import org.parboiled.Rule;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.ReportingParseRunner;
+import org.parboiled.support.ParsingResult;
+import org.parboiled.support.Var;
+
 import net.enilink.komma.parser.sparql.Sparql11Parser;
 import net.enilink.komma.parser.sparql.SparqlParser;
 import net.enilink.komma.parser.sparql.tree.AbstractGraphNode;
@@ -48,13 +55,6 @@ import net.enilink.komma.parser.sparql.tree.expr.Expression;
 import net.enilink.komma.parser.sparql.tree.visitor.ToStringVisitor;
 import net.enilink.komma.parser.sparql.tree.visitor.TreeWalker;
 import net.enilink.komma.parser.sparql.tree.visitor.Visitable;
-
-import org.parboiled.Parboiled;
-import org.parboiled.Rule;
-import org.parboiled.errors.ErrorUtils;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
-import org.parboiled.support.Var;
 
 public class SparqlBuilder {
 	private static final IriRef RESULT_NODE = new IriRef("komma:Result");

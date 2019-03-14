@@ -13,9 +13,6 @@ package net.enilink.komma.parser.test.sparql;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import net.enilink.komma.parser.sparql.SparqlParser;
-import net.enilink.komma.parser.test.GUnitBaseTestCase;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.parboiled.Parboiled;
@@ -23,7 +20,8 @@ import org.parboiled.errors.ErrorUtils;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
-import com.github.parboiled1.grappa.stack.DefaultValueStack;
+import net.enilink.komma.parser.sparql.SparqlParser;
+import net.enilink.komma.parser.test.GUnitBaseTestCase;
 
 /**
  * Simple JUnit Test for the SPARQL Parser
@@ -40,10 +38,8 @@ public class SparqlTest extends GUnitBaseTestCase {
 				.getResourceAsStream("Sparql.gunit")));
 
 		for (TextInfo textInfo : getTextInfos(in)) {
-			ParsingResult<Object> result = new ReportingParseRunner<Object>(
-					parser.Query()).withValueStack(
-					new DefaultValueStack<Object>()).run(
-					(CharSequence) textInfo.text);
+			ParsingResult<Object> result = new ReportingParseRunner<Object>(parser.Query())
+					.run(textInfo.text);
 
 			boolean passed = result.hasErrors()
 					&& textInfo.result == Result.FAIL || !result.hasErrors()

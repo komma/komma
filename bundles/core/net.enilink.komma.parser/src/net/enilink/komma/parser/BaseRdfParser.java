@@ -30,10 +30,10 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	public Rule RdfLiteral() {
-		return sequence(
+		return Sequence(
 				StringLiteral(),
 				push(null),
-				optional(firstOf(LANGTAG(), sequence(string("^^"), IriRef())),
+				Optional(FirstOf(LANGTAG(), Sequence(String("^^"), IriRef())),
 						drop(1) //
 				), //
 				push(peek() instanceof GraphNode ? //
@@ -43,36 +43,36 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	public Rule NumericLiteral() {
-		return firstOf(NumericLiteralUnsigned(), NumericLiteralPositive(),
+		return FirstOf(NumericLiteralUnsigned(), NumericLiteralPositive(),
 				NumericLiteralNegative());
 	}
 
 	public Rule NumericLiteralUnsigned() {
-		return firstOf(DOUBLE(), DECIMAL(), INTEGER());
+		return FirstOf(DOUBLE(), DECIMAL(), INTEGER());
 	}
 
 	public Rule NumericLiteralPositive() {
-		return firstOf(DOUBLE_POSITIVE(), DECIMAL_POSITIVE(),
+		return FirstOf(DOUBLE_POSITIVE(), DECIMAL_POSITIVE(),
 				INTEGER_POSITIVE());
 	}
 
 	public Rule NumericLiteralNegative() {
-		return firstOf(DOUBLE_NEGATIVE(), DECIMAL_NEGATIVE(),
+		return FirstOf(DOUBLE_NEGATIVE(), DECIMAL_NEGATIVE(),
 				INTEGER_NEGATIVE());
 	}
 
 	public Rule BooleanLiteral() {
-		return sequence(firstOf("TRUE", "FALSE"), //
+		return Sequence(FirstOf("TRUE", "FALSE"), //
 				push(new BooleanLiteral("true".equals(match().toLowerCase()))));
 	}
 
 	public Rule StringLiteral() {
-		return firstOf(STRING_LITERAL_LONG1(), STRING_LITERAL1(),
+		return FirstOf(STRING_LITERAL_LONG1(), STRING_LITERAL1(),
 				STRING_LITERAL_LONG2(), STRING_LITERAL2());
 	}
 
 	public Rule IriRef() {
-		return firstOf(IRI_REF(), PrefixedName());
+		return FirstOf(IRI_REF(), PrefixedName());
 	}
 
 	public String stripColon(String prefix) {
@@ -84,39 +84,39 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	}
 
 	public Rule PrefixedName() {
-		return firstOf(PNAME_LN(), //
-				sequence(PNAME_NS(), WS(), //
+		return FirstOf(PNAME_LN(), //
+				Sequence(PNAME_NS(), WS(), //
 						push(new QName((String) pop(), ""))));
 	}
 
 	public Rule BlankNode() {
-		return sequence(
-				firstOf(BLANK_NODE_LABEL(), sequence('[', ']', push(null))),
+		return Sequence(
+				FirstOf(BLANK_NODE_LABEL(), Sequence('[', ']', push(null))),
 				push(new BNode((String) pop())));
 	}
 
 	@SuppressNode
 	public Rule WS() {
-		return zeroOrMore(firstOf(COMMENT(), WS_NO_COMMENT()));
+		return ZeroOrMore(FirstOf(COMMENT(), WS_NO_COMMENT()));
 	}
 
 	public Rule WS_NO_COMMENT() {
-		return firstOf(ch(' '), ch('\t'), ch('\f'), EOL());
+		return FirstOf(Ch(' '), Ch('\t'), Ch('\f'), EOL());
 	}
 
 	public Rule PNAME_NS() {
-		return sequence(optional(PN_PREFIX()), push(match()), ch(':'));
+		return Sequence(Optional(PN_PREFIX()), push(match()), Ch(':'));
 	}
 
 	public Rule PNAME_LN() {
-		return sequence(PNAME_NS(), PN_LOCAL(), push(new QName((String) pop(1),
+		return Sequence(PNAME_NS(), PN_LOCAL(), push(new QName((String) pop(1),
 				((String) pop()).trim())));
 	}
 
 	public Rule IRI_REF() {
-		return sequence(
+		return Sequence(
 				LESS_NO_COMMENT(),
-				zeroOrMore(testNot(firstOf(IRI_REF_CHARS_WO_SPACE(), ch(' '))),
+				ZeroOrMore(TestNot(FirstOf(IRI_REF_CHARS_WO_SPACE(), Ch(' '))),
 						ANY), push(new IriRef(match().trim())), '>');
 	}
 
@@ -124,128 +124,128 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	 * Rule that allows spaces in IRIs which are normally disallowed.
 	 */
 	public Rule IRI_REF_WSPACE() {
-		return sequence(LESS_NO_COMMENT(),
-				zeroOrMore(testNot(IRI_REF_CHARS_WO_SPACE()), ANY),
+		return Sequence(LESS_NO_COMMENT(),
+				ZeroOrMore(TestNot(IRI_REF_CHARS_WO_SPACE()), ANY),
 				push(new IriRef(match().trim())), '>');
 	}
 
 	public Rule IRI_REF_CHARS_WO_SPACE() {
-		return firstOf(LESS_NO_COMMENT(), ch('>'), ch('"'), ch('{'), ch('}'),
-				ch('|'), ch('^'), ch('\\'), ch('`'),
-				charRange('\u0000', '\u0019'));
+		return FirstOf(LESS_NO_COMMENT(), Ch('>'), Ch('"'), Ch('{'), Ch('}'),
+				Ch('|'), Ch('^'), Ch('\\'), Ch('`'),
+				CharRange('\u0000', '\u0019'));
 	}
 
 	public Rule BLANK_NODE_LABEL() {
-		return sequence(string("_:"), PN_LOCAL(), WS());
+		return Sequence(String("_:"), PN_LOCAL(), WS());
 	}
 
 	public Rule LANGTAG() {
-		return sequence(
-				ch('@'),
-				sequence(oneOrMore(PN_CHARS_BASE()),
-						zeroOrMore('-', oneOrMore(PN_CHARS_BASE(), DIGIT()))),
+		return Sequence(
+				Ch('@'),
+				Sequence(OneOrMore(PN_CHARS_BASE()),
+						ZeroOrMore('-', OneOrMore(PN_CHARS_BASE(), DIGIT()))),
 				push(match()));
 	}
 
 	public Rule INTEGER() {
-		return sequence(oneOrMore(DIGIT()),
+		return Sequence(OneOrMore(DIGIT()),
 				push(new IntegerLiteral(Integer.parseInt(match().trim()))),
 				WS());
 	}
 
 	public Rule DECIMAL() {
-		return sequence(
-				firstOf(sequence(oneOrMore(DIGIT()), '.', zeroOrMore(DIGIT())),
-						sequence('.', oneOrMore(DIGIT()))),
+		return Sequence(
+				FirstOf(Sequence(OneOrMore(DIGIT()), '.', ZeroOrMore(DIGIT())),
+						Sequence('.', OneOrMore(DIGIT()))),
 				push(new DoubleLiteral(Double.parseDouble(match().trim()))),
 				WS());
 	}
 
 	public Rule DOUBLE() {
-		return sequence(
-				firstOf(sequence(oneOrMore(DIGIT()), '.', zeroOrMore(DIGIT()),
+		return Sequence(
+				FirstOf(Sequence(OneOrMore(DIGIT()), '.', ZeroOrMore(DIGIT()),
 						EXPONENT()),
-						sequence('.', oneOrMore(DIGIT()), EXPONENT()),
-						sequence(oneOrMore(DIGIT()), EXPONENT())),
+						Sequence('.', OneOrMore(DIGIT()), EXPONENT()),
+						Sequence(OneOrMore(DIGIT()), EXPONENT())),
 				push(new DoubleLiteral(Double.parseDouble(match().trim()))),
 				WS());
 	}
 
 	public Rule INTEGER_POSITIVE() {
-		return sequence('+', INTEGER());
+		return Sequence('+', INTEGER());
 	}
 
 	public Rule DECIMAL_POSITIVE() {
-		return sequence('+', DECIMAL());
+		return Sequence('+', DECIMAL());
 	}
 
 	public Rule DOUBLE_POSITIVE() {
-		return sequence('+', DOUBLE());
+		return Sequence('+', DOUBLE());
 	}
 
 	public Rule INTEGER_NEGATIVE() {
-		return sequence('-', INTEGER(), //
+		return Sequence('-', INTEGER(), //
 				push(new IntegerLiteral(-((IntegerLiteral) pop()).getValue())) //
 		);
 	}
 
 	public Rule DECIMAL_NEGATIVE() {
-		return sequence('-', DECIMAL(), //
+		return Sequence('-', DECIMAL(), //
 				push(new DoubleLiteral(-((DoubleLiteral) pop()).getValue())) //
 		);
 	}
 
 	public Rule DOUBLE_NEGATIVE() {
-		return sequence('-', DOUBLE(), //
+		return Sequence('-', DOUBLE(), //
 				push(new DoubleLiteral(-((DoubleLiteral) pop()).getValue())) //
 		);
 	}
 
 	public Rule EXPONENT() {
-		return sequence(ignoreCase('e'), optional(firstOf('+', '-')),
-				oneOrMore(DIGIT()));
+		return Sequence(IgnoreCase('e'), Optional(FirstOf('+', '-')),
+				OneOrMore(DIGIT()));
 	}
 
 	public Rule STRING_LITERAL1() {
-		return sequence(
-				ch('\''),
+		return Sequence(
+				Ch('\''),
 				push(new StringBuilder()),
-				zeroOrMore(firstOf(
-						sequence(testNot(firstOf('\'', '\\', '\n', '\r')), ANY,
+				ZeroOrMore(FirstOf(
+						Sequence(TestNot(FirstOf('\'', '\\', '\n', '\r')), ANY,
 								appendToSb(matchedChar())), ECHAR(), UCHAR())),
 				push(pop().toString()), '\'', WS());
 	}
 
 	public Rule STRING_LITERAL2() {
-		return sequence(
-				ch('"'),
+		return Sequence(
+				Ch('"'),
 				push(new StringBuilder()),
-				zeroOrMore(firstOf(
-						sequence(testNot(firstOf('"', '\\', '\n', '\r')), ANY,
+				ZeroOrMore(FirstOf(
+						Sequence(TestNot(FirstOf('"', '\\', '\n', '\r')), ANY,
 								appendToSb(matchedChar())), ECHAR(), UCHAR())),
 				push(pop().toString()), '"', WS());
 	}
 
 	public Rule STRING_LITERAL_LONG1() {
-		return sequence(
-				string("'''"),
+		return Sequence(
+				String("'''"),
 				push(new StringBuilder()),
-				zeroOrMore(
-						testNot("'''"),
-						optional(firstOf("''", '\''), appendToSb(match())),
-						firstOf(sequence(testNot(firstOf('\'', '\\')), ANY,
+				ZeroOrMore(
+						TestNot("'''"),
+						Optional(FirstOf("''", '\''), appendToSb(match())),
+						FirstOf(Sequence(TestNot(FirstOf('\'', '\\')), ANY,
 								appendToSb(matchedChar())), ECHAR(), UCHAR())),
 				push(pop().toString()), "'''", WS());
 	}
 
 	public Rule STRING_LITERAL_LONG2() {
-		return sequence(
+		return Sequence(
 				"\"\"\"",
 				push(new StringBuilder()),
-				zeroOrMore(
-						testNot("\"\"\""),
-						optional(firstOf("\"\"", '\"'), appendToSb(match())),
-						firstOf(sequence(testNot(firstOf('\"', '\\')), ANY,
+				ZeroOrMore(
+						TestNot("\"\"\""),
+						Optional(FirstOf("\"\"", '\"'), appendToSb(match())),
+						FirstOf(Sequence(TestNot(FirstOf('\"', '\\')), ANY,
 								appendToSb(matchedChar())), ECHAR(), UCHAR())),
 				push(pop().toString()), "\"\"\"", WS());
 	}
@@ -282,119 +282,119 @@ public abstract class BaseRdfParser extends BaseParser<Object> {
 	 * on the value stack.
 	 */
 	public Rule Ech(char c) {
-		return sequence(ch(c), appendToSb(unescape(c)));
+		return Sequence(Ch(c), appendToSb(unescape(c)));
 	}
 
 	public Rule ECHAR() {
-		return sequence(
+		return Sequence(
 				'\\',
-				firstOf(Ech('t'), Ech('b'), Ech('n'), Ech('r'), Ech('f'),
+				FirstOf(Ech('t'), Ech('b'), Ech('n'), Ech('r'), Ech('f'),
 						Ech('"'), Ech('\''), Ech('\\')));
 	}
 
 	public Rule UCHAR() {
-		return firstOf(
-				sequence(
+		return FirstOf(
+				Sequence(
 						"\\u",
-						sequence(HEX(), HEX(), HEX(), HEX()),
+						Sequence(HEX(), HEX(), HEX(), HEX()),
 						appendToSb(new String(Character.toChars(Integer
 								.parseInt(match(), 16))))),
-				sequence(
+				Sequence(
 						"\\U",
-						sequence(HEX(), HEX(), HEX(), HEX(), HEX(), HEX(),
+						Sequence(HEX(), HEX(), HEX(), HEX(), HEX(), HEX(),
 								HEX(), HEX()),
 						appendToSb(new String(Character.toChars(Integer
 								.parseInt(match(), 16))))));
 	}
 
 	public Rule PN_CHARS_U() {
-		return firstOf(PN_CHARS_BASE(), ch('_'));
+		return FirstOf(PN_CHARS_BASE(), Ch('_'));
 	}
 
 	public Rule PN_CHARS() {
-		return firstOf(PN_CHARS_U(), '-', DIGIT(), ch('\u00B7'),
-				charRange('\u0300', '\u036F'), charRange('\u203F', '\u2040'));
+		return FirstOf(PN_CHARS_U(), '-', DIGIT(), Ch('\u00B7'),
+				CharRange('\u0300', '\u036F'), CharRange('\u203F', '\u2040'));
 	}
 
 	public Rule PN_PREFIX() {
-		return sequence(PN_CHARS_BASE(),
-				zeroOrMore(firstOf(PN_CHARS(), sequence('.', PN_CHARS()))));
+		return Sequence(PN_CHARS_BASE(),
+				ZeroOrMore(FirstOf(PN_CHARS(), Sequence('.', PN_CHARS()))));
 	}
 
 	public Rule PN_CHARS_SUFFIX() {
-		return firstOf(PN_CHARS(), ch(':'), PLX());
+		return FirstOf(PN_CHARS(), Ch(':'), PLX());
 	}
 
 	public Rule PN_LOCAL() {
-		return sequence(
-				sequence(
-						firstOf(PN_CHARS_U(), ch(':'), DIGIT(), PLX()),
-						zeroOrMore(firstOf(PN_CHARS_SUFFIX(),
-								sequence(ch('.'), PN_CHARS_SUFFIX())))),
+		return Sequence(
+				Sequence(
+						FirstOf(PN_CHARS_U(), Ch(':'), DIGIT(), PLX()),
+						ZeroOrMore(FirstOf(PN_CHARS_SUFFIX(),
+								Sequence(Ch('.'), PN_CHARS_SUFFIX())))),
 				push(match()), WS());
 	}
 
 	public Rule PLX() {
-		return firstOf(PERCENT(), PN_LOCAL_ESC());
+		return FirstOf(PERCENT(), PN_LOCAL_ESC());
 	}
 
 	public Rule PERCENT() {
-		return sequence(ch('%'), HEX(), HEX());
+		return Sequence(Ch('%'), HEX(), HEX());
 	}
 
 	public Rule HEX() {
-		return firstOf(DIGIT(), charRange('A', 'F'), charRange('a', 'f'));
+		return FirstOf(DIGIT(), CharRange('A', 'F'), CharRange('a', 'f'));
 	}
 
 	public Rule PN_LOCAL_ESC() {
-		return sequence(
+		return Sequence(
 				'\\',
-				firstOf('_', '~', '.', '-', '!', '$', '&', "'", '(', ')', '*',
+				FirstOf('_', '~', '.', '-', '!', '$', '&', "'", '(', ')', '*',
 						'+', ',', ';', '=', '/', '?', '#', '@', '%'));
 	}
 
 	public Rule PN_CHARS_BASE() {
-		return firstOf( //
-				charRange('A', 'Z'),//
-				charRange('a', 'z'), //
-				charRange('\u00C0', '\u00D6'), //
-				charRange('\u00D8', '\u00F6'), //
-				charRange('\u00F8', '\u02FF'), //
-				charRange('\u0370', '\u037D'), //
-				charRange('\u037F', '\u1FFF'), //
-				charRange('\u200C', '\u200D'), //
-				charRange('\u2070', '\u218F'), //
-				charRange('\u2C00', '\u2FEF'), //
-				charRange('\u3001', '\uD7FF'), //
-				charRange('\uF900', '\uFDCF'), //
-				charRange('\uFDF0', '\uFFFD') //
+		return FirstOf( //
+				CharRange('A', 'Z'),//
+				CharRange('a', 'z'), //
+				CharRange('\u00C0', '\u00D6'), //
+				CharRange('\u00D8', '\u00F6'), //
+				CharRange('\u00F8', '\u02FF'), //
+				CharRange('\u0370', '\u037D'), //
+				CharRange('\u037F', '\u1FFF'), //
+				CharRange('\u200C', '\u200D'), //
+				CharRange('\u2070', '\u218F'), //
+				CharRange('\u2C00', '\u2FEF'), //
+				CharRange('\u3001', '\uD7FF'), //
+				CharRange('\uF900', '\uFDCF'), //
+				CharRange('\uFDF0', '\uFFFD') //
 		);
 	}
 
 	public Rule DIGIT() {
-		return charRange('0', '9');
+		return CharRange('0', '9');
 	}
 
 	public Rule COMMENT() {
-		return sequence(ch('#'), zeroOrMore(testNot(EOL()), ANY), EOL());
+		return Sequence(Ch('#'), ZeroOrMore(TestNot(EOL()), ANY), EOL());
 	}
 
 	public Rule EOL() {
-		return firstOf(ch('\n'), ch('\r'));
+		return FirstOf(Ch('\n'), Ch('\r'));
 	}
 
 	public Rule LESS_NO_COMMENT() {
-		return sequence(ch('<'), zeroOrMore(WS_NO_COMMENT()));
+		return Sequence(Ch('<'), ZeroOrMore(WS_NO_COMMENT()));
 	}
 
 	@Override
 	protected Rule fromCharLiteral(char c) {
-		return sequence(ch(c), WS());
+		return Sequence(Ch(c), WS());
 	}
 
 	@Override
 	protected Rule fromStringLiteral(String string) {
-		return sequence(string(string), WS());
+		return Sequence(String(string), WS());
 	}
 
 	@SuppressWarnings("unchecked")
