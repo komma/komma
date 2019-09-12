@@ -6,7 +6,7 @@ Bundle-Version: 1.3.3.qualifier
 Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: net.enilink.komma.parser;visibility:=reexport,
- com.github.parboiled1.grappa
+ net.enilink.lib.parboiled
 Export-Package: net.enilink.komma.query
 Import-Package: com.google.common.base;version="17.0.0",
  org.junit;version="4.0.0";resolution:=optional

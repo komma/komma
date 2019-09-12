@@ -1,10 +1,10 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1526498601585
-Build-Jdk: 1.8.0_144
+Bnd-LastModified: 1568314969475
+Build-Jdk: 1.8.0_201
 Built-By: ken
 Bundle-ManifestVersion: 2
 Bundle-Name: net.enilink.lib.parboiled
-Bundle-SymbolicName: net.enilink.komma.net.enilink.lib.parboiled
+Bundle-SymbolicName: net.enilink.lib.parboiled
 Bundle-Version: 1.0.4
 Created-By: Apache Maven Bundle Plugin
 DynamicImport-Package: *
@@ -82,6 +82,5 @@ Import-Package: com.google.common.base;version="17.0.0",com.google.commo
  sion="[1.0,2)",org.parboiled.parserunners;version="[1.0,2)",org.parboil
  ed.support;version="[1.0,2)",org.parboiled.trees;version="[1.0,2)",org.
  xml.sax,org.xml.sax.ext,org.xml.sax.helpers
-Originally-Created-By: Apache Maven Bundle Plugin
 Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.6))"
 Tool: Bnd-3.0.0.201509101326

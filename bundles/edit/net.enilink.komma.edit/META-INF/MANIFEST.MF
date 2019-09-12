@@ -22,7 +22,7 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.common;visibility:=reexport,
  net.enilink.komma.model;visibility:=reexport,
  net.enilink.commons.util,
- com.github.parboiled1.grappa
+ net.enilink.lib.parboiled
 Eclipse-LazyStart: true
 Bundle-ActivationPolicy: lazy
 Import-Package: com.google.common.base;version="17.0.0",
