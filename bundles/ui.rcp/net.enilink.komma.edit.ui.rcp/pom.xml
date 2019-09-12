@@ -19,8 +19,24 @@
 		</dependency>
 		<dependency>
 			<groupId>net.enilink.komma</groupId>
+			<artifactId>net.enilink.komma.workbench</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.enilink.komma</groupId>
 			<artifactId>net.enilink.komma.common.ui.rcp</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.ui.views.properties.tabbed</artifactId>
+			<version>3.8.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 </project>

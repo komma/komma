@@ -19,8 +19,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
-			<artifactId>org.eclipse.ui.views</artifactId>
-			<version>3.9.400</version>
+			<artifactId>org.eclipse.ui.ide</artifactId>
+			<version>3.15.200</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.eclipse.platform</groupId>
