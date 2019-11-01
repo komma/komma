@@ -314,7 +314,7 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 			return new TreeSet<Proposal>(visitor.getWords());
 		}
 
-		public <V> boolean match(MatcherContext<V> context) {
+		public boolean match(MatcherContext<?> context) {
 			boolean matched = context.getMatcher().match(context);
 
 			if (!matched) {

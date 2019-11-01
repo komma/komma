@@ -11,6 +11,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.parboiled.Parboiled;
+import org.parboiled.Rule;
+import org.parboiled.parserunners.BasicParseRunner;
+import org.parboiled.support.IndexRange;
+import org.parboiled.support.ParsingResult;
+
 import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.common.adapter.IAdapterFactory;
@@ -38,22 +47,13 @@ import net.enilink.komma.parser.sparql.tree.IriRef;
 import net.enilink.komma.parser.sparql.tree.QName;
 import net.enilink.vocab.rdf.RDF;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.parboiled.Parboiled;
-import org.parboiled.Rule;
-import org.parboiled.parserunners.BasicParseRunner;
-import org.parboiled.support.IndexRange;
-import org.parboiled.support.ParsingResult;
-
 public class ResourceEditingSupport implements IEditingSupport {
 	static class ConstructorParser extends BaseRdfParser {
 		public Rule Constructor() {
-			return sequence(
-					firstOf(sequence(firstOf(IriRef(), PN_LOCAL()), ch('a')),
-							ch('a')), WS_NO_COMMENT(),
-					firstOf(IriRef(), PN_LOCAL(), sequence(EMPTY, push(""))),
+			return Sequence(
+					FirstOf(Sequence(FirstOf(IriRef(), PN_LOCAL()), Ch('a')),
+							Ch('a')), WS_NO_COMMENT(),
+					FirstOf(IriRef(), PN_LOCAL(), Sequence(EMPTY, push(""))),
 					drop(), push(matchRange()));
 		}
 	}

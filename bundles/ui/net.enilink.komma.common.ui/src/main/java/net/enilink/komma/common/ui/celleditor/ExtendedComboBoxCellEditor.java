@@ -167,10 +167,12 @@ public class ExtendedComboBoxCellEditor extends ComboBoxCellEditor {
 		this(composite, list, labelProvider, false, style);
 	}
 
-	public ExtendedComboBoxCellEditor(Composite composite, List<?> list, ILabelProvider labelProvider, boolean sorted,
-			int style) {
-		super(composite, createItems((List<?>) (sorted ? list = new ArrayList<Object>(list) : list), labelProvider,
-				null, sorted), style);
+	@SuppressWarnings("unchecked")
+	public ExtendedComboBoxCellEditor(Composite composite, List<?> list,
+			ILabelProvider labelProvider, boolean sorted, int style) {
+		super(composite, createItems((List<Object>)
+				(sorted ? list = new ArrayList<Object>(list) : list),
+				labelProvider, null, sorted), style);
 		this.originalList = list;
 		this.list = list;
 		this.labelProvider = labelProvider;

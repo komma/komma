@@ -80,7 +80,7 @@ import java.util.StringTokenizer;
  * including {@link #resolve(URIs) resolving} and {@link #deresolve(URIs)
  * deresolving}, they are handled like any ordinary URI. The schemes that
  * identify archive URIs can be changed from their default by setting the
- * <code>org.eclipse.emf.common.util.URI.archiveSchemes</code> system property.
+ * <code>net.enilink.komma.core.URIs.archiveSchemes</code> system property.
  * Multiple schemes should be space separated, and the test of whether a URI's
  * scheme matches is always case-insensitive.
  * 
@@ -258,7 +258,7 @@ public final class URIs {
 	static {
 		Set<String> set = new HashSet<String>();
 		String propertyValue = System
-				.getProperty("org.eclipse.emf.common.util.URI.archiveSchemes");
+				.getProperty("net.enilink.komma.core.URIs.archiveSchemes");
 
 		if (propertyValue == null) {
 			set.add(SCHEME_JAR);
@@ -797,7 +797,6 @@ public final class URIs {
 	 *                {@link #validSegments validSegments}, {@link #validQuery
 	 *                validQuery}, or {@link #validFragment validFragment}.
 	 * 
-	 * @see org.eclipse.core.runtime.Platform#resolve
 	 */
 	public static URI createPlatformResourceURI(String pathName, boolean encode) {
 		return createPlatformURI("platform:/resource", "platform:/resource/",
@@ -840,8 +839,6 @@ public final class URIs {
 	 *                {@link #validSegments validSegments}, {@link #validQuery
 	 *                validQuery}, or {@link #validFragment validFragment}.
 	 * 
-	 * @see org.eclipse.core.runtime.Platform#resolve
-	 * @since org.eclipse.emf.common 2.3
 	 */
 	public static URI createPlatformPluginURI(String pathName, boolean encode) {
 		return createPlatformURI("platform:/plugin", "platform:/plugin/",

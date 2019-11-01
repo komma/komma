@@ -4,11 +4,11 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>net.enilink.komma</groupId>
-    <artifactId>komma-parent</artifactId>
+    <artifactId>komma-features</artifactId>
     <version>1.3.4-SNAPSHOT</version>
-    <relativePath>../../../pom.xml</relativePath>
   </parent>
-  
-  <artifactId>net.enilink.commons.iterator</artifactId>
-  <packaging>jar</packaging>
+  <groupId>net.enilink.komma</groupId>
+  <artifactId>net.enilink.komma.license.feature</artifactId>
+  <version>1.3.4-SNAPSHOT</version>
+  <packaging>eclipse-feature</packaging>
 </project>
