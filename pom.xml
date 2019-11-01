@@ -8,81 +8,41 @@
 	<version>1.3.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<properties>
-		<tycho-version>0.24.0</tycho-version>
-                <path.to.root>../../..</path.to.root>
+		<path.to.root>../../..</path.to.root>
 	</properties>
 	<build>
-		<directory>target-maven</directory>
 		<plugins>
-			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-maven-plugin</artifactId>
-				<version>${tycho-version}</version>
-				<extensions>true</extensions>
-			</plugin>
-			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-compiler-plugin</artifactId>
-				<version>${tycho-version}</version>
-				<configuration>
-					<excludeResources>
-						<excludeResource>**/*.scala</excludeResource>
-					</excludeResources>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-packaging-plugin</artifactId>
-				<version>${tycho-version}</version>
-				<configuration>
-					<!-- deployableFeature>true</deployableFeature -->
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-versions-plugin</artifactId>
-				<version>${tycho-version}</version>
-			</plugin>
-			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>target-platform-configuration</artifactId>
-				<version>${tycho-version}</version>
-				<configuration>
-					<environments>
-						<environment>
-							<os>linux</os>
-							<ws>gtk</ws>
-							<arch>x86_64</arch>
-						</environment>
-						<environment>
-							<os>win32</os>
-							<ws>win32</ws>
-							<arch>x86_64</arch>
-						</environment>
-					</environments>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.10.3</version>
-				<configuration>
-				</configuration>
 			</plugin>
+
 			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-source-plugin</artifactId>
-				<version>${tycho-version}</version>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.0</version>
 				<executions>
 					<execution>
-						<id>plugin-source</id>
 						<goals>
-							<goal>plugin-source</goal>
+							<goal>test-jar</goal>
 						</goals>
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.1</version>
+				<configuration>
+					<archive>
+						<manifestFile>META-INF/MANIFEST.MF</manifestFile>
+					</archive>
+				</configuration>
+			</plugin>
 		</plugins>
+
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -90,57 +50,79 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.5.1</version>
 					<configuration>
-						<!-- maven defaults to 1.5 (sic), we want 1.8 (rdf4j, ...) -->
 						<source>1.8</source>
 						<target>1.8</target>
 					</configuration>
 				</plugin>
-				<plugin>
-					<groupId>org.eclipse.tycho.extras</groupId>
-					<artifactId>tycho-source-feature-plugin</artifactId>
-					<version>${tycho-version}</version>
-					<executions>
-						<execution>
-							<id>source-feature</id>
-							<goals>
-								<goal>source-feature</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-				<plugin>
-					<groupId>org.eclipse.tycho</groupId>
-					<artifactId>tycho-p2-plugin</artifactId>
-					<version>${tycho-version}</version>
-					<executions>
-						<execution>
-							<id>attached-p2-metadata</id>
-							<phase>package</phase>
-							<goals>
-								<goal>p2-metadata</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
 			</plugins>
 		</pluginManagement>
+
+		<resources>
+			<resource>
+				<directory>.</directory>
+				<includes>
+					<include>OSGI-INF/*</include>
+					<include>plugin.xml</include>
+					<include>plugin.properties</include>
+				</includes>
+			</resource>
+
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>.keep</exclude>
+				</excludes>
+			</resource>
+		</resources>
 	</build>
 
-	<repositories>
-		<repository>
-			<id>mars</id>
-			<layout>p2</layout>
-			<url>http://download.eclipse.org/releases/mars/</url>
-		</repository>
-		<repository>
-			<id>libraries-p2</id>
-			<layout>p2</layout>
-			<url>${project.baseUri}${path.to.root}/libraries-p2/target/repository/</url>
-		</repository>
-	</repositories>
+	<profiles>
+		<profile>
+			<id>doclint-java8-disable</id>
+			<activation>
+				<jdk>[1.8,)</jdk>
+			</activation>
+			<properties>
+				<javadoc.opts>-Xdoclint:none</javadoc.opts>
+			</properties>
+		</profile>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>2.4</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<!-- plugin>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>2.10.3</version>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<additionalparam>${javadoc.opts}</additionalparam>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin -->
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 	<modules>
-		<module>features</module>
-		<module>releng/komma-updatesite</module>
+		<!--module>features</module> <module>releng/komma-updatesite</module -->
 	</modules>
 </project>

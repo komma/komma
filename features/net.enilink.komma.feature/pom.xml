@@ -17,7 +17,6 @@
 			<artifactId>org.slf4j.logback</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>net.enilink.komma</groupId>
 			<artifactId>net.enilink.commons.iterator</artifactId>
