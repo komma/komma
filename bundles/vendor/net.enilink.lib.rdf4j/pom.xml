@@ -10,17 +10,8 @@
 		<relativePath>../../../pom.xml</relativePath>
 	</parent>
 	<artifactId>net.enilink.lib.rdf4j</artifactId>
-	<version>2.3.1</version>
+	<version>${rdf4j.version}</version>
 	<packaging>bundle</packaging>
-
-	<properties>
-		<httpclient.version>4.5.2</httpclient.version>
-		<httpcore.version>4.4.4</httpcore.version>
-		<jackson.version>2.8.2</jackson.version>
-		<jsonldjava.version>0.8.3</jsonldjava.version>
-		<rdf4j.version>2.3.1</rdf4j.version>
-		<mapdb.version>1.0.8</mapdb.version>
-	</properties>
 
 	<dependencies>
 		<dependency>
@@ -40,16 +31,19 @@
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 			<version>1.10</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.4</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.4</version>
+			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -61,6 +55,7 @@
 			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
 			<version>3.7</version>
+			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -83,6 +78,7 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient-osgi</artifactId>
 			<version>${httpclient.version}</version>
+			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -94,6 +90,7 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore-osgi</artifactId>
 			<version>${httpcore.version}</version>
+			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -105,6 +102,7 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
 			<version>${jackson.version}</version>
+			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -127,6 +125,7 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
 			<version>${jackson.version}</version>
+			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -137,7 +136,8 @@
 		<dependency>
 			<groupId>com.github.jsonld-java</groupId>
 			<artifactId>jsonld-java</artifactId>
-			<version>${jsonldjava.version}</version>
+			<version>${jsonld.version}</version>
+			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>

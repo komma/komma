@@ -16,7 +16,7 @@
 		<dependency>
 			<groupId>net.enilink.komma</groupId>
 			<artifactId>net.enilink.lib.parboiled</artifactId>
-			<version>1.0.4</version>
+			<version>${parboiled.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.enilink.komma</groupId>

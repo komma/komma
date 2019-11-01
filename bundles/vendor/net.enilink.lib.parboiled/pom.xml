@@ -10,36 +10,19 @@
 		<relativePath>../../../pom.xml</relativePath>
 	</parent>
 	<artifactId>net.enilink.lib.parboiled</artifactId>
-	<version>1.0.4</version>
+	<version>${parboiled.version}</version>
 	<packaging>bundle</packaging>
-
-	<properties>
-		<grappa.version>1.0.4</grappa.version>
-		<jitescript.version>0.4.0</jitescript.version>
-	</properties>
 
 	<dependencies>
 		<dependency>
-			<groupId>com.github.parboiled1</groupId>
-			<artifactId>grappa</artifactId>
-			<version>${grappa.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>org.parboiled</groupId>
+			<artifactId>parboiled-core</artifactId>
+			<version>${parboiled.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>me.qmx.jitescript</groupId>
-			<artifactId>jitescript</artifactId>
-			<version>${jitescript.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>org.parboiled</groupId>
+			<artifactId>parboiled-java</artifactId>
+			<version>${parboiled.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -62,12 +45,24 @@
 				<configuration>
 					<manifestLocation>META-INF</manifestLocation>
 					<instructions>
-						<Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
-						<Export-Package>org.parboiled.*;version=${grappa.version},com.github.parboiled1.*;version=${grappa.version}</Export-Package>
-						<DynamicImport-Package>*</DynamicImport-Package>
-						<Import-Package>!javax.*,com.google.*;version="17.0.0", *</Import-Package>
-						<Embed-Dependency>*;scope=compile|runtime; type=!pom; inline=true</Embed-Dependency>
-						<Embed-Transitive>false</Embed-Transitive>
+						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+						<Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
+						<Eclipse-BuddyPolicy>dependent</Eclipse-BuddyPolicy>
+						<Export-Package>
+							org.parboiled.*
+						</Export-Package>
+						<Import-Package>
+							*
+						</Import-Package>
+						<Include-Resource>
+							{maven-resources}, {maven-dependencies}
+						</Include-Resource>
+						<Embed-Dependency>
+							*(parboiled)*;
+							scope=compile|runtime; type=!pom;
+							inline=true
+						</Embed-Dependency>
+						<Embed-Transitive>true</Embed-Transitive>
 					</instructions>
 				</configuration>
 			</plugin>
