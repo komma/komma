@@ -34,7 +34,6 @@
 		<module>../../bundles/vocab/net.enilink.vocab.owl</module>
 		<module>../../bundles/vocab/net.enilink.vocab.rdfs</module>
 
-		<module>../../features/net.enilink.komma.license.feature</module>
 		<module>../../features/net.enilink.komma.feature</module>
 	</modules>
 </project>
