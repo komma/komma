@@ -8,13 +8,446 @@
 		<artifactId>komma-features</artifactId>
 		<version>1.3.3-SNAPSHOT</version>
 	</parent>
-	<groupId>net.enilink.komma</groupId>
 	<artifactId>net.enilink.komma.updatesite</artifactId>
-	<version>1.3.3-SNAPSHOT</version>
-	<packaging>eclipse-repository</packaging>
+	<packaging>pom</packaging>
+	<properties>
+		<komma.copyright>Copyright (c) 2019 Fraunhofer IWU and others.
+			All rights reserved. This program and the accompanying materials
+			are made available under the terms of the Eclipse Public License 1.0 
+			which accompanies this distribution, and is available at
+			http://www.eclipse.org/legal/epl-v10.html</komma.copyright>
+
+		<aopalliance.version>1.0</aopalliance.version>
+		<asm.version>5.2</asm.version>
+		<commons-io.version>2.4</commons-io.version>
+		<commons-lang3.version>3.4</commons-lang3.version>
+		<guice.version>4.0</guice.version>
+		<jackson.version>2.8.2</jackson.version>
+		<jsonld.version>0.8.3</jsonld.version>
+		<logback.version>1.2.3</logback.version>
+		<mapdb.version>1.0.8</mapdb.version>
+		<opencsv.version>3.7</opencsv.version>
+		<httpclient.version>4.5.2</httpclient.version>
+		<httpcore.version>4.4.4</httpcore.version>
+		<javax.inject.version>1</javax.inject.version>
+		<parboiled.version>1.0.4</parboiled.version>
+		<rdf4j.version>2.3.1</rdf4j.version>
+	</properties>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.reficio</groupId>
+				<artifactId>p2-maven-plugin</artifactId>
+				<version>1.3.0</version>
+				<executions>
+					<execution>
+						<id>generate-p2-site</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>site</goal>
+						</goals>
+
+						<configuration>
+							<artifacts>
+								<!-- specify your dependencies here -->
+								<!-- groupId:artifactId:version -->
+								<artifact>
+									<id>net.enilink.komma:net.enilink.komma.editor.feature:${project.version}</id>
+									<transitive>true</transitive>
+									<source>false</source>
+									<excludes>
+										<exclude>org.eclipse.platform:*</exclude>
+										<exclude>org.eclipse.rdf4j:*</exclude>
+									</excludes>
+								</artifact>
+							</artifacts>
+							<featureDefinitions>
+								<feature>
+									<id>net.enilink.komma.feature</id>
+									<version>${project.version}</version>
+									<label>KOMMA - Core</label>
+									<providerName>enilink.net</providerName>
+									<description>KOMMA - Knowledge Modeling and Management
+										Architecture</description>
+									<copyright>${komma.copyright}</copyright>
+									<license>A licence</license>
+									<generateSourceFeature>true</generateSourceFeature>
+									<artifacts>
+										<!-- Vendor artifacts -->
+										<artifact>
+											<id>aopalliance:aopalliance:${aopalliance.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>com.google.inject:guice:${guice.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>com.google.inject.extensions:guice-multibindings:${guice.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>javax.inject:javax.inject:${javax.inject.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+
+										<artifact>
+											<id>commons-io:commons-io:${commons-io.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>org.apache.commons:commons-lang3:${commons-lang3.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+
+										<artifact>
+											<id>ch.qos.logback:logback-access:${logback.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>ch.qos.logback:logback-core:${logback.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>ch.qos.logback:logback-classic:${logback.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+
+										<artifact>
+											<id>com.fasterxml.jackson.core:jackson-annotations:${jackson.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>com.fasterxml.jackson.core:jackson-core:${jackson.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>com.fasterxml.jackson.core:jackson-databind:${jackson.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+
+										<artifact>
+											<id>com.github.jsonld-java:jsonld-java:${jsonld.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>com.opencsv:opencsv:${opencsv.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>org.apache.httpcomponents:httpcore-osgi:${httpcore.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>org.apache.httpcomponents:httpclient-osgi:${httpclient.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>org.mapdb:mapdb:${mapdb.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+
+										<artifact>
+											<id>org.ow2.asm:asm-all:${asm.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+
+										<artifact>
+											<id>net.enilink.komma:net.enilink.lib.parboiled:${parboiled.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.lib.rdf4j:${rdf4j.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+
+										<!-- KOMMA artifacts -->
+										<artifact>
+											<id>net.enilink.komma:org.slf4j.logback:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.commons.iterator:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.commons.logging:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.commons.util:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.composition.cache:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.composition.properties.komma:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.composition.properties:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.composition:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.common:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.core:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.dm:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.em:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.literals:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.model:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.parser:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.query:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.rdf4j:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.vocab.foaf:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.vocab.komma:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.vocab.owl:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.vocab.rdfs:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+									</artifacts>
+								</feature>
+
+								<feature>
+									<id>net.enilink.komma.edit.feature</id>
+									<version>${project.version}</version>
+									<label>KOMMA - Editing Framework</label>
+									<providerName>enilink.net</providerName>
+									<description>KOMMA - Base components for editing support</description>
+									<copyright>${komma.copyright}</copyright>
+									<license>A licence</license>
+									<generateSourceFeature>true</generateSourceFeature>
+									<artifacts>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.workbench:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.edit:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.owl.edit:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.rdfs.edit:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+									</artifacts>
+								</feature>
+
+								<feature>
+									<id>net.enilink.komma.edit.ui.feature</id>
+									<version>${project.version}</version>
+									<label>KOMMA - Editing Framework UI</label>
+									<providerName>enilink.net</providerName>
+									<description>KOMMA - UI components for editing support</description>
+									<copyright>${komma.copyright}</copyright>
+									<license>A licence</license>
+									<generateSourceFeature>true</generateSourceFeature>
+									<artifacts>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.common.ui:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.edit.ui:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.edit.ui.properties:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.sparql.ui:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.commons.ui:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.edit.ui.properties.tabbed:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.common.ui.rcp:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.edit.ui.rcp:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+									</artifacts>
+								</feature>
+
+								<feature>
+									<id>net.enilink.komma.editor.feature</id>
+									<version>${project.version}</version>
+									<label>KOMMA - Editor</label>
+									<providerName>enilink.net</providerName>
+									<description>KOMMA - Editor for working with RDF, RDFS and OWL data</description>
+									<copyright>${komma.copyright}</copyright>
+									<license>A licence</license>
+									<generateSourceFeature>true</generateSourceFeature>
+									<artifacts>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.owl.editor:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.owl.editor.rcp:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+									</artifacts>
+								</feature>
+
+								<feature>
+									<id>net.enilink.komma.rap.feature</id>
+									<version>${project.version}</version>
+									<label>KOMMA - RAP UI components</label>
+									<providerName>enilink.net</providerName>
+									<description> KOMMA - RAP UI components</description>
+									<copyright>${komma.copyright}</copyright>
+									<license>A licence</license>
+									<generateSourceFeature>true</generateSourceFeature>
+									<artifacts>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.common.ui:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.edit.ui:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.edit.ui.properties:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.sparql.ui:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.commons.ui:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+										<artifact>
+											<id>net.enilink.komma:net.enilink.komma.owl.editor:${project.version}</id>
+											<transitive>false</transitive>
+											<source>true</source>
+										</artifact>
+									</artifacts>
+								</feature>
+							</featureDefinitions>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>

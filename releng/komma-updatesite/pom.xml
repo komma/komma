@@ -21,7 +21,7 @@
 	<build>
 		<directory>target-maven</directory>
 		<plugins>
-			<plugin>
+			<!-- plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.5.3</version>
 				<executions>
@@ -38,7 +38,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin -->
 		</plugins>
 	</build>
 </project>
