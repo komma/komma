@@ -173,7 +173,8 @@
 							javax.*;resolution:=optional,
 							org.apache.*;resolution:=optional,
 							org.springframework.*;resolution:=optional,
-							com.spatial4j.*;resolution:=optional,
+							org.locationtech.*;resolution:=optional,
+							org.elasticsearch.*;resolution:=optional,
 							*
 						</Import-Package>
 						<Embed-Dependency>
