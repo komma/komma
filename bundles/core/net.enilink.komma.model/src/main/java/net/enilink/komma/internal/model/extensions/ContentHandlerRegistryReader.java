@@ -58,8 +58,8 @@ public class ContentHandlerRegistryReader extends KommaRegistryReader {
 				String contributorName = element.getContributor().getName();
 				if (add) {
 					try {
-						Bundle contributorBundle = Platform.getBundle(element
-								.getNamespaceIdentifier());
+						Bundle contributorBundle = Platform.isRunning() ? Platform.getBundle(element
+								.getNamespaceIdentifier()) : null;
 						@SuppressWarnings("unchecked")
 						Class<IContentHandler> contributorHandlerClass = (Class<IContentHandler>) (contributorBundle != null ? contributorBundle
 								.loadClass(contributorClassName) : Class

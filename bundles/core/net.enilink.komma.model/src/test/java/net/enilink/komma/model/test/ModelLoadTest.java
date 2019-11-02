@@ -12,8 +12,9 @@ package net.enilink.komma.model.test;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.model.IModel;
@@ -54,12 +55,14 @@ public class ModelLoadTest {
 	public void testModel() throws Exception {
 		IModel model = modelSet.createModel(KOMMA.NAMESPACE_URI
 				.trimFragment());
-		model.load(Collections.emptyMap());
+		Map<Object, Object> options = new HashMap<>();
+		options.put(IModel.OPTION_MIME_TYPE, "text/turtle");
+		model.load(getClass().getResourceAsStream("/simple-model.ttl"), options);
 
 		List<?> test = model
 				.getManager()
 				.createQuery(
-						"SELECT DISTINCT ?property WHERE { ?property a owl:ObjectProperty } LIMIT 2")
+						"SELECT DISTINCT ?property WHERE { ?property a owl:ObjectProperty }")
 				.getResultList();
 
 		assertEquals("The object properties couldn't be resolved.", 2,
