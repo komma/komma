@@ -12,5 +12,4 @@ Require-Bundle: net.enilink.commons.iterator,
 Export-Package: net.enilink.komma.core,
  net.enilink.komma.core.visitor
 Import-Package: org.osgi.framework
-Bundle-Activator: net.enilink.komma.core.osgi.KommaCore
 Bundle-ActivationPolicy: lazy

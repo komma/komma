@@ -30,20 +30,32 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.10</version>
-			<scope>compile</scope>
+			<version>${commons-codec.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>${commons-collections4.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.4</version>
-			<scope>compile</scope>
+			<version>${commons-io.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<version>${commons-beanutils.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>${commons-text.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.4</version>
-			<scope>compile</scope>
+			<version>${commons-lang3.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -54,8 +66,7 @@
 		<dependency>
 			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
-			<version>3.7</version>
-			<scope>compile</scope>
+			<version>${opencsv.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -78,7 +89,6 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient-osgi</artifactId>
 			<version>${httpclient.version}</version>
-			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -90,7 +100,6 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore-osgi</artifactId>
 			<version>${httpcore.version}</version>
-			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -102,7 +111,6 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
 			<version>${jackson.version}</version>
-			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -125,7 +133,6 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
 			<version>${jackson.version}</version>
-			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -137,7 +144,6 @@
 			<groupId>com.github.jsonld-java</groupId>
 			<artifactId>jsonld-java</artifactId>
 			<version>${jsonld.version}</version>
-			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>

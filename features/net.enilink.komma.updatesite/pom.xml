@@ -153,12 +153,12 @@ This Agreement is governed by the laws of the State of New York and the intellec
 											<source>false</source>
 										</artifact>
 										<artifact>
-											<id>com.google.inject:guice:${guice.version}</id>
+											<id>com.google.guava:guava:${guava.version}</id>
 											<transitive>false</transitive>
 											<source>false</source>
 										</artifact>
 										<artifact>
-											<id>com.google.inject.extensions:guice-multibindings:${guice.version}</id>
+											<id>com.google.inject:guice:${guice.version}</id>
 											<transitive>false</transitive>
 											<source>false</source>
 										</artifact>
@@ -169,7 +169,27 @@ This Agreement is governed by the laws of the State of New York and the intellec
 										</artifact>
 
 										<artifact>
+											<id>commons-beanutils:commons-beanutils:${commons-beanutils.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>commons-codec:commons-codec:${commons-codec.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
 											<id>commons-io:commons-io:${commons-io.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>commons-collections:commons-collections:${commons-collections.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
+										<artifact>
+											<id>org.apache.commons:commons-collections4:${commons-collections4.version}</id>
 											<transitive>false</transitive>
 											<source>false</source>
 										</artifact>
@@ -178,7 +198,24 @@ This Agreement is governed by the laws of the State of New York and the intellec
 											<transitive>false</transitive>
 											<source>false</source>
 										</artifact>
+										<artifact>
+											<id>org.apache.commons:commons-text:${commons-text.version}</id>
+											<transitive>false</transitive>
+											<source>false</source>
+										</artifact>
 
+										<artifact>
+		                                    <!-- WARNING: bundle name "slf4j.api" differs from the one used for
+		                                         the version available from Eclipse Orbit ("org.slf4j.api") -->
+		                                    <id>org.slf4j:slf4j-api:${slf4j.version}</id>
+		                                    <transitive>false</transitive>
+		                                    <source>false</source>
+		                                </artifact>
+		                                <artifact>
+		                                    <id>org.slf4j:jcl-over-slf4j:${slf4j.version}</id>
+		                                    <transitive>false</transitive>
+		                                    <source>false</source>
+		                                </artifact>
 										<artifact>
 											<id>ch.qos.logback:logback-access:${logback.version}</id>
 											<transitive>false</transitive>
