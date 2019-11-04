@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<extensions>
-    <extension>
-        <groupId>at.bestsolution</groupId>
-        <artifactId>tycho-lifecycle-controller</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
-    </extension>
-</extensions>
