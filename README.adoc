@@ -11,16 +11,14 @@ Eclipse RCP and RAP integration.
 * *Website:* http://komma.enilink.net
 * *Documentation:* http://komma.enilink.net/docs
 * *Eclipse Marketplace:* http://marketplace.eclipse.org/content/komma-rdf-eclipse
-* *Eclipse Update Site:* http://komma.enilink.net/updates/1.1.0
+* *Eclipse Update Site:* http://dl.bintray.com/komma/updates/komma/1.3.2/
 
 == Get the sources
 
 [source,text]
 ----
-git clone --recursive https://github.com/komma/komma
+git clone https://github.com/komma/komma
 ----
-
-NOTE: The `--recursive` option is required to fetch the git submodules that are contained within the KOMMA repository.
 
 == Build KOMMA with Maven
 
@@ -34,10 +32,10 @@ cd releng/komma-updatesite
 mvn package
 ----
 
-to create it. Afterwards an archive file with the contents can be found within the `target-maven` subdirectory.
-The uncompressed P2 repository can be found at `features/net.enilink.komma.updatesite/target-maven/repository`.
+to create it. Afterwards an archive file with the contents can be found within the `target` subdirectory.
+The uncompressed P2 repository can be found at `features/net.enilink.komma.updatesite/target/repository`.
 
 == Develop KOMMA with Eclipse
 For working with the sources we suggest you to download a recent version of 
 http://www.eclipse.org/downloads/[Eclipse]. You can import the KOMMA projects into your workspace by executing 
-__File > Import > Existing Projects into Workspace__.
+__File > Import > Maven > Existing Mavne Projects__.
