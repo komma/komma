@@ -33,4 +33,13 @@
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
+	
+		<modules>
+		<module>../net.enilink.komma.feature</module>
+
+		<module>../../bundles/edit/net.enilink.komma.edit</module>
+		<module>../../bundles/edit/net.enilink.komma.owl.edit</module>
+		<module>../../bundles/edit/net.enilink.komma.rdfs.edit</module>
+		<module>../../bundles/edit/net.enilink.komma.workbench</module>
+	</modules>
 </project>

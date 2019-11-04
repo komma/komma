@@ -131,6 +131,6 @@
 	</profiles>
 
 	<modules>
-		<module>releng/komma-updatesite</module>
+		<module>features/net.enilink.komma.updatesite</module>
 	</modules>
 </project>

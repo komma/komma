@@ -23,4 +23,11 @@
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
+
+	<modules>
+		<module>../net.enilink.komma.edit.ui.feature</module>
+
+		<module>../../bundles/editor/net.enilink.komma.owl.editor</module>
+		<module>../../bundles/editor.rcp/net.enilink.komma.owl.editor.rcp</module>
+	</modules>
 </project>

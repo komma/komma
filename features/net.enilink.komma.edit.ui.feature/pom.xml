@@ -53,4 +53,17 @@
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
+	
+	<modules>
+		<module>../net.enilink.komma.edit.feature</module>
+
+		<module>../../bundles/ui/net.enilink.commons.ui</module>
+		<module>../../bundles/ui.rcp/net.enilink.komma.common.ui.rcp</module>
+		<module>../../bundles/ui/net.enilink.komma.common.ui</module>
+		<module>../../bundles/ui/net.enilink.komma.edit.ui.properties.tabbed</module>
+		<module>../../bundles/ui/net.enilink.komma.edit.ui.properties</module>
+		<module>../../bundles/ui.rcp/net.enilink.komma.edit.ui.rcp</module>
+		<module>../../bundles/ui/net.enilink.komma.edit.ui</module>
+		<module>../../bundles/ui/net.enilink.komma.sparql.ui</module>
+	</modules>
 </project>
