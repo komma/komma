@@ -13,38 +13,5 @@
 	<packaging>pom</packaging>
 	<properties>
 		<path.to.root>../..</path.to.root>
-
-		<osgi.qualifier>${maven.build.timestamp}</osgi.qualifier>
-		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 	</properties>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>at.bestsolution</groupId>
-				<artifactId>maven-osgi-package-plugin</artifactId>
-				<version>0.0.2-SNAPSHOT</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>package-feature</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<providerName>Fraunhofer IWU</providerName>
-					<qualifier>${osgi.qualifier}</qualifier>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive combine.self="override" />
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
 </project>
