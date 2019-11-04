@@ -1,17 +1,19 @@
+dist: trusty
+
 jdk:
 - oraclejdk8
 
-script: mvn -f libraries-p2/pom.xml package && mvn -P release verify
+script: mvn -P release verify
 
 deploy:
 - provider: script
   skip_cleanup: true
-  script: releng/publish/pushToBintray.sh features/net.enilink.komma.updatesite/target-maven/repository/
+  script: releng/publish/pushToBintray.sh features/net.enilink.komma.updatesite/target/repository/
   on:
     tags: true
 - provider: script
   skip_cleanup: true
-  script: releng/publish/pushToBintray.sh features/net.enilink.komma.updatesite/target-maven/repository/ "$BINTRAY_USER" "$BINTRAY_API_KEY" "$BINTRAY_OWNER" snapshots
+  script: releng/publish/pushToBintray.sh features/net.enilink.komma.updatesite/target/repository/ "$BINTRAY_USER" "$BINTRAY_API_KEY" "$BINTRAY_OWNER" snapshots
   on:
     branch: snapshots
 
