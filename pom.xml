@@ -87,7 +87,9 @@
 				<includes>
 					<include>META-INF/*</include>
 					<include>OSGI-INF/*</include>
+					<include>icons/*</include>
 					<include>schema/*.exsd</include>
+					<include>about.html</include>
 					<include>plugin.xml</include>
 					<include>plugin.properties</include>
 				</includes>
