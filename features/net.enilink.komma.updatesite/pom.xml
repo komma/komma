@@ -153,7 +153,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
 									<artifacts>
 										<!-- Vendor artifacts -->
 										<artifact>
-											<id>aopalliance:aopalliance:${aopalliance.version}</id>
+											<id>net.enilink.komma:net.enilink.lib.aopalliance:${aopalliance.version}</id>
 											<transitive>false</transitive>
 											<source>false</source>
 										</artifact>
@@ -168,7 +168,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
 											<source>false</source>
 										</artifact>
 										<artifact>
-											<id>javax.inject:javax.inject:${javax.inject.version}</id>
+											<id>net.enilink.komma:net.enilink.lib.javax-inject:${javax.inject.version}</id>
 											<transitive>false</transitive>
 											<source>false</source>
 										</artifact>
