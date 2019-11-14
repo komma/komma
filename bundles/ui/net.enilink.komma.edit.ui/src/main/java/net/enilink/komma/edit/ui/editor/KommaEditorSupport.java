@@ -708,9 +708,11 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(
 				resourceChangeListener);
-
-		editor.getSite().getPage().removePartListener(partListener);
-
+		
+		if (editor.getSite() != null && editor.getSite().getPage() != null) {
+			editor.getSite().getPage().removePartListener(partListener);
+		}
+		
 		if (getEditingDomain() != null) {
 			getEditingDomain().getCommandStack().removeCommandStackListener(
 					commandStackListener);
