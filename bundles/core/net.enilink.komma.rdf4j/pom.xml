@@ -24,8 +24,8 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>net.enilink.komma</groupId>
-			<artifactId>net.enilink.lib.rdf4j</artifactId>
+			<groupId>net.enilink.bundles</groupId>
+			<artifactId>net.enilink.bundles.rdf4j</artifactId>
 			<version>${rdf4j.version}</version>
 		</dependency>
 	</dependencies>

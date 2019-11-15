@@ -153,7 +153,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
 									<artifacts>
 										<!-- Vendor artifacts -->
 										<artifact>
-											<id>net.enilink.komma:net.enilink.lib.aopalliance:${aopalliance.version}</id>
+											<id>net.enilink.bundles:net.enilink.bundles.aopalliance:${aopalliance.version}</id>
 											<transitive>false</transitive>
 											<source>false</source>
 										</artifact>
@@ -168,7 +168,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
 											<source>false</source>
 										</artifact>
 										<artifact>
-											<id>net.enilink.komma:net.enilink.lib.javax-inject:${javax.inject.version}</id>
+											<id>net.enilink.bundles:net.enilink.bundles.javax-inject:${javax.inject.version}</id>
 											<transitive>false</transitive>
 											<source>false</source>
 										</artifact>
@@ -306,12 +306,12 @@ This Agreement is governed by the laws of the State of New York and the intellec
 										</artifact>
 
 										<artifact>
-											<id>net.enilink.komma:net.enilink.lib.parboiled:${parboiled.version}</id>
+											<id>net.enilink.bundles:net.enilink.bundles.parboiled:${parboiled.version}</id>
 											<transitive>false</transitive>
 											<source>false</source>
 										</artifact>
 										<artifact>
-											<id>net.enilink.komma:net.enilink.lib.rdf4j:${rdf4j.version}</id>
+											<id>net.enilink.bundles:net.enilink.bundles.rdf4j:${rdf4j.version}</id>
 											<transitive>false</transitive>
 											<source>false</source>
 										</artifact>

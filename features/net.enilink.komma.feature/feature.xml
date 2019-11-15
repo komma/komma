@@ -246,7 +246,7 @@ http://www.eclipse.org/legal/epl-v10.html
          version="0.0.0"/>
 
    <plugin
-         id="net.enilink.lib.parboiled"
+         id="net.enilink.bundles.parboiled"
          download-size="0"
          install-size="0"
          version="0.0.0"/>
@@ -290,7 +290,7 @@ http://www.eclipse.org/legal/epl-v10.html
          unpack="false"/>
 
    <plugin
-         id="net.enilink.lib.rdf4j"
+         id="net.enilink.bundles.rdf4j"
          download-size="0"
          install-size="0"
          version="0.0.0"/>

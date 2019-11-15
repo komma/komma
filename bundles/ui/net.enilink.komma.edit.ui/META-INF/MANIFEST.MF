@@ -26,7 +26,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  net.enilink.komma.edit;visibility:=reexport,
  net.enilink.komma.common.ui;visibility:=reexport,
- net.enilink.lib.parboiled
+ net.enilink.bundles.parboiled
 Bundle-ActivationPolicy: lazy
 Import-Package: com.google.inject;version="1.4",
  org.eclipse.core.commands,

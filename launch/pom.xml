@@ -14,7 +14,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>net.enilink.komma</groupId>
+			<groupId>net.enilink.bundles</groupId>
 			<artifactId>org.apache.batik.css</artifactId>
 			<version>1.12</version>
 		</dependency>

@@ -13,13 +13,13 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>net.enilink.komma</groupId>
-			<artifactId>net.enilink.lib.aopalliance</artifactId>
+			<groupId>net.enilink.bundles</groupId>
+			<artifactId>net.enilink.bundles.aopalliance</artifactId>
 			<version>${aopalliance.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>net.enilink.komma</groupId>
-			<artifactId>net.enilink.lib.javax-inject</artifactId>
+			<groupId>net.enilink.bundles</groupId>
+			<artifactId>net.enilink.bundles.javax-inject</artifactId>
 			<version>${javax.inject.version}</version>
 		</dependency>
 
@@ -132,10 +132,10 @@
 
 	<modules>
 		<module>../../bundles/core/org.slf4j.logback</module>
-		<module>../../bundles/vendor/net.enilink.lib.aopalliance</module>
-		<module>../../bundles/vendor/net.enilink.lib.javax-inject</module>
-		<module>../../bundles/vendor/net.enilink.lib.parboiled</module>
-		<module>../../bundles/vendor/net.enilink.lib.rdf4j</module>
+		<module>../../bundles/vendor/net.enilink.bundles.aopalliance</module>
+		<module>../../bundles/vendor/net.enilink.bundles.javax-inject</module>
+		<module>../../bundles/vendor/net.enilink.bundles.parboiled</module>
+		<module>../../bundles/vendor/net.enilink.bundles.rdf4j</module>
 
 		<module>../../bundles/core/net.enilink.commons.iterator</module>
 		<module>../../bundles/core/net.enilink.commons.logging</module>

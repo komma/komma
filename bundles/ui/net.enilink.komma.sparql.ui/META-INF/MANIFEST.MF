@@ -7,7 +7,7 @@ Bundle-Vendor: enilink.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.edit.ui,
- net.enilink.lib.parboiled
+ net.enilink.bundles.parboiled
 Bundle-Activator: net.enilink.komma.sparql.ui.SparqlUI
 Import-Package: org.eclipse.core.commands,
  org.eclipse.jface.action,
