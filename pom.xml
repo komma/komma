@@ -36,6 +36,55 @@
 		<slf4j.version>1.7.26</slf4j.version>
 	</properties>
 
+	<organization>
+		<name>Fraunhofer IWU</name>
+		<url>https://www.iwu.fraunhofer.de/</url>
+	</organization>
+
+	<issueManagement>
+		<system>Github</system>
+		<url>https://github.com/komma/komma/issues</url>
+	</issueManagement>
+
+	<developers>
+		<developer>
+			<id>kenwenzel</id>
+			<name>Ken Wenzel</name>
+			<roles>
+				<role>architect</role>
+				<role>developer</role>
+			</roles>
+			<url>https://github.com/kenwenzel</url>
+		</developer>
+
+		<developer>
+			<id>mfriedemann</id>
+			<name>Marko Friedemann</name>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<url>https://github.com/mfriedemann</url>
+		</developer>
+
+
+		<developer>
+			<id>rehei</id>
+			<name>Heiner Reinhardt</name>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<url>https://github.com/rehei</url>
+		</developer>
+	</developers>
+
+	<licenses>
+		<license>
+			<name>Eclipse Public License v2.0</name>
+			<url>https://www.eclipse.org/legal/epl-2.0/</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
 	<build>
 		<pluginManagement>
 			<plugins>
