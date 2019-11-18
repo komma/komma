@@ -7,7 +7,7 @@ before_install:
 - echo $GPG_PASSWORD | gpg --passphrase-fd 0 releng/enilink.asc.gpg
 - gpg --import releng/enilink.asc
 
-script: if [ "$TRAVIS_BRANCH" = "$TRAVIS_TAG" ] || [ "$TRAVIS_BRANCH" = "snapshots" ]; then mvn deploy -P ossrh,updatesite -s ./.travis.maven-settings.xml ; else mvn verify fi
+script: if [ "$TRAVIS_BRANCH" = "$TRAVIS_TAG" ] || [ "$TRAVIS_BRANCH" = "snapshots" ]; then mvn deploy -P ossrh,updatesite -s ./.travis.maven-settings.xml; else mvn verify; fi
 
 deploy:
 - provider: script
