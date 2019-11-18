@@ -10,6 +10,13 @@
 		<relativePath>../../../pom.xml</relativePath>
 	</parent>
 
+	<scm>
+		<connection>${komma.scm.connection}</connection>
+		<developerConnection>${komma.scm.developerConnection}</developerConnection>
+		<url>${komma.scm.url}</url>
+	</scm>
+
+
 	<artifactId>net.enilink.commons.logging</artifactId>
 	<packaging>jar</packaging>
 

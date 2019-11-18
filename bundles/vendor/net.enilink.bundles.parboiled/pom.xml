@@ -9,6 +9,13 @@
 		<version>1.3.4-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
+
+	<scm>
+		<connection>${komma.scm.connection}</connection>
+		<developerConnection>${komma.scm.developerConnection}</developerConnection>
+		<url>${komma.scm.url}</url>
+	</scm>
+
 	<artifactId>net.enilink.bundles.parboiled</artifactId>
 	<version>${parboiled.version}</version>
 	<packaging>jar</packaging>
