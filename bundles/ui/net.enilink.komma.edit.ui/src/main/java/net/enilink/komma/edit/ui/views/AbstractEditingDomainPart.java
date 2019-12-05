@@ -50,7 +50,7 @@ public abstract class AbstractEditingDomainPart extends AbstractEditorPart {
 		IViewerMenuSupport menuSupport = (IViewerMenuSupport) getForm()
 				.getAdapter(IViewerMenuSupport.class);
 		if (menuSupport != null) {
-			menuSupport.createContextMenuFor(viewer);
+			menuSupport.createContextMenuFor(viewer, getForm().getBody(), null);
 		}
 	}
 

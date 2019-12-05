@@ -1,11 +1,5 @@
 package net.enilink.komma.edit.ui.editor;
 
-import net.enilink.komma.common.adapter.IAdapterFactory;
-import net.enilink.komma.edit.command.IInputCallback;
-import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IMenuListener;
@@ -18,10 +12,9 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Provides;
+import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
+import net.enilink.komma.edit.domain.IEditingDomain;
+import net.enilink.komma.edit.domain.IEditingDomainProvider;
 
 /**
  * This is a base class for a multi-page model editor.

@@ -33,7 +33,9 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.dialogs.SaveAsDialog;
 
 /**
@@ -218,7 +220,7 @@ public class OWLEditor extends KommaMultiPageEditor implements
 	}
 
 	@Override
-	public void createContextMenuFor(StructuredViewer viewer) {
-		getEditorSupport().createContextMenuFor(viewer);
+	public void createContextMenuFor(StructuredViewer viewer, Control menuParent, IWorkbenchPartSite partSite) {
+		getEditorSupport().createContextMenuFor(viewer, menuParent, partSite);
 	}
 }

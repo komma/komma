@@ -16,8 +16,10 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.ISelectionListener;
@@ -185,11 +187,21 @@ public class AbstractEditingDomainView extends ViewPart implements
 				if (IEditingDomainProvider.class.equals(adapter)) {
 					return editingDomainProvider;
 				} else if (IViewerMenuSupport.class.equals(adapter)) {
-					if (part instanceof IViewerMenuSupport) {
-						return (IViewerMenuSupport) part;
-					} else if (part != null) {
-						return part.getAdapter(IViewerMenuSupport.class);
-					}
+					return new IViewerMenuSupport() {
+						@Override
+						public void createContextMenuFor(StructuredViewer viewer, Control menuParent, IWorkbenchPartSite partSite) {
+							IViewerMenuSupport delegate = null;
+							if (part instanceof IViewerMenuSupport) {
+								delegate = (IViewerMenuSupport) part;
+							} else if (part != null) {
+								delegate = part.getAdapter(IViewerMenuSupport.class);
+							}
+							if (delegate != null) {
+								// use own site to register context menu
+								delegate.createContextMenuFor(viewer, menuParent, getSite());
+							}
+						}
+					};
 				}
 				return delegatedGetAdapter(adapter);
 			}

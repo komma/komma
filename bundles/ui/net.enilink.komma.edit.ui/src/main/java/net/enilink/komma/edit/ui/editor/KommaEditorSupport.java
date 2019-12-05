@@ -100,6 +100,7 @@ import org.eclipse.swt.dnd.DragSource;
 import org.eclipse.swt.dnd.DropTarget;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorActionBarContributor;
@@ -107,6 +108,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -119,7 +121,7 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 /**
- * This is a base class for a multi-page model editor.
+ * This is a base class for a model editor.
  */
 public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		IEditingDomainProvider, IMenuListener, IAdaptable {
@@ -579,26 +581,46 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 	 * registering the menu for extension.
 	 * 
 	 */
-	public void createContextMenuFor(StructuredViewer viewer) {
-		Menu menu = viewer.getControl().getMenu();
-		if (menu != null && !menu.isDisposed()) {
-			menu.dispose();
-			viewer.getControl().setMenu(null);
+	public void createContextMenuFor(StructuredViewer viewer, Control menuParent, IWorkbenchPartSite partSite) {
+		// check if shared menu is already stored in the supplied parent component
+		Menu menu = (Menu) menuParent.getData("komma.menu");
+		if (menu != null) {
+			if (menu.isDisposed()) {
+				menu = null;
+			} else {
+				// check if the menu was created by this editor
+				// if this is not the case then dispose the menu
+				Object creator = menu.getData("komma.creator");
+				if (creator != this) {
+					menu.dispose();
+					menu = null;
+				}
+			}
 		}
 
-		MenuManager contextMenu = new MenuManager("#PopUp");
-		contextMenu.add(new Separator("additions"));
-		contextMenu.setRemoveAllWhenShown(true);
-		contextMenu.addMenuListener(this);
-		menu = contextMenu.createContextMenu(viewer.getControl());
-		viewer.getControl().setMenu(menu);
+		// create a new menu if required
+		if (menu == null) {
+			MenuManager contextMenu = new MenuManager("#PopUp");
+			contextMenu.add(new Separator("additions"));
+			contextMenu.setRemoveAllWhenShown(true);
+			contextMenu.addMenuListener(this);
+			menu = contextMenu.createContextMenu(menuParent);
+			menuParent.setData("komma.menu", menu);
+			menu.setData("komma.creator", this);
 
-		ISelectionProvider menuSelectionProvider = new UnwrappingSelectionProvider(
-				viewer);
-		editor.getSite()
-				.registerContextMenu(contextMenu, menuSelectionProvider);
-		editor.getSite().registerContextMenu("net.enilink.komma.edit.ui.menu",
-				contextMenu, menuSelectionProvider);
+			ISelectionProvider menuSelectionProvider = new UnwrappingSelectionProvider(
+					viewer);
+			if (partSite == null) {
+				partSite = editor.getSite();
+			}
+			partSite.registerContextMenu(contextMenu, menuSelectionProvider);
+			partSite.registerContextMenu("net.enilink.komma.edit.ui.menu",
+					contextMenu, menuSelectionProvider);
+			editor.getContainer().addDisposeListener((e) -> {
+				contextMenu.dispose();
+			});
+		}
+		viewer.getControl().setMenu(menu);
 
 		int dndOperations = DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_LINK;
 		Transfer[] transfers = new Transfer[] { LocalTransfer.getInstance() };
@@ -914,7 +936,7 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 					contentOutlineViewer.setInput(modelSet);
 
 					// Make sure our popups work.
-					createContextMenuFor(contentOutlineViewer);
+					createContextMenuFor(contentOutlineViewer, editor.getContainer(), editor.getSite());
 
 					if (!modelSet.getModels().isEmpty()) {
 						// Select the root object in the view.

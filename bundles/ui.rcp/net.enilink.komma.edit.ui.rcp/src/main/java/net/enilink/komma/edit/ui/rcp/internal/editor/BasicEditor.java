@@ -30,8 +30,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbenchPartSite;
 
 import com.google.inject.Guice;
 
@@ -147,7 +149,7 @@ public class BasicEditor extends KommaMultiPageEditor implements
 				new AdapterFactoryTreeEditor(selectionViewer.getTree(),
 						getEditorSupport().getAdapterFactory());
 
-				getEditorSupport().createContextMenuFor(selectionViewer);
+				getEditorSupport().createContextMenuFor(selectionViewer, getContainer(), getSite());
 				int pageIndex = addPage(viewerPane.getControl());
 				setPageText(pageIndex,
 						getEditorSupport().getString("_UI_SelectionPage_label"));
@@ -183,8 +185,8 @@ public class BasicEditor extends KommaMultiPageEditor implements
 	}
 
 	@Override
-	public void createContextMenuFor(StructuredViewer viewer) {
-		getEditorSupport().createContextMenuFor(viewer);
+	public void createContextMenuFor(StructuredViewer viewer, Control menuParent, IWorkbenchPartSite partSite) {
+		getEditorSupport().createContextMenuFor(viewer, menuParent, partSite);
 	}
 
 	@Override
