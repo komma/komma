@@ -225,12 +225,13 @@ public class InstancesPart extends AbstractEditingDomainPart {
 				@Override
 				protected CommandResult doExecuteWithResult(IProgressMonitor progressMonitor, IAdaptable info)
 						throws ExecutionException {
-					final Object selected = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-					if (selected instanceof IResource) {
-						((IResource) selected).getEntityManager().remove((IResource) selected);
-						return CommandResult.newOKCommandResult(selected);
+					final List<?> list = ((IStructuredSelection) viewer.getSelection()).toList();
+					for (Object selected : list) {
+						if (selected instanceof IResource) {
+							((IResource) selected).getEntityManager().removeRecursive((IResource) selected, true);
+						}
 					}
-					return CommandResult.newCancelledCommandResult();
+					return CommandResult.newOKCommandResult();
 				}
 			}, null, null);
 		} catch (ExecutionException e) {

@@ -67,7 +67,7 @@ public class InstanceTreePart extends InstancesPart {
 				|| currentInput.getRdfsSubClassOf().contains(RDF.TYPE_PROPERTY)) {
 			sb.append("?other a ?c . ?r rdfs:subPropertyOf ?other FILTER (?r != ?other)");
 		} else {
-			sb.append("?other a [ rdfs:subClassOf* ?c ]; komma:child ?r FILTER (?r != ?other)");
+			sb.append("?childProp rdfs:subPropertyOf* komma:child . ?other a [ rdfs:subClassOf* ?c ]; ?childProp ?r FILTER (?r != ?other)");
 		}
 		sb.append(" }} ORDER BY ?r");
 		return sb.toString();
