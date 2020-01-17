@@ -1,19 +1,8 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
 Bundle-SymbolicName: net.enilink.komma.common;singleton:=true
-Bundle-Version: 1.3.4.qualifier
-Bundle-Vendor: enilink.net
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .
 Bundle-Activator: net.enilink.komma.common.CommonPlugin$Implementation
 Bundle-Localization: plugin
-Export-Package: net.enilink.komma.common,
- net.enilink.komma.common.adapter,
- net.enilink.komma.common.archive,
- net.enilink.komma.common.command,
- net.enilink.komma.common.notify,
- net.enilink.komma.common.util
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.commands,
  net.enilink.komma.core,

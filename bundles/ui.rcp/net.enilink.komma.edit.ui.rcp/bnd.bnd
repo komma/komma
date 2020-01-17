@@ -1,11 +1,6 @@
-Manifest-Version: 1.0
 Bundle-Localization: plugin
-Bundle-ManifestVersion: 2
 Bundle-Name: Rcp
 Bundle-SymbolicName: net.enilink.komma.edit.ui.rcp;singleton:=true
-Bundle-Version: 1.3.4.qualifier
-Bundle-Vendor: enilink.net
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui,
  org.eclipse.ui.ide,
@@ -19,10 +14,5 @@ Require-Bundle: org.eclipse.core.runtime,
  net.enilink.komma.edit.ui,
  net.enilink.komma.common.ui.rcp,
  net.enilink.komma.workbench
-Export-Package: net.enilink.komma.edit.ui.rcp.commands,
- net.enilink.komma.edit.ui.rcp.editor,
- net.enilink.komma.edit.ui.rcp.project
 Bundle-Activator: net.enilink.komma.edit.ui.rcp.KommaEditUIRCP$Implementation
 Bundle-ActivationPolicy: lazy
-Import-Package: com.google.inject;version="1.4",
- com.google.inject.binder;version="1.4"

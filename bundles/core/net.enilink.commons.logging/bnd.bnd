@@ -1,21 +1,5 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
 Bundle-Name: Commons Logging Plug-in
 Bundle-SymbolicName: net.enilink.commons.logging;singleton:=true
-Bundle-Version: 1.3.4.qualifier
-Bundle-Vendor: enilink.net
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Export-Package: 
- net.enilink.commons.logging
 Bundle-ClassPath: .
 Bundle-Activator: net.enilink.commons.logging.LoggingPlugin
-Import-Package: ch.qos.logback.classic;version="1.2.3",
- ch.qos.logback.classic.joran;version="1.2.3",
- ch.qos.logback.core;version="1.2.3",
- ch.qos.logback.core.joran;version="1.2.3",
- ch.qos.logback.core.joran.spi;version="1.2.3",
- ch.qos.logback.core.spi;version="1.2.3",
- ch.qos.logback.core.util;version="1.2.3",
- org.slf4j;version="1.7.26",
- org.slf4j.event;version="1.7.26"
 Bundle-ActivationPolicy: lazy
