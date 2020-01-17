@@ -1,9 +1,5 @@
 Bundle-Name: Model
 Bundle-SymbolicName: net.enilink.komma.model;singleton:=true
 Bundle-Activator: net.enilink.komma.model.ModelPlugin$Implementation
-Require-Bundle: net.enilink.komma.em;visibility:=reexport,
- org.eclipse.core.resources;resolution:=optional,
- org.eclipse.core.runtime,
- net.enilink.commons.util
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: .
+Import-Package: org.eclipse.core.resources;resolution:=optional, *

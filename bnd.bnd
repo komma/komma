@@ -1,0 +1,3 @@
+Bundle-Version: ${project.version}
+-exportcontents: !*.internal*, *
+-removeheaders: Bundle-Developers

@@ -3,10 +3,5 @@ Bundle-SymbolicName: net.enilink.komma.edit.ui;singleton:=true
 Bundle-ClassPath: .
 Bundle-Activator: net.enilink.komma.edit.ui.KommaEditUIPlugin$Implementation
 Bundle-Localization: plugin
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.resources,
- net.enilink.komma.edit;visibility:=reexport,
- net.enilink.komma.common.ui;visibility:=reexport,
- net.enilink.bundles.parboiled
 Bundle-ActivationPolicy: lazy
 

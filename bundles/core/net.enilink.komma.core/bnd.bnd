@@ -1,7 +1,3 @@
 Bundle-Name: KOMMA Core
 Bundle-SymbolicName: net.enilink.komma.core
-Require-Bundle: net.enilink.commons.iterator,
- net.enilink.composition;visibility:=reexport,
- net.enilink.composition.properties;visibility:=reexport,
- net.enilink.commons.logging
 Bundle-ActivationPolicy: lazy

@@ -1,11 +1,5 @@
 Bundle-Name: OWL Editor
 Bundle-SymbolicName: net.enilink.komma.owl.editor;singleton:=true
 Bundle-Localization: plugin
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.commands,
- org.eclipse.core.runtime,
- net.enilink.komma.edit.ui,
- net.enilink.komma.owl.edit,
- net.enilink.komma.edit.ui.properties
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: net.enilink.komma.owl.editor.OWLEditorPlugin$Implementation

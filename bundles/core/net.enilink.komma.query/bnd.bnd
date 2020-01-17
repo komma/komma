@@ -1,4 +1,2 @@
 Bundle-Name: Query
 Bundle-SymbolicName: net.enilink.komma.query
-Require-Bundle: net.enilink.komma.parser;visibility:=reexport,
- net.enilink.bundles.parboiled

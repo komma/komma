@@ -3,17 +3,4 @@ Bundle-SymbolicName: net.enilink.komma.em;singleton:=true
 Bundle-Activator: net.enilink.komma.em.KommaEM$Implementation
 Bundle-Localization: plugin
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime,
- net.enilink.commons.util;visibility:=reexport,
- net.enilink.commons.iterator;visibility:=reexport,
- net.enilink.komma.core;visibility:=reexport,
- net.enilink.komma.dm;visibility:=reexport,
- net.enilink.vocab.owl;visibility:=reexport,
- net.enilink.vocab.rdfs;visibility:=reexport,
- net.enilink.komma.common;visibility:=reexport,
- net.enilink.vocab.komma;visibility:=reexport,
- net.enilink.komma.literals,
- net.enilink.composition.properties.komma,
- net.enilink.composition.cache;visibility:=reexport,
- net.enilink.komma.query;visibility:=reexport
 Bundle-ClassPath: .

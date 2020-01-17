@@ -1,3 +1,4 @@
+bundles/**/META-INF/MANIFEST.MF
 target/
 .settings/
 .classpath

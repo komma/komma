@@ -1,6 +1,3 @@
 Bundle-Name: FOAF vocabulary
 Bundle-SymbolicName: net.enilink.vocab.foaf
-Require-Bundle: net.enilink.komma.core,
- net.enilink.vocab.owl,
- net.enilink.vocab.rdfs
 Bundle-ClassPath: .

@@ -1,4 +1,2 @@
 Bundle-Name: Literal Converters
 Bundle-SymbolicName: net.enilink.komma.literals
-Require-Bundle: net.enilink.komma.core,
- net.enilink.vocab.rdfs

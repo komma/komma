@@ -1,10 +1,5 @@
 Bundle-Name: Edit
 Bundle-SymbolicName: net.enilink.komma.owl.edit;singleton:=true
 Bundle-Localization: plugin
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.commands,
- net.enilink.komma.em,
- net.enilink.komma.edit,
- net.enilink.komma.rdfs.edit
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: net.enilink.komma.owl.edit.OWLEditPlugin$Implementation

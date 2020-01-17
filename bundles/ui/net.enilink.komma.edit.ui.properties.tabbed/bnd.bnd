@@ -1,9 +1,2 @@
 Bundle-Name: Tabbed
 Bundle-SymbolicName: net.enilink.komma.edit.ui.properties.tabbed;singleton:=true
-Require-Bundle: org.eclipse.core.runtime,
- net.enilink.komma.em,
- net.enilink.komma.edit.ui,
- net.enilink.commons.ui,
- net.enilink.commons.util,
- org.eclipse.ui.views.properties.tabbed,
- net.enilink.komma.edit.ui.properties

@@ -1,11 +1,5 @@
 Bundle-Name: KOMA Concepts Plug-in
 Bundle-SymbolicName: net.enilink.vocab.komma;singleton:=true
-Require-Bundle: org.eclipse.core.runtime,
- net.enilink.commons.iterator,
- net.enilink.komma.core,
- net.enilink.vocab.owl,
- net.enilink.vocab.rdfs,
- net.enilink.komma.common
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 

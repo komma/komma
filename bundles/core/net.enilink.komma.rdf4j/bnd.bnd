@@ -1,6 +1,2 @@
 Bundle-Name: RDF4J Plugin
 Bundle-SymbolicName: net.enilink.komma.rdf4j
-Require-Bundle: net.enilink.komma.core,
- net.enilink.komma.dm,
- net.enilink.komma.literals,
- org.eclipse.core.runtime

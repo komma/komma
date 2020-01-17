@@ -3,9 +3,5 @@ Bundle-SymbolicName: net.enilink.komma.common;singleton:=true
 Bundle-ClassPath: .
 Bundle-Activator: net.enilink.komma.common.CommonPlugin$Implementation
 Bundle-Localization: plugin
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.commands,
- net.enilink.komma.core,
- net.enilink.commons.util
 Eclipse-LazyStart: true
 Bundle-ActivationPolicy: lazy

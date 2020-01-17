@@ -1,7 +1,2 @@
 Bundle-Name: Sparql
 Bundle-SymbolicName: net.enilink.komma.parser
-Require-Bundle: net.enilink.vocab.rdfs,
- net.enilink.vocab.owl,
- net.enilink.commons.iterator,
- net.enilink.komma.core,
- net.enilink.bundles.parboiled

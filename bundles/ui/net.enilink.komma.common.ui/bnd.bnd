@@ -3,9 +3,5 @@ Bundle-SymbolicName: net.enilink.komma.common.ui;singleton:=true
 Bundle-ClassPath: .
 Bundle-Activator: net.enilink.komma.common.ui.CommonUIPlugin$Implementation
 Bundle-Localization: plugin
-Require-Bundle: org.eclipse.core.runtime,
- net.enilink.komma.common,
- org.eclipse.core.resources;resolution:=optional,
- net.enilink.komma.core,
- net.enilink.commons.ui;visibility:=reexport
 Bundle-ActivationPolicy: lazy
+Import-Package: org.eclipse.core.resources;resolution:=optional, *

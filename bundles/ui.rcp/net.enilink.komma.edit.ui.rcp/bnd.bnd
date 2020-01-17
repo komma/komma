@@ -1,18 +1,6 @@
 Bundle-Localization: plugin
 Bundle-Name: Rcp
 Bundle-SymbolicName: net.enilink.komma.edit.ui.rcp;singleton:=true
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.ui,
- org.eclipse.ui.ide,
- org.eclipse.ui.views,
- org.eclipse.ui.forms,
- org.eclipse.ui.views.properties.tabbed,
- net.enilink.komma.edit;visibility:=reexport,
- net.enilink.komma.common.ui;visibility:=reexport,
- org.eclipse.core.resources;resolution:=optional,
- net.enilink.commons.ui,
- net.enilink.komma.edit.ui,
- net.enilink.komma.common.ui.rcp,
- net.enilink.komma.workbench
 Bundle-Activator: net.enilink.komma.edit.ui.rcp.KommaEditUIRCP$Implementation
 Bundle-ActivationPolicy: lazy
+Import-Package: org.eclipse.core.resources;resolution:=optional, *
