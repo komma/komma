@@ -1,3 +1,3 @@
 Bundle-Version: ${project.version}
--exportcontents: !*.internal*, *
+-exportcontents: !*.internal*, net.enilink.*
 -removeheaders: Bundle-Developers

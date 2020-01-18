@@ -3,3 +3,4 @@ Bundle-SymbolicName: net.enilink.komma.model;singleton:=true
 Bundle-Activator: net.enilink.komma.model.ModelPlugin$Implementation
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.core.resources;resolution:=optional, *
+Export-Package: net.enilink.komma.internal.model.extensions;x-friends:="net.enilink.komma.edit"

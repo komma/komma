@@ -5,3 +5,4 @@ Bundle-Activator: net.enilink.komma.edit.KommaEditPlugin$Implementation
 Bundle-Localization: plugin
 Eclipse-LazyStart: true
 Bundle-ActivationPolicy: lazy
+DynamicImport-Package: org.parboiled.*
