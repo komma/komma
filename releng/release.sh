@@ -23,11 +23,11 @@ esac
 shift # past argument or value
 done
 
-mvn -Dtycho.mode=maven tycho-versions:set-version -DnewVersion=$RELEASEVERSION
+mvn versions:set -DnewVersion=$RELEASEVERSION -DgroupId='*' -DartifactId='*' -DprocessAllModules -DgenerateBackupPoms=false -P versions
 
 git commit -a -m "prepare release $RELEASEVERSION"
 git tag v$RELEASEVERSION -m "KOMMA release $RELEASEVERSION"
 
-mvn -Dtycho.mode=maven tycho-versions:set-version -DnewVersion=$DEVELOPMENTVERSION
+mvn versions:set -DnewVersion=$DEVELOPMENTVERSION -DgroupId='*' -DartifactId='*' -DprocessAllModules -DgenerateBackupPoms=false -P versions
 
 git commit -a -m "prepare for next development iteration"
