@@ -53,7 +53,6 @@
 					</execution>
 				</executions>
 				<configuration>
-					<manifestPath>${project.basedir}/META-INF/MANIFEST.MF</manifestPath>
 					<bnd><![CDATA[
 -exportcontents: *
 Import-Package: *;resolution:=optional

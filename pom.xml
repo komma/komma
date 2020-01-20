@@ -167,7 +167,7 @@
 					<version>3.1.1</version>
 					<configuration>
 						<archive>
-							<manifestFile>META-INF/MANIFEST.MF</manifestFile>
+							<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 						</archive>
 					</configuration>
 					<executions>
@@ -204,8 +204,45 @@
 					<groupId>biz.aQute.bnd</groupId>
 					<artifactId>bnd-maven-plugin</artifactId>
 					<version>4.3.1</version>
+				</plugin>
+
+				<plugin>
+					<artifactId>maven-resources-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>copy-resources</id>
+							<phase>compile</phase>
+							<goals>
+								<goal>copy-resources</goal>
+							</goals>
+							<configuration>
+								<outputDirectory>${project.basedir}/META-INF</outputDirectory>
+								<resources>
+									<resource>
+										<directory>${project.build.outputDirectory}/META-INF</directory>
+										<includes>
+											<include>MANIFEST.MF</include>
+										</includes>
+									</resource>
+								</resources>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>3.1.0</version>
 					<configuration>
-						<manifestPath>${project.basedir}/META-INF/MANIFEST.MF</manifestPath>
+						<filesets>
+							<fileset>
+								<directory>META-INF</directory>
+								<includes>
+									<include>MANIFEST.MF</include>
+								</includes>
+								<followSymlinks>false</followSymlinks>
+							</fileset>
+						</filesets>
 					</configuration>
 				</plugin>
 
