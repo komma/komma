@@ -1,0 +1,1 @@
+AOP Alliance repackaged as OSGi bundle.

@@ -1,0 +1,1 @@
+Eclipse RDF4J repackaged as OSGi bundle.
