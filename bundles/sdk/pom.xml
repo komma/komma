@@ -19,7 +19,6 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>../../releng/komma-feature</module>
     <module>net.enilink.komma.generator</module>
   </modules>
 </project>
