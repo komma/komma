@@ -8,7 +8,7 @@
 	<version>1.3.4-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>KOMMA - Knowledge Modeling and Management Architecture</name>
+	<name>KOMMA: Parent</name>
 	<url>https://komma.enilink.net/</url>
 	<description>KOMMA is a framework for linked data applications. It supports the management and editing of RDF, RDFS and OWL. It provides Object-Triple-Mapping (comparable to JPA), an editing framework as well as Eclipse RCP and RAP integration.</description>
 
@@ -74,7 +74,6 @@
 			</roles>
 			<url>https://github.com/mfriedemann</url>
 		</developer>
-
 
 		<developer>
 			<id>rehei</id>

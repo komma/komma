@@ -40,7 +40,7 @@
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
-	
+
 		<modules>
 		<module>../net.enilink.komma.feature</module>
 
