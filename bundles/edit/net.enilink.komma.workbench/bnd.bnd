@@ -1,3 +1,2 @@
-Bundle-Name: Workspace Plug-in
 Bundle-SymbolicName: net.enilink.komma.workbench;singleton:=true
 Bundle-Activator: net.enilink.komma.workbench.internal.KommaWorkbenchPlugin$Implementation

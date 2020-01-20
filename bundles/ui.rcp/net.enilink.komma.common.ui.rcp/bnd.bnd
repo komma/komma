@@ -1,2 +1,1 @@
-Bundle-Name: KOMMA UI RCP extensions
 Bundle-SymbolicName: net.enilink.komma.common.ui.rcp;singleton:=true

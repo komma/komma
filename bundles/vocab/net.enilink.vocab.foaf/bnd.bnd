@@ -1,3 +1,2 @@
-Bundle-Name: FOAF vocabulary
 Bundle-SymbolicName: net.enilink.vocab.foaf
 Bundle-ClassPath: .

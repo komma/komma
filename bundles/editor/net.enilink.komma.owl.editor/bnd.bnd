@@ -1,4 +1,3 @@
-Bundle-Name: OWL Editor
 Bundle-SymbolicName: net.enilink.komma.owl.editor;singleton:=true
 Bundle-Localization: plugin
 Bundle-ActivationPolicy: lazy

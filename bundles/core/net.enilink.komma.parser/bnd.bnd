@@ -1,3 +1,2 @@
-Bundle-Name: Sparql
 Bundle-SymbolicName: net.enilink.komma.parser
 DynamicImport-Package: org.parboiled.*

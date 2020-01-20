@@ -1,3 +1,2 @@
-Bundle-Name: Logback implementation for SLF4J
 Bundle-SymbolicName: org.slf4j.logback
 Fragment-Host: slf4j.api;bundle-version="[1.7.0,1.8.0)"

@@ -1,3 +1,2 @@
-Bundle-Name: Ui
 Bundle-SymbolicName: net.enilink.komma.sparql.ui;singleton:=true
 Bundle-Activator: net.enilink.komma.sparql.ui.SparqlUI

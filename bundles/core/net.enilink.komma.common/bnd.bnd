@@ -1,4 +1,3 @@
-Bundle-Name: %pluginName
 Bundle-SymbolicName: net.enilink.komma.common;singleton:=true
 Bundle-ClassPath: .
 Bundle-Activator: net.enilink.komma.common.CommonPlugin$Implementation

@@ -1,5 +1,4 @@
 Bundle-Localization: plugin
-Bundle-Name: Rcp
 Bundle-SymbolicName: net.enilink.komma.edit.ui.rcp;singleton:=true
 Bundle-Activator: net.enilink.komma.edit.ui.rcp.KommaEditUIRCP$Implementation
 Bundle-ActivationPolicy: lazy

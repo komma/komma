@@ -1,4 +1,3 @@
-Bundle-Name: Properties
 Bundle-SymbolicName: net.enilink.komma.edit.ui.properties;singleton:=true
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin$Implementation

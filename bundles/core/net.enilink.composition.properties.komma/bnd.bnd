@@ -1,3 +1,2 @@
-Bundle-Name: KOMMA Property Mappers
 Bundle-SymbolicName: net.enilink.composition.properties.komma
 Bundle-ClassPath: .

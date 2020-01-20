@@ -1,3 +1,2 @@
-Bundle-Name: RDF4J Plugin
 Bundle-SymbolicName: net.enilink.komma.rdf4j
 Export-Package: net.enilink.komma.internal.rdf4j;x-friends:="net.enilink.komma.model"

@@ -1,4 +1,3 @@
-Bundle-Name: %pluginName
 Bundle-SymbolicName: net.enilink.komma.edit.ui;singleton:=true
 Bundle-ClassPath: .
 Bundle-Activator: net.enilink.komma.edit.ui.KommaEditUIPlugin$Implementation

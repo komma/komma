@@ -1,4 +1,3 @@
-Bundle-Name: Knowledge Management Architecture
 Bundle-SymbolicName: net.enilink.komma.em;singleton:=true
 Bundle-Activator: net.enilink.komma.em.KommaEM$Implementation
 Bundle-Localization: plugin

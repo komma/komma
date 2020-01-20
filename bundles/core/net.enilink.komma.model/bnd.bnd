@@ -1,4 +1,3 @@
-Bundle-Name: Model
 Bundle-SymbolicName: net.enilink.komma.model;singleton:=true
 Bundle-Activator: net.enilink.komma.model.ModelPlugin$Implementation
 Bundle-ActivationPolicy: lazy

@@ -1,3 +1,2 @@
-Bundle-Name: KOMMA Data Manager Plugin
 Bundle-SymbolicName: net.enilink.komma.dm
 Bundle-ActivationPolicy: lazy

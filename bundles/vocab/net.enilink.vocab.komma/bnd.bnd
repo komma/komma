@@ -1,4 +1,3 @@
-Bundle-Name: KOMA Concepts Plug-in
 Bundle-SymbolicName: net.enilink.vocab.komma;singleton:=true
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .

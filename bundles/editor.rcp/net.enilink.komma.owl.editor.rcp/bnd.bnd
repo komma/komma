@@ -1,4 +1,3 @@
 Bundle-Localization: plugin
-Bundle-Name: OWL Editor RCP
 Bundle-SymbolicName: net.enilink.komma.owl.editor.rcp;singleton:=true
 Bundle-ActivationPolicy: lazy

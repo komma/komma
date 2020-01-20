@@ -1,3 +1,2 @@
-Bundle-Name: KOMMA Core
 Bundle-SymbolicName: net.enilink.komma.core
 Bundle-ActivationPolicy: lazy
