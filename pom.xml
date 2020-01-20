@@ -480,6 +480,7 @@
 				<module>bundles/vendor</module>
 				<module>bundles/sdk</module>
 				<module>features</module>
+				<module>features/net.enilink.komma.rap.feature</module>
 			</modules>
 		</profile>
 
