@@ -12,7 +12,7 @@
  -->
 
 <plugin>
-   <extension-point id="resultViewers" name="Result Viewers" schema="schema/resultViewers.exsd"/>
+   <extension-point id="net.enilink.komma.sparql.ui.resultViewers" name="Result Viewers" schema="schema/resultViewers.exsd"/>
    <extension
          point="org.eclipse.ui.views">
       <view

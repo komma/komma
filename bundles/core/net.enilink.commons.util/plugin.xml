@@ -12,6 +12,5 @@
  -->
 
 <plugin>
-   <extension-point id="openers" name="Resource openers" schema="schema/openers.exsd"/>
-
+   <extension-point id="net.enilink.commons.util.openers" name="Resource openers" schema="schema/openers.exsd"/>
 </plugin>
