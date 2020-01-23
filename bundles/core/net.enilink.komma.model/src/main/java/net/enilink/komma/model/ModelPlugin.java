@@ -395,7 +395,9 @@ public class ModelPlugin extends AbstractKommaPlugin {
 					}
 				}
 			}
-		} else {
+		}
+		// add at least a basic module with concepts and behaviours if no extensions were found
+		if (modules.isEmpty()) {
 			modules.add(new ModelModule());
 		}
 		return modules;
