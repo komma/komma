@@ -3,7 +3,7 @@
 <schema targetNamespace="net.enilink.komma.model" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="net.enilink.komma.model" id="modules" name="Extension Modules"/>
+         <meta.schema plugin="net.enilink.komma.model" id="net.enilink.komma.model.modules" name="Extension Modules"/>
       </appInfo>
       <documentation>
          &lt;p&gt;This extension point is used to add additional modules for role mapping and composition at the time of initialization.&lt;/p&gt;

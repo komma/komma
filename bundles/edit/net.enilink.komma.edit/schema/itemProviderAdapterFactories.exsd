@@ -2,9 +2,9 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="net.enilink.komma.edit" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appinfo>
-         <meta.schema plugin="net.enilink.komma.edit" id="itemProviderAdapterFactories" name="Registered Item Provider Adapter Factories"/>
-      </appinfo>
+      <appInfo>
+         <meta.schema plugin="net.enilink.komma.edit" id="net.enilink.komma.edit.itemProviderAdapterFactories" name="Item Provider Adapter Factories"/>
+      </appInfo>
       <documentation>
          This extension point is used to register the item provider adatper factory that is able to produce adapters for the given supported types for the given package. The global item provider adapter factory registry, &lt;samp&gt;ComposedAdapterFactory.IDescriptor.IRegistry.INSTANCE&lt;/samp&gt;, is used to record the registration.
       </documentation>
@@ -12,9 +12,9 @@
 
    <element name="extension">
       <annotation>
-         <appinfo>
+         <appInfo>
             <meta.element />
-         </appinfo>
+         </appInfo>
       </annotation>
       <complexType>
          <sequence>
@@ -39,9 +39,9 @@
                <documentation>
                   An optional name of the extension instance.
                </documentation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>
@@ -61,9 +61,9 @@
                <documentation>
                   The fully qualified Java class name of an item provider adapter factory.
                </documentation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="supportedTypes" type="string" use="required">
@@ -77,18 +77,18 @@
    </element>
 
    <annotation>
-      <appinfo>
+      <appInfo>
          <meta.section type="since"/>
-      </appinfo>
+      </appInfo>
       <documentation>
          1.0.0
       </documentation>
    </annotation>
 
    <annotation>
-      <appinfo>
+      <appInfo>
          <meta.section type="examples"/>
-      </appinfo>
+      </appInfo>
       <documentation>
          &lt;extension point=&quot;net.enilink.komma.edit.itemProviderAdapterFactory&quot;&gt;
 
@@ -117,9 +117,9 @@
 
 
    <annotation>
-      <appinfo>
+      <appInfo>
          <meta.section type="copyright"/>
-      </appinfo>
+      </appInfo>
       <documentation>
          Copyright (c) 2005 IBM Corporation and others.&lt;br&gt;
 

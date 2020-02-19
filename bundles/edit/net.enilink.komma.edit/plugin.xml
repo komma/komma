@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?eclipse version="3.0"?>
+<?eclipse version="3.4"?>
 <!--
     Copyright (c) 2009 Fraunhofer IWU and others.
     All rights reserved. This program and the accompanying materials
@@ -13,8 +13,8 @@
 
 <plugin>
 
-  <extension-point id="net.enilink.komma.edit.itemProviderAdapterFactories" name="%_UI_ItemProviderAdapterFactory_extensionpoint" schema="schema/itemProviderAdapterFactories.exsd" />
-  <extension-point id="net.enilink.komma.edit.childCreationExtenders" name="%_UI_ChildCreationExtender_extensionpoint" schema="schema/childCreationExtenders.exsd" />
+  <extension-point id="net.enilink.komma.edit.itemProviderAdapterFactories" name="Item Provider Adapter Factories" schema="schema/itemProviderAdapterFactories.exsd" />
+  <extension-point id="net.enilink.komma.edit.childCreationExtenders" name="Child Creation Extender" schema="schema/childCreationExtenders.exsd" />
 
   <extension point="net.enilink.komma.edit.itemProviderAdapterFactories">
     <factory uri="http://enilink.net/vocab/komma/models#" class="net.enilink.komma.edit.provider.model.ModelItemProviderAdapterFactory" supportedTypes="org.eclipse.emf.edit.provider.IEditingDomainItemProvider

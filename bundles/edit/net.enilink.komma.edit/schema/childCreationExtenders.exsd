@@ -3,7 +3,7 @@
 <schema targetNamespace="net.enilink.komma.edit" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="net.enilink.komma.edit" id="childCreationExtenders" name="Registered Child Creation Extenders"/>
+         <meta.schema plugin="net.enilink.komma.edit" id="net.enilink.komma.edit.childCreationExtenders" name="Registered Child Creation Extenders"/>
       </appInfo>
       <documentation>
          This extension point is used to register a child creation extender that is able to produce new child descriptors for classes of the given package. The global child creation extender registry, &lt;samp&gt;IChildCreationExtender.Descriptor.Registry.INSTANCE&lt;/samp&gt;, is used to record the registration.
