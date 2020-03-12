@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.model.eclipse;
+package net.enilink.komma.workbench.resources;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,6 +27,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourceAttributes;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
@@ -34,7 +35,6 @@ import org.eclipse.core.runtime.content.IContentDescription;
 
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IURIConverter;
-import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.base.URIHandler;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
@@ -364,7 +364,7 @@ public class PlatformResourceURIHandler extends URIHandler {
 		}
 
 		public static IWorkspaceRoot getWorkspaceRoot() {
-			return ModelPlugin.getWorkspaceRoot();
+			return ResourcesPlugin.getWorkspace().getRoot();
 		}
 	}
 

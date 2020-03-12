@@ -17,23 +17,31 @@ package net.enilink.komma.workbench.internal;
 import java.io.File;
 import java.text.MessageFormat;
 
-import net.enilink.komma.common.AbstractKommaPlugin;
-import net.enilink.komma.common.util.IResourceLocator;
-import net.enilink.komma.workbench.internal.nls.WorkbenchResourceHandler;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+
+import net.enilink.komma.common.AbstractKommaPlugin;
+import net.enilink.komma.common.util.IResourceLocator;
+import net.enilink.komma.model.IModelStatusConstants;
+import net.enilink.komma.model.base.ExtensibleURIConverter;
+import net.enilink.komma.workbench.internal.nls.WorkbenchResourceHandler;
+import net.enilink.komma.workbench.resources.PlatformResourceURIHandler;
 
 /**
  * Plugin for Komma Workbench utils.
@@ -132,6 +140,52 @@ public class KommaWorkbenchPlugin extends AbstractKommaPlugin {
 		public Implementation() {
 			plugin = this;
 		}
+		
+		@Override
+		public void start(BundleContext context) throws Exception {
+			super.start(context);
+			
+			// registers an URI handler for platform resources
+			ExtensibleURIConverter.registerSharedUriHandler(new PlatformResourceURIHandler());
+		}
+		
+		/**
+		 * Stops this plugin.
+		 * <p>
+		 * Calls save() on the workspace to avoid it being closed in an
+		 * unsynchronized state when not running the Eclipse IDE.
+		 * <p>
+		 * If running the Eclipse IDE, this is redundant [1], because the IDE
+		 * application calls this in its postShutdown() hook, but it should not
+		 * cause harm, either, because [2]
+		 * "The workspace is saved before any plug-ins start to shut down [...]"
+		 * 
+		 * @see <a href=
+		 *      "https://wiki.eclipse.org/FAQ_How_and_when_do_I_save_the_workspace%3F">
+		 *      [1] Eclipse wiki: FAQ entry on WS save()</a>
+		 * @see <a href=
+		 *      "https://wiki.eclipse.org/FAQ_How_can_I_be_notified_when_the_workspace_is_being_saved%3F">
+		 *      [2] Eclipse wiki: FAQ entry on WS notifications</a>
+		 * 
+		 */
+		@Override
+		public void stop(BundleContext context) throws Exception {
+			if (IS_RESOURCES_BUNDLE_AVAILABLE) {
+				IStatus status;
+				try {
+					IWorkspace ws = ResourcesPlugin.getWorkspace();
+					status = ws.save(true, new NullProgressMonitor());
+				} catch (CoreException e) {
+					status = e.getStatus();
+				}
+				if (!status.isOK()) {
+					MultiStatus multi = new MultiStatus(PLUGIN_ID, IModelStatusConstants.INTERNAL_ERROR, "workspace could not be saved", null);
+					multi.add(status);
+					log(multi);
+				}
+			}
+			super.stop(context);
+		}
 	}
 
 	/**
@@ -184,7 +238,7 @@ public class KommaWorkbenchPlugin extends AbstractKommaPlugin {
 				for (int i = 0; i < files.length; i++) {
 					if (files[i].isDirectory())
 						error |= deleteDirectoryContent(files[i], true,
-								new SubProgressMonitor(monitor, 1));
+								SubMonitor.convert(monitor, 1));
 					else {
 						error |= !files[i].delete();
 					}

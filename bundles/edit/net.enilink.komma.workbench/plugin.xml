@@ -24,4 +24,10 @@
       </runtime>
    </extension>
    
+   <extension
+         point="net.enilink.komma.model.contentHandlers">
+      <contentHandler
+            class="net.enilink.komma.workbench.resources.PlatformContentHandler">
+      </contentHandler>
+   </extension>
 </plugin>

@@ -22,12 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.enilink.komma.core.URI;
 import net.enilink.komma.model.IContentHandler;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.IURIHandler;
 import net.enilink.komma.model.ModelPlugin;
-import net.enilink.komma.model.eclipse.PlatformResourceURIHandler;
-import net.enilink.komma.core.URI;
 
 /**
  * A highly functional and extensible URI converter implementation.
@@ -53,15 +52,19 @@ public class ExtensibleURIConverter implements IURIConverter {
 	protected IURIMapRuleSet uriMap;
 
 	protected static List<IURIHandler> DEFAULT_URI_HANDLERS = Collections
-			.unmodifiableList(Arrays.<IURIHandler> asList(
-					new PlatformResourceURIHandler(), new FileURIHandler(),
-					new URIHandler()));
+			.unmodifiableList(Arrays.<IURIHandler>asList(new FileURIHandler(), new URIHandler()));
 
+	protected static List<IURIHandler> sharedHandlers = new ArrayList<>();
+	
 	/**
 	 * Creates an instance.
 	 */
 	public ExtensibleURIConverter() {
-		this(DEFAULT_URI_HANDLERS, ModelPlugin.getDefault()
+		getURIHandlers().addAll(DEFAULT_URI_HANDLERS);
+		synchronized (sharedHandlers) {
+			getURIHandlers().addAll(sharedHandlers);
+		}
+		getContentHandlers().addAll(ModelPlugin.getDefault()
 				.getContentHandlerRegistry().getContentHandlers());
 	}
 
@@ -230,6 +233,28 @@ public class ExtensibleURIConverter implements IURIConverter {
 		URI normalizedURI = normalize(uri);
 		getURIHandler(normalizedURI).setAttributes(normalizedURI, attributes,
 				new OptionsMap(OPTION_URI_CONVERTER, this, options));
+	}
+	
+	/**
+	 * Allows to register an {@link IURIHandler} that is shared among all instance of {@link ExtensibleURIConverter}.
+	 * 
+	 * @param handler The shared handler
+	 */
+	public static void registerSharedUriHandler(IURIHandler handler) {
+		synchronized (sharedHandlers) {
+			sharedHandlers.add(handler);			
+		}
+	}
+	
+	/**
+	 * Unregister a shared {@link IURIHandler}.
+	 * 
+	 * @param handler The shared handler
+	 */
+	public static void unregisterSharedUriHandler(IURIHandler handler) {
+		synchronized (sharedHandlers) {
+			sharedHandlers.remove(handler);			
+		}
 	}
 
 	/**

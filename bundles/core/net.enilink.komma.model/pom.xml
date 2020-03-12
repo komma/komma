@@ -48,10 +48,5 @@
 			<artifactId>net.enilink.komma.rdf4j</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.eclipse.platform</groupId>
-			<artifactId>org.eclipse.core.resources</artifactId>
-			<version>3.13.500</version>
-		</dependency>
 	</dependencies>
 </project>

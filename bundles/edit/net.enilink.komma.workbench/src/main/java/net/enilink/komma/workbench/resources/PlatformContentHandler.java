@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.model.eclipse;
+package net.enilink.komma.workbench.resources;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -18,7 +18,7 @@ import java.io.IOException;
 
 import org.eclipse.core.resources.IFile;
 
-import net.enilink.komma.model.eclipse.PlatformResourceURIHandler;
+import net.enilink.komma.workbench.resources.PlatformResourceURIHandler;
 
 /**
  * ByteArray OutputStream for the Workbench. It works with the synchronizer
