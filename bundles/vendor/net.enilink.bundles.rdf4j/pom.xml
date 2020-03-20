@@ -122,6 +122,7 @@ Import-Package: org.slf4j.*, \
 	org.springframework.*;resolution:=optional, \
 	org.locationtech.*;resolution:=optional, \
 	org.elasticsearch.*;resolution:=optional, \
+	ch.qos.logback.*;resolution:=optional, \
 	*
 					]]></bnd>
 					<skip>false</skip>
