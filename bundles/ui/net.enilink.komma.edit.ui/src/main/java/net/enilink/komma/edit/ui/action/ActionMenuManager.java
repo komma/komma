@@ -11,6 +11,8 @@
 
 package net.enilink.komma.edit.ui.action;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.AbstractGroupMarker;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
@@ -32,7 +34,6 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.actions.LabelRetargetAction;
 
-import net.enilink.komma.common.util.Log;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 
 /**
@@ -168,11 +169,8 @@ public class ActionMenuManager extends MenuManager {
 						}
 						item.fill(menu, -1);
 					} catch (Exception e) {
-						Log
-								.info(
-										KommaEditUIPlugin.getPlugin(),
-										0,
-										"The contribution item (" + item.getId() + ") failed to fill within the menu"); //$NON-NLS-1$ //$NON-NLS-2$
+						KommaEditUIPlugin.getPlugin().log(new Status(IStatus.INFO, KommaEditUIPlugin.PLUGIN_ID,
+								"The contribution item (" + item.getId() + ") failed to fill within the menu"));
 					}
 				}
 			}

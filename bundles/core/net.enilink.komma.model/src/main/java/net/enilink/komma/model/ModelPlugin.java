@@ -22,14 +22,15 @@ import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.content.IContentTypeManager;
 import org.osgi.framework.BundleContext;
+import org.osgi.util.tracker.ServiceTracker;
 
 import net.enilink.commons.util.extensions.RegistryFactoryHelper;
 import net.enilink.commons.util.extensions.RegistryReader;
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.internal.model.Messages;
 import net.enilink.komma.internal.model.ModelModule;
 import net.enilink.komma.internal.model.extensions.ContentFactoriesRegistryReader;
 import net.enilink.komma.internal.model.extensions.ContentHandlerRegistryReader;
@@ -57,7 +58,7 @@ public class ModelPlugin extends AbstractKommaPlugin {
 	private IModel.Factory.Registry modelFactoryRegistry = new ModelFactoryRegistry();
 
 	private IURIMapRuleSet uriMap = new URIMapRuleSet();
-
+	
 	/**
 	 * Readers for the various extension points (URI mapping rules, content
 	 * types, protocols, ...).
@@ -70,7 +71,7 @@ public class ModelPlugin extends AbstractKommaPlugin {
 	private static final ModelPlugin INSTANCE = new ModelPlugin();
 
 	static {
-		if (!IS_ECLIPSE_RUNNING) {
+		if (!IS_OSGI_RUNNING) {
 			getDefault().readExtensions();
 		}
 	}
@@ -90,6 +91,7 @@ public class ModelPlugin extends AbstractKommaPlugin {
 	public static ModelPlugin getDefault() {
 		return INSTANCE;
 	}
+	
 
 	public static void logErrorMessage(String message) {
 		getDefault().log(new Status(IStatus.ERROR, PLUGIN_ID, IModelStatusConstants.INTERNAL_ERROR, message, null));
@@ -107,7 +109,7 @@ public class ModelPlugin extends AbstractKommaPlugin {
 
 	public static void log(Throwable e) {
 		getDefault().log(new Status(IStatus.ERROR, PLUGIN_ID, IModelStatusConstants.INTERNAL_ERROR,
-				Messages.ModelCore_internal_error, e));
+				"Internal error", e));
 	}
 
 	@Override
@@ -139,6 +141,10 @@ public class ModelPlugin extends AbstractKommaPlugin {
 		}
 		return diagnosticion;
 	}
+	
+	public static IContentTypeManager getContentTypeManager() {
+		return plugin == null ? null : plugin.getContentTypeManager();
+	}
 
 	/**
 	 * The plugin singleton
@@ -151,6 +157,8 @@ public class ModelPlugin extends AbstractKommaPlugin {
 	 * @see #startup()
 	 */
 	static public class Implementation extends EclipsePlugin {
+		private ServiceTracker<IContentTypeManager, IContentTypeManager> contentTypeManagerTracker = null;
+		
 		/**
 		 * Creates the singleton instance.
 		 */
@@ -240,6 +248,8 @@ public class ModelPlugin extends AbstractKommaPlugin {
 		@Override
 		public void start(BundleContext context) throws Exception {
 			super.start(context);
+			contentTypeManagerTracker = new ServiceTracker<>(context, IContentTypeManager.class, null);
+			contentTypeManagerTracker.open();
 			getDefault().readExtensions();
 		}
 
@@ -247,7 +257,18 @@ public class ModelPlugin extends AbstractKommaPlugin {
 		public void stop(BundleContext ctx) throws Exception {
 			// remove extension registry listeners
 			getDefault().extensionReaders.forEach(reader -> reader.unregisterListener());
+			if (contentTypeManagerTracker != null) {
+				contentTypeManagerTracker.close();
+				contentTypeManagerTracker = null;
+			}
 			super.stop(ctx);
+		}
+		
+		/**
+		 * Lazy initialize ContentTypeManager - it can only be used after the registry is up and running
+		 */
+		public IContentTypeManager getContentTypeManager() {
+			return contentTypeManagerTracker == null ? null : (IContentTypeManager) contentTypeManagerTracker.getService();
 		}
 	}
 

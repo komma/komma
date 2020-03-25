@@ -21,11 +21,22 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.jar.Manifest;
+import java.util.stream.Stream;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Status;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+
+import net.enilink.commons.util.Log;
 import net.enilink.komma.common.internal.CommonStatusCodes;
 import net.enilink.komma.common.util.DelegatingResourceLocator;
 import net.enilink.komma.common.util.ILogger;
@@ -34,16 +45,8 @@ import net.enilink.komma.common.util.WrappedException;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 
-import org.eclipse.core.runtime.ILog;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Plugin;
-import org.eclipse.core.runtime.Status;
-import org.osgi.framework.Bundle;
-
 /**
- * MF must run within an Eclipse workbench, within a headless Eclipse workspace,
+ * KOMMA can be run within an Eclipse workbench, within a headless Eclipse workspace,
  * or just stand-alone as part of some other application. To support this, all
  * resource access (e.g., NL strings, images, and so on) is directed to the
  * resource locator methods, which can redirect the service as appropriate to
@@ -61,34 +64,34 @@ import org.osgi.framework.Bundle;
  */
 public abstract class AbstractKommaPlugin extends DelegatingResourceLocator
 		implements IResourceLocator, ILogger {
-	public static final boolean IS_ECLIPSE_RUNNING;
+	public static final boolean IS_OSGI_RUNNING;
 	static {
 		boolean result = false;
 		try {
-			result = Platform.isRunning();
+			result = FrameworkUtil.getBundle(AbstractKommaPlugin.class) != null;
 		} catch (Throwable exception) {
 			// Assume that we aren't running.
 		}
-		IS_ECLIPSE_RUNNING = result;
+		IS_OSGI_RUNNING = result;
 	}
-
+	
 	public static final boolean IS_RESOURCES_BUNDLE_AVAILABLE;
 	static {
 		boolean result = false;
-		if (IS_ECLIPSE_RUNNING) {
+		Bundle bundle = FrameworkUtil.getBundle(AbstractKommaPlugin.class);
+		if (bundle != null) {
 			try {
-				Bundle resourcesBundle = Platform
-						.getBundle("org.eclipse.core.resources");
+				Bundle resourcesBundle = Stream.of(bundle.getBundleContext().getBundles())
+						.filter(b -> b.getSymbolicName().equals("org.eclipse.core.resources")).findFirst().orElse(null);
 				result = resourcesBundle != null
-						&& (resourcesBundle.getState() & (Bundle.ACTIVE
-								| Bundle.STARTING | Bundle.RESOLVED)) != 0;
+						&& (resourcesBundle.getState() & (Bundle.ACTIVE | Bundle.STARTING | Bundle.RESOLVED)) != 0;
 			} catch (Throwable exception) {
 				// Assume that it's not available.
 			}
 		}
 		IS_RESOURCES_BUNDLE_AVAILABLE = result;
 	}
-
+	
 	protected IResourceLocator[] delegateResourceLocators;
 
 	public AbstractKommaPlugin(IResourceLocator[] delegateResourceLocators) {
@@ -123,8 +126,8 @@ public abstract class AbstractKommaPlugin extends DelegatingResourceLocator
 
 	public String getSymbolicName() {
 		IResourceLocator resourceLocator = getBundleResourceLocator();
-		if (resourceLocator instanceof InternalEclipsePlugin) {
-			return ((InternalEclipsePlugin) resourceLocator).getSymbolicName();
+		if (resourceLocator instanceof EclipsePlugin) {
+			return ((EclipsePlugin) resourceLocator).getSymbolicName();
 		} else {
 			String result = getClass().getName();
 			return result.substring(0, result.lastIndexOf('.'));
@@ -146,14 +149,19 @@ public abstract class AbstractKommaPlugin extends DelegatingResourceLocator
 			logger.log(logEntry);
 		}
 	}
-
+	
+	public static interface InternalPlugin {
+		String getSymbolicName();
+		Bundle getBundle();
+	}
+	
 	/**
-	 * The actual implementation of an Eclipse <b>Plugin</b>.
+	 * The actual implementation of an OSGi <b>Plugin</b>.
 	 */
-	public static abstract class EclipsePlugin extends Plugin implements
-			IResourceLocator, ILogger, InternalEclipsePlugin {
+	public static abstract class EclipsePlugin implements
+			IResourceLocator, ILogger, InternalPlugin, BundleActivator {
 		/**
-		 * The EMF plug-in APIs are all delegated to this helper, so that code
+		 * The plug-in APIs are all delegated to this helper, so that code
 		 * can be shared by plug-in implementations with a different platform
 		 * base class (e.g. AbstractUIPlugin).
 		 */
@@ -231,14 +239,18 @@ public abstract class AbstractKommaPlugin extends DelegatingResourceLocator
 		public void log(Object logEntry) {
 			helper.log(logEntry);
 		}
-	}
-
-	/**
-	 * This just provides a common interface for the Eclipse plugins supported
-	 * by EMF. It is not considered API and should not be used by clients.
-	 */
-	public static interface InternalEclipsePlugin {
-		String getSymbolicName();
+		
+		public Bundle getBundle() {
+			return FrameworkUtil.getBundle(getClass());
+		}
+		
+		@Override
+		public void start(BundleContext context) throws Exception {
+		}
+		
+		@Override
+		public void stop(BundleContext context) throws Exception {
+		}
 	}
 
 	/**
@@ -246,20 +258,22 @@ public abstract class AbstractKommaPlugin extends DelegatingResourceLocator
 	 * It is not considered API and should not be used by clients.
 	 */
 	public static class InternalHelper {
-		protected Plugin plugin;
+		protected InternalPlugin plugin;
+		protected Log log;
 		protected ResourceBundle resourceBundle;
 		protected ResourceBundle untranslatedResourceBundle;
 
-		public InternalHelper(Plugin plugin) {
+		public InternalHelper(InternalPlugin plugin) {
 			this.plugin = plugin;
+			this.log = new Log(plugin.getClass());
 		}
 
 		protected Bundle getBundle() {
 			return plugin.getBundle();
 		}
 
-		protected ILog getLog() {
-			return plugin.getLog();
+		protected Log getLog() {
+			return log;
 		}
 
 		/**
@@ -295,8 +309,12 @@ public abstract class AbstractKommaPlugin extends DelegatingResourceLocator
 					: untranslatedResourceBundle;
 			if (bundle == null) {
 				if (translate) {
-					bundle = resourceBundle = Platform
-							.getResourceBundle(getBundle());
+					String baseName = getBundle().getHeaders().get("Bundle-Localization");
+					if (baseName == null) {
+						// the default value as defined by OSGi
+						baseName = "OSGI-INF/l10n/bundle";
+					}
+					bundle = ResourceBundle.getBundle(baseName, Locale.getDefault(), plugin.getClass().getClassLoader());
 				} else {
 					String resourceName = getBaseURL().toString()
 							+ "plugin.properties";

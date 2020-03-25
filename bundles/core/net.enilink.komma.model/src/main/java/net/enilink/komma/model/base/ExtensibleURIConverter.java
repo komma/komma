@@ -60,10 +60,11 @@ public class ExtensibleURIConverter implements IURIConverter {
 	 * Creates an instance.
 	 */
 	public ExtensibleURIConverter() {
-		getURIHandlers().addAll(DEFAULT_URI_HANDLERS);
+		// give shared handlers higher priority (e.g. the handler for platform: URIs)
 		synchronized (sharedHandlers) {
 			getURIHandlers().addAll(sharedHandlers);
 		}
+		getURIHandlers().addAll(DEFAULT_URI_HANDLERS);
 		getContentHandlers().addAll(ModelPlugin.getDefault()
 				.getContentHandlerRegistry().getContentHandlers());
 	}

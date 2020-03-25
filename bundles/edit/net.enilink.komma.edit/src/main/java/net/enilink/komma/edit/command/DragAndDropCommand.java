@@ -30,7 +30,6 @@ import net.enilink.komma.common.command.ExtendedCompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
-import net.enilink.komma.common.util.Log;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -849,8 +848,7 @@ public class DragAndDropCommand extends AbstractCommand implements
 					try {
 						dragCommand.undo(null, null);
 					} catch (ExecutionException e) {
-						Log.log(KommaEditPlugin.getPlugin(), new Status(
-								IStatus.ERROR, KommaEditPlugin.PLUGIN_ID,
+						KommaEditPlugin.getPlugin().log(new Status(IStatus.ERROR, KommaEditPlugin.PLUGIN_ID,
 								"Error while undoing drag command", e));
 					}
 				}

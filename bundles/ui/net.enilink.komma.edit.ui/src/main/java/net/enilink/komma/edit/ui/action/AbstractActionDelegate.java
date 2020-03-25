@@ -32,10 +32,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
-import net.enilink.komma.common.util.Log;
-import net.enilink.komma.common.util.Trace;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
-import net.enilink.komma.edit.ui.internal.EditUIDebugOptions;
 import net.enilink.komma.edit.ui.internal.EditUIStatusCodes;
 
 /**
@@ -441,15 +438,11 @@ public abstract class AbstractActionDelegate implements IPartListener,
 	 *            The exception to be handled.
 	 */
 	protected void handle(Exception exception) {
-		Trace.catching(KommaEditUIPlugin.getPlugin(),
-				EditUIDebugOptions.EXCEPTIONS_CATCHING, getClass(),
-				"handle", exception); //$NON-NLS-1$
-
 		IStatus status = new Status(IStatus.ERROR, KommaEditUIPlugin.PLUGIN_ID,
 				EditUIStatusCodes.ACTION_FAILURE, String.valueOf(exception
 						.getMessage()), exception);
 
-		Log.log(KommaEditUIPlugin.getPlugin(), status);
+		KommaEditUIPlugin.getPlugin().log(status);
 		openErrorDialog(status);
 	}
 

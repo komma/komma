@@ -11,19 +11,21 @@
 package net.enilink.commons.util.internal.extensions;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.internal.registry.ExtensionRegistry;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.spi.RegistryContributor;
 import org.eclipse.core.runtime.spi.RegistryStrategy;
-import org.eclipse.osgi.framework.util.Headers;
 
 /**
  * 
@@ -37,8 +39,7 @@ public class RegistryStrategyNonOSGI extends RegistryStrategy {
 
 	private Object token;
 
-	public RegistryStrategyNonOSGI(File[] storageDirs, boolean[] cacheReadOnly,
-			Object token) {
+	public RegistryStrategyNonOSGI(File[] storageDirs, boolean[] cacheReadOnly, Object token) {
 		super(storageDirs, cacheReadOnly);
 		this.token = token;
 	}
@@ -46,8 +47,7 @@ public class RegistryStrategyNonOSGI extends RegistryStrategy {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.eclipse.core.runtime.spi.RegistryStrategy#onStart(org.eclipse.core
+	 * @see org.eclipse.core.runtime.spi.RegistryStrategy#onStart(org.eclipse.core
 	 * .runtime.IExtensionRegistry, boolean)
 	 */
 	public void onStart(IExtensionRegistry registry, boolean loadedFromCache) {
@@ -66,10 +66,8 @@ public class RegistryStrategyNonOSGI extends RegistryStrategy {
 
 			if (!(registry instanceof ExtensionRegistry)) {
 				if (DebugHelper.DEBUG) {
-					DebugHelper.log(
-							"Impossible to load <plugin.xml>. IExtensionRegistry must be an instance of <"
-									+ ExtensionRegistry.class.getName() + ">",
-							1);
+					DebugHelper.log("Impossible to load <plugin.xml>. IExtensionRegistry must be an instance of <"
+							+ ExtensionRegistry.class.getName() + ">", 1);
 				}
 				return;
 			}
@@ -79,40 +77,30 @@ public class RegistryStrategyNonOSGI extends RegistryStrategy {
 			// Searching <plugin.xml> URL from the ClassLoader.
 			if (DebugHelper.DEBUG) {
 				startTime = System.currentTimeMillis();
-				DebugHelper
-						.log("Start searching <plugin.xml> URLs from the ClassLoader....",
-								1);
+				DebugHelper.log("Start searching <plugin.xml> URLs from the ClassLoader....", 1);
 			}
 			ClassLoader cl = getClass().getClassLoader();
 			Enumeration<URL> pluginURLs = Utils.getPluginXMLs(cl);
 			if (pluginURLs == null || !pluginURLs.hasMoreElements()) {
 				if (DebugHelper.DEBUG) {
-					DebugHelper.log(
-							"No <plugin.xml> founded into the ClassLoader", 1);
+					DebugHelper.log("No <plugin.xml> founded into the ClassLoader", 1);
 				}
 				return;
 			}
 			if (DebugHelper.DEBUG) {
-				DebugHelper.log(
-						"End searching <plugin.xml> URLs from the ClassLoader with time="
-								+ (System.currentTimeMillis() - startTime)
-								+ "(ms)", 1);
+				DebugHelper.log("End searching <plugin.xml> URLs from the ClassLoader with time="
+						+ (System.currentTimeMillis() - startTime) + "(ms)", 1);
 			}
 			// <plugin.xml> files are present into ClassLoader.
 			// Searching <META-INF/MANIFEST.MF> URL from the ClassLoader.
 			if (DebugHelper.DEBUG) {
 				startTime = System.currentTimeMillis();
-				DebugHelper
-						.log("Start searching <META-INF/MANIFEST.MF> URLs from the ClassLoader....",
-								1);
+				DebugHelper.log("Start searching <META-INF/MANIFEST.MF> URLs from the ClassLoader....", 1);
 			}
-			Map<String /* baseDir of the files */, URL /* of the MANIFEST.MF */> manifests = Utils
-					.getManifestsMap(cl);
+			Map<String /* baseDir of the files */, URL /* of the MANIFEST.MF */> manifests = Utils.getManifestsMap(cl);
 			if (DebugHelper.DEBUG) {
-				DebugHelper.log(
-						"End searching <META-INF/MANIFEST.MF> URLs from the ClassLoader with time="
-								+ (System.currentTimeMillis() - startTime)
-								+ "(ms)", 1);
+				DebugHelper.log("End searching <META-INF/MANIFEST.MF> URLs from the ClassLoader with time="
+						+ (System.currentTimeMillis() - startTime) + "(ms)", 1);
 			}
 
 			if (DebugHelper.DEBUG) {
@@ -138,24 +126,13 @@ public class RegistryStrategyNonOSGI extends RegistryStrategy {
 			}
 			if (DebugHelper.DEBUG) {
 				DebugHelper.log(
-						"End loading <plugin.xml> with time="
-								+ (System.currentTimeMillis() - startTime)
-								+ "(ms)", 1);
+						"End loading <plugin.xml> with time=" + (System.currentTimeMillis() - startTime) + "(ms)", 1);
 			}
 		} finally {
 			if (DebugHelper.DEBUG) {
-				DebugHelper
-						.log("END RegistryStrategyNonOSGI#onStart: plugin.xml [OK]=<"
-								+ pluginXMLWithNoError
-								+ "/"
-								+ pluginXMLTotal
-								+ ">, plugin.xml [ERROR]=<"
-								+ pluginXMLWithError
-								+ "/"
-								+ pluginXMLTotal
-								+ ">, time="
-								+ (System.currentTimeMillis() - startGlobalTime)
-								+ "(ms).");
+				DebugHelper.log("END RegistryStrategyNonOSGI#onStart: plugin.xml [OK]=<" + pluginXMLWithNoError + "/"
+						+ pluginXMLTotal + ">, plugin.xml [ERROR]=<" + pluginXMLWithError + "/" + pluginXMLTotal
+						+ ">, time=" + (System.currentTimeMillis() - startGlobalTime) + "(ms).");
 			}
 		}
 	}
@@ -207,9 +184,12 @@ public class RegistryStrategyNonOSGI extends RegistryStrategy {
 		}
 
 		// MANIFEST.MF founded for the plugin.xml, Parse MANIFEST.MF.
-		Headers headers = null;
+		Optional<String> symbolicName = Optional.empty();
 		try {
-			headers = Headers.parseManifest(manifestURL.openStream());
+			symbolicName = new BufferedReader(new InputStreamReader(manifestURL.openStream()))
+					  .lines().filter(line -> line.startsWith("Bundle-SymbolicName")).map(line -> {
+						 return line.replaceAll("^[^:]+\\s*", "").replaceAll(";.*",""); 
+					  }).findFirst();
 		} catch (Exception e) {
 			if (DebugHelper.DEBUG) {
 				DebugHelper.logError("<plugin.xml> [ERROR] : ("
@@ -222,9 +202,7 @@ public class RegistryStrategyNonOSGI extends RegistryStrategy {
 		}
 
 		// Get Bundle-SymbolicName from the MANIFEST.MF
-		String symbolicName = (String) headers
-				.get(Constants.BUNDLE_SYMBOLICNAME);
-		if (Utils.isEmpty(symbolicName)) {
+		if (!symbolicName.isPresent() || Utils.isEmpty(symbolicName.get())) {
 			if (DebugHelper.DEBUG) {
 				DebugHelper.logError("<plugin.xml> [ERROR] : ("
 						+ pluginManifest.getPath() + "): ", 1);
@@ -235,15 +213,9 @@ public class RegistryStrategyNonOSGI extends RegistryStrategy {
 			return false;
 		}
 
-		// Remove options from the Bundle-SymbolicName declaration.
-		int index = symbolicName.indexOf(';');
-		if (index != -1) {
-			symbolicName = symbolicName.substring(0, index);
-		}
-
 		// Create IContributor
 		RegistryContributor contributor = ContributorFactoryNonOSGI
-				.createContributor(symbolicName);
+				.createContributor(symbolicName.get());
 		// Test if IContributor doesn't already exists.
 		if (extensionRegistry.hasContributor(contributor)) {
 			if (DebugHelper.DEBUG) {

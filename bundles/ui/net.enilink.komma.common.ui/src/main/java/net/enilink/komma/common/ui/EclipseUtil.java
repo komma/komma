@@ -7,10 +7,8 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IEditorInput;
-import org.osgi.framework.Bundle;
 
 public class EclipseUtil {
 	static final Class<?> FILE_CLASS;
@@ -29,18 +27,12 @@ public class EclipseUtil {
 	static {
 		Class<?> fileRevisionClass = null;
 		Method fileRevisionGetURIMethod = null;
-		Bundle bundle = Platform.getBundle("org.eclipse.team.core");
-		if (bundle != null
-				&& (bundle.getState() & (Bundle.ACTIVE | Bundle.STARTING | Bundle.RESOLVED)) != 0) {
-			try {
-				fileRevisionClass = bundle
-						.loadClass("org.eclipse.team.core.history.IFileRevision");
-				fileRevisionGetURIMethod = fileRevisionClass
-						.getMethod("getURI");
-			} catch (Throwable exeption) {
-				// Ignore any exceptions and assume the class isn't
-				// available.
-			}
+		try {
+			fileRevisionClass = EclipseUtil.class.getClassLoader().loadClass("org.eclipse.team.core.history.IFileRevision");
+			fileRevisionGetURIMethod = fileRevisionClass.getMethod("getURI");
+		} catch (Throwable exeption) {
+			// Ignore any exceptions and assume the class isn't
+			// available.
 		}
 		FILE_REVISION_CLASS = fileRevisionClass;
 		FILE_REVISION_GET_URI_METHOD = fileRevisionGetURIMethod;

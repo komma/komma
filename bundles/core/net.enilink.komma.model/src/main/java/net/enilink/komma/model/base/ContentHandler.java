@@ -22,11 +22,11 @@ import java.util.Set;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescriber;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
+import org.eclipse.core.runtime.content.IContentTypeManager;
 import org.eclipse.core.runtime.content.ITextContentDescriber;
 
 import net.enilink.komma.model.IContentHandler;
@@ -120,19 +120,18 @@ public class ContentHandler implements IContentHandler {
 			result.put(IContentHandler.BYTE_ORDER_MARK_PROPERTY,
 					getByteOrderMark(uri, inputStream, options, context));
 		}
-		if (isRequestedProperty(IContentHandler.CONTENT_TYPE_PROPERTY, options)
-				&& Platform.getContentTypeManager() != null) {
-			Object mimeType = context.get(IURIConverter.ATTRIBUTE_MIME_TYPE);
-			if (mimeType != null) {
-				// try to determine the Eclipse content-type based on the
-				// MIME-type
-				for (IContentType contentType : Platform
-						.getContentTypeManager().getAllContentTypes()) {
-					if (mimeType.equals(ModelUtil.mimeType(contentType
-							.getDefaultDescription()))) {
-						result.put(IContentHandler.CONTENT_TYPE_PROPERTY,
-								contentType.getId());
-						break;
+		if (isRequestedProperty(IContentHandler.CONTENT_TYPE_PROPERTY, options)) {
+			IContentTypeManager contentTypeManager = ModelPlugin.getContentTypeManager();
+			if (contentTypeManager != null) {
+				Object mimeType = context.get(IURIConverter.ATTRIBUTE_MIME_TYPE);
+				if (mimeType != null) {
+					// try to determine the Eclipse content-type based on the
+					// MIME-type
+					for (IContentType contentType : contentTypeManager.getAllContentTypes()) {
+						if (mimeType.equals(ModelUtil.mimeType(contentType.getDefaultDescription()))) {
+							result.put(IContentHandler.CONTENT_TYPE_PROPERTY, contentType.getId());
+							break;
+						}
 					}
 				}
 			}

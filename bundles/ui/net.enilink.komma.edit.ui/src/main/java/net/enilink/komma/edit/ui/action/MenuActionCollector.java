@@ -26,7 +26,7 @@ import org.eclipse.ui.progress.WorkbenchJob;
 
 import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
-import net.enilink.komma.edit.util.CollectorJob;
+import net.enilink.komma.edit.ui.util.CollectorJob;
 
 /**
  * {@link ICollector} implementation that can be used to populate multiple menu

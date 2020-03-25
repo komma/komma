@@ -45,10 +45,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 
 import net.enilink.komma.common.command.ICommand;
-import net.enilink.komma.common.util.Log;
-import net.enilink.komma.common.util.Trace;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
-import net.enilink.komma.edit.ui.internal.EditUIDebugOptions;
 import net.enilink.komma.edit.ui.internal.EditUIStatusCodes;
 import net.enilink.komma.edit.ui.util.PartListenerAdapter;
 
@@ -487,13 +484,8 @@ public abstract class AbstractContributionItem extends ContributionItem
 					null);
 
 		} catch (ExecutionException e) {
-			Trace.catching(KommaEditUIPlugin.getPlugin(),
-					EditUIDebugOptions.EXCEPTIONS_CATCHING, getClass(),
-					"execute", e); //$NON-NLS-1$
-
-			Log.error(KommaEditUIPlugin.getPlugin(),
-					EditUIStatusCodes.ACTION_FAILURE, e.getLocalizedMessage(),
-					e);
+			KommaEditUIPlugin.getPlugin().log(new Status(IStatus.ERROR, KommaEditUIPlugin.PLUGIN_ID,
+					EditUIStatusCodes.ACTION_FAILURE, e.getLocalizedMessage(), e));
 		}
 		return;
 	}
@@ -549,15 +541,11 @@ public abstract class AbstractContributionItem extends ContributionItem
 	 *            The exception to be handled.
 	 */
 	protected void handle(Exception exception) {
-		Trace.catching(KommaEditUIPlugin.getPlugin(),
-				EditUIDebugOptions.EXCEPTIONS_CATCHING, getClass(),
-				"handle", exception); //$NON-NLS-1$
-
 		IStatus status = new Status(IStatus.ERROR, KommaEditUIPlugin.PLUGIN_ID,
 				EditUIStatusCodes.ACTION_FAILURE, String.valueOf(exception
 						.getMessage()), exception);
 
-		Log.log(KommaEditUIPlugin.getPlugin(), status);
+		KommaEditUIPlugin.getPlugin().log(status);
 		openErrorDialog(status);
 	}
 

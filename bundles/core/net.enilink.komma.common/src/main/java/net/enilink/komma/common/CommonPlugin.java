@@ -28,7 +28,6 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
 
 /**
  * The <b>Plugin</b> for the model EMF.Common library. EMF must run within an
@@ -89,22 +88,11 @@ public final class CommonPlugin extends AbstractKommaPlugin {
 		return plugin == null ? uri : Implementation.resolve(uri);
 	}
 
-	/**
-	 * Use the platform, if available, to load the named class using the right
-	 * class loader.
-	 */
-	public static Class<?> loadClass(String pluginID, String className)
-			throws ClassNotFoundException {
-		return plugin == null ? Class.forName(className) : Implementation
-				.loadClass(pluginID, className);
-	}
-
 	private static final Method COLLATOR_GET_INSTANCE_METHOD;
 	static {
 		Method collatorGetInstanceMethod = null;
 		try {
-			Class<?> collatorClass = loadClass("com.ibm.icu",
-					"com.ibm.icu.text.Collator");
+			Class<?> collatorClass = CommonPlugin.class.getClassLoader().loadClass("com.ibm.icu.text.Collator");
 			collatorGetInstanceMethod = collatorClass.getMethod("getInstance",
 					Locale.class);
 		} catch (Throwable throwable) {
@@ -226,15 +214,6 @@ public final class CommonPlugin extends AbstractKommaPlugin {
 				result = result.appendFragment(fragment);
 			}
 			return result;
-		}
-
-		/**
-		 * Use the platform to load the named class using the right class
-		 * loader.
-		 */
-		public static Class<?> loadClass(String pluginID, String className)
-				throws ClassNotFoundException {
-			return Platform.getBundle(pluginID).loadClass(className);
 		}
 	}
 }

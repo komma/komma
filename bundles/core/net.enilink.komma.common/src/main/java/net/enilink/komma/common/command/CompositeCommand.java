@@ -28,13 +28,11 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 
+import net.enilink.commons.util.Log;
 import net.enilink.komma.common.CommonPlugin;
-import net.enilink.komma.common.internal.CommonDebugOptions;
 import net.enilink.komma.common.internal.CommonStatusCodes;
-import net.enilink.komma.common.util.Log;
-import net.enilink.komma.common.util.Trace;
 import net.enilink.komma.common.util.WrappedException;
 
 /**
@@ -60,6 +58,8 @@ import net.enilink.komma.common.util.WrappedException;
  */
 public class CompositeCommand extends AbstractCommand implements
 		ICompositeCommand {
+	static Log log = new Log(CompositeCommand.class); 
+	
 	/**
 	 * Custom iterator implementation that maintains my undo contexts correctly
 	 * when elements are removed.
@@ -443,9 +443,6 @@ public class CompositeCommand extends AbstractCommand implements
 		if (isExecuted()) {
 			IllegalStateException exc = new IllegalStateException(
 					"Operation already executed"); //$NON-NLS-1$
-			Trace.throwing(CommonPlugin.getPlugin(),
-					CommonDebugOptions.EXCEPTIONS_THROWING,
-					CompositeCommand.class, "assertNotExecuted", exc); //$NON-NLS-1$
 			throw exc;
 		}
 	}
@@ -549,8 +546,7 @@ public class CompositeCommand extends AbstractCommand implements
 				IUndoableOperation next = (IUndoableOperation) iter.next();
 
 				try {
-					IStatus status = next.execute(new SubProgressMonitor(
-							progressMonitor, 1), info);
+					IStatus status = next.execute(SubMonitor.convert(progressMonitor, 1), info);
 					result.add(status);
 					int severity = status.getSeverity();
 
@@ -558,9 +554,7 @@ public class CompositeCommand extends AbstractCommand implements
 
 						// Undo the operation to date, excluding the current
 						// child, and don't proceed
-						Trace.trace(
-								CommonPlugin.getPlugin(),
-								"Composite operation execution recovery: child command status is CANCEL or ERROR."); //$NON-NLS-1$
+						log.trace("Composite operation execution recovery: child command status is CANCEL or ERROR."); //$NON-NLS-1$
 						// back-track over the operation that failed
 						iter.previous();
 						unwindFailedExecute(iter, info);
@@ -569,8 +563,7 @@ public class CompositeCommand extends AbstractCommand implements
 					} else if (progressMonitor.isCanceled()) {
 						// Undo the operation to date, including the current
 						// child, and don't proceed
-						Trace.trace(CommonPlugin.getPlugin(),
-								"Composite operation redo recovery: child command monitor is cancelled."); //$NON-NLS-1$
+						log.trace("Composite operation redo recovery: child command monitor is cancelled."); //$NON-NLS-1$
 
 						CommandResult cancelResult = CommandResult
 								.newCancelledCommandResult();
@@ -588,9 +581,6 @@ public class CompositeCommand extends AbstractCommand implements
 					// back-track over the operation that failed
 					iter.previous();
 					unwindFailedExecute(iter, info);
-					Trace.throwing(CommonPlugin.getPlugin(),
-							CommonDebugOptions.EXCEPTIONS_THROWING,
-							CompositeCommand.class, "execute", e); //$NON-NLS-1$
 					throw e;
 				}
 			}
@@ -614,16 +604,14 @@ public class CompositeCommand extends AbstractCommand implements
 					.hasNext();) {
 				IUndoableOperation next = (IUndoableOperation) iter.next();
 				try {
-					IStatus status = next.redo(new SubProgressMonitor(
-							progressMonitor, 1), info);
+					IStatus status = next.redo(SubMonitor.convert(progressMonitor, 1), info);
 					result.add(status);
 					int severity = status.getSeverity();
 
 					if (severity == IStatus.CANCEL || severity == IStatus.ERROR) {
 						// Undo the operation to date, excluding the current
 						// child, and don't proceed
-						Trace.trace(CommonPlugin.getPlugin(),
-								"Composite operation redo recovery: child command status is CANCEL or ERROR."); //$NON-NLS-1$
+						log.trace("Composite operation redo recovery: child command status is CANCEL or ERROR."); //$NON-NLS-1$
 						// back-track over the operation that failed
 						iter.previous();
 						unwindFailedRedo(iter, info);
@@ -631,8 +619,7 @@ public class CompositeCommand extends AbstractCommand implements
 					} else if (progressMonitor.isCanceled()) {
 						// Undo the operation to date, including the current
 						// child, and don't proceed
-						Trace.trace(CommonPlugin.getPlugin(),
-								"Composite operation redo recovery: child command monitor is cancelled."); //$NON-NLS-1$
+						log.trace("Composite operation redo recovery: child command monitor is cancelled."); //$NON-NLS-1$
 
 						CommandResult cancelResult = CommandResult
 								.newCancelledCommandResult();
@@ -650,9 +637,6 @@ public class CompositeCommand extends AbstractCommand implements
 					// back-track over the operation that failed
 					iter.previous();
 					unwindFailedRedo(iter, info);
-					Trace.throwing(CommonPlugin.getPlugin(),
-							CommonDebugOptions.EXCEPTIONS_THROWING,
-							CompositeCommand.class, "redo", e); //$NON-NLS-1$
 					throw e;
 				}
 			}
@@ -679,16 +663,14 @@ public class CompositeCommand extends AbstractCommand implements
 				IUndoableOperation prev = (IUndoableOperation) iter.previous();
 
 				try {
-					IStatus status = prev.undo(new SubProgressMonitor(
-							progressMonitor, 1), info);
+					IStatus status = prev.undo(SubMonitor.convert(progressMonitor, 1), info);
 					result.add(status);
 					int severity = status.getSeverity();
 
 					if (severity == IStatus.CANCEL || severity == IStatus.ERROR) {
 						// Redo the operation to date, excluding the current
 						// child, and don't proceed
-						Trace.trace(CommonPlugin.getPlugin(),
-								"Composite operation undo recovery: child command status is CANCEL or ERROR."); //$NON-NLS-1$
+						log.trace("Composite operation undo recovery: child command status is CANCEL or ERROR."); //$NON-NLS-1$
 						// back-track over the operation that failed or was
 						// cancelled
 						iter.next();
@@ -698,8 +680,7 @@ public class CompositeCommand extends AbstractCommand implements
 					} else if (progressMonitor.isCanceled()) {
 						// Redo the operation to date, including the current
 						// child, and don't proceed
-						Trace.trace(CommonPlugin.getPlugin(),
-								"Composite operation undo recovery: child command monitor is cancelled."); //$NON-NLS-1$
+						log.trace("Composite operation undo recovery: child command monitor is cancelled."); //$NON-NLS-1$
 
 						CommandResult cancelResult = CommandResult
 								.newCancelledCommandResult();
@@ -718,9 +699,6 @@ public class CompositeCommand extends AbstractCommand implements
 					// back-track over the operation that failed
 					iter.next();
 					unwindFailedUndo(iter, info);
-					Trace.throwing(CommonPlugin.getPlugin(),
-							CommonDebugOptions.EXCEPTIONS_THROWING,
-							CompositeCommand.class, "undo", e); //$NON-NLS-1$
 					throw e;
 				}
 			}
@@ -1036,26 +1014,19 @@ public class CompositeCommand extends AbstractCommand implements
 			IUndoableOperation prev = (IUndoableOperation) iter.previous();
 			if (!prev.canUndo()) {
 				// Can't unwind
-				Log.error(
-						CommonPlugin.getPlugin(),
-						CommonStatusCodes.EXECUTE_RECOVERY_FAILED,
-						CommonPlugin.INSTANCE
-								.getString(
-										"Command_executeRecoveryFailed",
-										CommonPlugin.INSTANCE
-												.getString("Command_cannotUndoExecuted")));
+				log.log(new Status(IStatus.ERROR, CommonPlugin.PLUGIN_ID, CommonStatusCodes.EXECUTE_RECOVERY_FAILED,
+						CommonPlugin.INSTANCE.getString("Command_executeRecoveryFailed",
+								CommonPlugin.INSTANCE.getString("Command_cannotUndoExecuted")),
+						null));
 				break;
 			}
 
 			try {
 				prev.undo(new NullProgressMonitor(), info);
-
 			} catch (ExecutionException inner) {
-				Log.error(CommonPlugin.getPlugin(),
-						CommonStatusCodes.EXECUTE_RECOVERY_FAILED,
-						CommonPlugin.INSTANCE.getString(
-								"Command_executeRecoveryFailed",
-								inner.getLocalizedMessage()));
+				log.log(new Status(IStatus.ERROR, CommonPlugin.PLUGIN_ID, CommonStatusCodes.EXECUTE_RECOVERY_FAILED,
+						CommonPlugin.INSTANCE.getString("Command_executeRecoveryFailed", inner.getLocalizedMessage()),
+						inner));
 				break;
 			}
 		}
@@ -1077,12 +1048,10 @@ public class CompositeCommand extends AbstractCommand implements
 			IUndoableOperation prev = (IUndoableOperation) iter.previous();
 			if (!prev.canUndo()) {
 				// Can't unwind
-				Log.error(CommonPlugin.getPlugin(),
-						CommonStatusCodes.REDO_RECOVERY_FAILED,
-						CommonPlugin.INSTANCE.getString(
-								"Command_redoRecoveryFailed",
-								CommonPlugin.INSTANCE
-										.getString("Command_cannotUndo")));
+				log.log(new Status(IStatus.ERROR, CommonPlugin.PLUGIN_ID, CommonStatusCodes.REDO_RECOVERY_FAILED,
+						CommonPlugin.INSTANCE.getString("Command_redoRecoveryFailed",
+								CommonPlugin.INSTANCE.getString("Command_cannotUndo")),
+						null));
 				break;
 			}
 
@@ -1090,11 +1059,9 @@ public class CompositeCommand extends AbstractCommand implements
 				prev.undo(new NullProgressMonitor(), info);
 
 			} catch (ExecutionException inner) {
-				Log.error(CommonPlugin.getPlugin(),
-						CommonStatusCodes.REDO_RECOVERY_FAILED,
-						CommonPlugin.INSTANCE.getString(
-								"Command_redoRecoveryFailed",
-								inner.getLocalizedMessage()));
+				log.log(new Status(IStatus.ERROR, CommonPlugin.PLUGIN_ID, CommonStatusCodes.REDO_RECOVERY_FAILED,
+						CommonPlugin.INSTANCE.getString("Command_redoRecoveryFailed", inner.getLocalizedMessage()),
+						inner));
 				break;
 			}
 		}
@@ -1115,12 +1082,10 @@ public class CompositeCommand extends AbstractCommand implements
 			IUndoableOperation next = (IUndoableOperation) iter.next();
 			if (!next.canRedo()) {
 				// Can't unwind
-				Log.error(CommonPlugin.getPlugin(),
-						CommonStatusCodes.UNDO_RECOVERY_FAILED,
-						CommonPlugin.INSTANCE.getString(
-								"Command_undoRecoveryFailed",
-								CommonPlugin.INSTANCE
-										.getString("Command_cannotRedo")));
+				log.log(new Status(IStatus.ERROR, CommonPlugin.PLUGIN_ID, CommonStatusCodes.UNDO_RECOVERY_FAILED,
+						CommonPlugin.INSTANCE.getString("Command_undoRecoveryFailed",
+								CommonPlugin.INSTANCE.getString("Command_cannotRedo")),
+						null));
 				break;
 			}
 
@@ -1128,11 +1093,9 @@ public class CompositeCommand extends AbstractCommand implements
 				next.redo(new NullProgressMonitor(), info);
 
 			} catch (ExecutionException inner) {
-				Log.error(CommonPlugin.getPlugin(),
-						CommonStatusCodes.UNDO_RECOVERY_FAILED,
-						CommonPlugin.INSTANCE.getString(
-								"Command_undoRecoveryFailed",
-								inner.getLocalizedMessage()));
+				log.log(new Status(IStatus.ERROR, CommonPlugin.PLUGIN_ID, CommonStatusCodes.UNDO_RECOVERY_FAILED,
+						CommonPlugin.INSTANCE.getString("Command_undoRecoveryFailed", inner.getLocalizedMessage()),
+						inner));
 				break;
 			}
 		}

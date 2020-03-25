@@ -13,12 +13,17 @@ package net.enilink.komma.model.rdf4j;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -28,6 +33,8 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
@@ -61,14 +68,17 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 
 	protected void addBasicKnowledge(Repository repository)
 			throws RepositoryException {
-		String[] bundles = { "net.enilink.vocab.owl", "net.enilink.vocab.rdfs" };
-
-		if (AbstractKommaPlugin.IS_ECLIPSE_RUNNING) {
+		if (AbstractKommaPlugin.IS_OSGI_RUNNING) {
+			Set<String> bundleNames = new HashSet<>(Arrays.asList("net.enilink.vocab.owl", "net.enilink.vocab.rdfs"));
+			List<Bundle> bundles = Stream
+					.of(FrameworkUtil.getBundle(MemoryModelSetSupport.class).getBundleContext().getBundles())
+					.filter(b -> bundleNames.contains(b.getSymbolicName())).collect(Collectors.toList());
+			
 			RepositoryConnection conn = null;
 			try {
 				conn = repository.getConnection();
-				for (String name : bundles) {
-					URL url = Platform.getBundle(name).getResource(
+				for (Bundle bundle : bundles) {
+					URL url = bundle.getResource(
 							"META-INF/org.openrdf.ontologies");
 					if (url != null) {
 						URL resolvedUrl = FileLocator.resolve(url);

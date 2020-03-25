@@ -28,7 +28,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -51,12 +50,11 @@ import net.enilink.komma.common.util.UniqueExtensibleList;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
-import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.base.ExtensibleURIConverter;
 
@@ -154,7 +152,7 @@ public class EditUIUtil {
 
 	public static URI getURI(IEditorInput editorInput) {
 		URI result = null;
-		if (AbstractKommaPlugin.IS_ECLIPSE_RUNNING) {
+		if (AbstractKommaPlugin.IS_RESOURCES_BUNDLE_AVAILABLE) {
 			result = EclipseUtil.getURI(editorInput);
 		}
 		if (result == null) {
@@ -180,7 +178,7 @@ public class EditUIUtil {
 	 */
 	public static IEditorDescriptor getDefaultEditor(String fileName) {
 		return fileName != null && fileName.length() != 0
-				? getDefaultEditor(fileName, Platform.getContentTypeManager().findContentTypesFor(fileName)) : null;
+				? getDefaultEditor(fileName, ModelPlugin.getContentTypeManager().findContentTypesFor(fileName)) : null;
 	}
 
 	private static IEditorDescriptor getDefaultEditor(String fileName, IContentType... contentTypes) {

@@ -39,9 +39,7 @@ import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.edit.command.ICommandActionDelegate;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomain;
-import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.provider.ExtendedImageRegistry;
-import net.enilink.komma.edit.ui.util.EditUIUtil;
 
 /**
  * This class is used to implement a selection-based {@link IAction} on the

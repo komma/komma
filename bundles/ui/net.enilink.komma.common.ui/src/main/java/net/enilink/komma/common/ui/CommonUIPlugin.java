@@ -16,6 +16,11 @@
  */
 package net.enilink.komma.common.ui;
 
+import java.util.stream.Stream;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
+
 import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.common.util.IResourceLocator;
 
@@ -31,6 +36,21 @@ import net.enilink.komma.common.util.IResourceLocator;
  * @see #INSTANCE
  */
 public final class CommonUIPlugin extends AbstractKommaPlugin {
+	public static final boolean IS_RESOURCES_BUNDLE_AVAILABLE;
+	static {
+		boolean result = false;
+		Bundle bundle = FrameworkUtil.getBundle(CommonUIPlugin.class);
+		try {
+			Bundle resourcesBundle = Stream.of(bundle.getBundleContext().getBundles())
+					.filter(b -> b.getSymbolicName().equals("org.eclipse.core.resources")).findFirst().orElse(null);
+			result = resourcesBundle != null
+					&& (resourcesBundle.getState() & (Bundle.ACTIVE | Bundle.STARTING | Bundle.RESOLVED)) != 0;
+		} catch (Throwable exception) {
+			// Assume that it's not available.
+		}
+		IS_RESOURCES_BUNDLE_AVAILABLE = result;
+	}
+	
 	/**
 	 * The singleton instance of the plugin.
 	 */

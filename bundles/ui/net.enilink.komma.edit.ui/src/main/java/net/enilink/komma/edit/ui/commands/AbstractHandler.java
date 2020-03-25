@@ -36,13 +36,10 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import net.enilink.komma.common.util.Log;
 import net.enilink.komma.common.util.StringStatics;
-import net.enilink.komma.common.util.Trace;
 import net.enilink.komma.edit.domain.IEditingDomain;
 import net.enilink.komma.edit.domain.IEditingDomainProvider;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
-import net.enilink.komma.edit.ui.internal.EditUIDebugOptions;
 import net.enilink.komma.edit.ui.internal.EditUIStatusCodes;
 import net.enilink.komma.edit.ui.util.StatusLineUtil;
 
@@ -114,10 +111,6 @@ public abstract class AbstractHandler extends
 		default:
 			execute(event, new NullProgressMonitor());
 		}
-
-		Trace.trace(KommaEditUIPlugin.getPlugin(),
-				EditUIDebugOptions.ACTIONS_RUN,
-				"Command '" + String.valueOf(event.getCommand()) + "' run."); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/**
@@ -289,15 +282,11 @@ public abstract class AbstractHandler extends
 	 *            The exception to be handled.
 	 */
 	protected void handle(ExecutionEvent event, Exception exception) {
-		Trace.catching(KommaEditUIPlugin.getPlugin(),
-				EditUIDebugOptions.EXCEPTIONS_CATCHING, getClass(),
-				"handle", exception); //$NON-NLS-1$
-
 		IStatus status = new Status(IStatus.ERROR, KommaEditUIPlugin.PLUGIN_ID,
 				EditUIStatusCodes.ACTION_FAILURE, String.valueOf(exception
 						.getMessage()), exception);
 
-		Log.log(KommaEditUIPlugin.getPlugin(), status);
+		KommaEditUIPlugin.getPlugin().log(status);
 		openErrorDialog(event, status);
 	}
 
@@ -422,24 +411,12 @@ public abstract class AbstractHandler extends
 				new ProgressMonitorDialog(null).run(true, cancelable, runnable);
 			}
 		} catch (InvocationTargetException ite) {
-			Trace.catching(KommaEditUIPlugin.getPlugin(),
-					EditUIDebugOptions.EXCEPTIONS_CATCHING, getClass(),
-					"run", ite); //$NON-NLS-1$
-			Log.error(KommaEditUIPlugin.getPlugin(),
-					EditUIStatusCodes.SERVICE_FAILURE, "run", ite); //$NON-NLS-1$
+			KommaEditUIPlugin.getPlugin().log(new Status(IStatus.ERROR, KommaEditUIPlugin.PLUGIN_ID,
+					EditUIStatusCodes.SERVICE_FAILURE, "run", ite)); //$NON-NLS-1$
 
-			RuntimeException cre = new RuntimeException(ite
-					.getTargetException());
-
-			Trace.throwing(KommaEditUIPlugin.getPlugin(),
-					EditUIDebugOptions.EXCEPTIONS_THROWING, getClass(),
-					"run", cre); //$NON-NLS-1$
+			RuntimeException cre = new RuntimeException(ite.getTargetException());
 			throw cre;
-
 		} catch (InterruptedException ie) {
-			Trace.catching(KommaEditUIPlugin.getPlugin(),
-					EditUIDebugOptions.EXCEPTIONS_CATCHING, getClass(),
-					"run", ie); //$NON-NLS-1$
 		}
 	}
 }

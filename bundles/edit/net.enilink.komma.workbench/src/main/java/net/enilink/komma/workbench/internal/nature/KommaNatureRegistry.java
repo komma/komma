@@ -19,7 +19,7 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.RegistryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +51,8 @@ public class KommaNatureRegistry {
 	}
 
 	protected void readRegistry() {
-		// register Nature IDs for the J2EENatures
-		IExtensionRegistry r = Platform.getExtensionRegistry();
+		// register Nature IDs
+		IExtensionRegistry r = RegistryFactory.getRegistry();
 		IConfigurationElement[] ce = r
 				.getConfigurationElementsFor(NATURE_REGISTRATION_POINT);
 		String natureId;

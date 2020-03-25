@@ -41,7 +41,6 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 
 import net.enilink.komma.common.command.ICommand;
-import net.enilink.komma.common.util.Log;
 import net.enilink.komma.edit.command.DragAndDropCommand;
 import net.enilink.komma.edit.command.IDragAndDropFeedback;
 import net.enilink.komma.edit.domain.IEditingDomain;
@@ -239,11 +238,8 @@ public class EditingDomainViewerDropAdapter extends DropTargetAdapter {
 					domain.getCommandStack().execute(command,
 							new NullProgressMonitor(), null);
 				} catch (ExecutionException e) {
-					Log.log(KommaEditUIPlugin.getPlugin(),
-							new Status(IStatus.ERROR,
-									KommaEditUIPlugin.PLUGIN_ID,
-									EditUIStatusCodes.ACTION_FAILURE, String
-											.valueOf(e.getMessage()), e));
+					KommaEditUIPlugin.getPlugin().log(new Status(IStatus.ERROR, KommaEditUIPlugin.PLUGIN_ID,
+							EditUIStatusCodes.ACTION_FAILURE, String.valueOf(e.getMessage()), e));
 				}
 			} else {
 				// Otherwise, let's call the whole thing off.

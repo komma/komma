@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.common.ui.CommonUIPlugin;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
@@ -153,7 +152,7 @@ public class ResourceDialog extends Dialog {
 			data.grabExcessVerticalSpace = true;
 			data.horizontalAlignment = GridData.FILL;
 			data.grabExcessHorizontalSpace = true;
-			if (!AbstractKommaPlugin.IS_RESOURCES_BUNDLE_AVAILABLE) {
+			if (!CommonUIPlugin.IS_RESOURCES_BUNDLE_AVAILABLE) {
 				data.widthHint = 330;
 			}
 			composite.setLayoutData(data);
@@ -199,7 +198,7 @@ public class ResourceDialog extends Dialog {
 				.getString("_UI_BrowseFileSystem_label"));
 		prepareBrowseFileSystemButton(browseFileSystemButton);
 
-		if (AbstractKommaPlugin.IS_RESOURCES_BUNDLE_AVAILABLE) {
+		if (CommonUIPlugin.IS_RESOURCES_BUNDLE_AVAILABLE) {
 			Button browseWorkspaceButton = new Button(buttonComposite, SWT.PUSH);
 			{
 				FormData data = new FormData();

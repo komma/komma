@@ -11,7 +11,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -22,7 +21,6 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.sail.NotifyingSail;
 import org.eclipse.rdf4j.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
-import org.osgi.framework.Bundle;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
@@ -62,17 +60,6 @@ public class ModelSetModule extends AbstractModule {
 		if (parentModule != null) {
 			module.includeModule(parentModule);
 		}
-
-		// for (URL libraryUrl : KommaUtil.getConceptLibraries(
-		// Platform.getBundle(KommaConcepts.PLUGIN_ID)).andThen(
-		// KommaUtil.getBundleMetaInfLocations(KommaConcepts.PLUGIN_ID))) {
-		// module.addJarFileUrl(libraryUrl);
-		// }
-
-		// module.addDataset(
-		// getResource(ModelCore.PLUGIN_ID,
-		// "META-INF/ontologies/models.owl"),
-		// "http://enilink.net/vocab/komma/models#");
 
 		module.includeModule(KommaUtil.getCoreModule());
 
@@ -141,19 +128,6 @@ public class ModelSetModule extends AbstractModule {
 		if (filename.endsWith(".owl"))
 			return RDFFormat.RDFXML;
 		throw new IllegalArgumentException("Unknow RDF format for " + filename);
-	}
-
-	protected URL getResource(String bundleName, String path) {
-		Bundle bundle = null;
-		if (ModelPlugin.IS_ECLIPSE_RUNNING) {
-			bundle = Platform.getBundle(bundleName);
-		}
-
-		if (bundle != null) {
-			return bundle.getEntry(path);
-		} else {
-			return getClass().getClassLoader().getResource(path);
-		}
 	}
 
 	private void loadOntology(Repository repository, URL url)

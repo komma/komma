@@ -4,3 +4,4 @@ Bundle-Activator: net.enilink.komma.common.CommonPlugin$Implementation
 Bundle-Localization: plugin
 Eclipse-LazyStart: true
 Bundle-ActivationPolicy: lazy
+DynamicImport-Package: com.ibm.icu.text

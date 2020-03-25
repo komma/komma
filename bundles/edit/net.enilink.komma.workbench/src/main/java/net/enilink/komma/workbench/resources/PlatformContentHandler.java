@@ -15,11 +15,11 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescription;
 
 import net.enilink.komma.model.IContentHandler;
+import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.base.ContentHandler;
 import net.enilink.komma.core.URI;
 
@@ -89,7 +89,7 @@ public class PlatformContentHandler extends ContentHandler {
 			contentDescription = PlatformResourceURIHandler.WorkbenchHelper
 					.getContentDescription(uri.toPlatformString(true), options);
 		} else {
-			contentDescription = Platform.getContentTypeManager()
+			contentDescription = ModelPlugin.getContentTypeManager()
 					.getDescriptionFor(inputStream, uri.lastSegment(),
 							IContentDescription.ALL);
 		}

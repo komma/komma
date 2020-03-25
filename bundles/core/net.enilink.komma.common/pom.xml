@@ -25,17 +25,17 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
-			<artifactId>org.eclipse.core.runtime</artifactId>
-			<version>[3.2.0,4.0.0)</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.core.commands</artifactId>
 			<version>[3.2.0,4.0.0)</version>
 		</dependency>
 		<dependency>
 			<groupId>net.enilink.komma</groupId>
 			<artifactId>net.enilink.komma.core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.enilink.komma</groupId>
+			<artifactId>net.enilink.commons.util</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

@@ -36,9 +36,9 @@ import net.enilink.komma.common.util.WrappedException;
  * @since 2.2.0
  */
 public abstract class EclipseUIPlugin extends AbstractUIPlugin implements
-		IResourceLocator, ILogger, AbstractKommaPlugin.InternalEclipsePlugin {
+		IResourceLocator, ILogger, AbstractKommaPlugin.InternalPlugin {
 	/**
-	 * The EMF plug-in APIs are all delegated to this helper, so that code can
+	 * The plug-in APIs are all delegated to this helper, so that code can
 	 * be shared by plug-in implementations with a different platform base class
 	 * (e.g. Plugin).
 	 */

@@ -24,13 +24,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 import net.enilink.vocab.owl.DatatypeProperty;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.ExtendedCompositeCommand;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.util.IResourceLocator;
-import net.enilink.komma.common.util.Log;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.SetCommand;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
@@ -670,8 +671,8 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 				}
 			}
 		} catch (ExecutionException e) {
-			Log.error(KommaEditPlugin.getPlugin(), 0,
-					"Error while resetting property value", e);
+			KommaEditPlugin.getPlugin().log(
+					new Status(IStatus.ERROR, KommaEditPlugin.PLUGIN_ID, "Error while resetting property value", e));
 		}
 	}
 
@@ -781,8 +782,8 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 				}
 			}
 		} catch (ExecutionException e) {
-			Log.error(KommaEditPlugin.getPlugin(), 0,
-					"Error while setting property value", e);
+			KommaEditPlugin.getPlugin()
+					.log(new Status(IStatus.ERROR, KommaEditPlugin.PLUGIN_ID, "Error while setting property value", e));
 		}
 	}
 

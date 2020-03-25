@@ -1,4 +1,4 @@
-package net.enilink.komma.edit.util;
+package net.enilink.komma.edit.ui.util;
 
 import java.util.ArrayList;
 import java.util.Collection;

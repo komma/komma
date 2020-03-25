@@ -83,7 +83,7 @@ public class URIEditorInput implements IEditorInput, IPersistableElement {
 		if (getURI().isFile()) {
 			return new File(getURI().toFileString()).exists();
 		} else {
-			if (AbstractKommaPlugin.IS_RESOURCES_BUNDLE_AVAILABLE) {
+			if (CommonUIPlugin.IS_RESOURCES_BUNDLE_AVAILABLE) {
 				return EclipseUtil.exists(uri);
 			} else {
 				return false;
@@ -119,9 +119,9 @@ public class URIEditorInput implements IEditorInput, IPersistableElement {
 		return this;
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object getAdapter(Class adapter) {
-		if (AbstractKommaPlugin.IS_RESOURCES_BUNDLE_AVAILABLE) {
+		if (CommonUIPlugin.IS_RESOURCES_BUNDLE_AVAILABLE) {
 			Object result = EclipseUtil.getAdapter(adapter, uri);
 			if (result != null) {
 				return result;

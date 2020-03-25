@@ -32,7 +32,7 @@ import net.enilink.komma.internal.model.extensions.KommaRegistryReader;
 import net.enilink.komma.internal.model.extensions.KommaRegistryReader.PluginClassDescriptor;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.RegistryFactory;
 
 /**
  * The <b>Plugin</b> for the model EMF.Edit library. EMF must run within an
@@ -119,7 +119,7 @@ public final class KommaEditPlugin extends AbstractKommaPlugin {
 			};
 			if (INSTANCE.getBundleResourceLocator() instanceof EclipsePlugin) {
 				RegistryReader registryReader = new KommaRegistryReader(
-						Platform.getExtensionRegistry(),
+						RegistryFactory.getRegistry(),
 						INSTANCE.getSymbolicName(),
 						"itemProviderAdapterFactories") {
 					@Override
@@ -216,7 +216,7 @@ public final class KommaEditPlugin extends AbstractKommaPlugin {
 			};
 			if (INSTANCE.getBundleResourceLocator() instanceof EclipsePlugin) {
 				RegistryReader registryReader = new RegistryReader(
-						Platform.getExtensionRegistry(),
+						RegistryFactory.getRegistry(),
 						INSTANCE.getSymbolicName(), "childCreationExtenders") {
 					@Override
 					protected boolean readElement(

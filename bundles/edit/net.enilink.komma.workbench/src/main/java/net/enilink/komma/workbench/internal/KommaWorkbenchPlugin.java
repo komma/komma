@@ -189,17 +189,6 @@ public class KommaWorkbenchPlugin extends AbstractKommaPlugin {
 	}
 
 	/**
-	 * Get the workspace. Just use ResourcePlugin.getWorkspace() instead.
-	 * 
-	 * @return
-	 * 
-	 * @since 1.0.0
-	 */
-	public static IWorkspace getWorkspace() {
-		return ResourcesPlugin.getWorkspace();
-	}
-
-	/**
 	 * Is this plugin active.
 	 * 
 	 * @return <code>true</code> if active

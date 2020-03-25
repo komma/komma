@@ -3,12 +3,17 @@ package net.enilink.komma.model.rdf4j;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -16,6 +21,8 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
@@ -212,19 +219,22 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 
 	protected void addBasicKnowledge(Repository repository)
 			throws RepositoryException {
-		String[] bundles = { "net.enilink.vocab.owl", "net.enilink.vocab.rdfs" };
+		Set<String> bundleNames = new HashSet<>(Arrays.asList("net.enilink.vocab.owl", "net.enilink.vocab.rdfs"));
+		List<Bundle> bundles = Stream
+				.of(FrameworkUtil.getBundle(MemoryModelSetSupport.class).getBundleContext().getBundles())
+				.filter(b -> bundleNames.contains(b.getSymbolicName())).collect(Collectors.toList());
 
-		if (AbstractKommaPlugin.IS_ECLIPSE_RUNNING) {
+		if (AbstractKommaPlugin.IS_OSGI_RUNNING) {
 			RepositoryConnection conn = null;
 			try {
 				conn = repository.getConnection();
 				URI defaultGraph = getDefaultGraph();
 				Resource[] contexts = defaultGraph == null ? new Resource[0]
 						: new Resource[] { repository.getValueFactory()
-								.createURI(defaultGraph.toString()) };
+								.createIRI(defaultGraph.toString()) };
 				if (!conn.hasStatement(null, null, null, false, contexts)) {
-					for (String name : bundles) {
-						URL url = Platform.getBundle(name).getResource(
+					for (Bundle bundle : bundles) {
+						URL url = bundle.getResource(
 								"META-INF/org.openrdf.ontologies");
 						if (url != null) {
 							URL resolvedUrl = FileLocator.resolve(url);

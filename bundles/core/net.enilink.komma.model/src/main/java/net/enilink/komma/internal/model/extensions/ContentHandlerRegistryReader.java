@@ -14,13 +14,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import net.enilink.komma.model.IContentHandler;
 import net.enilink.komma.model.ModelPlugin;
-
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
-import org.osgi.framework.Bundle;
 
 /**
  * A plugin extension reader that populates the
@@ -58,12 +60,17 @@ public class ContentHandlerRegistryReader extends KommaRegistryReader {
 				String contributorName = element.getContributor().getName();
 				if (add) {
 					try {
-						Bundle contributorBundle = Platform.isRunning() ? Platform.getBundle(element
-								.getNamespaceIdentifier()) : null;
+						Optional<Bundle> contributorBundle = Optional.empty();
+						if (ModelPlugin.IS_OSGI_RUNNING) {
+							contributorBundle = Stream
+									.of(FrameworkUtil.getBundle(ModelPlugin.class).getBundleContext().getBundles())
+									.filter(b -> b.getSymbolicName().equals(element.getNamespaceIdentifier()))
+									.findFirst();
+						}
 						@SuppressWarnings("unchecked")
-						Class<IContentHandler> contributorHandlerClass = (Class<IContentHandler>) (contributorBundle != null ? contributorBundle
-								.loadClass(contributorClassName) : Class
-								.forName(contributorClassName));
+						Class<IContentHandler> contributorHandlerClass = (Class<IContentHandler>) (contributorBundle
+								.isPresent() ? contributorBundle.get().loadClass(contributorClassName)
+										: Class.forName(contributorClassName));
 						Map<String, String> parameters = new HashMap<String, String>();
 						for (IConfigurationElement parameter : element
 								.getChildren("parameter")) {

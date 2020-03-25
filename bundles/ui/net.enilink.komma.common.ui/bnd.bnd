@@ -3,4 +3,4 @@ Bundle-ClassPath: .
 Bundle-Activator: net.enilink.komma.common.ui.CommonUIPlugin$Implementation
 Bundle-Localization: plugin
 Bundle-ActivationPolicy: lazy
-Import-Package: org.eclipse.core.resources;resolution:=optional, *
+Import-Package: org.eclipse.core.resources;resolution:=optional, org.eclipse.team.core.history;resolution:=optional, *

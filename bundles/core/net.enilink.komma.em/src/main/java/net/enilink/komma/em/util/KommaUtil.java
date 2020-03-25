@@ -19,19 +19,24 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.eclipse.core.runtime.FileLocator;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
+
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.IMap;
 import net.enilink.commons.iterator.NiceIterator;
 import net.enilink.commons.iterator.UniqueExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
-import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IQuery;
@@ -58,10 +63,6 @@ import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.vocab.rdfs.RdfsModule;
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
-import org.osgi.framework.Bundle;
-
 public class KommaUtil implements ISparqlConstants {
 	public static KommaModule getCoreModule() {
 		KommaModule module = new KommaCoreModule();
@@ -87,9 +88,10 @@ public class KommaUtil implements ISparqlConstants {
 
 	public static IExtendedIterator<URL> getConceptLibraries(String bundleName) {
 		Enumeration<URL> libraries;
-		if (AbstractKommaPlugin.IS_ECLIPSE_RUNNING) {
-			Bundle bundle = Platform.getBundle(bundleName);
-			libraries = bundle.findEntries("lib", "*.jar", true);
+		Bundle bundle = FrameworkUtil.getBundle(KommaUtil.class);
+		if (bundle != null) {
+			Optional<Bundle> targetBundle = Stream.of(bundle.getBundleContext().getBundles()).filter(b -> b.getSymbolicName().equals(bundleName)).findFirst();
+			libraries = targetBundle.map(b -> b.findEntries("lib", "*.jar", true)).orElse(null);
 		} else {
 			try {
 				libraries = KommaUtil.class.getClassLoader().getResources(

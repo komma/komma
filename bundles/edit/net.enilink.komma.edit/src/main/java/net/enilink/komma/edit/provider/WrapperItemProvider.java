@@ -25,6 +25,8 @@ import java.util.Set;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
 import net.enilink.komma.common.adapter.IAdapterFactory;
@@ -34,7 +36,6 @@ import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.UnexecutableCommand;
 import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
-import net.enilink.komma.common.util.Log;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.AbstractOverrideableCommand;
 import net.enilink.komma.edit.command.CommandParameter;
@@ -696,8 +697,8 @@ public class WrapperItemProvider implements IWrapperItemProvider {
 							createSetCommand(editingDomain, (IResource) object,
 									property, value), null, null);
 				} catch (ExecutionException e) {
-					Log.error(KommaEditPlugin.getPlugin(), 0,
-							"Error while setting property value", e);
+					KommaEditPlugin.getPlugin().log(new Status(IStatus.ERROR, KommaEditPlugin.PLUGIN_ID,
+							"Error while setting property value", e));
 				}
 			}
 		}

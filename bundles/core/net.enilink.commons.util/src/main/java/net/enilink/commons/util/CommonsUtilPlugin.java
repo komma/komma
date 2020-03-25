@@ -10,21 +10,21 @@
  *******************************************************************************/
 package net.enilink.commons.util;
 
-import net.enilink.commons.util.extensions.RegistryFactoryHelper;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+
+import net.enilink.commons.util.extensions.RegistryFactoryHelper;
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class CommonsUtilPlugin extends Plugin {
+public class CommonsUtilPlugin implements BundleActivator {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "net.enilink.commons.util";
@@ -32,34 +32,20 @@ public class CommonsUtilPlugin extends Plugin {
 	// The shared instance
 	private static CommonsUtilPlugin plugin;
 
+	private static Log logHelper = new Log(CommonsUtilPlugin.class);
+	
 	/**
 	 * The constructor
 	 */
 	public CommonsUtilPlugin() {
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext
-	 * )
-	 */
 	public void start(BundleContext context) throws Exception {
-		super.start(context);
 		plugin = this;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext
-	 * )
-	 */
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
-		super.stop(context);
 	}
 
 	/**
@@ -113,7 +99,7 @@ public class CommonsUtilPlugin extends Plugin {
 	}
 
 	public static void log(IStatus status) {
-		getDefault().getLog().log(status);
+		logHelper.log(status);
 	}
 
 	public static void logErrorMessage(String message) {

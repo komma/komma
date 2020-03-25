@@ -21,10 +21,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import net.enilink.komma.common.AbstractKommaPlugin;
-import net.enilink.komma.common.CommonPlugin;
-
 import org.eclipse.core.runtime.IStatus;
+
+import net.enilink.komma.common.CommonPlugin;
 
 /**
  * A basic implementation of a diagnostic that that also acts as a chain.
@@ -444,11 +443,9 @@ public class BasicDiagnostic implements Diagnostic, DiagnosticChain {
 			return toDiagnostic(throwable.getCause(), data);
 		}
 
-		if (AbstractKommaPlugin.IS_ECLIPSE_RUNNING) {
-			Diagnostic diagnostic = EclipseHelper.toDiagnostic(throwable, data);
-			if (diagnostic != null) {
-				return diagnostic;
-			}
+		Diagnostic diagnostic = EclipseHelper.toDiagnostic(throwable, data);
+		if (diagnostic != null) {
+			return diagnostic;
 		}
 
 		String message = throwable.getClass().getName();

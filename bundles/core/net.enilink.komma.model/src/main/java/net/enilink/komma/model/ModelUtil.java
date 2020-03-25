@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
@@ -141,9 +140,9 @@ public class ModelUtil {
 			IURIConverter uriConverter, URI uri) throws IOException {
 		String contentTypeId = (String) uriConverter.contentDescription(uri,
 				null).get(IContentHandler.CONTENT_TYPE_PROPERTY);
-		if (contentTypeId != null && Platform.getContentTypeManager() != null) {
-			IContentType contentType = Platform.getContentTypeManager()
-					.getContentType(contentTypeId);
+		IContentTypeManager contentTypeManager = ModelPlugin.getContentTypeManager();
+		if (contentTypeId != null && contentTypeManager != null) {
+			IContentType contentType = contentTypeManager.getContentType(contentTypeId);
 			if (contentType != null) {
 				return contentType.getDefaultDescription();
 			}
@@ -181,8 +180,7 @@ public class ModelUtil {
 	 */
 	public static IContentDescription determineContentDescription(URI uri,
 			IURIConverter uriConverter, Map<?, ?> options) throws IOException {
-		IContentTypeManager contentTypeManager = Platform
-				.getContentTypeManager();
+		IContentTypeManager contentTypeManager = ModelPlugin.getContentTypeManager();
 		if (contentTypeManager == null) {
 			return null;
 		}
@@ -475,8 +473,7 @@ public class ModelUtil {
 	 */
 	public static Map<String, Double> getSupportedMimeTypes() {
 		Map<String, Double> mimeTypes = new HashMap<>();
-		IContentTypeManager contentTypeManager = Platform
-				.getContentTypeManager();
+		IContentTypeManager contentTypeManager = ModelPlugin.getContentTypeManager();
 		if (contentTypeManager != null) {
 			for (IContentType contentType : contentTypeManager
 					.getAllContentTypes()) {
@@ -524,8 +521,7 @@ public class ModelUtil {
 	 */
 	public static String mimeType(String fileName) {
 		String mimeType = null;
-		IContentTypeManager contentTypeManager = Platform
-				.getContentTypeManager();
+		IContentTypeManager contentTypeManager = ModelPlugin.getContentTypeManager();
 		if (contentTypeManager != null) {
 			IContentType contentType = contentTypeManager
 					.findContentTypeFor(fileName);

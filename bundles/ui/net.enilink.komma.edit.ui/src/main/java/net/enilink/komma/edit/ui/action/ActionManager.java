@@ -20,15 +20,14 @@ import java.util.List;
 import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.custom.BusyIndicator;
 
-import net.enilink.komma.common.util.Log;
-import net.enilink.komma.common.util.Trace;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
-import net.enilink.komma.edit.ui.internal.EditUIDebugOptions;
 import net.enilink.komma.edit.ui.internal.EditUIStatusCodes;
 
 /**
@@ -195,7 +194,6 @@ public class ActionManager {
 		if (!theAction.isRunnable()) {
 			UnsupportedOperationException uoe =
 				new UnsupportedOperationException();
-			Trace.throwing(KommaEditUIPlugin.getPlugin(), EditUIDebugOptions.EXCEPTIONS_THROWING, getClass(), "run", uoe); //$NON-NLS-1$
 			throw uoe;
 		}
 		
@@ -233,7 +231,6 @@ public class ActionManager {
 		setAction(theAction);
 
 		fireActionManagerChange(new ActionManagerChangeEvent(this, theAction));
-		Trace.trace(KommaEditUIPlugin.getPlugin(), EditUIDebugOptions.ACTIONS_RUN, "Action '" + String.valueOf(getAction()) + "' run."); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/**
@@ -260,17 +257,14 @@ public class ActionManager {
 			}
 
 		} catch (InvocationTargetException ite) {
-			Trace.catching(KommaEditUIPlugin.getPlugin(), EditUIDebugOptions.EXCEPTIONS_CATCHING, getClass(), "run", ite); //$NON-NLS-1$
-			Log.error(KommaEditUIPlugin.getPlugin(), EditUIStatusCodes.SERVICE_FAILURE, "run", ite); //$NON-NLS-1$
+			KommaEditUIPlugin.getPlugin().log(new Status(IStatus.ERROR, KommaEditUIPlugin.PLUGIN_ID,
+					EditUIStatusCodes.SERVICE_FAILURE, "run", ite));
 
 			RuntimeException cre =
 				new RuntimeException(ite.getTargetException());
 
-			Trace.throwing(KommaEditUIPlugin.getPlugin(), EditUIDebugOptions.EXCEPTIONS_THROWING, getClass(), "run", cre); //$NON-NLS-1$
 			throw cre;
-
 		} catch (InterruptedException ie) {
-			Trace.catching(KommaEditUIPlugin.getPlugin(), EditUIDebugOptions.EXCEPTIONS_CATCHING, getClass(), "run", ie); //$NON-NLS-1$
 		}
 	}
 
