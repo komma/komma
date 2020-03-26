@@ -1,6 +1,11 @@
-bundles/**/META-INF/MANIFEST.MF
 target/
 .settings/
 .classpath
 .project
 .flattened-pom.xml
+# exclude symlinks
+META-INF
+OSGI-INF
+# but include the directories
+!META-INF/
+!OSGI-INF/

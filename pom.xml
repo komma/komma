@@ -146,6 +146,30 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>create-symlinks</id>
+						<phase>compile</phase>
+						<configuration>
+							<target>
+								<symlink link="${project.basedir}/OSGI-INF"
+									resource="${project.build.outputDirectory}/OSGI-INF"
+									failonerror="false" />
+								<symlink link="${project.basedir}/META-INF"
+									resource="${project.build.outputDirectory}/META-INF"
+									failonerror="false" />
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 
 		<pluginManagement>
@@ -216,49 +240,15 @@
 				</plugin>
 
 				<plugin>
-					<artifactId>maven-resources-plugin</artifactId>
-					<executions>
-						<execution>
-							<id>copy-resources</id>
-							<phase>compile</phase>
-							<goals>
-								<goal>copy-resources</goal>
-							</goals>
-							<configuration>
-								<outputDirectory>${project.basedir}/META-INF</outputDirectory>
-								<resources>
-									<resource>
-										<directory>${project.build.outputDirectory}/META-INF</directory>
-										<includes>
-											<include>MANIFEST.MF</include>
-										</includes>
-									</resource>
-								</resources>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-
-				<plugin>
-					<artifactId>maven-clean-plugin</artifactId>
-					<version>3.1.0</version>
-					<configuration>
-						<filesets>
-							<fileset>
-								<directory>META-INF</directory>
-								<includes>
-									<include>MANIFEST.MF</include>
-								</includes>
-								<followSymlinks>false</followSymlinks>
-							</fileset>
-						</filesets>
-					</configuration>
-				</plugin>
-
-				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>versions-maven-plugin</artifactId>
 					<version>2.7</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>1.8</version>
 				</plugin>
 
 				<!-- Ignore flatten plugin in M2E -->
@@ -285,7 +275,26 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.maven.plugins
+										</groupId>
+										<artifactId>
+											maven-antrun-plugin
+										</artifactId>
+										<versionRange>
+											[1.8,)
+										</versionRange>
+										<goals>
+											<goal>run</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
@@ -306,8 +315,6 @@
 			<resource>
 				<directory>.</directory>
 				<includes>
-					<include>META-INF/**</include>
-					<include>OSGI-INF/**</include>
 					<include>icons/**</include>
 					<include>schema/*.exsd</include>
 					<include>about.html</include>
