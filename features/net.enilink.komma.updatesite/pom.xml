@@ -21,10 +21,6 @@
 	<artifactId>net.enilink.komma.updatesite</artifactId>
 	<packaging>pom</packaging>
 
-	<modules>
-		<module>../net.enilink.komma.editor.feature</module>
-	</modules>
-
 	<properties>
 		<komma.copyright><![CDATA[Copyright (c) 2019 Fraunhofer IWU and others.
 All rights reserved. This program and the accompanying materials

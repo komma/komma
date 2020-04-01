@@ -25,6 +25,7 @@
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-css</artifactId>
 			<version>${project.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

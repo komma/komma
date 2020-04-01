@@ -21,4 +21,11 @@
 	<properties>
 		<path.to.root>../..</path.to.root>
 	</properties>
+
+	<modules>
+		<module>net.enilink.komma.feature</module>
+		<module>net.enilink.komma.edit.feature</module>
+		<module>net.enilink.komma.edit.ui.feature</module>
+		<module>net.enilink.komma.editor.feature</module>
+	</modules>
 </project>

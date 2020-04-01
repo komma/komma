@@ -118,6 +118,7 @@
 					</execution>
 				</executions>
 			</plugin>
+
 			<plugin>
 				<!-- resolve variables and remove development configuration from POM 
 					files -->
@@ -153,14 +154,14 @@
 				<executions>
 					<execution>
 						<id>create-symlinks</id>
-						<phase>compile</phase>
+						<phase>validate</phase>
 						<configuration>
 							<target>
 								<symlink link="${project.basedir}/OSGI-INF"
-									resource="${project.build.outputDirectory}/OSGI-INF"
+									resource="${project.build.outputDirectory}/OSGI-INF" overwrite="true"
 									failonerror="false" />
 								<symlink link="${project.basedir}/META-INF"
-									resource="${project.build.outputDirectory}/META-INF"
+									resource="${project.build.outputDirectory}/META-INF" overwrite="true"
 									failonerror="false" />
 							</target>
 						</configuration>
@@ -324,6 +325,21 @@
 			</resource>
 		</resources>
 	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>osgi.core</artifactId>
+			<version>7.0.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>osgi.cmpn</artifactId>
+			<version>7.0.0</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
 
 	<dependencyManagement>
 		<dependencies>
@@ -491,8 +507,8 @@
 			<modules>
 				<module>bundles/vendor</module>
 				<module>bundles/sdk</module>
-				<module>features</module>
 				<module>features/net.enilink.komma.rap.feature</module>
+				<module>launch</module>
 			</modules>
 		</profile>
 
@@ -565,6 +581,6 @@
 	</profiles>
 
 	<modules>
-		<module>features/net.enilink.komma.updatesite</module>
+		<module>features</module>
 	</modules>
 </project>

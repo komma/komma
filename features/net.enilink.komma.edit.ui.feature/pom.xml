@@ -65,8 +65,6 @@
 	</dependencies>
 
 	<modules>
-		<module>../net.enilink.komma.edit.feature</module>
-
 		<module>../../bundles/ui/net.enilink.commons.ui</module>
 		<module>../../bundles/ui.rcp/net.enilink.komma.common.ui.rcp</module>
 		<module>../../bundles/ui/net.enilink.komma.common.ui</module>
