@@ -1,0 +1,4 @@
+-runfw: org.eclipse.osgi;version='[3.15,3.99)'
+-runee: JavaSE-1.8
+-runrequires: \
+	osgi.identity; filter:='(osgi.identity=net.enilink.komma.owl.editor.rcp)'
