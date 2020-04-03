@@ -23,6 +23,11 @@
 	<packaging>jar</packaging>
 	<dependencies>
 		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>osgi.core</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>net.enilink.komma</groupId>
 			<artifactId>net.enilink.komma.model</artifactId>
 			<version>${project.version}</version>
