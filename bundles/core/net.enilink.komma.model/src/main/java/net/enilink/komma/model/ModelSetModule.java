@@ -18,8 +18,6 @@ import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.Rio;
-import org.eclipse.rdf4j.sail.NotifyingSail;
-import org.eclipse.rdf4j.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 
 import com.google.inject.AbstractModule;
@@ -100,11 +98,8 @@ public class ModelSetModule extends AbstractModule {
 	 */
 	protected Repository createMetaDataRepository() {
 		try {
-			NotifyingSail sailStack = new MemoryStore();
-			sailStack = new ForwardChainingRDFSInferencer(sailStack);
-
-			Repository repository = new SailRepository(sailStack);
-			repository.initialize();
+			Repository repository = new SailRepository(new MemoryStore());
+			repository.init();
 
 			Collection<URL> conceptLibraries = KommaUtil.getConceptLibraries(
 					ModelPlugin.PLUGIN_ID).toList();

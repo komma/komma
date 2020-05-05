@@ -31,7 +31,8 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
-import org.eclipse.rdf4j.sail.inferencer.fc.ForwardChainingRDFSInferencer;
+import org.eclipse.rdf4j.sail.NotifyingSail;
+import org.eclipse.rdf4j.sail.inferencer.fc.SchemaCachingRDFSInferencer;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -56,14 +57,14 @@ import net.enilink.komma.rdf4j.RDF4JModule;
 public abstract class MemoryModelSetSupport implements IModelSet,
 		IModelSet.Internal, IRepositoryModelSet, Behaviour<IRepositoryModelSet> {
 	public Repository createRepository() throws RepositoryException {
-		MemoryStore store = new MemoryStore();
+		NotifyingSail store = new MemoryStore();
+		if (! Boolean.FALSE.equals(getInference())) {
+			store = new SchemaCachingRDFSInferencer(store);
+		}
 		SailRepository repository = new SailRepository(store);
-		repository.initialize();
+		repository.init();
 		addBasicKnowledge(repository);
-		// add RDFS inferencer after base knowledge was imported into the
-		// repository
-		return new SailRepository(Boolean.FALSE.equals(getInference()) ? store
-				: new ForwardChainingRDFSInferencer(store));
+		return repository;
 	}
 
 	protected void addBasicKnowledge(Repository repository)

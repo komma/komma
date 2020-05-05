@@ -17,7 +17,8 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
-import org.eclipse.rdf4j.sail.inferencer.fc.ForwardChainingRDFSInferencer;
+import org.eclipse.rdf4j.sail.NotifyingSail;
+import org.eclipse.rdf4j.sail.inferencer.fc.SchemaCachingRDFSInferencer;
 import org.eclipse.rdf4j.sail.nativerdf.NativeStore;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -58,11 +59,13 @@ public abstract class PersistentModelSetSupport extends MemoryModelSetSupport {
 			throw new RepositoryException("Location service for workspace scheme not found");
 		}
 
-		NativeStore store = new NativeStore(new File(repo.toFileString()));
+		NotifyingSail store = new NativeStore(new File(repo.toFileString()));
+		if (! Boolean.FALSE.equals(getInference())) {
+			store = new SchemaCachingRDFSInferencer(store);
+		}
 		SailRepository repository = new SailRepository(store);
-		repository.initialize();
+		repository.init();
 		addBasicKnowledge(repository);
-		return new SailRepository(
-				Boolean.FALSE.equals(getInference()) ? store : new ForwardChainingRDFSInferencer(store));
+		return repository;
 	}
 }

@@ -13,7 +13,7 @@ public abstract class SPARQLModelSetSupport extends MemoryModelSetSupport {
 	public Repository createRepository() throws RepositoryException {
 		SPARQLRepository repository = new SPARQLRepository(
 				"http://localhost:8005/bigdata");
-		repository.initialize();
+		repository.init();
 		addBasicKnowledge(repository);
 		return repository;
 	}

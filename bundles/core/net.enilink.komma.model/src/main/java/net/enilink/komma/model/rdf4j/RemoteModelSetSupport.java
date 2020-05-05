@@ -205,7 +205,7 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 						repo.setUsernameAndPassword(username, password);
 					}
 
-					repo.initialize();
+					repo.init();
 					addBasicKnowledge(repo);
 					return repo;
 				} catch (Exception e) {
