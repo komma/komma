@@ -11,8 +11,8 @@ import org.osgi.service.log.Logger;
 import org.osgi.service.log.LoggerFactory;
 
 public class Log {
-	protected Optional<Logger> osgiLogger;
-	protected Optional<org.slf4j.Logger> slf4jLogger;
+	protected Optional<Logger> osgiLogger = Optional.empty();
+	protected Optional<org.slf4j.Logger> slf4jLogger = Optional.empty();
 	
 	public Log(Class<?> clazz) {
 		try {
