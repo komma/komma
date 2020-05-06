@@ -480,6 +480,9 @@
 
 		<profile>
 			<id>updatesite</id>
+			<modules>
+				<module>features/net.enilink.komma.updatesite</module>
+			</modules>
 			<build>
 				<plugins>
 					<plugin>
