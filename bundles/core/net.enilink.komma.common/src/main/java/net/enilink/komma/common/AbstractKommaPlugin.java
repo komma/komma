@@ -78,10 +78,9 @@ public abstract class AbstractKommaPlugin extends DelegatingResourceLocator
 	public static final boolean IS_RESOURCES_BUNDLE_AVAILABLE;
 	static {
 		boolean result = false;
-		Bundle bundle = FrameworkUtil.getBundle(AbstractKommaPlugin.class);
-		if (bundle != null) {
+		if (IS_OSGI_RUNNING) {
 			try {
-				Bundle resourcesBundle = Stream.of(bundle.getBundleContext().getBundles())
+				Bundle resourcesBundle = Stream.of(FrameworkUtil.getBundle(AbstractKommaPlugin.class).getBundleContext().getBundles())
 						.filter(b -> b.getSymbolicName().equals("org.eclipse.core.resources")).findFirst().orElse(null);
 				result = resourcesBundle != null
 						&& (resourcesBundle.getState() & (Bundle.ACTIVE | Bundle.STARTING | Bundle.RESOLVED)) != 0;
