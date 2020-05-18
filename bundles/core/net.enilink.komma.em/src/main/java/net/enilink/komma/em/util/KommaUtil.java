@@ -88,9 +88,8 @@ public class KommaUtil implements ISparqlConstants {
 
 	public static IExtendedIterator<URL> getConceptLibraries(String bundleName) {
 		Enumeration<URL> libraries;
-		Bundle bundle = FrameworkUtil.getBundle(KommaUtil.class);
-		if (bundle != null) {
-			Optional<Bundle> targetBundle = Stream.of(bundle.getBundleContext().getBundles()).filter(b -> b.getSymbolicName().equals(bundleName)).findFirst();
+		if (KommaEM.IS_OSGI_RUNNING) {
+			Optional<Bundle> targetBundle = Stream.of(FrameworkUtil.getBundle(KommaUtil.class).getBundleContext().getBundles()).filter(b -> b.getSymbolicName().equals(bundleName)).findFirst();
 			libraries = targetBundle.map(b -> b.findEntries("lib", "*.jar", true)).orElse(null);
 		} else {
 			try {

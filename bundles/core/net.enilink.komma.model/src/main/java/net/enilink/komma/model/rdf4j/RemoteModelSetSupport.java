@@ -1,28 +1,10 @@
 package net.enilink.komma.model.rdf4j;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.RDFParseException;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
@@ -34,7 +16,6 @@ import com.google.inject.util.Modules;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.IMap;
 import net.enilink.composition.annotations.Iri;
-import net.enilink.komma.common.AbstractKommaPlugin;
 import net.enilink.komma.core.IBindings;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
@@ -51,7 +32,6 @@ import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.internal.rdf4j.RDF4JRepositoryDataManager;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.MODELS;
-import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.rdf4j.RDF4JDataManagerFactory;
 import net.enilink.komma.rdf4j.RDF4JModule;
 
@@ -219,76 +199,7 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 
 	protected void addBasicKnowledge(Repository repository)
 			throws RepositoryException {
-		Set<String> bundleNames = new HashSet<>(Arrays.asList("net.enilink.vocab.owl", "net.enilink.vocab.rdfs"));
-		List<Bundle> bundles = Stream
-				.of(FrameworkUtil.getBundle(MemoryModelSetSupport.class).getBundleContext().getBundles())
-				.filter(b -> bundleNames.contains(b.getSymbolicName())).collect(Collectors.toList());
-
-		if (AbstractKommaPlugin.IS_OSGI_RUNNING) {
-			RepositoryConnection conn = null;
-			try {
-				conn = repository.getConnection();
-				URI defaultGraph = getDefaultGraph();
-				Resource[] contexts = defaultGraph == null ? new Resource[0]
-						: new Resource[] { repository.getValueFactory()
-								.createIRI(defaultGraph.toString()) };
-				if (!conn.hasStatement(null, null, null, false, contexts)) {
-					for (Bundle bundle : bundles) {
-						URL url = bundle.getResource(
-								"META-INF/org.openrdf.ontologies");
-						if (url != null) {
-							URL resolvedUrl = FileLocator.resolve(url);
-
-							Properties properties = new Properties();
-							InputStream in = resolvedUrl.openStream();
-							properties.load(in);
-							in.close();
-
-							URI baseUri = URIs.createURI(url.toString())
-									.trimSegments(1);
-							for (Map.Entry<Object, Object> entry : properties
-									.entrySet()) {
-								String file = entry.getKey().toString();
-								if (file.contains("rdfs") && skipRdfsOnImport()) {
-									// skip RDF and RDFS schema
-									continue;
-								}
-
-								URI fileUri = URIs.createFileURI(file);
-								fileUri = fileUri.resolve(baseUri);
-
-								resolvedUrl = FileLocator.resolve(new URL(
-										fileUri.toString()));
-								if (resolvedUrl != null) {
-									in = resolvedUrl.openStream();
-									if (in != null && in.available() > 0) {
-										conn.add(in, "", RDFFormat.RDFXML,
-												contexts);
-									}
-									if (in != null) {
-										in.close();
-									}
-								}
-							}
-						}
-					}
-				}
-			} catch (IOException e) {
-				throw new KommaException("Cannot access RDF data", e);
-			} catch (RepositoryException e) {
-				throw new KommaException("Loading RDF failed", e);
-			} catch (RDFParseException e) {
-				throw new KommaException("Invalid RDF data", e);
-			} finally {
-				if (conn != null) {
-					try {
-						conn.close();
-					} catch (RepositoryException e) {
-						ModelPlugin.log(e);
-					}
-				}
-			}
-		}
+		RepositoryUtil.addBasicKnowledge(repository, getDefaultGraph(), importRdfAndRdfsVocabulary());
 	}
 
 	@Override
@@ -296,8 +207,8 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 		return URIs.createURI("komma:default");
 	}
 
-	protected boolean skipRdfsOnImport() {
-		return false;
+	protected boolean importRdfAndRdfsVocabulary() {
+		return true;
 	}
 
 	@Override
