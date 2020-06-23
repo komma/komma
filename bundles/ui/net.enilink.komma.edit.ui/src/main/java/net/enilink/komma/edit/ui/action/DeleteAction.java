@@ -28,6 +28,8 @@ import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.edit.command.DeleteCommand;
 import net.enilink.komma.edit.command.RemoveCommand;
 import net.enilink.komma.edit.ui.KommaEditUIPlugin;
+import net.enilink.vocab.rdf.Property;
+import net.enilink.vocab.rdfs.Class;
 
 /**
  * A delete action removes objects from their parent containers, optionally
@@ -75,7 +77,14 @@ public class DeleteAction extends CommandActionHandler {
 	@Override
 	public ICommand createCommand(Collection<?> selection) {
 		CompositeCommand command = new CompositeCommand();
-		command.add(RemoveCommand.create(domain, selection));
+		// do not add remove command if we edit classes or properties
+		// this is required if we have no or insufficient reasoning
+		boolean addRemoveCommand = !removeAllReferences || //
+				!(selection.stream().allMatch(e -> e instanceof Class)
+						|| selection.stream().allMatch(e -> e instanceof Property));
+		if (addRemoveCommand) {
+			command.add(RemoveCommand.create(domain, selection));
+		}
 		if (removeAllReferences) {
 			command.add(DeleteCommand.create(domain, selection));
 		}
