@@ -132,6 +132,11 @@
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
+					<artifactId>org.eclipse.core.runtime</artifactId>
+					<version>3.18.0</version>
+				</dependency>
+				<dependency>
+					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.console</artifactId>
 					<version>1.4.0</version>
 				</dependency>
@@ -180,6 +185,14 @@
 					<artifactId>org.eclipse.ui.ide.application</artifactId>
 					<version>1.3.400</version>
 					<exclusions>
+						<exclusion>
+							<groupId>org.eclipse.platform</groupId>
+							<artifactId>org.eclipse.core.runtime</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.eclipse.platform</groupId>
+							<artifactId>org.eclipse.equinox.common</artifactId>
+						</exclusion>
 						<exclusion>
 							<groupId>org.eclipse.platform</groupId>
 							<artifactId>org.eclipse.swt</artifactId>

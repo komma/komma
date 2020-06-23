@@ -31,7 +31,16 @@
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.eclipse.platform</groupId>
+					<artifactId>org.eclipse.core.runtime</artifactId>
+				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.core.runtime</artifactId>
+			<version>[3.2.0,4.0.0)</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
