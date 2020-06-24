@@ -10,15 +10,22 @@
  *******************************************************************************/
 package net.enilink.commons.logging;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collection;
 
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.osgi.service.datalocation.Location;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,10 +92,34 @@ public class LoggingPlugin implements BundleActivator {
 			// omit calling context.reset().
 			context.reset();
 
-			InputStream config = getLoggingFileFromWorkspace();
-			if (config == null) {
-				config = getLoggingFileFromInstallationPath();
+			InputStream config = null;
+
+			Bundle bundle = FrameworkUtil.getBundle(LoggingPlugin.class);
+			if (bundle != null) {
+				// use Equinox location services for lookup of config file in instance and install location
+				for (String locationType : new String[] { Location.INSTANCE_FILTER, Location.ECLIPSE_HOME_FILTER }) {
+					try {
+						Collection<ServiceReference<Location>> locServices = bundle.getBundleContext()
+								.getServiceReferences(Location.class, locationType);
+						if (!locServices.isEmpty()) {
+							Location location = bundle.getBundleContext().getService(locServices.iterator().next());
+							if (location != null) {
+								Path path = Paths.get(location.getURL().toURI());
+								Path configPath = path.resolve(LOGBACK_CONFIG_FILE);
+								if (Files.exists(configPath)) {
+									config = Files.newInputStream(configPath);
+									break;
+								}
+							}
+						}
+					} catch (InvalidSyntaxException e) {
+						// should not happen
+					} catch (URISyntaxException e) {
+						// should not happen
+					}
+				}
 			}
+
 			if (config == null) {
 				config = getLoggingFileFromClasspath();
 			}
@@ -131,32 +162,6 @@ public class LoggingPlugin implements BundleActivator {
 
 	private static InputStream getLoggingFileFromClasspath() {
 		return LoggingPlugin.class.getResourceAsStream(LOGBACK_CONFIG_FILE);
-	}
-
-	private static InputStream getLoggingFileFromWorkspace() {
-		if (Platform.isRunning() && Platform.getInstanceLocation().isSet()) {
-			String path = Platform.getInstanceLocation().getURL().getPath() + LOGBACK_CONFIG_FILE;
-			try {
-				return new FileInputStream(path);
-			} catch (FileNotFoundException e) {
-				return null;
-			}
-		} else {
-			return null;
-		}
-	}
-
-	private static InputStream getLoggingFileFromInstallationPath() {
-		if (Platform.isRunning()) {
-			String path = Platform.getInstallLocation().getURL().getPath() + LOGBACK_CONFIG_FILE;
-			try {
-				return new FileInputStream(path);
-			} catch (FileNotFoundException e) {
-				return null;
-			}
-		} else {
-			return null;
-		}
 	}
 
 	public void stop(BundleContext context) throws Exception {
