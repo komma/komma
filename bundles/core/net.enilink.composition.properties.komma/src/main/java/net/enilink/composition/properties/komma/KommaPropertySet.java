@@ -28,6 +28,7 @@
  */
 package net.enilink.composition.properties.komma;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -68,7 +69,9 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 	private static final int CACHE_LIMIT = 10;
 
 	protected static final String QUERY = "SELECT DISTINCT ?o WHERE { ?s ?p ?o }";
-	protected final IReference bean;
+	protected final IReference subject;
+	protected final List<WeakReference<Object>> ownerBeans = new ArrayList<>(1);
+
 	private volatile List<E> cache;
 
 	@Inject
@@ -80,18 +83,60 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 
 	protected URI rdfValueType;
 
-	public KommaPropertySet(IReference bean, IReference property) {
-		this(bean, property, null, null);
+	public KommaPropertySet(IReference subject, IReference property) {
+		this(subject, property, null, null);
 	}
 
-	public KommaPropertySet(IReference bean, IReference property,
+	public KommaPropertySet(IReference subject, IReference property,
 			Class<E> valueType, URI rdfValueType) {
-		assert bean != null;
+		assert subject != null;
 		assert property != null;
-		this.bean = bean;
+		this.subject = subject;
 		this.property = property;
 		this.valueType = valueType;
 		this.rdfValueType = rdfValueType;
+	}
+
+	/**
+	 * Adds <code>bean</code> as additional owner for this property set.
+	 * 
+	 * @param bean Additional bean that uses this property set.
+	 */
+	public void addOwner(Object bean) {
+		synchronized (ownerBeans) {
+			boolean found = false;
+			// search bean and clear stale references
+			for (Iterator<WeakReference<Object>> it = ownerBeans.iterator(); it.hasNext(); ) {
+				WeakReference<Object> ref = it.next();
+				Object target = ref.get();
+				if (target == null) {
+					it.remove();
+				} else if (!found && bean.equals(target)) {
+					found = true;
+				}
+			}
+			if (! found) {
+				ownerBeans.add(new WeakReference<>(bean));
+			}
+		}
+	}
+
+	/**
+	 * Refreshes all owner beans.
+	 */
+	protected void refreshOwners() {
+		synchronized (ownerBeans) {
+			// refresh beans and clear stale references
+			for (Iterator<WeakReference<Object>> it = ownerBeans.iterator(); it.hasNext(); ) {
+				WeakReference<Object> ref = it.next();
+				Object target = ref.get();
+				if (target == null) {
+					it.remove();
+				} else {
+					refresh(target);
+				}
+			}
+		}
 	}
 
 	/**
@@ -102,11 +147,11 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 	public boolean add(E o) {
 		refresh();
 		try {
-			manager.add(new Statement(bean, property, convertInstance(o)));
+			manager.add(new Statement(subject, property, convertInstance(o)));
 		} catch (KommaException e) {
 			throw new PropertyException(e);
 		}
-		refresh(bean);
+		refreshOwners();
 		refresh(o);
 		return true;
 	}
@@ -137,21 +182,21 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		} catch (KommaException e) {
 			throw new PropertyException(e);
 		}
-		refresh(bean);
+		refreshOwners();
 		return modified;
 	}
 
 	public void clear() {
-		manager.remove(new Statement(bean, property, null));
+		manager.remove(new Statement(subject, property, null));
 		refreshCache();
 		refresh();
-		refresh(bean);
+		refreshOwners();
 	}
 
 	protected boolean containsWithoutCache(Object o) {
 		try {
 			return manager.createQuery("ASK { ?s ?p ?o }")
-					.setParameter("s", bean).setParameter("p", property)
+					.setParameter("s", subject).setParameter("p", property)
 					.setParameter("o", convertInstance(o)).getBooleanResult();
 		} catch (KommaException e) {
 			throw new PropertyException(e);
@@ -274,7 +319,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 			}
 			query = querySb.toString();
 		}
-		IQuery<?> result = manager.createQuery(query).setParameter("s", bean)
+		IQuery<?> result = manager.createQuery(query).setParameter("s", subject)
 				.setParameter("p", property);
 		if (useFilter) {
 			result.setParameter("filter", ".*" + filterPattern + ".*");
@@ -352,10 +397,10 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		if (getClass() != obj.getClass())
 			return false;
 		KommaPropertySet<?> other = (KommaPropertySet<?>) obj;
-		if (bean == null) {
-			if (other.bean != null)
+		if (subject == null) {
+			if (other.subject != null)
 				return false;
-		} else if (!bean.equals(other.bean))
+		} else if (!subject.equals(other.subject))
 			return false;
 		if (manager == null) {
 			if (other.manager != null)
@@ -418,7 +463,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((bean == null) ? 0 : bean.hashCode());
+		result = prime * result + ((subject == null) ? 0 : subject.hashCode());
 		result = prime * result + ((manager == null) ? 0 : manager.hashCode());
 		result = prime * result
 				+ ((property == null) ? 0 : property.hashCode());
@@ -500,9 +545,9 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 	 */
 	public boolean remove(Object o) {
 		refresh();
-		manager.remove(new Statement(bean, property, convertInstance(o)));
+		manager.remove(new Statement(subject, property, convertInstance(o)));
 		refresh(o);
-		refresh(bean);
+		refreshOwners();
 		return true;
 	}
 
@@ -532,7 +577,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 			throw new PropertyException(e);
 		}
 		refreshCache();
-		refresh(bean);
+		refreshOwners();
 		return modified;
 	}
 
@@ -569,7 +614,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 			throw new PropertyException(e);
 		}
 		refreshCache();
-		refresh(bean);
+		refreshOwners();
 		return modified;
 	}
 
@@ -648,7 +693,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 			return cache.size();
 		}
 		IExtendedIterator<IReference> values = manager.createQuery(QUERY)
-				.setParameter("s", bean).setParameter("p", property)
+				.setParameter("s", subject).setParameter("p", property)
 				.evaluateRestricted(IReference.class);
 		try {
 			int size;

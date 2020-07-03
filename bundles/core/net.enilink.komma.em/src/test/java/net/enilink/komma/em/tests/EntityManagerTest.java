@@ -15,20 +15,22 @@ import org.junit.Before;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.IEntityManagerFactory;
+import net.enilink.komma.core.IUnitOfWork;
+import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.em.DecoratingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
 import net.enilink.komma.em.util.UnitOfWork;
-import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.IEntityManagerFactory;
-import net.enilink.komma.core.IUnitOfWork;
-import net.enilink.komma.core.KommaModule;
 
 public abstract class EntityManagerTest {
+	protected Injector injector;
 	protected IEntityManagerFactory factory;
 	protected IEntityManager manager;
 	protected UnitOfWork uow;
@@ -48,7 +50,7 @@ public abstract class EntityManagerTest {
 
 	@Before
 	public void beforeTest() throws Exception {
-		factory = Guice.createInjector(
+		injector = Guice.createInjector(
 				createStorageModule(),
 				new EntityManagerFactoryModule(createModule(), null,
 						new DecoratingEntityManagerModule()),
@@ -67,8 +69,8 @@ public abstract class EntityManagerTest {
 							IDataManagerFactory dmFactory) {
 						return dmFactory.get();
 					}
-				}).getInstance(IEntityManagerFactory.class);
-
+				});
+		factory = injector.getInstance(IEntityManagerFactory.class);
 		manager = factory.get();
 	}
 

@@ -62,8 +62,8 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 
 	Map<String, List<ILiteral>> cache;
 
-	public LocalizedKommaPropertySet(IReference bean, IReference property) {
-		super(bean, property, String.class, null);
+	public LocalizedKommaPropertySet(IReference subject, IReference property) {
+		super(subject, property, String.class, null);
 	}
 
 	private int addBestValues(ILiteral literal, String language, int best,
@@ -114,7 +114,7 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 		values = new ArrayList<ILiteral>();
 		try {
 			IExtendedIterator<ILiteral> literals = manager.createQuery(QUERY)
-					.setParameter("s", bean).setParameter("p", property)
+					.setParameter("s", subject).setParameter("p", property)
 					.evaluateRestricted(ILiteral.class);
 			try {
 				for (ILiteral literal : literals) {
@@ -216,7 +216,7 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 			String language = manager.getLocale().getLanguage();
 
 			IExtendedIterator<ILiteral> literals = manager.createQuery(QUERY)
-					.setParameter("s", bean).setParameter("p", property)
+					.setParameter("s", subject).setParameter("p", property)
 					.evaluateRestricted(ILiteral.class);
 			try {
 				for (ILiteral literal : literals) {
