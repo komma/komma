@@ -39,6 +39,7 @@ import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.SparqlStandardDialect;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.em.util.IClosable;
 
@@ -80,8 +81,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 
 	volatile IEntityManager sharedManager;
 
-	EntityManagerFactory(KommaModule module, IProvider<Locale> locale,
-			Module managerModule) {
+	EntityManagerFactory(KommaModule module, IProvider<Locale> locale, Module managerModule) {
 		this.module = module;
 		this.locale = locale;
 		this.managerModule = managerModule;
@@ -117,9 +117,8 @@ class EntityManagerFactory implements IEntityManagerFactory {
 		return getManagerInjector(new AbstractModule() {
 			@Override
 			protected void configure() {
-				bind(IEntityManager.class)
-						.to(Key.get(IEntityManager.class,
-								Names.named("unmanaged"))).in(Singleton.class);
+				bind(IEntityManager.class).to(Key.get(IEntityManager.class, Names.named("unmanaged")))
+						.in(Singleton.class);
 			}
 		}).getInstance(IEntityManager.class);
 	}
@@ -141,8 +140,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 	}
 
 	@Override
-	public IEntityManagerFactory createChildFactory(IProvider<Locale> locale,
-			KommaModule... modules) {
+	public IEntityManagerFactory createChildFactory(IProvider<Locale> locale, KommaModule... modules) {
 		KommaModule childModule = new KommaModule(module.getClassLoader());
 		childModule.includeModule(module);
 		for (KommaModule include : modules) {
@@ -151,8 +149,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 				childModule.addWritableGraph(writable);
 			}
 		}
-		EntityManagerFactory childFactory = new EntityManagerFactory(
-				childModule, locale == null ? this.locale : locale,
+		EntityManagerFactory childFactory = new EntityManagerFactory(childModule, locale == null ? this.locale : locale,
 				managerModule);
 		childFactory.parent = this;
 		injector.injectMembers(childFactory);
@@ -167,17 +164,21 @@ class EntityManagerFactory implements IEntityManagerFactory {
 					sharedManager = getManagerInjector(new AbstractModule() {
 						@Override
 						protected void configure() {
-							final Provider<IEntityManager> provider = getProvider(Key
-									.get(IEntityManager.class,
-											Names.named("unmanaged")));
-							ThreadLocalEntityManager manager = new ThreadLocalEntityManager() {
-								@Override
-								protected IEntityManager initialValue() {
-									return provider.get();
-								}
-							};
+							// final Provider<IEntityManager> provider = getProvider(Key
+							// .get(IEntityManager.class,
+							// Names.named("unmanaged")));
+							// ThreadLocalEntityManager manager = new ThreadLocalEntityManager() {
+							// @Override
+							// protected IEntityManager initialValue() {
+							// return provider.get();
+							// }
+							// };
+							// requestInjection(manager);
+
+							// use a thread-global instance
+							// the entity manager is thread safe
+							IEntityManager manager = create();
 							bind(IEntityManager.class).toInstance(manager);
-							requestInjection(manager);
 						}
 					}).getInstance(IEntityManager.class);
 				}
@@ -199,31 +200,25 @@ class EntityManagerFactory implements IEntityManagerFactory {
 		return parent;
 	}
 
-	protected synchronized Injector getManagerInjector(
-			AbstractModule customModule) {
-		return injector.createChildInjector(customModule,
-				new ManagerCompositionModule(module), new AbstractModule() {
-					@Override
-					protected void configure() {
-						bind(IEntityManagerFactory.class).annotatedWith(
-								Names.named("currentFactory")).toInstance(
-								EntityManagerFactory.this);
-						bind(new TypeLiteral<Set<URI>>() {
-						}).annotatedWith(Names.named("readContexts"))
-								.toInstance(module.getReadableGraphs());
-						bind(new TypeLiteral<Set<URI>>() {
-						}).annotatedWith(Names.named("modifyContexts"))
-								.toInstance(module.getWritableGraphs());
+	protected synchronized Injector getManagerInjector(AbstractModule customModule) {
+		return injector.createChildInjector(customModule, new ManagerCompositionModule(module), new AbstractModule() {
+			@Override
+			protected void configure() {
+				bind(IEntityManagerFactory.class).annotatedWith(Names.named("currentFactory"))
+						.toInstance(EntityManagerFactory.this);
+				bind(new TypeLiteral<Set<URI>>() {
+				}).annotatedWith(Names.named("readContexts")).toInstance(module.getReadableGraphs());
+				bind(new TypeLiteral<Set<URI>>() {
+				}).annotatedWith(Names.named("modifyContexts")).toInstance(module.getWritableGraphs());
 
-						bind(Locale.class).toProvider(new Provider<Locale>() {
-							@Override
-							public Locale get() {
-								return locale == null ? Locale.getDefault()
-										: locale.get();
-							}
-						});
+				bind(Locale.class).toProvider(new Provider<Locale>() {
+					@Override
+					public Locale get() {
+						return locale == null ? Locale.getDefault() : locale.get();
 					}
-				}, managerModule);
+				});
+			}
+		}, managerModule);
 	}
 
 	@Override

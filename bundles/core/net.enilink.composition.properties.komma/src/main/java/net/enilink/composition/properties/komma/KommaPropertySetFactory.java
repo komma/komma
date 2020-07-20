@@ -11,6 +11,7 @@
 package net.enilink.composition.properties.komma;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.collect.MapMaker;
@@ -78,6 +79,11 @@ public class KommaPropertySetFactory implements PropertySetFactory {
 				return false;
 			return true;
 		}
+
+		@Override
+		public String toString() {
+			return getClass().getSimpleName() + Arrays.asList(subject, uri, elementType).toString();
+		}
 	}
 
 	@Inject
@@ -87,7 +93,7 @@ public class KommaPropertySetFactory implements PropertySetFactory {
 	@Override
 	public <E> PropertySet<E> createPropertySet(Object bean, String uri, Class<E> elementType,
 			Annotation... annotations) {
-		Key cacheKey = new Key(((IReferenceable)bean).getReference(), uri, elementType);
+		Key cacheKey = new Key(((IReferenceable) bean).getReference(), uri, elementType);
 		return (PropertySet<E>) propertySetCache.computeIfAbsent(cacheKey, k -> {
 			URI predicate = URIs.createURI(uri);
 			URI rdfValueType = null;

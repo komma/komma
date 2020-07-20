@@ -130,7 +130,6 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void createPropertySetAccessor(PropertyDescriptor pd,
 			BehaviourClassNode node) throws Exception {
 		String fieldName = getPropertyFieldName(pd.getName());

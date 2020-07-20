@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -66,6 +67,7 @@ import net.enilink.komma.core.StatementPattern;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 import net.enilink.komma.dm.IDataManager;
+import net.enilink.komma.em.DelegatingEntityManager;
 import net.enilink.komma.em.ThreadLocalEntityManager;
 import net.enilink.komma.em.concepts.IOntology;
 import net.enilink.komma.em.util.ISparqlConstants;
@@ -124,13 +126,13 @@ public abstract class ModelSupport
 			module = null;
 			moduleClosure = null;
 			importedModels = null;
-			factoryRef = null;
 			if (managerRef != null) {
 				IEntityManager manager = managerRef.get();
 				if (manager != null) {
 					manager.close();
 				}
 			}
+			factoryRef = null;
 		}
 
 		IEntityManager manager() {
@@ -139,24 +141,28 @@ public abstract class ModelSupport
 				synchronized (this) {
 					manager = managerRef != null ? managerRef.get() : null;
 					if (manager == null) {
-						manager = new ThreadLocalEntityManager() {
-							volatile Map<URI, String> uriToPrefix = new ConcurrentHashMap<>();
-							volatile Map<String, URI> prefixToUri = new ConcurrentHashMap<>();
+						manager = new DelegatingEntityManager() {
+							IEntityManager delegate;
+							final Map<URI, String> uriToPrefix = new ConcurrentHashMap<>();
+							final Map<String, URI> prefixToUri = new ConcurrentHashMap<>();
 
-							@SuppressWarnings("resource")
 							@Override
-							protected IEntityManager initialValue() {
-								IEntityManagerFactory factory;
+							public IEntityManager getDelegate() {
 								synchronized (State.this) {
-									factory = factoryRef != null ? factoryRef.get() : null;
-									if (factory == null) {
-										factory = getModelSet().getEntityManagerFactory()
-												// allow interception of call to getModuleClosure()
-												.createChildFactory(getBehaviourDelegate().getModuleClosure());
-										factoryRef = new WeakReference<>(factory);
+									if (delegate == null) {
+										@SuppressWarnings("resource")
+										IEntityManagerFactory factory = factoryRef != null ? factoryRef.get() : null;
+										if (factory == null) {
+											factory = getModelSet().getEntityManagerFactory()
+													// allow interception of call to getModuleClosure()
+													.createChildFactory(getBehaviourDelegate().getModuleClosure());
+											factoryRef = new WeakReference<>(factory);
+										}
+										delegate = factory.create(managerRef.get());
+										delegate.addDecorator(new ModelInjector());
 									}
 								}
-								return factory.create(managerRef.get());
+								return delegate;
 							}
 
 							@Override
@@ -293,12 +299,13 @@ public abstract class ModelSupport
 							protected void finalize() throws Throwable {
 								// remove all state if weak reference to this
 								// entity manager is gc'ed
+								close();
 								ModelSupport.this.state.remove();
+								delegate = null;
 								super.finalize();
 							}
 						};
 						injector.injectMembers(manager);
-						manager.addDecorator(new ModelInjector());
 						managerRef = new WeakReference<>(manager);
 					}
 				}
@@ -450,13 +457,9 @@ public abstract class ModelSupport
 				try {
 					// retrieve imported ontologies while filtering those which
 					// are likely already contained within this model
-					IOntology ontology = getOntology();
-					IExtendedIterator<IReference> imports = dm
-							.createQuery(
-									ISparqlConstants.PREFIX
-											+ " SELECT ?import WHERE { ?ontology owl:imports ?import FILTER NOT EXISTS { ?import a owl:Ontology } }",
-									ontology.getURI().toString(), false, ontology.getURI())
-							.evaluate().mapWith(new IMap<Object, IReference>() {
+					IExtendedIterator<IReference> imports = dm.createQuery(ISparqlConstants.PREFIX
+							+ " SELECT ?import WHERE { ?ontology owl:imports ?import FILTER NOT EXISTS { ?import a owl:Ontology } }",
+							getURI().toString(), false, getURI()).evaluate().mapWith(new IMap<Object, IReference>() {
 								@Override
 								public IReference map(Object value) {
 									return (IReference) ((IBindings<?>) value).get("import");

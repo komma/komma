@@ -11,10 +11,19 @@
 package net.enilink.komma.model.test;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.google.inject.Guice;
 
 import net.enilink.komma.core.BlankNode;
 import net.enilink.komma.core.ITransaction;
@@ -33,12 +42,6 @@ import net.enilink.vocab.owl.OwlProperty;
 import net.enilink.vocab.owl.Restriction;
 import net.enilink.vocab.rdfs.RDFS;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.google.inject.Guice;
-
 /**
  * Stress tests for using the model API in a multi-threaded environment.
  */
@@ -47,12 +50,9 @@ public class ThreadingTest {
 
 	@Before
 	public void beforeTest() throws Exception {
-		KommaModule module = ModelPlugin.createModelSetModule(getClass()
-				.getClassLoader());
-		IModelSetFactory factory = Guice.createInjector(
-				new ModelSetModule(module)).getInstance(IModelSetFactory.class);
-		modelSet = factory.createModelSet(MODELS.NAMESPACE_URI
-				.appendLocalPart("MemoryModelSet"));
+		KommaModule module = ModelPlugin.createModelSetModule(getClass().getClassLoader());
+		IModelSetFactory factory = Guice.createInjector(new ModelSetModule(module)).getInstance(IModelSetFactory.class);
+		modelSet = factory.createModelSet(MODELS.NAMESPACE_URI.appendLocalPart("MemoryModelSet"));
 	}
 
 	@After
@@ -62,11 +62,9 @@ public class ThreadingTest {
 
 	@Test
 	public void testThreading() throws Exception {
-		final IModel model = modelSet
-				.createModel(URIs.createURI("test:model1"));
-		int count = 30;
-		final ScheduledExecutorService executorService = Executors
-				.newScheduledThreadPool(15);
+		final IModel model = modelSet.createModel(URIs.createURI("test:model1"));
+		int count = 15;
+		final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(10);
 		final AtomicInteger iterations = new AtomicInteger();
 		class TestRunnable implements Runnable {
 			@Override
@@ -77,21 +75,16 @@ public class ThreadingTest {
 				ITransaction transaction = model.getManager().getTransaction();
 				transaction.begin();
 				try {
-					for (int i = 0; i < 20; i++) {
-						iterations.incrementAndGet();
-						// add some classes and restrictions
-						URI name = URIs.createURI("class:"
-								+ BlankNode.generateId().substring(2));
-						Class c = model.getManager().createNamed(name,
-								Class.class);
-						c.setRdfsLabel(name.toString());
-						Restriction r = model.getManager().create(
-								Restriction.class);
-						r.setOwlOnProperty(model.getManager().find(
-								RDFS.PROPERTY_LABEL, OwlProperty.class));
-						r.setOwlMaxCardinality(BigInteger.valueOf(1));
-						c.getRdfsSubClassOf().add(r);
-					}
+					iterations.incrementAndGet();
+					// add some classes and restrictions
+					URI name = URIs.createURI("class:" + BlankNode.generateId().substring(2));
+					Class c = model.getManager().createNamed(name, Class.class);
+					c.setRdfsLabel(name.toString());
+					Restriction r = model.getManager().create(Restriction.class);
+					r.setOwlOnProperty(model.getManager().find(RDFS.PROPERTY_LABEL, OwlProperty.class));
+					r.setOwlMaxCardinality(BigInteger.valueOf(1));
+					c.getRdfsSubClassOf().add(r);
+
 					transaction.commit();
 				} finally {
 					if (transaction.isActive()) {
@@ -104,14 +97,14 @@ public class ThreadingTest {
 
 		System.out.println("Start");
 		long start = System.currentTimeMillis();
+		List<ScheduledFuture<?>> futures = new ArrayList<>();
 		for (int i = 0; i < count; i++) {
-			executorService.scheduleWithFixedDelay(new TestRunnable(), 0,
-					(int) (1 + Math.random() * 20), //
-					TimeUnit.MILLISECONDS);
+			futures.add(executorService.scheduleWithFixedDelay(new TestRunnable(), 0, (int) (1 + Math.random() * 2), //
+					TimeUnit.MILLISECONDS));
 		}
 
-		// repeat test
-		// Thread.sleep(1 * 60 * 1000);
+		// wait until some iterations are done
+		Thread.sleep(5000);
 
 		executorService.shutdown();
 		executorService.awaitTermination(10, TimeUnit.SECONDS);
@@ -121,7 +114,6 @@ public class ThreadingTest {
 		for (int i = 0; i < 3; i++) {
 			System.gc();
 		}
-		System.out.println("Number of iterations: " + iterations.get() + " in "
-				+ ((end - start) / 1000) + " seconds.");
+		System.out.println("Number of iterations: " + iterations.get() + " in " + ((end - start) / 1000) + " seconds.");
 	}
 }
