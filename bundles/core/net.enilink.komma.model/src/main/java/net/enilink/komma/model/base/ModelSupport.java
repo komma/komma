@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -68,7 +67,6 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.em.DelegatingEntityManager;
-import net.enilink.komma.em.ThreadLocalEntityManager;
 import net.enilink.komma.em.concepts.IOntology;
 import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.komma.model.IModel;
@@ -527,6 +525,24 @@ public abstract class ModelSupport
 			KommaModule modelSetModule = getModelSet().getModule();
 			if (modelSetModule != null) {
 				moduleClosure.includeModule(modelSetModule);
+			}
+
+			// add registered KommaModules extensions for any namespace
+			// those may be registered AFTER the model set module above was built
+			IExtensionPoint extensionPoint = RegistryFactoryHelper.getRegistry()
+					.getExtensionPoint(ModelPlugin.PLUGIN_ID, "modules");
+			if (extensionPoint != null) {
+				for (IConfigurationElement cfgElement : extensionPoint.getConfigurationElements()) {
+					String namespace = cfgElement.getAttribute("uri");
+					if (namespace == null || namespace.trim().isEmpty()) {
+						try {
+							KommaModule extensionModule = (KommaModule) cfgElement.createExecutableExtension("class");
+							moduleClosure.includeModule(extensionModule);
+						} catch (CoreException e) {
+							throw new KommaException("Unable to instantiate extension module", e);
+						}
+					}
+				}
 			}
 
 			// include modules from the imports closure
