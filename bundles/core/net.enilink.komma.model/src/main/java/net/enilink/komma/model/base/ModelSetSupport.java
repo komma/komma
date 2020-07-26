@@ -591,16 +591,18 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 				if (extensionPoint != null) {
 					for (IConfigurationElement cfgElement : extensionPoint
 							.getConfigurationElements()) {
-						String namespace = cfgElement.getAttribute("uri");
-						if (namespace == null || namespace.trim().isEmpty()) {
-							try {
-								KommaModule extensionModule = (KommaModule) cfgElement
-										.createExecutableExtension("class");
-								module.includeModule(extensionModule);
-							} catch (CoreException e) {
-								throw new KommaException(
-										"Unable to instantiate extension module",
-										e);
+						if (cfgElement.isValid()) {
+							String namespace = cfgElement.getAttribute("uri");
+							if (namespace == null || namespace.trim().isEmpty()) {
+								try {
+									KommaModule extensionModule = (KommaModule) cfgElement
+											.createExecutableExtension("class");
+									module.includeModule(extensionModule);
+								} catch (CoreException e) {
+									throw new KommaException(
+											"Unable to instantiate extension module",
+											e);
+								}
 							}
 						}
 					}
