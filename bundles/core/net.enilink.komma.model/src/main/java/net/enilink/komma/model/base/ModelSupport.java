@@ -294,6 +294,16 @@ public abstract class ModelSupport
 							}
 
 							@Override
+							public void close() {
+								synchronized (State.this) {
+									if (delegate != null) {
+										delegate.close();
+										delegate = null;
+									}
+								}
+							}
+
+							@Override
 							protected void finalize() throws Throwable {
 								// remove all state if weak reference to this
 								// entity manager is gc'ed
