@@ -4,6 +4,7 @@ import net.enilink.komma.common.ui.ViewerPane;
 import net.enilink.komma.common.util.IResourceLocator;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIs;
+import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.edit.ui.celleditor.AdapterFactoryTreeEditor;
 import net.enilink.komma.edit.ui.editor.IPropertySheetPageSupport;
 import net.enilink.komma.edit.ui.editor.KommaMultiPageEditor;
@@ -78,8 +79,7 @@ public class BasicEditor extends KommaMultiPageEditor implements
 				IModelSet modelSet = factory
 						.createModelSet(
 								URIs.createURI(MODELS.NAMESPACE +
-								// "MemoryModelSet" //
-										"OwlimModelSet" //
+										"MemoryModelSet"
 								),
 								URIs.createURI(MODELS.NAMESPACE
 										+ "ProjectModelSet"));
@@ -90,6 +90,9 @@ public class BasicEditor extends KommaMultiPageEditor implements
 							.setProject(((IFileEditorInput) getEditorInput())
 									.getFile().getProject());
 				}
+				
+				// this is required for undo/redo support
+				modelSet.getDataChangeSupport().setDefaultMode(IDataChangeSupport.Mode.VERIFY_ALL);
 
 				return modelSet;
 			}

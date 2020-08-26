@@ -39,7 +39,7 @@ public class ChangeRecorder implements IDataChangeListener {
 
 	protected void addListener() {
 		if (modelSet != null) {
-			modelSet.getDataChangeTracker().addChangeListener(this);
+			modelSet.getDataChangeSupport().addChangeListener(this);
 		}
 	}
 
@@ -130,7 +130,7 @@ public class ChangeRecorder implements IDataChangeListener {
 
 	protected void removeListener() {
 		if (modelSet != null) {
-			modelSet.getDataChangeTracker().removeChangeListener(this);
+			modelSet.getDataChangeSupport().removeChangeListener(this);
 		}
 	}
 

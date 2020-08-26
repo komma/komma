@@ -46,7 +46,6 @@ import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.dm.change.IDataChangeListener;
 import net.enilink.komma.dm.change.IDataChangeSupport;
-import net.enilink.komma.dm.change.IDataChangeTracker;
 import net.enilink.komma.dm.change.INamespaceChange;
 import net.enilink.komma.dm.change.IStatementChange;
 import net.enilink.komma.em.CacheModule;
@@ -116,7 +115,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 
 		private IAdapterSet adapterSet;
 
-		protected IDataChangeTracker dataChangeTracker;
+		protected IDataChangeSupport dataChangeSupport;
 
 		/**
 		 * The load options.
@@ -465,12 +464,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 
 	@Override
 	public IDataChangeSupport getDataChangeSupport() {
-		return state().injector.getInstance(IDataChangeSupport.class);
-	}
-
-	@Override
-	public IDataChangeTracker getDataChangeTracker() {
-		return state().dataChangeTracker;
+		return state().dataChangeSupport;
 	}
 
 	@Override
@@ -713,7 +707,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	 */
 	public void init(Injector injector) {
 		state().injector = injector;
-		setDataChangeTracker(injector.getInstance(IDataChangeTracker.class));
+		setDataChangeSupport(injector.getInstance(IDataChangeSupport.class));
 	}
 
 	@Override
@@ -741,9 +735,9 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		}
 	}
 
-	public void setDataChangeTracker(IDataChangeTracker changeTracker) {
-		state().dataChangeTracker = changeTracker;
-		state().dataChangeTracker.addChangeListener(new IDataChangeListener() {
+	public void setDataChangeSupport(IDataChangeSupport changeSupport) {
+		state().dataChangeSupport = changeSupport;
+		state().dataChangeSupport.addChangeListener(new IDataChangeListener() {
 			URI metaDataContext = getMetaDataContext();
 
 			@Override
@@ -775,8 +769,8 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	}
 
 	@Inject
-	protected void setMetaDataChangeTracker(IDataChangeTracker changeTracker) {
-		changeTracker.addChangeListener(new IDataChangeListener() {
+	protected void setMetaDataChangeSupport(IDataChangeSupport changeSupport) {
+		changeSupport.addChangeListener(new IDataChangeListener() {
 			@Override
 			public void dataChanged(List<IDataChange> changes) {
 				state().metaDataNotificationSupport

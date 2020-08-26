@@ -31,7 +31,6 @@ import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.dm.change.IDataChangeSupport;
-import net.enilink.komma.dm.change.IDataChangeTracker;
 import net.enilink.komma.model.base.ModelSetSupport;
 
 import com.google.inject.Injector;
@@ -172,13 +171,6 @@ public interface IModelSet extends INotifier<INotification> {
 	 * @return the change support
 	 */
 	IDataChangeSupport getDataChangeSupport();
-
-	/**
-	 * Returns tracker for changes made to the underlying data repository.
-	 * 
-	 * @return the change tracker
-	 */
-	IDataChangeTracker getDataChangeTracker();
 
 	/**
 	 * Returns the options used during demand load.

@@ -31,6 +31,7 @@ import net.enilink.komma.core.LinkedHashGraph;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 import net.enilink.komma.core.visitor.IDataVisitor;
+import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.EditingDomainCommandStack;
 import net.enilink.komma.edit.command.IInputCallback;
@@ -242,6 +243,8 @@ public class ProjectModelSetManager {
 			config.add(modelSetUri, RDF.PROPERTY_TYPE, MODELS.NAMESPACE_URI.appendLocalPart("ProjectModelSet"));
 
 			modelSet = factory.createModelSet(modelSetUri, config);
+			// this is required for undo/redo support
+			modelSet.getDataChangeSupport().setDefaultMode(IDataChangeSupport.Mode.VERIFY_ALL);
 			if (modelSet instanceof IProjectModelSet && project != null) {
 				((IProjectModelSet) modelSet).setProject(project);
 			}

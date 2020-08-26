@@ -24,15 +24,23 @@ import net.enilink.komma.dm.internal.change.RemoveChange;
  * {@link IDataChangeSupport}.
  * 
  */
-public class DataChangeTracker implements IDataChangeSupport,
-		IDataChangeTracker {
-	protected Map<IDataManager, List<IDataChange>> activeDataManagers = new HashMap<IDataManager, List<IDataChange>>();
-	protected WeakHashMap<IDataManager, Object> disabledDataManagers = new WeakHashMap<IDataManager, Object>();
+public class DataChangeSupport implements IDataChangeSupport {
+	static class Options {
+		volatile Boolean enabled;
+		volatile Mode mode;
+	}
 
-	private CopyOnWriteArraySet<IDataChangeListener> listeners = new CopyOnWriteArraySet<IDataChangeListener>();
-	private CopyOnWriteArraySet<IDataChangeListener> internalListeners = new CopyOnWriteArraySet<IDataChangeListener>();
+	protected Map<IDataManager, List<IDataChange>> activeDataManagers = new HashMap<>();
+	protected WeakHashMap<IDataManager, Options> dataManagerOptions = new WeakHashMap<>();
 
-	private ThreadLocal<Boolean> disabled = new ThreadLocal<Boolean>();
+	private CopyOnWriteArraySet<IDataChangeListener> listeners = new CopyOnWriteArraySet<>();
+	private CopyOnWriteArraySet<IDataChangeListener> internalListeners = new CopyOnWriteArraySet<>();
+
+	private volatile boolean defaultEnabled = true;
+	private ThreadLocal<Boolean> perThreadEnabled = new ThreadLocal<>();
+
+	private volatile Mode defaultMode = Mode.VERIFY_NONE;
+	private ThreadLocal<Mode> perThreadMode = new ThreadLocal<>();
 
 	@Override
 	public void add(IDataManager dm, IStatement stmt) {
@@ -76,11 +84,6 @@ public class DataChangeTracker implements IDataChangeSupport,
 		}
 	}
 
-	@Override
-	public void dataChanged(List<IDataChange> changes) {
-		handleChanges(changes);
-	}
-
 	private <K, T> List<T> ensureList(Map<K, List<T>> map, K key) {
 		List<T> list = map.get(key);
 		if (list == null) {
@@ -90,17 +93,42 @@ public class DataChangeTracker implements IDataChangeSupport,
 		return list;
 	}
 
+	@Override
+	public boolean getDefaultEnabled() {
+		return defaultEnabled;
+	}
+
+	@Override
+	public Mode getDefaultMode() {
+		return defaultMode;
+	}
+
+	@Override
+	public Mode getMode(IDataManager dm) {
+		Mode perThreadModeValue = perThreadMode.get();
+		if (perThreadModeValue != null) {
+			return perThreadModeValue;
+		} else {
+			synchronized (dataManagerOptions) {
+				Options options = dataManagerOptions.get(dm);
+				return options == null || options.mode == null ? defaultMode : options.mode;
+			}
+		}
+	}
+
 	protected void handleChanges(List<IDataChange> committed) {
 		notifyListeners(committed);
 	}
 
 	@Override
 	public boolean isEnabled(IDataManager dm) {
-		if (disabled.get() != null) {
-			return false;
+		Boolean perThreadEnabledValue = perThreadEnabled.get();
+		if (perThreadEnabledValue != null) {
+			return perThreadEnabledValue.booleanValue();
 		} else {
-			synchronized (disabledDataManagers) {
-				return disabledDataManagers.get(dm) == null;
+			synchronized (dataManagerOptions) {
+				Options options = dataManagerOptions.get(dm);
+				return options == null || options.enabled == null ? defaultEnabled : options.enabled;
 			}
 		}
 	}
@@ -145,20 +173,43 @@ public class DataChangeTracker implements IDataChangeSupport,
 		}
 	}
 
+	@Override
+	public void setDefaultEnabled(boolean enabled) {
+		this.defaultEnabled = enabled;
+	}
+
+	@Override
+	public void setDefaultMode(Mode mode) {
+		this.defaultMode = mode;
+	}
+
 	public void setEnabled(IDataManager dm, boolean enabled) {
 		if (dm == null) {
-			if (enabled) {
-				disabled.remove();
-			} else {
-				disabled.set(true);
-			}
+			perThreadEnabled.set(enabled);
 		} else {
-			synchronized (disabledDataManagers) {
-				if (enabled) {
-					disabledDataManagers.remove(dm);
-				} else {
-					disabledDataManagers.put(dm, true);
+			synchronized (dataManagerOptions) {
+				Options options = dataManagerOptions.get(dm);
+				if (options == null) {
+					options = new Options();
+					dataManagerOptions.put(dm, options);
 				}
+				options.enabled = enabled;
+			}
+		}
+	}
+
+	@Override
+	public void setMode(IDataManager dm, Mode mode) {
+		if (dm == null) {
+			perThreadMode.set(mode);
+		} else {
+			synchronized (dataManagerOptions) {
+				Options options = dataManagerOptions.get(dm);
+				if (options == null) {
+					options = new Options();
+					dataManagerOptions.put(dm, options);
+				}
+				options.mode = mode;
 			}
 		}
 	}

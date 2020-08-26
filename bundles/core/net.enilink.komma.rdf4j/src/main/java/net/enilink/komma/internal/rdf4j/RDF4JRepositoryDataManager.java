@@ -101,6 +101,7 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 
 			RepositoryConnection conn = getConnection();
 			boolean trackChanges = changeSupport.isEnabled(this);
+			boolean verifyChanges = changeSupport.getMode(this) == IDataChangeSupport.Mode.VERIFY_ALL;
 			while (it.hasNext()) {
 				IStatement stmt = it.next();
 
@@ -111,7 +112,7 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 						.getObject());
 
 				if (trackChanges) {
-					if (!conn.hasStatement(subject, predicate, object, false,
+					if (!verifyChanges || !conn.hasStatement(subject, predicate, object, false,
 							readCtx)) {
 						for (IReference ctx : addContexts) {
 							changeSupport.add(
@@ -360,6 +361,7 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 		}
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public IExtendedIterator<INamespace> getNamespaces() {
 		IExtendedIterator<INamespace> result = null;
@@ -466,6 +468,7 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 		try {
 			RepositoryConnection conn = getConnection();
 			boolean trackChanges = changeSupport.isEnabled(this);
+			IDataChangeSupport.Mode changeSupportMode = changeSupport.getMode(this);
 			for (IStatementPattern stmt : statements) {
 				if (stmt instanceof IStatement
 						&& ((IStatement) stmt).isInferred()) {
@@ -487,20 +490,37 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 					Value object = valueConverter.toRdf4j((IValue) stmt
 							.getObject());
 					if (trackChanges) {
-						for (IStatement existing : match(stmt.getSubject(),
-								stmt.getPredicate(), (IValue) stmt.getObject(),
-								false, contexts)) {
-							// pretend that statement was in changeCtx if no
-							// context
-							// is set
-							IReference[] changeContexts = existing.getContext() != null ? new IReference[] { existing
-									.getContext() } : contexts;
-							for (IReference ctx : changeContexts) {
-								changeSupport.remove(this,
-										new Statement(existing.getSubject(),
-												existing.getPredicate(),
-												existing.getObject(), ctx,
-												existing.isInferred()));
+						Object stmtObject = stmt.getObject();
+						if (changeSupportMode == IDataChangeSupport.Mode.VERIFY_ALL
+								// ensure that wild cards (null values) are expanded
+								|| changeSupportMode == IDataChangeSupport.Mode.EXPAND_WILDCARDS_ON_REMOVAL
+										&& (stmt.getObject() == null || stmt.getPredicate() == null
+												|| stmt.getSubject() == null)) {
+							// retrieve existing statements from underlying repository
+							for (IStatement existing : match(stmt.getSubject(),
+									stmt.getPredicate(), (IValue) stmtObject,
+									false, contexts)) {
+								// pretend that statement was in changeCtx if no
+								// context is set
+								IReference[] changeContexts = existing.getContext() != null ? new IReference[] { existing
+										.getContext() } : contexts;
+								for (IReference ctx : changeContexts) {
+									changeSupport.remove(this,
+											new Statement(existing.getSubject(),
+													existing.getPredicate(),
+													existing.getObject(), ctx,
+													existing.isInferred()));
+								}
+							}
+						} else {
+							// simply notify about removal even if some parts (subject, predicate or object) of
+							// the statement pattern are null
+							for (IReference ctx : contexts) {
+								changeSupport.remove(
+										this,
+										new Statement(stmt.getSubject(), stmt
+												.getPredicate(), stmt.getObject(),
+												ctx, true));
 							}
 						}
 					}

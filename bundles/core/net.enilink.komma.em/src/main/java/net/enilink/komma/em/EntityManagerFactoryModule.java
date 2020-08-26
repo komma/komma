@@ -19,9 +19,8 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 
-import net.enilink.komma.dm.change.DataChangeTracker;
+import net.enilink.komma.dm.change.DataChangeSupport;
 import net.enilink.komma.dm.change.IDataChangeSupport;
-import net.enilink.komma.dm.change.IDataChangeTracker;
 import net.enilink.komma.core.IEntityDecorator;
 import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.IProvider;
@@ -49,9 +48,8 @@ public class EntityManagerFactoryModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		Multibinder.newSetBinder(binder(), IEntityDecorator.class);
-		bind(DataChangeTracker.class).in(Singleton.class);
-		bind(IDataChangeSupport.class).to(DataChangeTracker.class);
-		bind(IDataChangeTracker.class).to(DataChangeTracker.class);
+		bind(DataChangeSupport.class).in(Singleton.class);
+		bind(IDataChangeSupport.class).to(DataChangeSupport.class);
 
 		install(new EntityVarModule());
 	}

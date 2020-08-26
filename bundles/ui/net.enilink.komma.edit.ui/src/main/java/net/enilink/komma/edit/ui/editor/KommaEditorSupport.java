@@ -30,6 +30,7 @@ import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
+import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.edit.KommaEditPlugin;
 import net.enilink.komma.edit.command.EditingDomainCommandStack;
 import net.enilink.komma.edit.domain.AdapterFactoryEditingDomain;
@@ -690,10 +691,9 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 		IModelSetFactory factory = Guice.createInjector(
 				new ModelSetModule(module)).getInstance(IModelSetFactory.class);
 		IModelSet modelSet = factory.createModelSet(URIs
-				.createURI(MODELS.NAMESPACE +
-				// "MemoryModelSet" //
-						"OwlimModelSet" //
-				));
+				.createURI(MODELS.NAMESPACE + "MemoryModelSet"));
+		// this is required for undo/redo support
+		modelSet.getDataChangeSupport().setDefaultMode(IDataChangeSupport.Mode.VERIFY_ALL);
 		return modelSet;
 	}
 

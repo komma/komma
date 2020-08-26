@@ -24,10 +24,10 @@ import com.google.inject.multibindings.Multibinder;
 
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IStatement;
-import net.enilink.komma.dm.change.DataChangeTracker;
+import net.enilink.komma.dm.change.DataChangeSupport;
 import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.dm.change.IDataChangeListener;
-import net.enilink.komma.dm.change.IDataChangeTracker;
+import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.dm.change.IStatementChange;
 import net.enilink.komma.em.internal.CachedEntity;
 import net.enilink.komma.em.util.IClosable;
@@ -67,7 +67,7 @@ public class CacheModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	Cache<Object, CachedEntity> provideCache(IDataChangeTracker changeTracker) {
+	Cache<Object, CachedEntity> provideCache(IDataChangeSupport changeSupport) {
 		final Cache<Object, CachedEntity> cache = builder.build();
 
 		IDataChangeListener refreshListener = new IDataChangeListener() {
@@ -128,7 +128,7 @@ public class CacheModule extends AbstractModule {
 		};
 		// ensure higher priority for this entity manager in the listener
 		// list
-		((DataChangeTracker) changeTracker).addInternalChangeListener(refreshListener);
+		((DataChangeSupport) changeSupport).addInternalChangeListener(refreshListener);
 		return cache;
 	}
 
