@@ -23,6 +23,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 
 import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.dm.change.DataChangeSupport;
 import net.enilink.komma.dm.change.IDataChange;
@@ -92,35 +93,41 @@ public class CacheModule extends AbstractModule {
 				for (IDataChange change : changes) {
 					if (change instanceof IStatementChange) {
 						IStatement stmt = ((IStatementChange) change).getStatement();
+						IReference stmtSubject = stmt.getSubject();
+						IReference stmtPredicate = stmt.getPredicate();
+						Object stmtObject = stmt.getObject();
 
 						// refresh existing subjects and objects
-						boolean subjectRefreshed = refresh(stmt.getSubject());
-						refresh(stmt.getObject());
+						boolean subjectRefreshed = stmtSubject != null ? refresh(stmtSubject) : false;
+						if (stmtObject != null) {
+							refresh(stmtObject);
+						}
+						// TODO refresh all possible objects if stmtObject is null
 
 						// clear cache completely if owl:imports has
 						// changed
 						// TODO find a better approach instead of clearing the
 						// whole cache
-						if (stmt.getContext() != null && OWL.PROPERTY_IMPORTS.equals(stmt.getPredicate())) {
+						if (stmt.getContext() != null && OWL.PROPERTY_IMPORTS.equals(stmtPredicate)) {
 							cache.invalidateAll();
 							continue;
 						}
 
 						// do only remove "properties" node from cache to ensure
 						// that the above refresh logic keeps working
-						CachedEntity cachedSubject = cache.getIfPresent(stmt.getSubject());
+						CachedEntity cachedSubject = stmtSubject != null ? cache.getIfPresent(stmtSubject) : null;
 						if (cachedSubject != null) {
 							cachedSubject.clearProperties();
 						}
-						CachedEntity cachedObject = cache.getIfPresent(stmt.getObject());
+						CachedEntity cachedObject =  stmtObject != null ? cache.getIfPresent(stmtObject) : null;
 						if (cachedObject != null) {
 							cachedObject.clearProperties();
 						}
 
 						// remove entity completely from cache if its type has
 						// been changed
-						if (subjectRefreshed && RDF.PROPERTY_TYPE.equals(stmt.getPredicate())) {
-							cache.invalidate(stmt.getSubject());
+						if (subjectRefreshed && RDF.PROPERTY_TYPE.equals(stmtPredicate)) {
+							cache.invalidate(stmtSubject);
 						}
 					}
 				}
