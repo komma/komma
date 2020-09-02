@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>net.enilink.bundles</groupId>
 		<artifactId>enilink-vendor-bundles</artifactId>
-		<version>1.5.0-SNAPSHOT</version>
+		<version>1.5.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
