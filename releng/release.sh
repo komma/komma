@@ -26,7 +26,7 @@ done
 mvn versions:set -DnewVersion=$RELEASEVERSION -DgroupId='*' -DartifactId='*' -DprocessAllModules -DgenerateBackupPoms=false -P versions
 
 git commit -a -m "prepare release $RELEASEVERSION"
-git tag v$RELEASEVERSION -m "KOMMA release $RELEASEVERSION"
+git tag -a v$RELEASEVERSION -m "KOMMA release $RELEASEVERSION"
 
 mvn versions:set -DnewVersion=$DEVELOPMENTVERSION -DgroupId='*' -DartifactId='*' -DprocessAllModules -DgenerateBackupPoms=false -P versions
 
