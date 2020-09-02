@@ -256,6 +256,11 @@
 				</plugins>
 			</build>
 		</profile>
+
+		<profile>
+			<id>versions</id>
+			<!-- empty profile for updating version numbers -->
+		</profile>
 	</profiles>
 
 	<pluginRepositories>
