@@ -45,7 +45,7 @@
 		<bundles.aopalliance.deploy.skip>true</bundles.aopalliance.deploy.skip>
 		<bundles.javax-inject.deploy.skip>true</bundles.javax-inject.deploy.skip>
 		<bundles.parboiled.deploy.skip>true</bundles.parboiled.deploy.skip>
-		<bundles.rdf4j.deploy.skip>false</bundles.rdf4j.deploy.skip>
+		<bundles.rdf4j.deploy.skip>true</bundles.rdf4j.deploy.skip>
 
 		<komma.scm.connection>scm:git:git://github.com:komma/komma.git</komma.scm.connection>
 		<komma.scm.developerConnection>scm:git:git@github.com:komma/komma.git</komma.scm.developerConnection>
