@@ -2462,13 +2462,13 @@ public class ItemProviderAdapter extends
 	}
 
 	protected IEntity resolveReference(Object reference) {
-		if (targets != null) {
+		if (targets != null && reference != null) {
 			IEntity result = targets.get(reference);
 			if (result != null) {
 				return result;
 			}
 		}
-		return (IEntity) ((reference instanceof IEntity) ? reference : null);
+		return reference instanceof IEntity ? (IEntity)reference : null;
 	}
 
 	/**
@@ -2598,8 +2598,8 @@ public class ItemProviderAdapter extends
 		for (INotification notification : notifications) {
 			// for changes to subPropertyOf, delete the childrenProperties cache
 			if (notification instanceof IStatementNotification) {
-				if (((IStatementNotification) notification).getPredicate()
-						.equals(RDFS.PROPERTY_SUBPROPERTYOF)) {
+				IReference predicate = ((IStatementNotification) notification).getPredicate();
+				if (predicate == null || RDFS.PROPERTY_SUBPROPERTYOF.equals(predicate)) {
 					childrenProperties = null;
 				}
 			}
@@ -2613,12 +2613,13 @@ public class ItemProviderAdapter extends
 
 			if (notification instanceof IStatementNotification) {
 				IStatementNotification stmtNotification = (IStatementNotification) notification;
-				IProperty property = (IProperty) childrenStore.getOwner()
-						.getEntityManager()
-						.find((IReference) stmtNotification.getPredicate());
-
+				IReference predicate = stmtNotification.getPredicate();
 				// ensure that cached data is discarded
-				childrenStore.getOwner().refresh(property);
+				if (predicate == null) {
+					childrenStore.getOwner().refresh();
+				} else {
+					childrenStore.getOwner().refresh(predicate);
+				}
 			} else if (notification instanceof IPropertyNotification) {
 				IPropertyNotification propertyNotification = (IPropertyNotification) notification;
 				IProperty property = (IProperty) childrenStore.getOwner()
