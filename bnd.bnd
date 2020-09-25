@@ -2,3 +2,4 @@ Bundle-Version: ${project.version}
 -exportcontents: !*.internal*, net.enilink.*
 -removeheaders: Bundle-Developers
 -noextraheaders: true
+Import-Package: org.osgi.framework.*;version="[1.8,2)", *

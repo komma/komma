@@ -13,6 +13,8 @@ package net.enilink.komma.owl.editor.ontology;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import net.enilink.komma.common.command.AbstractCommand.INoChangeRecording;
 import net.enilink.komma.common.command.CommandResult;
@@ -20,12 +22,14 @@ import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationFilter;
+import net.enilink.komma.common.ui.celleditor.TextCellEditorWithContentProposal;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Namespace;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
+import net.enilink.komma.edit.assist.ContentProposal;
 import net.enilink.komma.edit.provider.IItemColorProvider;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
@@ -42,6 +46,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.fieldassist.IContentProposal;
+import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -168,7 +174,21 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		public NamespaceEditingSupport(TableViewer viewer, ColumnType columnType) {
 			super(viewer);
 			this.columnType = columnType;
-			this.cellEditor = new TextCellEditor(viewer.getTable(), SWT.SINGLE);
+			switch (columnType) {
+				case Prefix:
+					this.cellEditor = new TextCellEditor(viewer.getTable(), SWT.SINGLE);
+				case Namespace:
+					this.cellEditor = new TextCellEditorWithContentProposal(viewer.getTable(), SWT.BORDER,
+							this::proposeNamespace, null);
+			}
+		}
+
+		protected IContentProposal[] proposeNamespace(String contents, int index) {
+			List<String> allImports = model.getImportsClosure().stream().map(URI::toString)
+					.sorted().collect(Collectors.toList());
+			String subString = contents.substring(0, index);
+			return allImports.stream().filter(importStr -> importStr.contains(subString))
+					.map(importStr -> new ContentProposal(importStr)).toArray(IContentProposal[]::new);
 		}
 
 		@Override
@@ -185,10 +205,10 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		protected Object getValue(Object element) {
 			final INamespace namespace = (INamespace) element;
 			switch (columnType) {
-			case Prefix:
-				return namespace.getPrefix();
-			case Namespace:
-				return namespace.getURI().toString();
+				case Prefix:
+					return namespace.getPrefix();
+				case Namespace:
+					return namespace.getURI().toString();
 			}
 			return "";
 		}
@@ -198,47 +218,47 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 			final INamespace namespace = (INamespace) element;
 			final IEntityManager em = model.getManager();
 			switch (columnType) {
-			case Prefix:
-				if (value.equals(((INamespace) element).getPrefix())) {
-					return;
-				}
-				for (INamespace existing : em.getNamespaces()) {
-					if (value.equals(existing.getPrefix())) {
+				case Prefix:
+					if (value.equals(((INamespace) element).getPrefix())) {
 						return;
 					}
-				}
-				if (namespace.getURI().isRelative()) {
-					if (namespace instanceof NewNamespace) {
-						((NewNamespace) namespace).prefix = (String) value;
+					for (INamespace existing : em.getNamespaces()) {
+						if (value.equals(existing.getPrefix())) {
+							return;
+						}
+					}
+					if (namespace.getURI().isRelative()) {
+						if (namespace instanceof NewNamespace) {
+							((NewNamespace) namespace).prefix = (String) value;
+							namespaceViewer.refresh(namespace);
+						}
+						return;
+					}
+					execute(new ModifyNamespaceCommand(model, namespace,
+							new Namespace((String) value, namespace.getURI())));
+					break;
+				case Namespace:
+					URI uri;
+					try {
+						uri = URIs.createURI(value.toString());
+					} catch (Exception e) {
+						return;
+					}
+					if (uri.equals(((INamespace) element).getURI())) {
+						return;
+					}
+					for (INamespace existing : em.getNamespaces()) {
+						if (uri.equals(existing.getURI())) {
+							return;
+						}
+					}
+					if (!uri.isRelative()) {
+						execute(new ModifyNamespaceCommand(model, namespace,
+								new Namespace(namespace.getPrefix(), uri)));
+					} else if (namespace instanceof NewNamespace) {
+						((NewNamespace) namespace).uri = uri;
 						namespaceViewer.refresh(namespace);
 					}
-					return;
-				}
-				execute(new ModifyNamespaceCommand(model, namespace,
-						new Namespace((String) value, namespace.getURI())));
-				break;
-			case Namespace:
-				URI uri;
-				try {
-					uri = URIs.createURI(value.toString());
-				} catch (Exception e) {
-					return;
-				}
-				if (uri.equals(((INamespace) element).getURI())) {
-					return;
-				}
-				for (INamespace existing : em.getNamespaces()) {
-					if (uri.equals(existing.getURI())) {
-						return;
-					}
-				}
-				if (!uri.isRelative()) {
-					execute(new ModifyNamespaceCommand(model, namespace,
-							new Namespace(namespace.getPrefix(), uri)));
-				} else if (namespace instanceof NewNamespace) {
-					((NewNamespace) namespace).uri = uri;
-					namespaceViewer.refresh(namespace);
-				}
 			}
 
 		}
@@ -270,7 +290,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 				Collection<? extends INotification> notifications) {
 			namespaceViewer.refresh();
 		}
-	};
+	}
 
 	private class NamespaceLabelProvider extends LabelProvider implements
 			ITableLabelProvider, ITableColorProvider {
@@ -286,10 +306,10 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		public String getColumnText(Object element, int columnIndex) {
 			if (element instanceof INamespace) {
 				switch (columnIndex) {
-				case 0:
-					return ((INamespace) element).getPrefix();
-				case 1:
-					return ((INamespace) element).getURI().toString();
+					case 0:
+						return ((INamespace) element).getPrefix();
+					case 1:
+						return ((INamespace) element).getURI().toString();
 				}
 			}
 			return "";
@@ -337,7 +357,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		namespaceViewer.setContentProvider(new IStructuredContentProvider() {
 			@Override
 			public void inputChanged(Viewer viewer, Object oldInput,
-					Object newInput) {
+									 Object newInput) {
 			}
 
 			@Override
@@ -423,7 +443,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 	void deleteItem() {
 		IStructuredSelection selection = (IStructuredSelection) namespaceViewer
 				.getSelection();
-		for (Iterator<?> it = selection.iterator(); it.hasNext();) {
+		for (Iterator<?> it = selection.iterator(); it.hasNext(); ) {
 			INamespace namespace = (INamespace) it.next();
 			removeNamespace(namespace);
 		}

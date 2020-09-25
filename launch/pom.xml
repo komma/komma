@@ -29,6 +29,7 @@
 					</execution>
 				</executions>
 				<configuration>
+					<mode>restart</mode>
 					<programArguments>
 						<programArgument>-console</programArgument>
 						<programArgument>-consoleLog</programArgument>
@@ -55,10 +56,7 @@
 
 	<profiles>
 		<profile>
-			<id>default</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
+			<id>configure</id>
 
 			<dependencies>
 				<dependency>
@@ -132,11 +130,6 @@
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
-					<artifactId>org.eclipse.core.runtime</artifactId>
-					<version>3.18.0</version>
-				</dependency>
-				<dependency>
-					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.console</artifactId>
 					<version>1.4.0</version>
 				</dependency>
@@ -197,7 +190,16 @@
 							<groupId>org.eclipse.platform</groupId>
 							<artifactId>org.eclipse.swt</artifactId>
 						</exclusion>
+						<exclusion>
+							<groupId>org.eclipse.platform</groupId>
+							<artifactId>org.eclipse.urischeme</artifactId>
+						</exclusion>
 					</exclusions>
+				</dependency>
+				<dependency>
+					<groupId>org.eclipse.platform</groupId>
+					<artifactId>org.eclipse.jface.notifications</artifactId>
+					<version>0.2.0</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
@@ -240,17 +242,14 @@
 				<module>../features</module>
 				<module>org.apache.batik.css</module>
 			</modules>
-		</profile>
 
-		<profile>
-			<id>restart</id>
 			<build>
 				<plugins>
 					<plugin>
 						<groupId>at.bestsolution</groupId>
 						<artifactId>maven-osgi-exec-plugin</artifactId>
 						<configuration>
-							<mode>RESTART</mode>
+							<mode>configure</mode>
 						</configuration>
 					</plugin>
 				</plugins>
