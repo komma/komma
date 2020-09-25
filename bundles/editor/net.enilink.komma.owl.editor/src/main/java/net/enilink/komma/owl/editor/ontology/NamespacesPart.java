@@ -29,7 +29,6 @@ import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Namespace;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
-import net.enilink.komma.edit.assist.ContentProposal;
 import net.enilink.komma.edit.provider.IItemColorProvider;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
@@ -46,6 +45,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.viewers.CellEditor;
@@ -178,7 +178,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 				case Prefix:
 					this.cellEditor = new TextCellEditor(viewer.getTable(), SWT.SINGLE);
 				case Namespace:
-					this.cellEditor = new TextCellEditorWithContentProposal(viewer.getTable(), SWT.BORDER,
+					this.cellEditor = new TextCellEditorWithContentProposal(viewer.getTable(), SWT.SINGLE | SWT.BORDER,
 							this::proposeNamespace, null);
 			}
 		}
@@ -187,8 +187,10 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 			List<String> allImports = model.getImportsClosure().stream().map(URI::toString)
 					.sorted().collect(Collectors.toList());
 			String subString = contents.substring(0, index);
-			return allImports.stream().filter(importStr -> importStr.contains(subString))
-					.map(importStr -> new ContentProposal(importStr)).toArray(IContentProposal[]::new);
+			return allImports.stream()
+					.filter(importStr -> subString.isEmpty() ||	importStr.contains(subString))
+					.map(importStr -> new ContentProposal(importStr))
+					.toArray(IContentProposal[]::new);
 		}
 
 		@Override

@@ -31,9 +31,11 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
 	public TextCellEditorWithContentProposal(Composite parent, int style,
 			IContentProposalProvider contentProposalProvider,
 			char[] autoActivationCharacters) {
-		super(parent, style);
+		super();
+		setStyle(style);
 		this.contentProposalProvider = contentProposalProvider;
 		this.autoActivationCharacters = autoActivationCharacters;
+		create(parent);
 	}
 
 	@Override
