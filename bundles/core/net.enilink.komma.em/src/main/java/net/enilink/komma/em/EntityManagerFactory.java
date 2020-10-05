@@ -145,9 +145,6 @@ class EntityManagerFactory implements IEntityManagerFactory {
 		childModule.includeModule(module);
 		for (KommaModule include : modules) {
 			childModule.includeModule(include);
-			for (URI writable : include.getWritableGraphs()) {
-				childModule.addWritableGraph(writable);
-			}
 		}
 		EntityManagerFactory childFactory = new EntityManagerFactory(childModule, locale == null ? this.locale : locale,
 				managerModule);

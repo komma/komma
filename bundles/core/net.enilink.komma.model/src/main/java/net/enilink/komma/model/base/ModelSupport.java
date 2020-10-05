@@ -564,7 +564,17 @@ public abstract class ModelSupport
 			queue.add(getBehaviourDelegate());
 			while (!queue.isEmpty()) {
 				IModel model = queue.remove();
-				moduleClosure.includeModule(((IModel.Internal) model).getModule());
+				KommaModule importedModule = ((IModel.Internal) model).getModule(); 
+				// only include concepts and behaviours
+				moduleClosure.includeModule(importedModule, false);
+				// add readable graphs but ignore writable graphs
+				for (URI graph : importedModule.getReadableGraphs()) {
+					moduleClosure.addReadableGraph(graph);
+				}
+				// add namespaces
+				for (INamespace ns : importedModule.getNamespaces()) {
+					moduleClosure.addNamespace(ns);
+				}
 				for (URI imported : model.getImports()) {
 					if (seen.add(imported)) {
 						boolean demandLoad = getBehaviourDelegate().demandLoadImport(imported);

@@ -338,15 +338,26 @@ public class KommaModule {
 	}
 
 	/**
-	 * Adds a prefix for a namespace.
+	 * Adds a prefix for an URI.
 	 * 
 	 * @param prefix
 	 *            The prefix.
 	 * @param name
-	 *            The namespace URI that the prefix maps to.
+	 *            The URI that the prefix maps to.
 	 */
 	public KommaModule addNamespace(String prefix, URI uri) {
 		namespaces.add(new Namespace(prefix, uri));
+		return this;
+	}
+
+	/**
+	 * Adds a namespace definition.
+	 * 
+	 * @param namespace
+	 *            The namespace definition.
+	 */
+	public KommaModule addNamespace(INamespace namespace) {
+		namespaces.add(namespace);
 		return this;
 	}
 
@@ -486,17 +497,18 @@ public class KommaModule {
 	 * 
 	 * @param module
 	 *            to be included
-	 * @param includeGraphs
-	 *            flag to indicate wether to include the graphs
+	 * @param includeGraphsAndNamespaces
+	 *            flag to indicate whether to include the readable and writable graphs
+	 *            as well as the namespaces
 	 * @return this
 	 */
-	public KommaModule includeModule(KommaModule module, boolean includeGraphs) {
+	public KommaModule includeModule(KommaModule module, boolean includeGraphsAndNamespaces) {
 		annotations.putAll(module.annotations);
 		datatypes.addAll(module.datatypes);
 		concepts.addAll(module.concepts);
 		behaviours.addAll(module.behaviours);
-		if (includeGraphs) {
-			readableGraphs.addAll(module.writableGraphs);
+		if (includeGraphsAndNamespaces) {
+			writableGraphs.addAll(module.writableGraphs);
 			readableGraphs.addAll(module.readableGraphs);
 			namespaces.addAll(module.namespaces);
 		}
