@@ -65,7 +65,7 @@ public class LiteralEditingSupport implements IEditingSupport {
 			} else {
 				IExtendedIterator<? extends IReference> ranges = entityManager
 						.find(stmt.getPredicate(), IProperty.class)
-						.getNamedRanges((IEntity) stmt.getSubject(), false);
+						.getNamedRanges((IEntity) stmt.getSubject(), true);
 				while (ranges.hasNext() && literalType == null) {
 					URI type = ranges.next().getURI();
 					if (!isAbstractType(type)) {
