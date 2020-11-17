@@ -1,5 +1,7 @@
 = KOMMA
 
+image:https://badges.gitter.im/komma/komma.svg[link="https://gitter.im/komma/komma?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
+
 KOMMA is a framework for linked data applications.
 
 KOMMA (Knowledge Modeling and Management Architecture) supports the management and editing of RDF, RDFS and OWL. 
