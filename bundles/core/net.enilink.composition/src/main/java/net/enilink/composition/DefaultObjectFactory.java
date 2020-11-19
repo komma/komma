@@ -42,8 +42,7 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 /**
- * Converts between resources and objects.
- * 
+ * Basic implementation of the {@link ObjectFactory} interface.
  */
 public class DefaultObjectFactory<T> implements ObjectFactory<T> {
 	private RoleMapper<T> mapper;
