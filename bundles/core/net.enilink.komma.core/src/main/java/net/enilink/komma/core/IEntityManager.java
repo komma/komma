@@ -327,19 +327,6 @@ public interface IEntityManager extends AutoCloseable {
 	Locale getLocale();
 
 	/**
-	 * Get the current lock mode for the entity instance.
-	 * 
-	 * @param entity
-	 * @return lock mode
-	 * @throws TransactionRequiredException
-	 *             if there is no transaction
-	 * @throws IllegalArgumentException
-	 *             if the instance is not a managed entity and a transaction is
-	 *             active
-	 */
-	LockModeType getLockMode(Object entity);
-
-	/**
 	 * Gets the namespace that is associated with the specified prefix, if any.
 	 * 
 	 * @param prefix
@@ -437,7 +424,7 @@ public interface IEntityManager extends AutoCloseable {
 
 	/**
 	 * Indicate to the {@link IEntityManager} that a transaction is active. This
-	 * method should be called on an application managed EntityManager that was
+	 * method should be called on an application managed entity manager that was
 	 * created outside the scope of the active transaction to associate it with
 	 * the current transaction.
 	 * 
@@ -445,81 +432,6 @@ public interface IEntityManager extends AutoCloseable {
 	 *             if there is no transaction.
 	 */
 	void joinTransaction();
-
-	/**
-	 * Lock an entity instance that is contained in the persistence context with
-	 * the specified lock mode type. If a pessimistic lock mode type is
-	 * specified and the entity contains a version attribute, the persistence
-	 * provider must also perform optimistic version checks when obtaining the
-	 * database lock. If these checks fail, the OptimisticLockException will be
-	 * thrown. If the lock mode type is pessimistic and the entity instance is
-	 * found but cannot be locked: - the PessimisticLockException will be thrown
-	 * if the database locking failure causes transaction-level rollback. - the
-	 * LockTimeoutException will be thrown if the database locking failure
-	 * causes only statement-level rollback
-	 * 
-	 * @param entity
-	 * @param lockMode
-	 * @throws IllegalArgumentException
-	 *             if the instance is not an entity or is a detached entity
-	 * @throws TransactionRequiredException
-	 *             if there is no transaction
-	 * @throws EntityNotFoundException
-	 *             if the entity does not exist in the database when pessimistic
-	 *             locking is performed
-	 * @throws OptimisticLockException
-	 *             if the optimistic version check fails
-	 * @throws PessimisticLockException
-	 *             if pessimistic locking fails and the transaction is rolled
-	 *             back
-	 * @throws LockTimeoutException
-	 *             if pessimistic locking fails and only the statement is rolled
-	 *             back
-	 * @throws PersistenceException
-	 *             if an unsupported lock call is made
-	 */
-	void lock(Object entity, LockModeType lockMode);
-
-	/**
-	 * Lock an entity instance that is contained in the persistence context with
-	 * the specified lock mode type and with specified properties. If a
-	 * pessimistic lock mode type is specified and the entity contains a version
-	 * attribute, the persistence provider must also perform optimistic version
-	 * checks when obtaining the database lock. If these checks fail, the
-	 * OptimisticLockException will be thrown. If the lock mode type is
-	 * pessimistic and the entity instance is found but cannot be locked: - the
-	 * PessimisticLockException will be thrown if the database locking failure
-	 * causes transaction-level rollback. - the LockTimeoutException will be
-	 * thrown if the database locking failure causes only statement-level
-	 * rollback If a vendor-specific property or hint is not recognized, it is
-	 * silently ignored. Portable applications should not rely on the standard
-	 * timeout hint. Depending on the database in use and the locking mechanisms
-	 * used by the provider, the hint may or may not be observed.
-	 * 
-	 * @param entity
-	 * @param lockMode
-	 * @param properties
-	 *            standard and vendor-specific properties and hints
-	 * @throws IllegalArgumentException
-	 *             if the instance is not an entity or is a detached entity
-	 * @throws TransactionRequiredException
-	 *             if there is no transaction
-	 * @throws EntityNotFoundException
-	 *             if the entity does not exist in the database when pessimistic
-	 *             locking is performed
-	 * @throws OptimisticLockException
-	 *             if the optimistic version check fails
-	 * @throws PessimisticLockException
-	 *             if pessimistic locking fails and the transaction is rolled
-	 *             back
-	 * @throws LockTimeoutException
-	 *             if pessimistic locking fails and only the statement is rolled
-	 *             back
-	 * @throws PersistenceException
-	 *             if an unsupported lock call is made
-	 */
-	void lock(Object entity, LockModeType lockMode,
-			Map<String, Object> properties);
 
 	/**
 	 * Returns all the statements with the given subject, predicate, and object.
@@ -577,89 +489,6 @@ public interface IEntityManager extends AutoCloseable {
 	 * @param entity
 	 */
 	void refresh(Object entity);
-
-	/**
-	 * Refresh the state of the instance from the database, overwriting changes
-	 * made to the entity, if any, and lock it with respect to given lock mode
-	 * type. If the lock mode type is pessimistic and the entity instance is
-	 * found but cannot be locked: - the PessimisticLockException will be thrown
-	 * if the database locking failure causes transaction-level rollback. - the
-	 * LockTimeoutException will be thrown if the database locking failure
-	 * causes only statement-level rollback.
-	 * 
-	 * @param entity
-	 * @param lockMode
-	 * @throws IllegalArgumentException
-	 *             if the instance is not an entity or the entity is not managed
-	 * @throws TransactionRequiredException
-	 *             if there is no transaction
-	 * @throws EntityNotFoundException
-	 *             if the entity no longer exists in the database
-	 * @throws PessimisticLockException
-	 *             if pessimistic locking fails and the transaction is rolled
-	 *             back
-	 * @throws LockTimeoutException
-	 *             if pessimistic locking fails and only the statement is rolled
-	 *             back
-	 * @throws PersistenceException
-	 *             if an unsupported lock call is made
-	 */
-	void refresh(Object entity, LockModeType lockMode);
-
-	/**
-	 * Refresh the state of the instance from the database, overwriting changes
-	 * made to the entity, if any, and lock it with respect to given lock mode
-	 * type and with specified properties. If the lock mode type is pessimistic
-	 * and the entity instance is found but cannot be locked: - the
-	 * PessimisticLockException will be thrown if the database locking failure
-	 * causes transaction-level rollback. - the LockTimeoutException will be
-	 * thrown if the database locking failure causes only statement-level
-	 * rollback If a vendor-specific property or hint is not recognized, it is
-	 * silently ignored. Portable applications should not rely on the standard
-	 * timeout hint. Depending on the database in use and the locking mechanisms
-	 * used by the provider, the hint may or may not be observed.
-	 * 
-	 * @param entity
-	 * @param lockMode
-	 * @param properties
-	 *            standard and vendor-specific properties and hints
-	 * @throws IllegalArgumentException
-	 *             if the instance is not an entity or the entity is not managed
-	 * @throws TransactionRequiredException
-	 *             if there is no transaction
-	 * @throws EntityNotFoundException
-	 *             if the entity no longer exists in the database
-	 * @throws PessimisticLockException
-	 *             if pessimistic locking fails and the transaction is rolled
-	 *             back
-	 * @throws LockTimeoutException
-	 *             if pessimistic locking fails and only the statement is rolled
-	 *             back
-	 * @throws PersistenceException
-	 *             if an unsupported lock call is made
-	 */
-	void refresh(Object entity, LockModeType lockMode,
-			Map<String, Object> properties);
-
-	/**
-	 * Refresh the state of the instance from the database, using the specified
-	 * properties, and overwriting changes made to the entity, if any. If a
-	 * vendor-specific property or hint is not recognized, it is silently
-	 * ignored.
-	 * 
-	 * @param entity
-	 * @param properties
-	 *            standard and vendor-specific properties
-	 * @throws IllegalArgumentException
-	 *             if the instance is not an entity or the entity is not managed
-	 * @throws TransactionRequiredException
-	 *             if invoked on a container-managed entity manager of type
-	 *             PersistenceContextType.TRANSACTION and there is no
-	 *             transaction.
-	 * @throws EntityNotFoundException
-	 *             if the entity no longer exists in the database
-	 */
-	void refresh(Object entity, Map<String, Object> properties);
 
 	/**
 	 * Remove statements from this manager

@@ -8,7 +8,6 @@ import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.komma.core.IReferenceable;
 import net.enilink.komma.core.IUpdate;
 import net.enilink.komma.core.IValue;
-import net.enilink.komma.core.LockModeType;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.dm.IDataManagerUpdate;
 import net.enilink.komma.em.internal.IEntityManagerInternal;
@@ -43,22 +42,12 @@ public class Update implements IUpdate {
 	}
 
 	@Override
-	public LockModeType getLockMode() {
-		return LockModeType.NONE;
-	}
-
-	@Override
 	public Set<String> getSupportedHints() {
 		return Collections.emptySet();
 	}
 
 	@Override
 	public IUpdate setHint(String hintName, Object value) {
-		return this;
-	}
-
-	@Override
-	public IUpdate setLockMode(LockModeType lockMode) {
 		return this;
 	}
 

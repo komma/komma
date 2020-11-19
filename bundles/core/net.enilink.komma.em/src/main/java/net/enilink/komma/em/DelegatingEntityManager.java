@@ -31,7 +31,6 @@ import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.IUpdate;
 import net.enilink.komma.core.IValue;
 import net.enilink.komma.core.InferencingCapability;
-import net.enilink.komma.core.LockModeType;
 import net.enilink.komma.core.URI;
 
 public abstract class DelegatingEntityManager implements IEntityManager {
@@ -195,11 +194,6 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public LockModeType getLockMode(Object entity) {
-		return getDelegate().getLockMode(entity);
-	}
-
-	@Override
 	public URI getNamespace(String prefix) {
 		return getDelegate().getNamespace(prefix);
 	}
@@ -257,18 +251,6 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public void lock(Object entity, LockModeType mode) {
-		getDelegate().lock(entity, mode);
-	}
-
-	@Override
-	public void lock(Object entity, LockModeType lockMode,
-			Map<String, Object> properties) {
-		getDelegate().lock(entity, lockMode, properties);
-
-	}
-
-	@Override
 	public IExtendedIterator<IStatement> match(IReference subject,
 			IReference predicate, Object object) {
 		return getDelegate().match(subject, predicate, object);
@@ -288,23 +270,6 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	@Override
 	public void refresh(Object entity) {
 		getDelegate().refresh(entity);
-	}
-
-	@Override
-	public void refresh(Object entity, LockModeType lockMode) {
-		getDelegate().refresh(entity, lockMode);
-	}
-
-	@Override
-	public void refresh(Object entity, LockModeType lockMode,
-			Map<String, Object> properties) {
-		getDelegate().refresh(entity, lockMode, properties);
-
-	}
-
-	@Override
-	public void refresh(Object entity, Map<String, Object> properties) {
-		getDelegate().refresh(entity, properties);
 	}
 
 	@Override

@@ -139,16 +139,6 @@ public interface IQuery<R> extends IQueryBase<IQuery<R>>, AutoCloseable {
 	Map<String, Object> getProperties();
 
 	/**
-	 * Get the current lock mode for the query.
-	 * 
-	 * @return lock mode
-	 * @throws IllegalStateException
-	 *             if the query is found not to be a Java Persistence query
-	 *             language SELECT query or a Criteria API query
-	 */
-	LockModeType getLockMode();
-
-	/**
 	 * Evaluates the query and returns the results disconnected from the query.
 	 * 
 	 * @return The results from the query.
@@ -191,16 +181,6 @@ public interface IQuery<R> extends IQueryBase<IQuery<R>>, AutoCloseable {
 	 *             if the second argument is not valid for the implementation
 	 */
 	IQuery<R> setProperty(String propertyName, Object value);
-
-	/**
-	 * Set the lock mode type to be used for the query execution.
-	 * 
-	 * @param lockMode
-	 * @throws IllegalStateException
-	 *             if the query is found not to be a Java Persistence query
-	 *             language SELECT query or a Criteria API query
-	 */
-	IQuery<R> setLockMode(LockModeType lockMode);
 
 	/**
 	 * Assigns a concept to the given name.

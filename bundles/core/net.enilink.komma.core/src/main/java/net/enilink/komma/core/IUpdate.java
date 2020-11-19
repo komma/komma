@@ -31,15 +31,6 @@ public interface IUpdate {
 	Map<String, Object> getHints();
 
 	/**
-	 * Get the current lock mode for the update.
-	 * 
-	 * @return lock mode
-	 * @throws IllegalStateException
-	 *             if the update is found not to be a valid update
-	 */
-	LockModeType getLockMode();
-
-	/**
 	 * Get the names of the hints that are supported for query objects. These
 	 * hints correspond to hints that may be passed to the methods of the Query
 	 * interface that take hints as arguments or used with the NamedQuery and
@@ -64,16 +55,6 @@ public interface IUpdate {
 	 *             if the second argument is not valid for the implementation
 	 */
 	IUpdate setHint(String hintName, Object value);
-
-	/**
-	 * Set the lock mode type to be used for the query execution.
-	 * 
-	 * @param lockMode
-	 * @throws IllegalStateException
-	 *             if the query is found not to be a Java Persistence query
-	 *             language SELECT query or a Criteria API query
-	 */
-	IUpdate setLockMode(LockModeType lockMode);
 
 	/**
 	 * Assigns an entity or literal to the given name.

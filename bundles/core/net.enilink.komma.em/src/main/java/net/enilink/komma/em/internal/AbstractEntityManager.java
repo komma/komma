@@ -89,7 +89,6 @@ import net.enilink.komma.core.InferencingCapability;
 import net.enilink.komma.core.Initializable;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Literal;
-import net.enilink.komma.core.LockModeType;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.StatementPattern;
 import net.enilink.komma.core.TransactionRequiredException;
@@ -595,11 +594,6 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	}
 
 	@Override
-	public LockModeType getLockMode(Object entity) {
-		return null;
-	}
-
-	@Override
 	public URI getNamespace(String prefix) {
 		if (prefixToUri.isEmpty()) {
 			cacheNamespaces();
@@ -798,15 +792,6 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 			throw new TransactionRequiredException();
 	}
 
-	public void lock(Object entity, LockModeType mode) {
-		throw new UnsupportedOperationException("locking is not supported");
-	}
-
-	@Override
-	public void lock(Object entity, LockModeType lockMode, Map<String, Object> properties) {
-		lock(entity, lockMode);
-	}
-
 	@Override
 	public IExtendedIterator<IStatement> match(IReference subject, IReference predicate, Object object) {
 		return dm.match(subject, predicate, toValue(object), true, readContexts);
@@ -881,21 +866,6 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		if (entity instanceof Refreshable) {
 			((Refreshable) entity).refresh();
 		}
-	}
-
-	@Override
-	public void refresh(Object entity, LockModeType lockMode) {
-		refresh(entity);
-	}
-
-	@Override
-	public void refresh(Object entity, LockModeType lockMode, Map<String, Object> properties) {
-		refresh(entity);
-	}
-
-	@Override
-	public void refresh(Object entity, Map<String, Object> properties) {
-		refresh(entity);
 	}
 
 	@Override

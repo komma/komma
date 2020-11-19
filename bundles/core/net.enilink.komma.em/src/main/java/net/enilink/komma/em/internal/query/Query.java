@@ -18,7 +18,6 @@ import net.enilink.komma.core.IReferenceable;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.ITupleResult;
 import net.enilink.komma.core.IValue;
-import net.enilink.komma.core.LockModeType;
 import net.enilink.komma.core.NoResultException;
 import net.enilink.komma.core.NonUniqueResultException;
 import net.enilink.komma.core.URI;
@@ -169,11 +168,6 @@ public class Query<R> extends QueryBase<IQuery<R>> implements IQuery<R> {
 		return query.getProperties();
 	}
 
-	@Override
-	public LockModeType getLockMode() {
-		return LockModeType.NONE;
-	}
-
 	public List<R> getResultList() {
 		return evaluate().toList();
 	}
@@ -209,11 +203,6 @@ public class Query<R> extends QueryBase<IQuery<R>> implements IQuery<R> {
 
 	public IQuery<R> setProperty(String propertyName, Object value) {
 		query.setProperty(propertyName, value);
-		return this;
-	}
-
-	@Override
-	public IQuery<R> setLockMode(LockModeType lockMode) {
 		return this;
 	}
 
