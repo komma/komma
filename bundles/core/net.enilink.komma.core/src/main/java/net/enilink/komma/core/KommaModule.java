@@ -46,8 +46,8 @@ import java.util.Set;
 import java.util.Vector;
 
 /**
- * Defines the Scope of an {@link IEntityManager} and its factory. This includes
- * roles, literals, factories, datasets, and contexts.
+ * Defines the scope of an {@link IEntityManager} and its factory. This includes
+ * concepts, behaviours, literals and graphs.
  */
 public class KommaModule {
 	private static final String IRI_CLASS = "net.enilink.composition.annotations.Iri";

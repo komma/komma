@@ -15,11 +15,10 @@ package net.enilink.komma.core;
  * mostly to do work in non-request, non-transactional threads. Or where more
  * fine-grained control over the unit of work is required. Starting and ending a
  * unit of work directly corresponds to opening and closing an
- * {@code IEntityManager}respectively.
+ * {@link IEntityManager} respectively.
  * <p>
  * The Unit of Work referred to by UnitOfWork will always be local to the
- * calling thread. Be careful to end() in a finally block.
- * 
+ * calling thread. Be careful to {@link #end()} in a finally block.
  */
 public interface IUnitOfWork {
 

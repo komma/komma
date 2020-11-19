@@ -10,6 +10,16 @@
  *******************************************************************************/
 package net.enilink.komma.core;
 
+/**
+ * Represents an entity that has an associated
+ * reference as unique identifier.
+ */
 public interface IReferenceable {
+	/**
+	 * The reference (either a {@link URI} or a blank node) that
+	 * can be used as identifier to refer to this entity. 
+	 * 
+	 * @return The reference for this entity
+	 */
 	IReference getReference();
 }

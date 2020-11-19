@@ -81,7 +81,7 @@ public interface IExtendedIterator<T> extends Iterator<T>, AutoCloseable,
 	List<T> toList();
 
 	/**
-	 * Answer a set of the [remaining] elements of this iterator, in order,
+	 * Answer a set of the [remaining] elements of this iterator while
 	 * consuming this iterator.
 	 */
 	Set<T> toSet();
