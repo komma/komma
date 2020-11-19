@@ -31,8 +31,6 @@ package net.enilink.composition.vocabulary;
 /**
  * Static vocabulary for the object ontology.
  * 
- * @author James Leigh
- * 
  */
 public class OWL {
 	public static final String NAMESPACE = "http://www.w3.org/2002/07/owl#";

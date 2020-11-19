@@ -29,13 +29,20 @@
 package net.enilink.composition.traits;
 
 /**
- * Implemented by behaviours.
- * 
- * @author James Leigh
- * 
+ * The base interface that is implemented by all behaviours.
+ * <p>
+ * This interface allows access to the associated object proxy
+ * by calling {@link #getBehaviourDelegate()}. This is sometimes
+ * required since <code>this<code> refers to the behaviour
+ * instance and not to the object proxy.
  */
 public interface Behaviour<T> {
 	public static final String GET_ENTITY_METHOD = "getBehaviourDelegate";
 
+	/**
+	 * Returns the object proxy associated with this behaviour.
+	 * 
+	 * @return The corresponding object proxy
+	 */
 	T getBehaviourDelegate();
 }
