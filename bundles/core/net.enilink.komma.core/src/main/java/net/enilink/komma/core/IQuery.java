@@ -45,31 +45,64 @@ public interface IQuery<R> extends IQueryBase<IQuery<R>>, AutoCloseable {
 	void close();
 
 	/**
-	 * Evaluates the query and returns an iterator over the result.
+	 * Evaluates the query and returns an iterator over the results.
 	 * 
-	 * @return Iterator over the result of the query.
+	 * Depending on the type of query the returned iterator is usually either a
+	 * <ul>
+	 *   <li>{@link ITupleResult} for SELECT queries with elements of type {@link IBindings}</li>
+	 *   <li>{@link IGraphResult} for CONSTRUCT queries with elements of type {@link IStatement} or </li>
+	 *   <li>{@link IBooleanResult} for ASK queries with one element of type {@link Boolean}</li>
+	 * </ul>
+	 * 
+	 * The element types of the returned iterators can be changed by using the 
+	 * methods {@link #bindResultType(Class, Class...)} or 
+	 * {@link #restrictResultType(Class, Class...)}. This makes it possible to 
+	 * return the type Object[] for {@link ITupleResult}s or to map {@link ITupleResult}s 
+	 * with one projection variable or {@link IGraphResult} directly to mapped beans.
+	 * 
+	 * @return Iterator over the results of the query.
 	 */
 	IExtendedIterator<R> evaluate();
 
 	/**
-	 * Evaluates the query and returns an iterator over the result.
+	 * Evaluates the query and returns an iterator over the results while
+	 * asserting some specific types of the result elements.
 	 * 
-	 * @return Iterator over the result of the query.
+	 * This method is a shorthand for using {@link #bindResultType(Class, Class...)} 
+	 * and then {@link #evaluate()}.
+	 * 
+	 * If the given <code>resultType</code>s are mapped bean interfaces then
+	 * it is guaranteed that the returned beans implement at least those
+	 * interfaces. The related <code>rdf:type</code> statements don't have
+	 * to be contained within the RDF store.
+	 * 
+	 * Other possible <code>resultType</code>s include {@link IBindings} or 
+	 * <code>Object[]</code> for SELECT queries, {@link IStatement} for 
+	 * construct queries or {@link Boolean} for ASK queries.
+	 *
+	 * @see #bindResultType(Class, Class...)
+	 * @return Iterator over the results of the query.
 	 */
 	<T> IExtendedIterator<T> evaluate(Class<T> resultType,
 			Class<?>... resultTypes);
 
 	/**
-	 * Evaluates the query and returns an iterator over the result.
+	 * Evaluates the query and returns an iterator over the results while
+	 * asserting some specific types of the result elements without touching
+	 * the RDF store for type information.
 	 * 
-	 * @return Iterator over the result of the query.
+	 * This method is a shorthand for using {@link #restrictResultType(Class, Class...)} 
+	 * and then {@link #evaluate()}.
+	 *
+	 * @see #restrictResultType(Class, Class...)
+	 * @return Iterator over the results of the query.
 	 */
 	<T> IExtendedIterator<T> evaluateRestricted(Class<T> resultType,
 			Class<?>... resultTypes);
 
 	/**
 	 * Asserts the given <code>resultTypes</code> for the result values. This
-	 * ensures that the values have at least the <code>resultTypes</code>.
+	 * ensures that the values have at least the <code>resultType</code>s.
 	 * 
 	 * @param resultTypes
 	 *            The types for the result values
