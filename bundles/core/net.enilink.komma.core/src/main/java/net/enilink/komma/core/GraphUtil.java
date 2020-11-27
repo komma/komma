@@ -13,9 +13,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @author Arjohn Kampman
+ * Utility methods for working with {@link IGraph} instances.
+ * 
  */
-public class GraphUtil {
+class GraphUtil {
 
 	/**
 	 * Compares two graphs, defined by two statement collections, and returns
