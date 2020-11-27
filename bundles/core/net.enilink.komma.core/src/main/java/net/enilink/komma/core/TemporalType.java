@@ -11,19 +11,18 @@
 package net.enilink.komma.core;
 
 /**
- * Type used to indicate a specific mapping of {@link java.util.Date} 
- * or {@link java.util.Calendar}.
+ * Type used to indicate a specific mapping of {@link java.util.Date} or
+ * {@link java.util.Calendar}.
  *
- * @since Java Persistence 1.0
  */
 public enum TemporalType {
 
-    /** Map as java.sql.Date */
-    DATE, 
+	/** Map as java.sql.Date */
+	DATE,
 
-    /** Map as java.sql.Time */
-    TIME, 
+	/** Map as java.sql.Time */
+	TIME,
 
-    /** Map as java.sql.Timestamp */
-    TIMESTAMP
+	/** Map as java.sql.Timestamp */
+	TIMESTAMP
 }
