@@ -146,10 +146,9 @@ public class EditUIMarkerHelper extends MarkerHelper {
 					null);
 			if (uriAttribute != null) {
 				URI uri = URIs.createURI(uriAttribute);
-				IObject iObject = editingDomain.getModelSet().getObject(uri,
-						true);
-				if (iObject != null) {
-					result.add(editingDomain.getWrapper(iObject));
+				IModel model = editingDomain.getModelSet().getModel(uri.trimFragment(), true);
+				if (model != null) {
+					result.add(editingDomain.getWrapper(model.getManager().find(uri, IObject.class)));
 				}
 			}
 			String relatedURIsAttribute = marker.getAttribute(
@@ -157,10 +156,9 @@ public class EditUIMarkerHelper extends MarkerHelper {
 			if (relatedURIsAttribute != null) {
 				for (String relatedURI : relatedURIsAttribute.split(" ")) {
 					URI uri = URIs.createURI(URIs.decode(relatedURI));
-					IObject iObject = editingDomain.getModelSet().getObject(
-							uri, true);
-					if (iObject != null) {
-						result.add(editingDomain.getWrapper(iObject));
+					IModel model = editingDomain.getModelSet().getModel(uri.trimFragment(), true);
+					if (model != null) {
+						result.add(editingDomain.getWrapper(model.getManager().find(uri, IObject.class)));
 					}
 				}
 			}
