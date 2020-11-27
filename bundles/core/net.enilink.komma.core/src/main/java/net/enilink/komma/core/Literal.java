@@ -10,6 +10,9 @@
  *******************************************************************************/
 package net.enilink.komma.core;
 
+/**
+ * Basic implementation of an {@link ILiteral}. 
+ */
 public class Literal implements ILiteral {
 	public static final URI RDF_NAMESPACE_URI = URIs.createURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 	public static final URI XMLSCHEMA_NAMESPACE_URI = URIs.createURI("http://www.w3.org/2001/XMLSchema#");

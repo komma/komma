@@ -2,7 +2,6 @@ package net.enilink.komma.core;
 
 /**
  * Simple factory for in-memory literals.
- * 
  */
 public class LiteralFactory implements ILiteralFactory {
 	@Override

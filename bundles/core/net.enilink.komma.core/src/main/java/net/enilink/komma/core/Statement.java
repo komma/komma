@@ -13,6 +13,10 @@ package net.enilink.komma.core;
 import java.util.Collections;
 import java.util.Iterator;
 
+/**
+ * Basic implementation of the {@link IStatement} interface. 
+ *
+ */
 public class Statement extends StatementPattern implements IStatement,
 		Iterable<IStatement> {
 	private boolean inferred;

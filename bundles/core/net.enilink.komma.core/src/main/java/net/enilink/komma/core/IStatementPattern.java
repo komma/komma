@@ -11,7 +11,11 @@
 package net.enilink.komma.core;
 
 /**
- * An pattern for an RDF statement that can be used for matching.
+ * A pattern for an RDF statement that can be used for matching.
+ * 
+ * <p>
+ * In a statement pattern any of the components (subject, predicate, object or
+ * context) may be <code>null</code>.
  */
 public interface IStatementPattern {
 

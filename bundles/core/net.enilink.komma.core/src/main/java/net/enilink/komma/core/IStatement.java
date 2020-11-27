@@ -13,6 +13,10 @@ package net.enilink.komma.core;
 /**
  * An RDF statement. A statement is equal to another statement if the subjects,
  * predicates and objects are equal.
+ * 
+ * <p>
+ * The {@link Iterable} interface is implemented to simplify interactions with
+ * methods that require multiple statements.
  */
 public interface IStatement extends IStatementPattern, Iterable<IStatement> {
 	/**

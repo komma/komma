@@ -20,6 +20,26 @@ import javax.transaction.TransactionRequiredException;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 
+/**
+ * Interface used to interact with the underlying RDF store in terms of beans
+ * (entities).
+ * 
+ * <p> An <code>IEntityManager</code> instance is configured by a
+ * {@link KommaModule} that defines the concepts and behaviours used to map the
+ * entities. Each entity managed by an <code>IEntityManager</code> implements
+ * the interface {@link IEntity} that allows access to the associated entity
+ * manager.
+ * 
+ * <p> Entities are identified by an {@link IReference} that represents either a
+ * {@link URI} or a {@link BlankNode}. Instances of beans and corresponding
+ * references are equal in terms of the <code>hashCode</code> and
+ * <code>equals</code> methods.
+ * 
+ * <p> Instances of <code>IEntityManager</code> can be obtained through an
+ * {@link IEntityManagerFactory} that either creates user-managed instances
+ * via {@link IEntityManagerFactory#create()} or provides instances managed by
+ * an {@link IUnitOfWork} via {@link IEntityManagerFactory#get()}.
+ */
 public interface IEntityManager extends AutoCloseable {
 	/**
 	 * Add statements to this manager

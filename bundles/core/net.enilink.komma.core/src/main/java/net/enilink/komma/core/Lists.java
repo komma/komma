@@ -3,7 +3,8 @@ package net.enilink.komma.core;
 import java.util.List;
 
 /**
- * Helper methods to work with {@link List} instances.
+ * Helper methods to work with <code>rdf:List</code>s represented by
+ * {@link List} instances.
  */
 public class Lists {
 	private static final URI TYPE_LIST = URIs
