@@ -1032,8 +1032,9 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 						IValidator.URI_ATTRIBUTE, null);
 				if (uriAttribute != null) {
 					URI uri = URIs.createURI(uriAttribute);
-					IObject object = modelSet.getObject(uri, true);
-					if (object != null) {
+					IModel model = modelSet.getModel(uri.trimFragment(), true);
+					if (model != null) {
+						IObject object = model.getManager().find(uri, IObject.class);
 						editorSelectionProvider
 								.setSelectionToViewer(Collections
 										.singleton(getEditingDomain()

@@ -24,6 +24,25 @@ import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.em.concepts.IOntology;
 
+/**
+ * A named graph identified by a {@link URI} whose contents are accessed through
+ * an {@link IEntityManager}.
+ * 
+ * <p>
+ * The <code>Model</code> interface allows to work with multiple ontologies and
+ * their imports closure. Models can be loaded from and saved to files in
+ * multiple formats like Turtle, RDF/XML and others. If a model is loaded or
+ * saved without specifying a concrete URL or stream then a set of rules is used
+ * by the model set's {@link IURIConverter} to convert the model's URI into a
+ * resolvable URL.
+ * 
+ * <p>
+ * If an entity manager ({@link #getManager()}) is constructed for a model then
+ * the model's <code>owl:imports</code> closure is traversed and the imported
+ * ontologies are also loaded into the {@link IModelSet}. The entity manager has
+ * read-write access to this model and read-only access to the statements contained
+ * in the imported models.
+ */
 @Iri(MODELS.NAMESPACE + "Model")
 public interface IModel {
 	/**

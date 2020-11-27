@@ -36,6 +36,19 @@ import net.enilink.komma.model.base.ModelSetSupport;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 
+/**
+ * An interrelated set of named graphs represented by {@link IModel} instances.
+ * 
+ * <p>
+ * A model set manages multiple ontologies and resolves <code>owl:imports</code>
+ * dependencies between them.
+ * 
+ * <p>
+ * Each model has its own {@link IEntityManager} that has read-write access to
+ * its named graph and read-only access to the named graphs of its
+ * <code>owl:imports</code> closure.
+ *
+ */
 @Iri(MODELS.NAMESPACE + "ModelSet")
 public interface IModelSet extends INotifier<INotification> {
 	interface Internal extends IModelSet,
@@ -263,42 +276,6 @@ public interface IModelSet extends INotifier<INotification> {
 	KommaModule getModule();
 
 	/**
-	 * Returns the object resolved by the URI.
-	 * <p>
-	 * Every object {@link IObject#getModel() contained} by a model has a
-	 * corresponding URI that resolves to the object. So for any object
-	 * contained by a resource, the following is <code>true</code>.
-	 * 
-	 * <pre>
-	 * eObject == eObject.eResource().getResourceSet()
-	 * 		.getEObject(EcoreUtil.getURI(eObject), false)
-	 * </pre>
-	 * 
-	 * </p>
-	 * <p>
-	 * The URI {@link URI#trimFragment without} the fragment, is used to
-	 * {@link #getResource resolve} a resource. If the resource resolves, the
-	 * {@link URI#fragment fragment} is used to {@link IModel#getObject resolve}
-	 * the object.
-	 * </p>
-	 * 
-	 * @param uri
-	 *            the URI to resolve.
-	 * @param loadOnDemand
-	 *            whether to create and load the resource, if it doesn't already
-	 *            exists.
-	 * @return the object resolved by the URI, or <code>null</code> if there
-	 *         isn't one.
-	 * @see IModel#getObject(String)
-	 * @see #getModel(URI, boolean)
-	 * @throws RuntimeException
-	 *             if a model can't be demand created.
-	 * @throws WrappedException
-	 *             if a problem occurs during demand load.
-	 */
-	IObject getObject(URI uri, boolean loadOnDemand);
-
-	/**
 	 * Returns the unit of work that manages resources (entity and data
 	 * managers) on a per-thread basis.
 	 * 
@@ -344,6 +321,11 @@ public interface IModelSet extends INotifier<INotification> {
 	 */
 	void setModelFactoryRegistry(IModel.Factory.Registry modelFactoryRegistry);
 
+	/**
+	 * Sets the models contained in this model set.
+	 * 
+	 * @param models The models contained in this model set.
+	 */
 	void setModels(Set<IModel> models);
 
 	/**

@@ -56,7 +56,6 @@ import net.enilink.komma.em.util.KommaUtil;
 import net.enilink.komma.model.IContentHandler;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.IObject;
 import net.enilink.komma.model.IURIConverter;
 import net.enilink.komma.model.ModelPlugin;
 import net.enilink.komma.model.concepts.ModelSet;
@@ -86,7 +85,6 @@ import com.google.inject.Singleton;
  * <li><b>Resolve</b></li>
  * <ul>
  * <li>{@link #delegatedModel(URI, boolean)}</li>
- * <li>{@link #getObject(URI, boolean)}</li>
  * </ul>
  * <li><b>Demand</b></li>
  * <ul>
@@ -606,18 +604,6 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 			state().module = module;
 		}
 		return state().module;
-	}
-
-	/*
-	 * Javadoc copied from interface.
-	 */
-	public IObject getObject(URI uri, boolean loadOnDemand) {
-		IModel model = getModel(uri.trimFragment(), loadOnDemand);
-		if (model != null) {
-			return model.getManager().find(uri, IObject.class);
-		} else {
-			return null;
-		}
 	}
 
 	public IUnitOfWork getUnitOfWork() {
