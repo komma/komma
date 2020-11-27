@@ -1,26 +1,24 @@
-= KOMMA
+= KOMMA -- RDF Mapper and Editing Framework for Java
 
+image:https://maven-badges.herokuapp.com/maven-central/net.enilink.komma/net.enilink.komma.model/badge.svg[link="https://maven-badges.herokuapp.com/maven-central/net.enilink.komma/net.enilink.komma.model"]
 image:https://badges.gitter.im/komma/komma.svg[link="https://gitter.im/komma/komma?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
 
-KOMMA is a framework for linked data applications.
+*Documentation:* http://komma.enilink.net/docs
 
-KOMMA (Knowledge Modeling and Management Architecture) supports the management and editing of RDF, RDFS and OWL. 
-It provides Object-Triple-Mapping (comparable to JPA), an Editing framework as well as
-Eclipse RCP and RAP integration. 
+*API Javadoc:* http://komma.enilink.net/apidocs
 
-*In short:* KOMMA is for RDF+OWL what the Eclipse Modeling Framework (EMF) is for ECore/MOF.
+*Website:* http://komma.enilink.net
 
-* *Website:* http://komma.enilink.net
-* *Documentation:* http://komma.enilink.net/docs
-* *Eclipse Marketplace:* http://marketplace.eclipse.org/content/komma-rdf-eclipse
-* *Eclipse Update Site:* http://dl.bintray.com/komma/updates/komma/1.3.2/
+== Features
 
-== Get the sources
-
-[source,text]
-----
-git clone https://github.com/komma/komma
-----
+* *Object-Triple-Mapping*: Mapping of Java interfaces to RDF types -- based on *https://rdf4j.org[RDF4J]*
+* Support for *multiple inheritance*
+* *Caching* of beans and properties 
+* Implementation of logic using *behaviours* and *aspect-oriented programming*
+* *Model API* for working with *named graphs*
+* Dependency injection via https://github.com/google/guice[Google Guice]
+* *Editing framework* for CRUD applications
+* Eclipse RCP and RAP integration
 
 == Build KOMMA with Maven
 
