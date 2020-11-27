@@ -5,6 +5,8 @@ image:https://badges.gitter.im/komma/komma.svg[link="https://gitter.im/komma/kom
 
 *Documentation:* http://komma.enilink.net/docs
 
+*API Javadoc:* http://komma.enilink.net/apidocs
+
 *Website:* http://komma.enilink.net
 
 == Features
@@ -14,6 +16,7 @@ image:https://badges.gitter.im/komma/komma.svg[link="https://gitter.im/komma/kom
 * *Caching* of beans and properties 
 * Implementation of logic using *behaviours* and *aspect-oriented programming*
 * *Model API* for working with *named graphs*
+* Dependency injection via https://github.com/google/guice[Google Guice]
 * *Editing framework* for CRUD applications
 * Eclipse RCP and RAP integration
 
