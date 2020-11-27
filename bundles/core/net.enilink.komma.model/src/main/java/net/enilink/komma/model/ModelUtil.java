@@ -62,6 +62,13 @@ import net.enilink.vocab.rdf.Property;
 import net.enilink.vocab.rdfs.Class;
 import net.enilink.vocab.rdfs.Resource;
 
+/**
+ * Utility methods for working with {@link IModel models} and RDF data.
+ * 
+ * <p>
+ * Methods in this class are used to implement loading and saving of model data
+ * or to generate labels for visual representation of model elements.
+ */
 public class ModelUtil {
 	/**
 	 * Collator which can be used to compares resource labels.

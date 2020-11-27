@@ -27,7 +27,7 @@ import org.xml.sax.ContentHandler;
  * A converter to normalize a URI or to produce an input or output stream for a
  * URI.
  * <p>
- * A model set provides {@link ResourceSet#getURIConverter one} of these for use
+ * A model set provides {@link IModelSet#getURIConverter() one} of these for use
  * by it's {@link IModelSet#getModels models} when they are
  * {@link IModel#save(java.util.Map) serialized} and
  * {@link IModel#load(java.util.Map) deserialized}. A model set also uses this
@@ -39,13 +39,12 @@ import org.xml.sax.ContentHandler;
  * </p>
  * 
  * @see IModelSet#getURIConverter()
- * @see URIHandler
- * @see ContentHandler
+ * @see IURIHandler
+ * @see IContentHandler
  */
 public interface IURIConverter {
 	/**
-	 * An option used to pass the calling URIConverter to the {@link URIHandler}
-	 * s.
+	 * An option used to pass the calling URIConverter to the {@link URIHandler}s.
 	 */
 	String OPTION_URI_CONVERTER = "URI_CONVERTER";
 

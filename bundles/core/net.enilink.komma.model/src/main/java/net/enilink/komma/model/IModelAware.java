@@ -10,6 +10,9 @@
  *******************************************************************************/
 package net.enilink.komma.model;
 
+/**
+ * Interface of objects that are associated with a {@link IModel model.} 
+ */
 public interface IModelAware {
 	/**
 	 * Returns the associated {@link IModel} which contains the data of this
