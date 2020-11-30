@@ -5,6 +5,7 @@ import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.rdf4j.MemoryModelSetSupport;
 import net.enilink.komma.model.rdf4j.PersistentModelSetSupport;
+import net.enilink.komma.model.rdf4j.RDF4JRepositoryModelSetSupport;
 import net.enilink.komma.model.rdf4j.RemoteModelSetSupport;
 import net.enilink.komma.model.rdf4j.SPARQLModelSetSupport;
 import net.enilink.komma.model.rdf4j.SerializableModelSupport;
@@ -24,5 +25,6 @@ public class ModelModule extends KommaModule {
 		addBehaviour(RemoteModelSetSupport.class);
 		addBehaviour(SPARQLModelSetSupport.class);
 		addBehaviour(PersistentModelSetSupport.class);
+		addBehaviour(RDF4JRepositoryModelSetSupport.class);
 	}
 }
