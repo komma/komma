@@ -31,7 +31,6 @@ import net.enilink.komma.common.notify.FilterUtil;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationSupport;
-import net.enilink.komma.core.BlankNode;
 import net.enilink.komma.core.EntityVar;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
@@ -41,7 +40,6 @@ import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.dm.change.IDataChangeListener;
@@ -51,7 +49,6 @@ import net.enilink.komma.dm.change.IStatementChange;
 import net.enilink.komma.em.CacheModule;
 import net.enilink.komma.em.CachingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
-import net.enilink.komma.em.ThreadLocalDataManager;
 import net.enilink.komma.em.util.KommaUtil;
 import net.enilink.komma.model.IContentHandler;
 import net.enilink.komma.model.IModel;
@@ -70,12 +67,10 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Provider;
-import com.google.inject.Singleton;
 
 /**
  * An extensible model set implementation.

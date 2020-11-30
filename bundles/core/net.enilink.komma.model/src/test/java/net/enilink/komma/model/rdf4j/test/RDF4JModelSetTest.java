@@ -46,6 +46,8 @@ public class RDF4JModelSetTest {
 	@After
 	public void afterTest() throws Exception {
 		modelSet.dispose();
+		// repository is not closed if model set just wraps RDF4J repository
+		repository.shutDown();
 	}
 
 	@Test
