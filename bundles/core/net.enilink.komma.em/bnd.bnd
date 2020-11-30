@@ -3,3 +3,8 @@ Bundle-Activator: net.enilink.komma.em.KommaEM$Implementation
 Bundle-Localization: plugin
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
+Import-Package: org.osgi.framework.*;version="[1.8,2)", \
+  org.eclipse.core.runtime.*;-remove-attribute:="common", \
+  org.eclipse.rdf4j.*;resolution:=optional, \
+  net.enilink.komma.rdf4j.*;resolution:=optional, \
+  *
