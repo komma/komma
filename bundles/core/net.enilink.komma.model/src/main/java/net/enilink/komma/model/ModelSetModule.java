@@ -30,10 +30,8 @@ import net.enilink.komma.core.IProvider;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.em.EagerCachingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
-import net.enilink.komma.em.ThreadLocalDataManager;
 import net.enilink.komma.em.util.KommaUtil;
 import net.enilink.komma.em.util.UnitOfWork;
 import net.enilink.komma.rdf4j.RDF4JModule;
@@ -70,12 +68,6 @@ public class ModelSetModule extends AbstractModule {
 	protected List<? extends Module> createFactoryModules(
 			KommaModule kommaModule) {
 		return Arrays.<Module> asList(new AbstractModule() {
-			@Override
-			protected void configure() {
-				bind(IDataManager.class).to(ThreadLocalDataManager.class).in(
-						Singleton.class);
-			}
-
 			@Singleton
 			@Provides
 			Repository provideRepository() {

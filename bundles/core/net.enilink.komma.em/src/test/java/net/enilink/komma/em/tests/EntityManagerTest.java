@@ -10,6 +10,10 @@
  *******************************************************************************/
 package net.enilink.komma.em.tests;
 
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.junit.After;
 import org.junit.Before;
 
@@ -18,16 +22,17 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
 
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.IUnitOfWork;
+import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.dm.IDataManager;
-import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.em.DecoratingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
 import net.enilink.komma.em.util.UnitOfWork;
+import net.enilink.komma.rdf4j.RDF4JModule;
 
 public abstract class EntityManagerTest {
 	protected Injector injector;
@@ -35,17 +40,27 @@ public abstract class EntityManagerTest {
 	protected IEntityManager manager;
 	protected UnitOfWork uow;
 
-	// defines the default module for configuring the storage backend
-	private static final String DEFAULT_STORAGE_MODULE = "net.enilink.komma.rdf4j.RDF4JMemoryStoreModule";
+	protected Module createStorageModule() {
+		// create an RDF4J memory store
+		return new AbstractModule() {
+			@Override
+			protected void configure() {
+				install(new RDF4JModule());
+			}
 
-	private Module createStorageModule() {
-		try {
-			return (Module) getClass().getClassLoader()
-					.loadClass(DEFAULT_STORAGE_MODULE).newInstance();
-		} catch (Exception e) {
-			throw new RuntimeException("Unable to instantiate storage module: "
-					+ DEFAULT_STORAGE_MODULE, e);
-		}
+			@Singleton
+			@Provides
+			Repository provideRepository() {
+				Repository repository = new SailRepository(new MemoryStore());
+				try {
+					repository.init();
+				} catch (RepositoryException e) {
+					throw new KommaException(e);
+				}
+
+				return repository;
+			}
+		};
 	}
 
 	@Before
@@ -62,12 +77,6 @@ public abstract class EntityManagerTest {
 
 						bind(UnitOfWork.class).toInstance(uow);
 						bind(IUnitOfWork.class).toInstance(uow);
-					}
-
-					@Provides
-					protected IDataManager provideDataManager(
-							IDataManagerFactory dmFactory) {
-						return dmFactory.get();
 					}
 				});
 		factory = injector.getInstance(IEntityManagerFactory.class);

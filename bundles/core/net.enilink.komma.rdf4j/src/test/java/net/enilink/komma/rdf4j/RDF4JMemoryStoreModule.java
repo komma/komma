@@ -27,7 +27,7 @@ public class RDF4JMemoryStoreModule extends AbstractModule {
 	Repository provideRepository() {
 		Repository repository = new SailRepository(new MemoryStore());
 		try {
-			repository.initialize();
+			repository.init();
 		} catch (RepositoryException e) {
 			throw new KommaException(e);
 		}

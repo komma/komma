@@ -11,6 +11,8 @@
 package net.enilink.komma.em.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 
@@ -21,9 +23,9 @@ import net.enilink.komma.core.URIs;
 import org.junit.Test;
 
 public class BasicManagerTest extends EntityManagerTest {
-	private static final String NS = "urn:test:";
-	private Person me;
-	private Person john;
+	private static final String NS = "test:";
+	private Person max;
+	private Person moritz;
 
 	@Iri(NS + "Person")
 	public interface Person {
@@ -67,16 +69,27 @@ public class BasicManagerTest extends EntityManagerTest {
 	@Override
 	public void beforeTest() throws Exception {
 		super.beforeTest();
-		me = manager.createNamed(URIs.createURI(NS + "me"), Person.class);
-		me.setName("james");
-		me.setAge(102);
-		john = manager.createNamed(URIs.createURI(NS + "john"), Person.class);
-		john.setName("john");
-		me.getFriends().add(john);
+		max = manager.createNamed(URIs.createURI(NS + "max"), Person.class);
+		max.setName("max");
+		max.setAge(11);
+		moritz = manager.createNamed(URIs.createURI(NS + "moritz"), Person.class);
+		moritz.setName("moritz");
+		moritz.setAge(12);
+		max.getFriends().add(moritz);
 	}
 
 	@Test
-	public void testFriendName() throws Exception {
-		assertEquals("james", me.getName());
+	public void testSimpleGetters() throws Exception {
+		assertEquals("max", max.getName());
+		assertEquals(11, max.getAge());
+		assertEquals("moritz", moritz.getName());
+		assertEquals(12, moritz.getAge());
+	}
+
+	@Test
+	public void testSetGetters() throws Exception {
+		assertTrue(String.format("%s friends contains %s", max, moritz), max.getFriends().contains(moritz));
+		assertFalse(String.format("%s friends contains %s", moritz, max), moritz.getFriends().contains(max));
+		assertEquals(1, max.getFriends().size());
 	}
 }

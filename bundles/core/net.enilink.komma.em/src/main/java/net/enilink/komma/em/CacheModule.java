@@ -49,13 +49,35 @@ public class CacheModule extends AbstractModule {
 		}
 	}
 
-	private String cacheName;
-
-	public static CacheBuilder<Object, Object> builder = CacheBuilder.newBuilder()
+	public static CacheBuilder<Object, Object> DEFAULT_BUILDER = CacheBuilder.newBuilder()
 			.expireAfterAccess(2, TimeUnit.MINUTES).maximumSize(30000);
 
+	protected final CacheBuilder<Object, Object> cacheBuilder;
+
+	/**
+	 * Constructs an instance of cache module with cache name.
+	 * 
+	 * This method deprecated and should no longer be used.
+	 * 
+	 * @param cacheName
+	 */
+	@Deprecated
 	public CacheModule(String cacheName) {
-		this.cacheName = cacheName;
+		this(DEFAULT_BUILDER);
+	}
+
+	/**
+	 * Constructs an instance of cache module with {@link #DEFAULT_BUILDER}.
+	 */
+	public CacheModule() {
+		this(DEFAULT_BUILDER);
+	}
+
+	/**
+	 * Constructs an instance of cache module with a specific cache builder.
+	 */
+	public CacheModule(CacheBuilder<Object, Object> cacheBuilder) {
+		this.cacheBuilder = cacheBuilder;
 	}
 
 	@Override
@@ -69,7 +91,7 @@ public class CacheModule extends AbstractModule {
 	@Provides
 	@Singleton
 	Cache<Object, CachedEntity> provideCache(IDataChangeSupport changeSupport) {
-		final Cache<Object, CachedEntity> cache = builder.build();
+		final Cache<Object, CachedEntity> cache = cacheBuilder.build();
 
 		IDataChangeListener refreshListener = new IDataChangeListener() {
 			boolean refresh(Object entity) {

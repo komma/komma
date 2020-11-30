@@ -30,7 +30,7 @@ import net.enilink.komma.core.URIs;
 
 @Ignore
 public class NamedQueryTest extends EntityManagerTest {
-	private static final String NS = "urn:test:";
+	private static final String NS = "test:";
 	private static final String PREFIX = "PREFIX :<" + NS + ">\n";
 	private Person me;
 	private Person john;

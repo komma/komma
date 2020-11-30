@@ -26,6 +26,10 @@ public class ThreadLocalDataManager extends DelegatingDataManager {
 
 	private ThreadLocal<IDataManager> delegate = new ThreadLocal<IDataManager>();
 
+	public ThreadLocalDataManager() {
+		super();
+	}
+
 	@Override
 	public void close() {
 		IDataManager manager = delegate.get();

@@ -15,7 +15,7 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 
 public class PropertySetsTest extends EntityManagerTest {
-	private static final String NS = "urn:test:";
+	private static final String NS = "test:";
 
 	@Iri(NS + "Concept")
 	public interface Concept {

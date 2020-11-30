@@ -58,5 +58,9 @@
 			<artifactId>org.eclipse.core.contenttype</artifactId>
 			<version>3.7.500</version>
 		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+		</dependency>
 	</dependencies>
 </project>

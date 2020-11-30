@@ -60,7 +60,7 @@ public class GCTest {
 		KommaModule module = ModelPlugin.createModelSetModule(getClass().getClassLoader());
 		// overwrite the default cache configuration to expire elements after a
 		// very short lifespan
-		CacheModule.builder = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MILLISECONDS);
+		CacheModule.DEFAULT_BUILDER = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MILLISECONDS);
 		IModelSetFactory factory = Guice.createInjector(new ModelSetModule(module) {
 			@Override
 			protected Module getEntityManagerModule() {

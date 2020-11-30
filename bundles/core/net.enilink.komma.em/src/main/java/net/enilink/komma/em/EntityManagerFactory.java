@@ -49,6 +49,7 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Provider;
+import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
@@ -120,6 +121,11 @@ class EntityManagerFactory implements IEntityManagerFactory {
 				bind(IEntityManager.class).to(Key.get(IEntityManager.class, Names.named("unmanaged")))
 						.in(Singleton.class);
 			}
+
+			@Provides
+			IDataManager provideDataManager(IDataManagerFactory dataManagerFactory) {
+				return dataManagerFactory.get();
+			}
 		}).getInstance(IEntityManager.class);
 	}
 
@@ -130,6 +136,9 @@ class EntityManagerFactory implements IEntityManagerFactory {
 			@Override
 			protected void configure() {
 				bind(IEntityManager.class).toInstance(scope);
+				// ensure that a shared thread-local instance is used
+				bind(IDataManager.class).to(Key.get(IDataManager.class, Names.named("thread-local")))
+					.in(Singleton.class);
 			}
 		}).getInstance(Key.get(IEntityManager.class, Names.named("unmanaged")));
 	}
@@ -161,21 +170,12 @@ class EntityManagerFactory implements IEntityManagerFactory {
 					sharedManager = getManagerInjector(new AbstractModule() {
 						@Override
 						protected void configure() {
-							// final Provider<IEntityManager> provider = getProvider(Key
-							// .get(IEntityManager.class,
-							// Names.named("unmanaged")));
-							// ThreadLocalEntityManager manager = new ThreadLocalEntityManager() {
-							// @Override
-							// protected IEntityManager initialValue() {
-							// return provider.get();
-							// }
-							// };
-							// requestInjection(manager);
-
-							// use a thread-global instance
-							// the entity manager is thread safe
-							IEntityManager manager = create();
-							bind(IEntityManager.class).toInstance(manager);
+							// use a thread-global instance, the entity manager is thread safe
+							bind(IEntityManager.class).to(Key.get(IEntityManager.class, Names.named("unmanaged")))
+									.in(Singleton.class);
+							// ensure that a shared thread-local instance is used
+							bind(IDataManager.class).to(Key.get(IDataManager.class, Names.named("thread-local")))
+									.in(Singleton.class);
 						}
 					}).getInstance(IEntityManager.class);
 				}

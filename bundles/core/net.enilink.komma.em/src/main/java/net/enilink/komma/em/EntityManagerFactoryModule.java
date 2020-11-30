@@ -14,11 +14,14 @@ import java.util.Locale;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Names;
 
+import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.change.DataChangeSupport;
 import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.core.IEntityDecorator;
@@ -50,6 +53,11 @@ public class EntityManagerFactoryModule extends AbstractModule {
 		Multibinder.newSetBinder(binder(), IEntityDecorator.class);
 		bind(DataChangeSupport.class).in(Singleton.class);
 		bind(IDataChangeSupport.class).to(DataChangeSupport.class);
+
+		// provide a global shared data manager that is implemented via a thread-local
+		// if this data manager is used then a unit of work is required
+		bind(Key.get(IDataManager.class, Names.named("thread-local"))).to(ThreadLocalDataManager.class)
+				.in(Singleton.class);
 
 		install(new EntityVarModule());
 	}
