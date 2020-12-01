@@ -29,6 +29,7 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 		Behaviour<IClass> {
 	private static Logger log = LoggerFactory.getLogger(ClassSupport.class);
 
+	@SuppressWarnings("unlikely-arg-type")
 	private final String SELECT_DIRECT_SUBCLASSES(boolean named) {
 		StringBuilder sb = new StringBuilder(PREFIX);
 		sb.append("SELECT ?subClass WHERE { ");
@@ -59,16 +60,16 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	};
 
 	private final String SELECT_SUBCLASSES(boolean named) {
-		return PREFIX + "SELECT DISTINCT ?subClass WHERE { "
+		return PREFIX + "SELECT DISTINCT ?subClass { "
 				+ ((OWL.TYPE_THING.equals(this)) ? "?subClass a owl:Class . " //
-						: "?subClass rdfs:subClassOf ?superClass . " //
+						: "?subClass rdfs:subClassOf+ ?superClass . " //
 				) + "FILTER (?subClass != ?superClass"
 				+ (named ? " && isIRI(?subClass)" : "")
 				+ ") } ORDER BY ?subClass";
 	};
 
 	private static final String SELECT_LEAF_SUBCLASSES(boolean named) {
-		return PREFIX + "SELECT DISTINCT ?subClass WHERE { "
+		return PREFIX + "SELECT DISTINCT ?subClass { "
 				+ "?subClass rdfs:subClassOf* ?superClass . OPTIONAL {"
 				+ "?otherSubClass rdfs:subClassOf ?subClass . "
 				+ "FILTER (?subClass != ?otherSubClass)" + "} FILTER ("
@@ -78,8 +79,7 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 
 	private static final String SELECT_DIRECT_SUPERCLASSES(boolean named) {
 		return PREFIX
-				+ "SELECT DISTINCT ?superClass "
-				+ "WHERE { "
+				+ "SELECT DISTINCT ?superClass { "
 				+ "?subClass rdfs:subClassOf ?superClass . "
 				+ "FILTER NOT EXISTS { ?superClass a owl:Restriction } "
 				+ "FILTER NOT EXISTS {"
@@ -93,7 +93,7 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	};
 
 	private static final String SELECT_SUPERCLASSES(boolean named) {
-		return PREFIX + "SELECT DISTINCT ?superClass " + "WHERE { "
+		return PREFIX + "SELECT DISTINCT ?superClass { "
 				+ "?subClass rdfs:subClassOf ?superClass . "
 				+ "FILTER NOT EXISTS {?superClass a owl:Restriction}"
 				+ "FILTER (?subClass != ?superClass"
@@ -102,21 +102,21 @@ public abstract class ClassSupport extends BehaviorBase implements IClass,
 	}
 
 	private static final String SELECT_INSTANCES = PREFIX
-			+ "SELECT DISTINCT ?instance " + "WHERE { "
-			+ "?instance a ?class ." + "}";
+			+ "SELECT DISTINCT ?instance { ?instance a ?class . }";
 
 	private static final String HAS_SUBCLASSES(boolean named) {
-		return PREFIX + "ASK { " + "?subClass rdfs:subClassOf ?superClass . "
+		return PREFIX + "ASK { ?subClass rdfs:subClassOf ?superClass . "
 				+ "FILTER (" + (named ? "isIRI(?subClass) && " : "")
 				+ "?subClass != ?superClass && ?subClass != owl:Nothing)}";
 	}
 
 	private static final String SELECT_DECLARED_PROPERTIES = PREFIX
-			+ "SELECT DISTINCT ?property " + "WHERE { "
-			+ "?property rdfs:domain ?class ." + "} ORDER BY ?property";
+			+ "SELECT DISTINCT ?property {{ ?property rdfs:domain ?class } UNION " // 
+			+ "{ ?class rdfs:subClassOf ?restriction . ?restriction owl:onProperty ?property }} ORDER BY ?property";
 
 	private static final String HAS_DECLARED_PROPERTIES = PREFIX + "ASK { "
-			+ "?property rdfs:domain ?class ." + "}";
+			+ "{ ?property rdfs:domain ?class } UNION " // 
+			+ "{ ?class rdfs:subClassOf ?restriction . ?restriction owl:onProperty ?property }}";
 
 	public static final IResultDescriptor<?> HAS_NAMED_SUBCLASSES_DESC() {
 		return new ResultDescriptor<Object>(HAS_SUBCLASSES(true),
