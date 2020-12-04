@@ -451,6 +451,11 @@ public abstract class ResourceSupport extends BehaviorBase implements
 				.setParameter("o", obj).getBooleanResult();
 	}
 
+	@Override
+	public boolean hasProperty(IReference property, boolean includeInferred) {
+		return hasProperty(property, null, includeInferred);
+	}
+
 	protected IExtendedIterator<IStatement> internalGetPropertyStmts(
 			final IReference propertyRef, final boolean inverse,
 			final boolean filterSymmetric, final boolean includeInferred) {
@@ -513,11 +518,6 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	public boolean isOntLanguageTerm() {
 		net.enilink.komma.core.URI uri = getURI();
 		return uri != null && KommaUtil.isW3cNamespace(uri.namespace());
-	}
-
-	@Override
-	public boolean isPropertySet(IReference property, boolean includeInferred) {
-		return hasProperty(property, null, includeInferred);
 	}
 
 	public void refresh(IReference property) {

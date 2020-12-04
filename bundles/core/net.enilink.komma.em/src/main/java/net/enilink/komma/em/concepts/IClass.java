@@ -19,7 +19,7 @@ import net.enilink.vocab.owl.Class;
 import net.enilink.vocab.owl.Restriction;
 
 /**
- * An extended interfaces to beans that represent {@link Class OWL classes}.
+ * An extended interface for beans representing {@link Class OWL classes}.
  *
  * <p>
  * This interface contains methods for convenient access to instances,

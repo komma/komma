@@ -645,7 +645,7 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 			if (parentReferences != null) {
 				for (int i = 0; i < parentReferences.length; ++i) {
 					final IReference parentReference = parentReferences[i];
-					if (iObject.isPropertySet(parentReference, true)) {
+					if (iObject.hasProperty(parentReference, true)) {
 						if (editingDomain == null) {
 							iObject.set(parentReferences[i], null);
 						} else {

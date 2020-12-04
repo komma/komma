@@ -583,7 +583,7 @@ public class SetCommand extends AbstractOverrideableCommand {
 				}
 			} else if (resolvedProperty.isMany(owner)) {
 				// If the attribute is set, record it's old value.
-				if (owner.isPropertySet(property, true)) {
+				if (owner.hasProperty(property, true)) {
 					oldValue = owner.get(property);
 				} else {
 					oldValue = UNSET_VALUE;
@@ -605,7 +605,7 @@ public class SetCommand extends AbstractOverrideableCommand {
 				}
 			} else {
 				// If the attribute is set, record it's old value.
-				if (owner.isPropertySet(property, true)) {
+				if (owner.hasProperty(property, true)) {
 					oldValue = owner.get(property);
 				} else {
 					oldValue = UNSET_VALUE;

@@ -18,7 +18,7 @@ import net.enilink.komma.core.IReference;
 import net.enilink.vocab.rdf.Property;
 
 /**
- * An extended interfaces to beans that represent {@link Property RDF
+ * An extended interface for beans representing {@link Property RDF
  * properties}.
  *
  * <p>
