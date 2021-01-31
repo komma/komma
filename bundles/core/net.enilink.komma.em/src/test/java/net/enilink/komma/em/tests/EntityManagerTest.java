@@ -10,6 +10,9 @@
  *******************************************************************************/
 package net.enilink.komma.em.tests;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
@@ -29,6 +32,8 @@ import net.enilink.komma.core.IEntityManagerFactory;
 import net.enilink.komma.core.IUnitOfWork;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.em.CacheModule;
+import net.enilink.komma.em.CachingEntityManagerModule;
 import net.enilink.komma.em.DecoratingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
 import net.enilink.komma.em.util.UnitOfWork;
@@ -65,26 +70,34 @@ public abstract class EntityManagerTest {
 
 	@Before
 	public void beforeTest() throws Exception {
-		injector = Guice.createInjector(
-				createStorageModule(),
-				new EntityManagerFactoryModule(createModule(), null,
-						new DecoratingEntityManagerModule()),
-				new AbstractModule() {
-					@Override
-					protected void configure() {
-						UnitOfWork uow = new UnitOfWork();
-						uow.begin();
+		List<Module> modules = new ArrayList<>();
+		modules.add(createStorageModule());
+		modules.add(new EntityManagerFactoryModule(createModule(), null,
+				enableCaching() ? new CachingEntityManagerModule() : new DecoratingEntityManagerModule()));
+		if (enableCaching()) {
+			modules.add(new CacheModule());
+		}
+		modules.add(new AbstractModule() {
+			@Override
+			protected void configure() {
+				UnitOfWork uow = new UnitOfWork();
+				uow.begin();
 
-						bind(UnitOfWork.class).toInstance(uow);
-						bind(IUnitOfWork.class).toInstance(uow);
-					}
-				});
+				bind(UnitOfWork.class).toInstance(uow);
+				bind(IUnitOfWork.class).toInstance(uow);
+			}
+		});
+		injector = Guice.createInjector(modules);
 		factory = injector.getInstance(IEntityManagerFactory.class);
 		manager = factory.get();
 	}
 
 	protected KommaModule createModule() throws Exception {
 		return new KommaModule(getClass().getClassLoader());
+	}
+
+	protected boolean enableCaching() {
+		return false;
 	}
 
 	@After
