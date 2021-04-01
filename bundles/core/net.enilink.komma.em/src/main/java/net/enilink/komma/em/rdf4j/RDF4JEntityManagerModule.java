@@ -6,6 +6,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
+import com.google.inject.name.Named;
 
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IEntityManagerFactory;
@@ -49,6 +50,7 @@ public class RDF4JEntityManagerModule extends AbstractModule {
 	}
 
 	@Provides
+	@Named("unmanaged")
 	protected IDataManager provideDataManager(IDataManagerFactory dmFactory) {
 		return dmFactory.get();
 	}
