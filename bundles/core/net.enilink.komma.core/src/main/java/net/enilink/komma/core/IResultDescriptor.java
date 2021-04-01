@@ -50,8 +50,6 @@ public interface IResultDescriptor<R> extends IQueryBase<IResultDescriptor<R>> {
 	IResultDescriptor<R> prefetch(String property,
 			IResultDescriptor<?> descriptor);
 
-	IResultDescriptor<R> prefetchTypes();
-
 	<T> IResultDescriptor<T> restrictResultType(Class<T> resultType,
 			Class<?>... resultTypes);
 }
