@@ -38,6 +38,10 @@
 				</exclusion>
 				<exclusion>
 					<groupId>org.eclipse.platform</groupId>
+					<artifactId>org.eclipse.ui.workbench</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.gtk.linux.aarch64</artifactId>
 				</exclusion>
 				<exclusion>

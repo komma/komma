@@ -36,6 +36,8 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.ConfigurationException;
 import com.google.inject.Inject;
@@ -86,6 +88,8 @@ import net.enilink.vocab.rdf.RDF;
 
 public abstract class ModelSupport
 		implements IModel, IModelAware, IModel.Internal, INotificationBroadcaster<INotification>, Model, Behaviour<IModel.Internal> {
+	private final static Logger log = LoggerFactory.getLogger(ModelSupport.class);
+	
 	class ModelInjector implements IEntityDecorator {
 		@Override
 		public void decorate(IEntity entity) {
@@ -550,7 +554,10 @@ public abstract class ModelSupport
 								KommaModule extensionModule = (KommaModule) cfgElement.createExecutableExtension("class");
 								moduleClosure.includeModule(extensionModule);
 							} catch (CoreException e) {
-								throw new KommaException("Unable to instantiate extension module", e);
+								// this may happen if an extension module is stale because
+								// its OSGi bundle was already uninstalled or is in the process
+								// of being uninstalled
+								log.debug("Unable to instantiate extension module", e);
 							}
 						}
 					}
@@ -627,7 +634,10 @@ public abstract class ModelSupport
 								KommaModule extensionModule = (KommaModule) cfgElement.createExecutableExtension("class");
 								module.includeModule(extensionModule);
 							} catch (CoreException e) {
-								throw new KommaException("Unable to instantiate extension module", e);
+								// this may happen if an extension module is stale because
+								// its OSGi bundle was already uninstalled or is in the process
+								// of being uninstalled
+								log.debug("Unable to instantiate extension module", e);
 							}
 						}
 					}

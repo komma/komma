@@ -579,9 +579,10 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 											.createExecutableExtension("class");
 									module.includeModule(extensionModule);
 								} catch (CoreException e) {
-									throw new KommaException(
-											"Unable to instantiate extension module",
-											e);
+									// this may happen if an extension module is stale because
+									// its OSGi bundle was already uninstalled or is in the process
+									// of being uninstalled
+									log.debug("Unable to instantiate extension module", e);
 								}
 							}
 						}
