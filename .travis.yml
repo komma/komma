@@ -15,11 +15,13 @@ deploy:
   script: releng/publish/pushToBintray.sh features/net.enilink.komma.updatesite/target/repository/
   on:
     tags: true
+    condition: false
 - provider: script
   skip_cleanup: true
   script: releng/publish/pushToBintray.sh features/net.enilink.komma.updatesite/target/repository/ "$BINTRAY_USER" "$BINTRAY_API_KEY" "$BINTRAY_OWNER" snapshots
   on:
     branch: snapshots
+    condition: false
 
 env:
   global:
@@ -27,8 +29,6 @@ env:
   - BINTRAY_OWNER: komma
   - BINTRAY_REPO: updates
   - BINTRAY_PCK_NAME: komma
-# BINTRAY_API_KEY
-  - secure: O5yhJDOeJGqRAEEUF/fUZZf6ZAGv7DM1rG+v0db+o96GUZDn2vTCdI51XJW5P4ZmCCN9yGZ+XymgFBaUAPX2hXlpZY89abZ0DCcGTwbFpzieAfmzEst8plNasVyIywXWsSuMfncsXJ74knAvRVkEtEXhT7XopkvVOUB5+e0uQCi4IpfUdD5j4MD89p8jCv0FCXNP6GoXAV2zSHBNRzpMpQ2MPC4nNObP95iiz4yJ+pgrkVfRA9eT0YVxwH4+P18MPyOkOEjaWtdWqG9cT1moq904c+LPSJM9S22XWaCtQeqiKLiFGZ6mTjMxxQmhGhaRzWftK8raPR66v35BNiLVoadPuGcPeiCIPaRsPOMj/r/gaDqDpk5NXurUSrjWInuMM7SfmVImAiAtPlDYK8Wes0D/yZlkM/omhLEtgIkBTCrWNcL6GVBRFFw+OUDbpom69guJo5JERhCeySIulExMyilso0z0ZUjfJ6DpGCSipfcFdeIvUKluoBQdf7PULvLAG80WWyVukxZNyoOUVWTLquk1MyPnXlCX9XaByiga/YFG8s0oeOLNRgHSavjSc5UUhtoKqIIpsl6+RHS6GY1dghpxcWsudxuWzfrZ+edJntYXaDfUZfgYyPZVhEXUiVPztsv9Tdgk71D7ls88GHVFiUgxwRHM9C81a5MF47gnL8I=
 # GPG_PASSWORD
   - secure: Y992SWromNWz4gubDHKCZxCeL5434AV2gzQozoy2/ZUCK8Gt8+EwIrBb/v3khC5j83ejFa9+BxgXPSED5iHzz1gk6tCQvuUAkfcnaa7K5bIDIrJ8sH1PZW0QZ3BPOn8YVXiRSP0yisbUtgXJXce6MSEEZgDZaNj07zl/RiAjgMrhWQAYTQ+KPiD/ocvoypkwjERxKbzjQ8m+QiTB2R2jXjBP3miqhA0aj1RpTXGb38MmwWzY0bcrSLS2AHkxC++H+Q04u6AYsqyI/jzEmlQIxs++EJyTK21jEKvnQxTakDRWNhgky57WpZnLEDn/RN6r5CSCJIvEwrKCEX7NTUG9yVS5w4K7XEaY0p2ueK3qAi1mrcoAmTvtC57SlclAe+n1ueO2uoUuwzaUcp9F6hIE3WVxj6Dacia7jU2dS5HG5RBrFuQPEKVkwPKOyi5PfzuHnYwCP2bDiHfLe3j+h5QykYshM/PtzzSxvrl3/SPhHwl4xIXPiqCpNyAF0iCcB5L3y0rJYUjKq0MtokzPCRJdxpdcMiTOFi2N83aGaheyFB5Wg4h4nMLnzXZeTIzUp+Fx5bLayUPQmfnO1InaFqtpbTiy3CJtqi3yVkD+197O7M6rn/7dZ+Yhe5GM3lCmqfvNNW+QbVSXs2xnUAaU24p6OWC1+PleHI+kxYI9WWz8qsk=
 # SONATYPE_USER
