@@ -788,10 +788,11 @@ version(s), and exceptions or additional permissions here}."
 								</goals>
 								<configuration>
 									<target>
+										<property name="plugin_classpath" refid="maven.plugin.classpath"/>
 										<property name="repo.dir"
 											value="${project.build.directory}/repository/" />
 
-										<script language="javascript">
+										<script language="javascript" classpath="${plugin_classpath}">
 <![CDATA[
 	var File = Java.type('java.io.File');
     var repoDir = project.getProperty("repo.dir");

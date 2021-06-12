@@ -28,8 +28,7 @@ If you like to build an Eclipse update site (or rather a P2 repository) for KOMM
 
 [source,text]
 ----
-cd features/net.enilink.komma.updatesite
-mvn package
+mvn package -Pupdatesite
 ----
 
 to create it. Afterwards a P2 repository can be found at `features/net.enilink.komma.updatesite/target/repository`.
