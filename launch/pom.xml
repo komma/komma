@@ -65,6 +65,12 @@
 					<version>1.12</version>
 				</dependency>
 				<dependency>
+					<groupId>net.enilink.bundles</groupId>
+					<artifactId>javax.annotation</artifactId>
+					<version>1.3.5</version>
+				</dependency>
+
+				<dependency>
 					<groupId>net.enilink.komma</groupId>
 					<artifactId>net.enilink.komma.feature</artifactId>
 					<version>${project.version}</version>
@@ -194,6 +200,10 @@
 							<groupId>org.eclipse.platform</groupId>
 							<artifactId>org.eclipse.urischeme</artifactId>
 						</exclusion>
+						<exclusion>
+							<groupId>javax.annotation</groupId>
+							<artifactId>javax.annotation-api</artifactId>
+						</exclusion>
 					</exclusions>
 				</dependency>
 				<dependency>
@@ -236,11 +246,17 @@
 					<artifactId>org.eclipse.equinox.event</artifactId>
 					<version>1.5.200</version>
 				</dependency>
+				<dependency>
+					<groupId>jakarta.annotation</groupId>
+					<artifactId>jakarta.annotation-api</artifactId>
+					<version>1.3.5</version>
+				</dependency>
 			</dependencies>
 
 			<modules>
 				<module>../features</module>
 				<module>org.apache.batik.css</module>
+				<module>javax.annotation</module>
 			</modules>
 
 			<build>
