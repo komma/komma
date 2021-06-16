@@ -132,47 +132,47 @@
 				<dependency>
 					<groupId>org.apache.felix</groupId>
 					<artifactId>org.apache.felix.scr</artifactId>
-					<version>2.1.16</version>
+					<version>2.1.26</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.console</artifactId>
-					<version>1.4.0</version>
+					<version>1.4.300</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.osgi.util</artifactId>
-					<version>3.5.300</version>
+					<version>3.6.0</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.e4.core.di.extensions.supplier</artifactId>
-					<version>0.15.400</version>
+					<version>0.15.800</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.p2.repository</artifactId>
-					<version>2.4.500</version>
+					<version>2.5.0</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.p2.metadata.repository</artifactId>
-					<version>1.3.200</version>
+					<version>1.3.500</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.osgi.services</artifactId>
-					<version>3.8.0</version>
+					<version>3.10.0</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.simpleconfigurator</artifactId>
-					<version>1.3.300</version>
+					<version>1.3.600</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.launcher</artifactId>
-					<version>1.5.500</version>
+					<version>1.6.100</version>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.directory.studio</groupId>
@@ -182,7 +182,7 @@
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.ui.ide.application</artifactId>
-					<version>1.3.400</version>
+					<version>1.4.0</version>
 					<exclusions>
 						<exclusion>
 							<groupId>org.eclipse.platform</groupId>
@@ -209,12 +209,12 @@
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.jface.notifications</artifactId>
-					<version>0.2.0</version>
+					<version>0.3.0</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
-					<version>3.114.0</version>
+					<version>3.116.0</version>
 					<exclusions>
 						<exclusion>
 							<groupId>org.eclipse.platform</groupId>
@@ -229,27 +229,27 @@
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.security</artifactId>
-					<version>1.3.300</version>
+					<version>1.3.600</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.felix</groupId>
+					<artifactId>org.apache.felix.gogo.shell</artifactId>
+					<version>1.1.4</version>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.felix</groupId>
 					<artifactId>org.apache.felix.gogo.command</artifactId>
-					<version>1.1.0</version>
+					<version>1.1.2</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.osgi.compatibility.state</artifactId>
-					<version>1.1.600</version>
+					<version>1.2.300</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.event</artifactId>
-					<version>1.5.200</version>
-				</dependency>
-				<dependency>
-					<groupId>jakarta.annotation</groupId>
-					<artifactId>jakarta.annotation-api</artifactId>
-					<version>1.3.5</version>
+					<version>1.6.0</version>
 				</dependency>
 			</dependencies>
 

@@ -29,11 +29,6 @@
 			<version>${guice.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>${guava.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>net.enilink.komma</groupId>
 			<artifactId>net.enilink.komma.core</artifactId>
 			<version>${project.version}</version>
