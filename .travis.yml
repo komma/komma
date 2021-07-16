@@ -1,7 +1,7 @@
-dist: trusty
+dist: focal
 
 jdk:
-- oraclejdk8
+- openjdk11
 
 before_install:
 - echo $GPG_PASSWORD | gpg --passphrase-fd 0 releng/enilink.asc.gpg
