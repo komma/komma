@@ -59,7 +59,7 @@ public abstract class ExtendedClassNode extends ClassNode {
 	 */
 	public ExtendedClassNode(Type type, Class<?> parentClass,
 			ClassInfo parentClassInfo) {
-		super(Opcodes.ASM5);
+		super(Opcodes.ASM7);
 		String[] interfaces = new String[parentClass.getInterfaces().length];
 		int i = 0;
 		for (Class<?> face : parentClass.getInterfaces()) {

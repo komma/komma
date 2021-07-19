@@ -45,7 +45,7 @@ public class InsnListGenerator extends
 	protected Stack<InsnList> stack;
 
 	public InsnListGenerator(MethodNode mn) {
-		super(Opcodes.ASM5, mn, mn.access, mn.name, mn.desc);
+		super(Opcodes.ASM7, mn, mn.access, mn.name, mn.desc);
 		this.mn = mn;
 		this.instructions = mn.instructions;
 	}
