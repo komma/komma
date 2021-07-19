@@ -2,6 +2,7 @@ target/
 .settings/
 .classpath
 .project
+.idea
 .flattened-pom.xml
 # exclude symlinks
 META-INF

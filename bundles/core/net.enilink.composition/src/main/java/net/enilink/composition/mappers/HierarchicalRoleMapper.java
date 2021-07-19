@@ -96,7 +96,7 @@ public class HierarchicalRoleMapper<T> implements Cloneable {
 	/**
 	 * Finds the rdf:Class<?> for this Java Class<?>.
 	 * 
-	 * @param javaClass
+	 * @param role
 	 * @return T of the rdf:Class<?> for this Java Class<?> or null.
 	 */
 	public T findType(Class<?> role) {

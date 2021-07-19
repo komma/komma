@@ -7,12 +7,6 @@ import net.enilink.composition.exceptions.ConfigException;
 
 public interface RoleMapper<T> {
 
-	void addAnnotation(Class<?> annotation);
-
-	void addAnnotation(Class<?> annotation, T uri);
-
-	void addAnnotation(Method annotation);
-
 	void addAnnotation(Method annotation, T uri);
 
 	void addBehaviour(Class<?> role) throws ConfigException;

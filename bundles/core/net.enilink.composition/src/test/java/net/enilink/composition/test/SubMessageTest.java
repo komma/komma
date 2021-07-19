@@ -142,7 +142,8 @@ public class SubMessageTest extends CompositionTestCase {
 	protected void initRoleMapper(RoleMapper<String> roleMapper) {
 		super.initRoleMapper(roleMapper);
 
-		roleMapper.addAnnotation(subMessageOf.class);
+		roleMapper.addAnnotation(subMessageOf.class.getDeclaredMethods()[0],
+				subMessageOf.class.getDeclaredMethods()[0].getAnnotation(Iri.class).value());
 		roleMapper.addConcept(Concept.class);
 		roleMapper.addBehaviour(Behaviour.class);
 		roleMapper.addBehaviour(Behaviour2.class);

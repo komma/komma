@@ -72,45 +72,8 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 	}
 
 	@Override
-	public void addAnnotation(Class<?> annotation) {
-		for (Method m : annotation.getDeclaredMethods()) {
-			if (!m.isAnnotationPresent(Iri.class)) {
-				String msg = "@" + Iri.class.getSimpleName()
-						+ " annotation required in " + m.toGenericString();
-				throw new IllegalArgumentException(msg);
-			}
-			String uri = m.getAnnotation(Iri.class).value();
-			addAnnotation(m, typeFactory.createType(uri));
-		}
-	}
-
-	@Override
-	public void addAnnotation(Class<?> annotation, T uri) {
-		if (annotation.getDeclaredMethods().length != 1)
-			throw new IllegalArgumentException(
-					"Must specify annotation method if multiple methods exist: "
-							+ annotation);
-		addAnnotation(annotation.getDeclaredMethods()[0], uri);
-	}
-
-	@Override
-	public void addAnnotation(Method annotation) {
-		if (!annotation.isAnnotationPresent(Iri.class))
-			throw new IllegalArgumentException("@" + Iri.class.getSimpleName()
-					+ " annotation required in " + annotation.toGenericString());
-		String uri = annotation.getAnnotation(Iri.class).value();
-		addAnnotation(annotation, typeFactory.createType(uri));
-	}
-
-	@Override
 	public void addAnnotation(Method annotation, T uri) {
 		annotations.put(annotation, uri);
-		if (annotation.isAnnotationPresent(Iri.class)) {
-			String Iri = annotation.getAnnotation(Iri.class).value();
-			if (!uri.toString().equals(Iri)) {
-				addAnnotation(annotation);
-			}
-		}
 	}
 
 	@Override
@@ -196,12 +159,6 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 		if (role.isInterface())
 			throw new ConfigException(role.getSimpleName()
 					+ " is an interface and not a behaviour");
-		// for (Method method : role.getDeclaredMethods()) {
-		// if (isAnnotationPresent(method)
-		// && method.getName().startsWith("get"))
-		// throw new ConfigException(role.getSimpleName()
-		// + " cannot have a property annotation");
-		// }
 	}
 
 	/*
@@ -396,7 +353,7 @@ public class DefaultRoleMapper<T> implements Cloneable, RoleMapper<T> {
 				try {
 					T name = findAnnotation(m);
 					if (name == null && m.isAnnotationPresent(Iri.class)) {
-						addAnnotation(m);
+						addAnnotation(m, typeFactory.createType(m.getAnnotation(Iri.class).value()));
 						name = findAnnotation(m);
 					}
 					if (name == null) {

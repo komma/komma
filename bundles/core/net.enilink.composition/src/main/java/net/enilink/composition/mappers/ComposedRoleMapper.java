@@ -85,23 +85,8 @@ public class ComposedRoleMapper<T> implements Cloneable, RoleMapper<T> {
 	}
 
 	@Override
-	public void addAnnotation(Class<?> annotation) {
-		getPrimary().addAnnotation(annotation);
-	}
-
-	@Override
-	public void addAnnotation(Class<?> annotation, T uri) {
-		getPrimary().addAnnotation(annotation, uri);
-	}
-
-	@Override
 	public void addAnnotation(Method annotation, T uri) {
 		getPrimary().addAnnotation(annotation, uri);
-	}
-
-	@Override
-	public void addAnnotation(Method annotation) {
-		getPrimary().addAnnotation(annotation);
 	}
 
 	@Override

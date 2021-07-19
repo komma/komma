@@ -86,15 +86,6 @@ public class PropertyMapper {
 		return properties;
 	}
 
-	public String findPredicate(Field field) {
-		Class<?> dc = field.getDeclaringClass();
-		String key = dc.getName() + "#" + field.getName();
-		if (properties.containsKey(key))
-			return (String) properties.get(key);
-		Iri iri = field.getAnnotation(Iri.class);
-		return iri == null ? null : iri.value();
-	}
-
 	public String findPredicate(PropertyDescriptor pd) {
 		Method method = pd.getReadMethod();
 		Class<?> dc = method.getDeclaringClass();
@@ -104,12 +95,6 @@ public class PropertyMapper {
 		Method getter = method;
 		Iri iri = getter.getAnnotation(Iri.class);
 		return iri == null ? null : iri.value();
-	}
-
-	public Collection<PropertyDescriptor> findFunctionalProperties(Class<?> type) {
-		Map<String, PropertyDescriptor> properties = new HashMap<String, PropertyDescriptor>();
-		findFunctionalProperties(type, properties);
-		return properties.values();
 	}
 
 	/** @return map of name to uri */
@@ -122,21 +107,6 @@ public class PropertyMapper {
 			properties.put("class", RDF_TYPE);
 		}
 		return properties;
-	}
-
-	private void findFunctionalProperties(Class<?> concept,
-			Map<String, PropertyDescriptor> properties) {
-		for (PropertyDescriptor pd : findProperties(concept)) {
-			Class<?> type = pd.getPropertyType();
-			if (Set.class.equals(type))
-				continue;
-			properties.put(pd.getName(), pd);
-		}
-		for (Class<?> face : concept.getInterfaces()) {
-			findFunctionalProperties(face, properties);
-		}
-		if (concept.getSuperclass() != null)
-			findFunctionalProperties(concept.getSuperclass(), properties);
 	}
 
 	private Map<String, String> findEagerProperties(Class<?> concept,

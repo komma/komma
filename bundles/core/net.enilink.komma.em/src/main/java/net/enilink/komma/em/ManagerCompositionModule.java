@@ -71,7 +71,7 @@ public class ManagerCompositionModule extends AbstractModule {
 				super.initRoleMapper(roleMapper, typeFactory);
 				
 				for (KommaModule.Association e : module.getAnnotations()) {
-					roleMapper.addAnnotation(e.getJavaClass(),
+					roleMapper.addAnnotation(e.getJavaClass().getDeclaredMethods()[0],
 							typeFactory.createType(e.getRdfType()));
 				}
 
