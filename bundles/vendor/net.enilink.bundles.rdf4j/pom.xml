@@ -20,7 +20,7 @@
 	</scm>
 
 	<artifactId>net.enilink.bundles.rdf4j</artifactId>
-	<version>${rdf4j.version}</version>
+	<version>${bundles.rdf4j.version}</version>
 	<packaging>jar</packaging>
 
 	<dependencies>

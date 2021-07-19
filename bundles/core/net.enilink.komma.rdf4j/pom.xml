@@ -36,7 +36,7 @@
 		<dependency>
 			<groupId>net.enilink.bundles</groupId>
 			<artifactId>net.enilink.bundles.rdf4j</artifactId>
-			<version>${rdf4j.version}</version>
+			<version>${bundles.rdf4j.version}</version>
 		</dependency>
 	</dependencies>
 </project>
