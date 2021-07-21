@@ -165,7 +165,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 		loadFactory(node, gen);
 		gen.loadBean();
-		gen.push(propertyMapper.findPredicate(pd));
+		gen.push(propertyMapper.getPredicate(pd));
 
 		// load element type
 		Class<?> propertyType = pd.getPropertyType();
@@ -316,7 +316,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 	@Override
 	public boolean implementsClass(Class<?> concept) {
-		return !propertyMapper.findProperties(concept).isEmpty();
+		return !propertyMapper.getProperties(concept).isEmpty();
 	}
 
 	private void implementSetter(PropertyDescriptor pd, BehaviourClassNode node)
@@ -407,7 +407,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.ifZCmp(IFEQ, notInstanceOf);
 
 		// access property value with corresponding interface method
-		for (PropertyDescriptor pd : propertyMapper.findProperties(node
+		for (PropertyDescriptor pd : propertyMapper.getProperties(node
 				.getParentClass())) {
 			gen.loadArg(0);
 			gen.checkCast(Type.getType(pd.getReadMethod().getDeclaringClass()));
@@ -427,11 +427,11 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		// access property set with "getPropertySet" method
 		Method getPropertySet = PropertySetOwner.class.getMethod(
 				"getPropertySet", String.class);
-		for (PropertyDescriptor pd : propertyMapper.findProperties(node
+		for (PropertyDescriptor pd : propertyMapper.getProperties(node
 				.getParentClass())) {
 			// load other property set
 			gen.loadArg(0);
-			gen.push(propertyMapper.findPredicate(pd));
+			gen.push(propertyMapper.getPredicate(pd));
 			gen.invoke(getPropertySet);
 			gen.dup();
 			Label isNull = gen.newLabel();
@@ -529,7 +529,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		Label endLabel = gen.newLabel();
 		for (PropertyDescriptor pd : properties) {
 			Label notEqualsLabel = gen.newLabel();
-			gen.push(propertyMapper.findPredicate(pd));
+			gen.push(propertyMapper.getPredicate(pd));
 			gen.loadArg(0);
 			gen.invokeVirtual(STRING_TYPE, equals);
 			gen.ifZCmp(IFEQ, notEqualsLabel);
@@ -558,7 +558,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		addPropertySetFactoryField(classNode);
 
 		Collection<PropertyDescriptor> properties = propertyMapper
-				.findProperties(classNode.getParentClass());
+				.getProperties(classNode.getParentClass());
 		for (PropertyDescriptor pd : properties) {
 			implementProperty(pd, classNode);
 		}

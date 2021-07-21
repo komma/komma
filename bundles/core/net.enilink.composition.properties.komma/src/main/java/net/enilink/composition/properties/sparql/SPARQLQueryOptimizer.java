@@ -28,9 +28,11 @@
  */
 package net.enilink.composition.properties.sparql;
 
+import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -57,6 +59,8 @@ import net.enilink.komma.core.IStatement;
  * 
  */
 public class SPARQLQueryOptimizer {
+	private static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+
 	private static final Pattern selectWhere = Pattern.compile(
 			"\\sSELECT\\s+([\\?\\$]\\w+)\\s+WHERE\\s*\\{",
 			Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
@@ -64,6 +68,37 @@ public class SPARQLQueryOptimizer {
 	private static final Type IGRAPH_TYPE = Type.getType(IGraph.class);
 	private static final Type ISTATEMENT_TYPE = Type.getType(IStatement.class);
 	private static final Type OBJECT_ARRAY_TYPE = Type.getType(Object[].class);
+
+	/** @return map of name to uri */
+	public Map<String, String> findEagerProperties(PropertyMapper pm, Class<?> type) {
+		Map<String, String> properties = new HashMap<String, String>();
+		findEagerProperties(pm, type, properties);
+		if (properties.isEmpty())
+			return null;
+		properties.put("class", RDF_TYPE);
+		return properties;
+	}
+
+	private Map<String, String> findEagerProperties(PropertyMapper pm, Class<?> concept,
+													Map<String, String> properties) {
+		for (PropertyDescriptor pd : pm.getProperties(concept)) {
+			Class<?> type = pd.getPropertyType();
+			java.lang.reflect.Type generic = pd.getReadMethod().getGenericReturnType();
+			if (!isEagerPropertyType(generic, type))
+				continue;
+			properties.put(pd.getName(), pm.getPredicate(pd));
+		}
+		for (Class<?> face : concept.getInterfaces()) {
+			findEagerProperties(pm, face, properties);
+		}
+		if (concept.getSuperclass() == null)
+			return properties;
+		return findEagerProperties(pm, concept.getSuperclass(), properties);
+	}
+
+	private boolean isEagerPropertyType(java.lang.reflect.Type t, Class<?> type) {
+		return !Set.class.equals(type);
+	}
 
 	public void implementQuery(String sparql, String base, PropertyMapper pm,
 			Method method, BehaviourMethodGenerator gen) throws Exception {
@@ -73,7 +108,7 @@ public class SPARQLQueryOptimizer {
 		boolean functional = !range.equals(Set.class);
 		Map<String, String> eager = null;
 		if (functional && !primitive) {
-			eager = pm.findEagerProperties(range);
+			eager = findEagerProperties(pm, range);
 		} else if (!primitive) {
 			range = Object.class;
 			java.lang.reflect.Type t = method.getGenericReturnType();
@@ -82,7 +117,7 @@ public class SPARQLQueryOptimizer {
 						.getActualTypeArguments()[0];
 				if (c instanceof Class<?>) {
 					range = (Class<?>) c;
-					eager = pm.findEagerProperties((Class<?>) c);
+					eager = findEagerProperties(pm, (Class<?>) c);
 				}
 			}
 		}

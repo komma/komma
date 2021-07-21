@@ -31,7 +31,7 @@ package net.enilink.composition.properties;
 import java.lang.annotation.Annotation;
 
 /**
- * Internal interface to create {@link PropertySet} objects.
+ * Interface to create {@link PropertySet} objects.
  */
 public interface PropertySetFactory {
 	/**

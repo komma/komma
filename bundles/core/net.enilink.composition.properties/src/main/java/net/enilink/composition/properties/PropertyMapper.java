@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2009, 2010, James Leigh All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  * - Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution. 
+ *   and/or other materials provided with the distribution.
  * - Neither the name of the openrdf.org nor the names of its contributors may
  *   be used to endorse or promote products derived from this software without
  *   specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -24,7 +24,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  */
 package net.enilink.composition.properties;
 
@@ -52,28 +52,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Reads in property mapping files and determines which properties should be
- * eagerly loaded.
+ * Determines mapped properties of a given class.
  */
 public class PropertyMapper {
-	private static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
-
-	private static final String PROPERTIES = "META-INF/org.openrdf.properties";
 	private static final String GET_PREFIX = "get";
 	private static final String SET_PREFIX = "set";
 	private static final String IS_PREFIX = "is";
 
-	private static Logger logger = LoggerFactory
-			.getLogger(PropertyMapper.class);
-	private boolean readTypes;
+	private static Logger logger = LoggerFactory.getLogger(PropertyMapper.class);
 	private Properties properties = new Properties();
 
-	public PropertyMapper(ClassLoader cl, boolean readTypes) {
-		loadProperties(cl);
-		this.readTypes = readTypes;
+	public PropertyMapper() {
 	}
 
-	public Collection<PropertyDescriptor> findProperties(Class<?> concept) {
+	public Collection<PropertyDescriptor> getProperties(Class<?> concept) {
 		List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
 		while (concept != null) {
 			for (Method method : concept.getDeclaredMethods()) {
@@ -86,7 +78,7 @@ public class PropertyMapper {
 		return properties;
 	}
 
-	public String findPredicate(PropertyDescriptor pd) {
+	public String getPredicate(PropertyDescriptor pd) {
 		Method method = pd.getReadMethod();
 		Class<?> dc = method.getDeclaringClass();
 		String key = dc.getName() + "." + getPropertyName(method);
@@ -95,69 +87,6 @@ public class PropertyMapper {
 		Method getter = method;
 		Iri iri = getter.getAnnotation(Iri.class);
 		return iri == null ? null : iri.value();
-	}
-
-	/** @return map of name to uri */
-	public Map<String, String> findEagerProperties(Class<?> type) {
-		Map<String, String> properties = new HashMap<String, String>();
-		findEagerProperties(type, properties);
-		if (properties.isEmpty())
-			return null;
-		if (readTypes) {
-			properties.put("class", RDF_TYPE);
-		}
-		return properties;
-	}
-
-	private Map<String, String> findEagerProperties(Class<?> concept,
-			Map<String, String> properties) {
-		for (PropertyDescriptor pd : findProperties(concept)) {
-			Class<?> type = pd.getPropertyType();
-			Type generic = pd.getReadMethod().getGenericReturnType();
-			if (!isEagerPropertyType(generic, type))
-				continue;
-			properties.put(pd.getName(), findPredicate(pd));
-		}
-		for (Class<?> face : concept.getInterfaces()) {
-			findEagerProperties(face, properties);
-		}
-		if (concept.getSuperclass() == null)
-			return properties;
-		return findEagerProperties(concept.getSuperclass(), properties);
-	}
-
-	private boolean isEagerPropertyType(Type t, Class<?> type) {
-		if (Set.class.equals(type))
-			return false;
-		if (!readTypes)
-			return true;
-		if (type.isInterface())
-			return false;
-		if (Object.class.equals(type))
-			return false;
-		if (type.isAnnotationPresent(Iri.class))
-			return false;
-		return true;
-	}
-
-	private void loadProperties(ClassLoader cl) {
-		try {
-			Enumeration<URL> resources = cl.getResources(PROPERTIES);
-			while (resources.hasMoreElements()) {
-				try {
-					InputStream stream = resources.nextElement().openStream();
-					try {
-						properties.load(stream);
-					} finally {
-						stream.close();
-					}
-				} catch (IOException e) {
-					logger.warn(e.toString(), e);
-				}
-			}
-		} catch (IOException e) {
-			logger.warn(e.toString(), e);
-		}
 	}
 
 	private boolean isMappedGetter(Method method) {

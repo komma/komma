@@ -34,7 +34,7 @@ public abstract class Methods {
 	static {
 		PROPERTYSET_GET_ALL = getMethod(PropertySet.class, "getAll");
 		PROPERTYSET_GET_SINGLE = getMethod(PropertySet.class, "getSingle");
-		PROPERTYSET_SET_ALL = getMethod(PropertySet.class, "setAll", Set.class);
+		PROPERTYSET_SET_ALL = getMethod(PropertySet.class, "setAll", Collection.class);
 		PROPERTYSET_SET_SINGLE = getMethod(PropertySet.class, "setSingle",
 				Object.class);
 		PROPERTYSET_ADD_ALL = getMethod(PropertySet.class, "addAll",

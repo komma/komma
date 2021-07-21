@@ -543,12 +543,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 		if (value == null) {
 			propertyInfo.getPropertySet().getAll().clear();
 		} else if (value instanceof Collection<?> && !propertyInfo.isSingle()) {
-			if (value instanceof Set<?>) {
-				propertyInfo.getPropertySet().setAll((Set<Object>) value);
-			} else {
-				propertyInfo.getPropertySet().setAll(
-						(new HashSet<Object>((Collection<?>) value)));
-			}
+			propertyInfo.getPropertySet().setAll((Collection<Object>) value);
 		} else {
 			propertyInfo.getPropertySet().setSingle(value);
 		}

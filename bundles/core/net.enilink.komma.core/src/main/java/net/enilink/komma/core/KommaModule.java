@@ -332,8 +332,8 @@ public class KommaModule {
 	 * @param datatype
 	 *            URI
 	 */
-	public KommaModule addDatatype(Class<?> type, String uri) {
-		datatypes.add(new Association(type, uri));
+	public KommaModule addDatatype(Class<?> type, String datatype) {
+		datatypes.add(new Association(type, datatype));
 		return this;
 	}
 
@@ -342,7 +342,7 @@ public class KommaModule {
 	 * 
 	 * @param prefix
 	 *            The prefix.
-	 * @param name
+	 * @param uri
 	 *            The URI that the prefix maps to.
 	 */
 	public KommaModule addNamespace(String prefix, URI uri) {

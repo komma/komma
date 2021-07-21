@@ -47,14 +47,17 @@ public class UnmodifiablePropertySet<E> implements PropertySet<E> {
 		this.delegate = delegate;
 	}
 
+	@Override
 	public boolean add(E single) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public boolean addAll(Collection<? extends E> all) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Set<E> getAll() {
 		return Collections.unmodifiableSet(delegate.getAll());
 	}
@@ -68,6 +71,7 @@ public class UnmodifiablePropertySet<E> implements PropertySet<E> {
 		return delegate.getElementType();
 	}
 
+	@Override
 	public E getSingle() {
 		return delegate.getSingle();
 	}
@@ -77,14 +81,17 @@ public class UnmodifiablePropertySet<E> implements PropertySet<E> {
 		delegate.init(values);
 	}
 
+	@Override
 	public void refresh() {
 		delegate.refresh();
 	}
 
-	public void setAll(Set<E> all) {
+	@Override
+	public void setAll(Collection<E> elements) {
 		throw new UnsupportedOperationException();
 	}
-	
+
+	@Override
 	public void setSingle(E single) {
 		throw new UnsupportedOperationException();
 	}

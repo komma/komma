@@ -129,8 +129,8 @@ public class ManagerCompositionModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	protected PropertyMapper providePropertyMapper(ClassLoader cl) {
-		return new PropertyMapper(cl, true);
+	protected PropertyMapper providePropertyMapper() {
+		return new PropertyMapper();
 	}
 
 	@Provides

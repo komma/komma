@@ -28,16 +28,7 @@
  */
 package net.enilink.composition.properties.komma;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 import net.enilink.composition.properties.exceptions.PropertyException;
 
@@ -202,11 +193,11 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 	}
 
 	@Override
-	public void setAll(Set<String> set) {
-		if (this == set) {
+	public void setAll(Collection<String> elements) {
+		if (this == elements) {
 			return;
 		}
-		Set<String> c = new HashSet<String>(set);
+		Set<String> c = new HashSet<String>(elements);
 		ITransaction transaction = manager.getTransaction();
 		try {
 			boolean active = transaction.isActive();
@@ -221,7 +212,7 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 			try {
 				for (ILiteral literal : literals) {
 					String l = literal.getLanguage();
-					if (language == l || language != null && language.equals(l)) {
+					if (Objects.equals(language, l)) {
 						Object label = literal.getLabel();
 						if (c.contains(label)) {
 							c.remove(label);

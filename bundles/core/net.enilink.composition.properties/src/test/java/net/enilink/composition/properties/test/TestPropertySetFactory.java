@@ -39,9 +39,9 @@ public class TestPropertySetFactory implements PropertySetFactory {
 		}
 
 		@Override
-		public void setAll(Set<E> all) {
+		public void setAll(Collection<E> elements) {
 			clear();
-			addAll(all);
+			addAll(elements);
 		}
 
 		@Override

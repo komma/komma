@@ -34,16 +34,17 @@ import java.util.Set;
 import net.enilink.composition.properties.traits.Refreshable;
 
 /**
- * Internal interface for mapping roles. Allows access to property values as a
- * Set or as a single value.
+ * Interface for mapping of bean properties. Allows access to property values as a
+ * set or as a single value.
  * 
  * @param <E>
- *            property type
+ *            element type
  */
 public interface PropertySet<E> extends Refreshable {
 	/**
-	 * 
-	 * @return
+	 * The class of the contained elements.
+	 *
+	 * @return class of the elements
 	 */
 	Class<E> getElementType();
 
@@ -59,7 +60,7 @@ public interface PropertySet<E> extends Refreshable {
 	 * 
 	 * @param all
 	 */
-	void setAll(Set<E> all);
+	void setAll(Collection<E> elements);
 
 	/**
 	 * Assumes there is zero or one value and return null or the value.

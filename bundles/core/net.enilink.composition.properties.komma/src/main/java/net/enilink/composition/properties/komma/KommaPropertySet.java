@@ -42,7 +42,7 @@ import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.NiceIterator;
 import net.enilink.commons.iterator.WrappedIterator;
-import net.enilink.composition.properties.Filterable;
+import net.enilink.composition.properties.traits.Filterable;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.exceptions.PropertyException;
 import net.enilink.composition.properties.traits.Mergeable;
@@ -618,15 +618,14 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		return modified;
 	}
 
-	public void setAll(Set<E> set) {
-		if (this == set) {
+	public void setAll(Collection<E> elements) {
+		if (this == elements) {
 			return;
 		}
-		if (set == null) {
+		if (elements == null) {
 			clear();
 			return;
 		}
-		Set<E> c = new HashSet<E>(set);
 		ITransaction transaction = manager.getTransaction();
 		try {
 			boolean active = transaction.isActive();
@@ -638,7 +637,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 				if (cache == null || !cache.isEmpty()) {
 					clear();
 				}
-				addAll(c);
+				addAll(elements);
 				if (!active) {
 					transaction.commit();
 				}

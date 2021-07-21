@@ -91,7 +91,7 @@ public abstract class PropertiesCompositionTestCase {
 			@Provides
 			protected @Singleton
 			PropertyMapper providePropertyMapper() {
-				return new PropertyMapper(getClass().getClassLoader(), true);
+				return new PropertyMapper();
 			}
 		};
 	}

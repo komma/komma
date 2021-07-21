@@ -1,4 +1,4 @@
-package net.enilink.composition.properties;
+package net.enilink.composition.properties.traits;
 
 import java.util.Iterator;
 
@@ -11,7 +11,7 @@ public interface Filterable<E> {
 	 * <code>pattern</code> and an upper <code>limit</code> on the number of
 	 * results.
 	 * 
-	 * @param constraint
+	 * @param pattern
 	 *            The pattern used for filtering.
 	 * @param limit
 	 *            The limit on the number of results.
@@ -24,7 +24,7 @@ public interface Filterable<E> {
 	 * Returns a filtered view on the collection constrained by
 	 * <code>pattern</code>.
 	 * 
-	 * @param constraint
+	 * @param pattern
 	 *            The pattern used for filtering.
 	 * 
 	 * @return Iterator with matching elements.

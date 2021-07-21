@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.enilink.commons.iterator.WrappedIterator;
-import net.enilink.composition.properties.Filterable;
+import net.enilink.composition.properties.traits.Filterable;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.SimpleCommand;
