@@ -58,7 +58,7 @@ public interface PropertySet<E> extends Refreshable {
 	/**
 	 * Replaces all values with the values given.
 	 * 
-	 * @param all
+	 * @param elements
 	 */
 	void setAll(Collection<E> elements);
 

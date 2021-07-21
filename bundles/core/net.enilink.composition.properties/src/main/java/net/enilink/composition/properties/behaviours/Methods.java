@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 Fraunhofer IWU and others.
+ * Copyright (c) 2021 Fraunhofer IWU and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -10,15 +10,14 @@
  *******************************************************************************/
 package net.enilink.composition.properties.behaviours;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Set;
-
+import net.enilink.composition.properties.PropertyAttribute;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.util.PropertySets;
 import net.enilink.composition.properties.util.UnmodifiablePropertySet;
+
+import java.lang.reflect.Method;
+import java.util.Collection;
 
 public abstract class Methods {
 	public static final Method PROPERTYSET_GET_ALL;
@@ -43,7 +42,7 @@ public abstract class Methods {
 				Object.class);
 		PROPERTYSETFACTORY_CREATEPROPERTYSET = getMethod(
 				PropertySetFactory.class, "createPropertySet", Object.class,
-				String.class, Class.class, Annotation[].class);
+				String.class, Class.class, PropertyAttribute[].class);
 		PROPERTYSETS_UNMODIFIABLE = getMethod(PropertySets.class,
 				"unmodifiable", PropertySet.class);
 		UNMODIFIABLEPROPERTYSET_GET_DELEGATE = getMethod(

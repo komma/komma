@@ -44,8 +44,8 @@ public interface PropertySetFactory {
 	 *            The property's URI.
 	 * @param elementType
 	 *            The element type.
-	 * @param annotations
-	 *            Annotations to control the behaviour of the underlying
+	 * @param attributes
+	 *            Attributes to control the behaviour of the underlying
 	 *            property set.
 	 * @param <E>
 	 *            The element type.
@@ -54,5 +54,5 @@ public interface PropertySetFactory {
 	 *         <code>uri</code>.
 	 */
 	<E> PropertySet<E> createPropertySet(Object bean, String uri,
-			Class<E> elementType, Annotation... annotations);
+			Class<E> elementType, PropertyAttribute... attributes);
 }

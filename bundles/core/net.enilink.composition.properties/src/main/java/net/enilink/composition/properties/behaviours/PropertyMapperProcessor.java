@@ -28,7 +28,23 @@
  */
 package net.enilink.composition.properties.behaviours;
 
-import java.beans.PropertyDescriptor;
+import com.google.inject.Inject;
+import net.enilink.composition.ClassDefiner;
+import net.enilink.composition.asm.BehaviourClassNode;
+import net.enilink.composition.asm.BehaviourClassProcessor;
+import net.enilink.composition.asm.ExtendedMethod;
+import net.enilink.composition.asm.Types;
+import net.enilink.composition.asm.util.BehaviourMethodGenerator;
+import net.enilink.composition.properties.*;
+import net.enilink.composition.properties.traits.Mergeable;
+import net.enilink.composition.properties.traits.PropertySetOwner;
+import net.enilink.composition.properties.traits.Refreshable;
+import net.enilink.composition.properties.util.UnmodifiablePropertySet;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.FieldNode;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -37,31 +53,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
-import org.objectweb.asm.Label;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.FieldNode;
-
-import net.enilink.composition.ClassDefiner;
-import net.enilink.composition.annotations.Iri;
-import net.enilink.composition.asm.BehaviourClassNode;
-import net.enilink.composition.asm.BehaviourClassProcessor;
-import net.enilink.composition.asm.ExtendedMethod;
-import net.enilink.composition.asm.Types;
-import net.enilink.composition.asm.util.BehaviourMethodGenerator;
-import net.enilink.composition.properties.PropertyMapper;
-import net.enilink.composition.properties.PropertySet;
-import net.enilink.composition.properties.PropertySetFactory;
-import net.enilink.composition.properties.traits.Mergeable;
-import net.enilink.composition.properties.traits.PropertySetOwner;
-import net.enilink.composition.properties.traits.Refreshable;
-import net.enilink.composition.properties.util.UnmodifiablePropertySet;
-
-import com.google.inject.Inject;
-
 /**
- * Properties that have the {@link Iri} annotation are replaced with getters and
- * setters that access an underlying repository directly.
+ * Mapped properties are replaced with getters and
+ * setters that access an underlying {@link PropertySet}.
  */
 public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		Opcodes, Types {
@@ -131,7 +125,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 	}
 
 	private void createPropertySetAccessor(PropertyDescriptor pd,
-			BehaviourClassNode node) throws Exception {
+		BehaviourClassNode node) throws Exception {
 		String fieldName = getPropertyFieldName(pd.getName());
 		FieldNode propertyField = new FieldNode(Opcodes.ACC_PRIVATE, fieldName,
 				Type.getDescriptor(PropertySet.class), null, null);
@@ -151,7 +145,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 	private void lazyInitializePropertySet(PropertyDescriptor pd,
 			BehaviourClassNode node, FieldNode field,
-			BehaviourMethodGenerator gen) throws Exception {
+			BehaviourMethodGenerator gen) {
 		gen.loadThis();
 		gen.getField(field.name, Type.getType(field.desc));
 		gen.dup();
@@ -165,7 +159,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 		loadFactory(node, gen);
 		gen.loadBean();
-		gen.push(propertyMapper.getPredicate(pd));
+		gen.push(pd.getPredicate());
 
 		// load element type
 		Class<?> propertyType = pd.getPropertyType();
@@ -182,35 +176,26 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		}
 		gen.push(Type.getType(propertyType));
 
-		// instantiate PropertyDescriptor
-		Type propertyDescType = Type.getType(PropertyDescriptor.class);
-		gen.newInstance(propertyDescType);
-		gen.dup();
+		// create array of property attributes
+		PropertyAttribute[] attributes = pd.getAttributes();
 
-		// call constructor (propertyName, method, method)
-		gen.push(pd.getName());
-		loadMethodObject(Type.getType(getter.getDeclaringClass()),
-				getter.getName(), Type.getReturnType(getter),
-				Type.getArgumentTypes(getter), gen);
-		if (setter == null) {
-			gen.push((String) null);
-		} else {
-			loadMethodObject(Type.getType(setter.getDeclaringClass()),
-					setter.getName(), Type.getReturnType(setter),
-					Type.getArgumentTypes(setter), gen);
+		Type paType = Type.getType(PropertyAttribute.class);
+		gen.push(attributes.length);
+		gen.newArray(paType);
+		for (int i = 0; i < attributes.length; i++) {
+			gen.dup();
+			gen.push(i);
+
+			// new PropertyAttribute(pa.getName(), pa.getValue())
+			gen.newInstance(paType);
+			gen.dup();
+			gen.push(attributes[i].getName());
+			gen.push(attributes[i].getValue());
+			gen.invokeConstructor(paType, org.objectweb.asm.commons.Method
+					.getMethod("void <init>(String,String)"));
+
+			gen.arrayStore(paType);
 		}
-		gen.invokeConstructor(propertyDescType,
-				new org.objectweb.asm.commons.Method("<init>", Type.VOID_TYPE,
-						new Type[] { STRING_TYPE, METHOD_TYPE, METHOD_TYPE }));
-
-		// retrieve read method annotations
-		gen.invokeVirtual(propertyDescType,
-				new org.objectweb.asm.commons.Method("getReadMethod",
-						METHOD_TYPE, new Type[0]));
-		gen.invokeVirtual(
-				METHOD_TYPE,
-				new org.objectweb.asm.commons.Method("getAnnotations", Type
-						.getType(Annotation[].class), new Type[0]));
 
 		gen.invoke(Methods.PROPERTYSETFACTORY_CREATEPROPERTYSET);
 		if (setter == null) {
@@ -228,19 +213,6 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.mark(exists);
 	}
 
-	private void loadMethodObject(Type declaringClass, String name,
-			Type returnType, Type[] paramTypes, BehaviourMethodGenerator gen) {
-		gen.push(declaringClass);
-		gen.push(name);
-		gen.loadArray(paramTypes);
-		gen.invokeVirtual(
-				Type.getType(Class.class),
-				new org.objectweb.asm.commons.Method("getDeclaredMethod", Type
-						.getType(Method.class),
-						new Type[] { Type.getType(String.class),
-								Type.getType(Class[].class) }));
-	}
-
 	private void implementGetter(PropertyDescriptor pd, BehaviourClassNode node)
 			throws Exception {
 		Class<?> classType = pd.getReadMethod().getReturnType();
@@ -251,7 +223,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 		loadPropertySet(pd, gen);
 
-		if (isCollection(classType)) {
+		if (isCollection(pd, classType)) {
 			gen.invoke(Methods.PROPERTYSET_GET_ALL);
 			gen.returnValue();
 		} else if (classType.isPrimitive()) {
@@ -331,7 +303,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		loadPropertySet(pd, gen);
 
 		gen.loadArgs();
-		if (isCollection(classType)) {
+		if (isCollection(pd, classType)) {
 			gen.invoke(Methods.PROPERTYSET_SET_ALL);
 		} else {
 			gen.box(type);
@@ -351,8 +323,8 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.endMethod();
 	}
 
-	private boolean isCollection(Class<?> type) throws Exception {
-		return Set.class.equals(type);
+	private boolean isCollection(PropertyDescriptor pd, Class<?> type) {
+		return pd.isEnforceCollection() || Set.class.equals(type) || Collection.class.equals(type);
 	}
 
 	private void loadFactory(BehaviourClassNode node,
@@ -373,7 +345,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 				gen.dupX2();
 				gen.pop();
 			}
-			persistValue(type, gen);
+			persistValue(pd, type, gen);
 		} else {
 			gen.dup();
 
@@ -382,7 +354,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 			loadPropertySet(pd, gen, true);
 			gen.swap();
-			persistValue(type, gen);
+			persistValue(pd, type, gen);
 
 			Label end = gen.newLabel();
 			gen.goTo(end);
@@ -431,7 +403,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 				.getParentClass())) {
 			// load other property set
 			gen.loadArg(0);
-			gen.push(propertyMapper.getPredicate(pd));
+			gen.push(pd.getPredicate());
 			gen.invoke(getPropertySet);
 			gen.dup();
 			Label isNull = gen.newLabel();
@@ -483,9 +455,8 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.endMethod();
 	}
 
-	private void persistValue(Class<?> type, BehaviourMethodGenerator gen)
-			throws Exception {
-		if (isCollection(type)) {
+	private void persistValue(PropertyDescriptor pd, Class<?> type, BehaviourMethodGenerator gen) {
+		if (isCollection(pd, type)) {
 			gen.invoke(Methods.PROPERTYSET_ADD_ALL);
 		} else {
 			gen.box(Type.getType(type));
@@ -529,7 +500,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		Label endLabel = gen.newLabel();
 		for (PropertyDescriptor pd : properties) {
 			Label notEqualsLabel = gen.newLabel();
-			gen.push(propertyMapper.getPredicate(pd));
+			gen.push(pd.getPredicate());
 			gen.loadArg(0);
 			gen.invokeVirtual(STRING_TYPE, equals);
 			gen.ifZCmp(IFEQ, notEqualsLabel);

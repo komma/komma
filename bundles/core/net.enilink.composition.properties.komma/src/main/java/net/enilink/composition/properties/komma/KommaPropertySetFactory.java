@@ -18,6 +18,7 @@ import com.google.common.collect.MapMaker;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
+import net.enilink.composition.properties.PropertyAttribute;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.annotations.Localized;
@@ -92,17 +93,17 @@ public class KommaPropertySetFactory implements PropertySetFactory {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <E> PropertySet<E> createPropertySet(Object bean, String uri, Class<E> elementType,
-			Annotation... annotations) {
+			PropertyAttribute... attributes) {
 		Key cacheKey = new Key(((IReferenceable) bean).getReference(), uri, elementType);
 		return (PropertySet<E>) propertySetCache.computeIfAbsent(cacheKey, k -> {
 			URI predicate = URIs.createURI(uri);
 			URI rdfValueType = null;
 			boolean localized = false;
-			for (Annotation annotation : annotations) {
-				if (Localized.class.equals(annotation.annotationType())) {
+			for (PropertyAttribute attribute : attributes) {
+				if (PropertyAttribute.LOCALIZED.equals(attribute.getName())) {
 					localized = true;
-				} else if (Type.class.equals(annotation.annotationType())) {
-					rdfValueType = URIs.createURI(((Type) annotation).value());
+				} else if (PropertyAttribute.TYPE.equals(attribute.getName())) {
+					rdfValueType = URIs.createURI(attribute.getValue());
 				}
 			}
 

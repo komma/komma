@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import net.enilink.composition.properties.PropertyAttribute;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.annotations.Localized;
@@ -68,10 +69,10 @@ public class TestPropertySetFactory implements PropertySetFactory {
 
 	@Override
 	public <E> PropertySet<E> createPropertySet(Object bean, String uri,
-			Class<E> elementType, Annotation... annotations) {
+			Class<E> elementType, PropertyAttribute... attributes) {
 		boolean localized = false;
-		for (Annotation annotation : annotations) {
-			if (Localized.class.equals(annotation.annotationType())) {
+		for (PropertyAttribute attribute : attributes) {
+			if (PropertyAttribute.LOCALIZED.equals(attribute.getName())) {
 				localized = true;
 			}
 		}

@@ -150,6 +150,6 @@ public class GCTest {
 		while ((ref = refQueue.remove(1000)) != null) {
 			refs.remove(ref);
 		}
-		System.out.println("Remaining reference: " + refs.size());
+		System.out.println("Remaining references: " + refs.size());
 	}
 }

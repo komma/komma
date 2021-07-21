@@ -28,28 +28,20 @@
  */
 package net.enilink.composition.properties;
 
-import static java.util.Locale.ENGLISH;
-
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
 import net.enilink.composition.annotations.Iri;
+import net.enilink.composition.properties.annotations.Localized;
+import net.enilink.composition.properties.annotations.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+
+import static java.util.Locale.ENGLISH;
 
 /**
  * Determines mapped properties of a given class.
@@ -78,14 +70,8 @@ public class PropertyMapper {
 		return properties;
 	}
 
-	public String getPredicate(PropertyDescriptor pd) {
-		Method method = pd.getReadMethod();
-		Class<?> dc = method.getDeclaringClass();
-		String key = dc.getName() + "." + getPropertyName(method);
-		if (properties.containsKey(key))
-			return (String) properties.get(key);
-		Method getter = method;
-		Iri iri = getter.getAnnotation(Iri.class);
+	protected String getPredicate(Method readMethod) {
+		Iri iri = readMethod.getAnnotation(Iri.class);
 		return iri == null ? null : iri.value();
 	}
 
@@ -94,63 +80,25 @@ public class PropertyMapper {
 			return false;
 		if (method.isAnnotationPresent(Iri.class))
 			return true;
-		if (properties.isEmpty())
-			return false;
-		String name = method.getDeclaringClass().getName();
-		String key = name + "." + getPropertyName(method);
-		return properties.containsKey(key);
+		return false;
 	}
 
-	private PropertyDescriptor createPropertyDescriptor(Method method) {
-		String property = getPropertyName(method);
-		Method setter = getSetterMethod(property, method);
-		try {
-			return new PropertyDescriptor(property, method, setter);
-		} catch (IntrospectionException e) {
-			// property name is bad
-			throw new AssertionError(e);
+	private PropertyDescriptor createPropertyDescriptor(Method readMethod) {
+		List<PropertyAttribute> attributes = new ArrayList<>();
+		for (Annotation annotation : readMethod.getAnnotations()) {
+			if (annotation instanceof Localized) {
+				attributes.add(new PropertyAttribute(PropertyAttribute.LOCALIZED, null));
+			} else if (annotation instanceof Type) {
+				attributes.add(new PropertyAttribute(PropertyAttribute.TYPE, ((Type) annotation).value()));
+			}
 		}
+		String name = getPropertyName(readMethod);
+		Method setter = getSetterMethod(name, readMethod);
+		return new PropertyDescriptor(name, readMethod, setter, getPredicate(readMethod),
+				attributes.toArray(new PropertyAttribute[attributes.size()]));
 	}
 
-	private boolean isBeanGet(Method method) {
-		String name = method.getName();
-		return name.startsWith(GET_PREFIX) && name.length() > 3
-				&& Character.isUpperCase(name.charAt(3));
-	}
-
-	private boolean isBeanIs(Method method) {
-		String name = method.getName();
-		boolean bool = method.getReturnType() == boolean.class;
-		return bool && name.startsWith(IS_PREFIX) && name.length() > 2
-				&& Character.isUpperCase(name.charAt(2));
-	}
-
-	private String getPropertyName(Method method) {
-		String name = method.getName();
-		if (isBeanGet(method)) {
-			// Simple getter
-			return decapitalize(name.substring(3));
-		} else if (isBeanIs(method)) {
-			// Boolean getter
-			return decapitalize(name.substring(2));
-		}
-		return name;
-	}
-
-	private static String decapitalize(String name) {
-		if (name == null || name.length() == 0) {
-			return name;
-		}
-		if (name.length() > 1 && Character.isUpperCase(name.charAt(1))
-				&& Character.isUpperCase(name.charAt(0))) {
-			return name;
-		}
-		char chars[] = name.toCharArray();
-		chars[0] = Character.toLowerCase(chars[0]);
-		return new String(chars);
-	}
-
-	private Method getSetterMethod(String property, Method getter) {
+	protected Method getSetterMethod(String property, Method getter) {
 		try {
 			Class<?> dc = getter.getDeclaringClass();
 			Class<?> rt = getter.getReturnType();
@@ -179,10 +127,48 @@ public class PropertyMapper {
 		}
 	}
 
+	protected String getPropertyName(Method method) {
+		String name = method.getName();
+		if (isBeanGet(method)) {
+			// Simple getter
+			return decapitalize(name.substring(3));
+		} else if (isBeanIs(method)) {
+			// Boolean getter
+			return decapitalize(name.substring(2));
+		}
+		return name;
+	}
+
 	private static String capitalize(String name) {
 		if (name == null || name.length() == 0) {
 			return name;
 		}
 		return name.substring(0, 1).toUpperCase(ENGLISH) + name.substring(1);
+	}
+
+	private static String decapitalize(String name) {
+		if (name == null || name.length() == 0) {
+			return name;
+		}
+		if (name.length() > 1 && Character.isUpperCase(name.charAt(1))
+				&& Character.isUpperCase(name.charAt(0))) {
+			return name;
+		}
+		char chars[] = name.toCharArray();
+		chars[0] = Character.toLowerCase(chars[0]);
+		return new String(chars);
+	}
+
+	private static boolean isBeanGet(Method method) {
+		String name = method.getName();
+		return name.startsWith(GET_PREFIX) && name.length() > 3
+				&& Character.isUpperCase(name.charAt(3));
+	}
+
+	private static boolean isBeanIs(Method method) {
+		String name = method.getName();
+		boolean bool = method.getReturnType() == boolean.class;
+		return bool && name.startsWith(IS_PREFIX) && name.length() > 2
+				&& Character.isUpperCase(name.charAt(2));
 	}
 }

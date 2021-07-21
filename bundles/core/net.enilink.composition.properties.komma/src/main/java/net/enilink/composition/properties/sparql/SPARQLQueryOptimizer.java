@@ -28,7 +28,7 @@
  */
 package net.enilink.composition.properties.sparql;
 
-import java.beans.PropertyDescriptor;
+import net.enilink.composition.properties.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -86,7 +86,7 @@ public class SPARQLQueryOptimizer {
 			java.lang.reflect.Type generic = pd.getReadMethod().getGenericReturnType();
 			if (!isEagerPropertyType(generic, type))
 				continue;
-			properties.put(pd.getName(), pm.getPredicate(pd));
+			properties.put(pd.getName(), pd.getPredicate());
 		}
 		for (Class<?> face : concept.getInterfaces()) {
 			findEagerProperties(pm, face, properties);
