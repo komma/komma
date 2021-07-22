@@ -35,6 +35,8 @@ import net.enilink.composition.asm.BehaviourClassProcessor;
 import net.enilink.composition.asm.ExtendedMethod;
 import net.enilink.composition.asm.Types;
 import net.enilink.composition.asm.util.BehaviourMethodGenerator;
+import net.enilink.composition.mapping.PropertyAttribute;
+import net.enilink.composition.mapping.PropertyDescriptor;
 import net.enilink.composition.properties.*;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.PropertySetOwner;
@@ -45,7 +47,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.FieldNode;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -95,7 +96,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 	}
 
 	private void loadPropertySet(PropertyDescriptor pd,
-			BehaviourMethodGenerator gen) {
+								 BehaviourMethodGenerator gen) {
 		loadPropertySet(pd, gen, false);
 	}
 

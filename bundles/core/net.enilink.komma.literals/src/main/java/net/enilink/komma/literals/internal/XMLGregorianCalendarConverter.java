@@ -34,7 +34,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import com.google.inject.Inject;
 
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.literals.IConverter;
+import net.enilink.komma.core.IConverter;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;

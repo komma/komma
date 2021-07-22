@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2010, James Leigh All rights reserved.
+ * Copyright (c) 2009, 2010, James Leigh All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -26,25 +26,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * 
  */
-package net.enilink.komma.literals;
-
-import net.enilink.komma.core.ILiteral;
-import net.enilink.komma.core.URI;
+package net.enilink.composition.traits;
 
 /**
- * Interface used to convert between Java literal objects and {@link ILiteral}s.
- * 
- * @param <T>
- *            Java Class type this object can convert.
+ * The base interface that is implemented by all behaviours.
+ * <p>
+ * This interface allows access to the associated object proxy
+ * by calling {@link #getBehaviourDelegate()}. This is sometimes
+ * required since <code>this<code> refers to the behaviour
+ * instance and not to the object proxy.
  */
-public interface IConverter<T> {
-	String getJavaClassName();
+public interface Behaviour<T> {
+	String GET_ENTITY_METHOD = "getBehaviourDelegate";
 
-	URI getDatatype();
-
-	void setDatatype(URI datatype);
-
-	T deserialize(String label);
-
-	ILiteral serialize(T object);
+	/**
+	 * Returns the object proxy associated with this behaviour.
+	 * 
+	 * @return The corresponding object proxy
+	 */
+	T getBehaviourDelegate();
 }

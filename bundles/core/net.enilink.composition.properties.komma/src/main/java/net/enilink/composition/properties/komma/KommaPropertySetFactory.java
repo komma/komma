@@ -10,7 +10,6 @@
  *******************************************************************************/
 package net.enilink.composition.properties.komma;
 
-import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentMap;
 
@@ -18,11 +17,9 @@ import com.google.common.collect.MapMaker;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-import net.enilink.composition.properties.PropertyAttribute;
+import net.enilink.composition.mapping.PropertyAttribute;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
-import net.enilink.composition.properties.annotations.Localized;
-import net.enilink.composition.properties.annotations.Type;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IReferenceable;
 import net.enilink.komma.core.URI;

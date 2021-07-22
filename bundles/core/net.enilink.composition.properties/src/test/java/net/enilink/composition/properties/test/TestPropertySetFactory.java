@@ -10,16 +10,14 @@
  *******************************************************************************/
 package net.enilink.composition.properties.test;
 
-import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import net.enilink.composition.properties.PropertyAttribute;
+import net.enilink.composition.mapping.PropertyAttribute;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
-import net.enilink.composition.properties.annotations.Localized;
 
 public class TestPropertySetFactory implements PropertySetFactory {
 	class TestPropertySet<E> extends HashSet<E> implements PropertySet<E> {

@@ -28,7 +28,7 @@
  */
 package net.enilink.composition.properties;
 
-import java.lang.annotation.Annotation;
+import net.enilink.composition.mapping.PropertyAttribute;
 
 /**
  * Interface to create {@link PropertySet} objects.

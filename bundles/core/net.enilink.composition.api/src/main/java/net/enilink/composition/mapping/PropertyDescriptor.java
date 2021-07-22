@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.composition.properties;
+package net.enilink.composition.mapping;
 
 import java.lang.reflect.Method;
 

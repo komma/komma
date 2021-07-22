@@ -44,6 +44,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.properties.exceptions.ObjectConversionException;
+import net.enilink.komma.core.IConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

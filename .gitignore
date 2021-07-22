@@ -1,9 +1,10 @@
 target/
+.flattened-pom.xml
 .settings/
 .classpath
 .project
-.idea
-.flattened-pom.xml
+.idea/
+*.iml
 # exclude symlinks
 META-INF
 OSGI-INF

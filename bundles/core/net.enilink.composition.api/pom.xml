@@ -4,7 +4,7 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
-	<name>KOMMA: Core</name>
+	<name>KOMMA: Composition Framework API Module</name>
 
 	<parent>
 		<groupId>net.enilink.komma</groupId>
@@ -19,19 +19,15 @@
 		<url>${komma.scm.url}</url>
 	</scm>
 
-	<artifactId>net.enilink.komma.core</artifactId>
+	<artifactId>net.enilink.composition.api</artifactId>
 	<packaging>jar</packaging>
 
 	<dependencies>
 		<dependency>
-			<groupId>net.enilink.komma</groupId>
-			<artifactId>net.enilink.commons.iterator</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.enilink.komma</groupId>
-			<artifactId>net.enilink.composition.api</artifactId>
-			<version>${project.version}</version>
+			<groupId>aopalliance</groupId>
+			<artifactId>aopalliance</artifactId>
+			<version>${aopalliance.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

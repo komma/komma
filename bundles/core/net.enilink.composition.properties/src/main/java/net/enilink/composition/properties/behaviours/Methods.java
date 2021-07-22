@@ -10,7 +10,7 @@
  *******************************************************************************/
 package net.enilink.composition.properties.behaviours;
 
-import net.enilink.composition.properties.PropertyAttribute;
+import net.enilink.composition.mapping.PropertyAttribute;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.util.PropertySets;

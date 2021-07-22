@@ -29,6 +29,9 @@
 package net.enilink.composition.properties;
 
 import net.enilink.composition.annotations.Iri;
+import net.enilink.composition.mapping.IPropertyMapper;
+import net.enilink.composition.mapping.PropertyAttribute;
+import net.enilink.composition.mapping.PropertyDescriptor;
 import net.enilink.composition.properties.annotations.Localized;
 import net.enilink.composition.properties.annotations.Type;
 import org.slf4j.Logger;
@@ -46,7 +49,7 @@ import static java.util.Locale.ENGLISH;
 /**
  * Determines mapped properties of a given class.
  */
-public class PropertyMapper {
+public class PropertyMapper implements IPropertyMapper {
 	private static final String GET_PREFIX = "get";
 	private static final String SET_PREFIX = "set";
 	private static final String IS_PREFIX = "is";
@@ -57,6 +60,7 @@ public class PropertyMapper {
 	public PropertyMapper() {
 	}
 
+	@Override
 	public Collection<PropertyDescriptor> getProperties(Class<?> concept) {
 		List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
 		while (concept != null) {

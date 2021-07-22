@@ -55,6 +55,16 @@
 		</dependency>
 		<dependency>
 			<groupId>net.enilink.komma</groupId>
+			<artifactId>net.enilink.composition.api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.enilink.komma</groupId>
+			<artifactId>net.enilink.composition</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.enilink.komma</groupId>
 			<artifactId>net.enilink.composition.cache</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -66,11 +76,6 @@
 		<dependency>
 			<groupId>net.enilink.komma</groupId>
 			<artifactId>net.enilink.composition.properties</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.enilink.komma</groupId>
-			<artifactId>net.enilink.composition</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -150,10 +155,11 @@
 		<module>../../bundles/core/net.enilink.commons.iterator</module>
 		<module>../../bundles/core/net.enilink.commons.logging</module>
 		<module>../../bundles/core/net.enilink.commons.util</module>
+		<module>../../bundles/core/net.enilink.composition.api</module>
+		<module>../../bundles/core/net.enilink.composition</module>
 		<module>../../bundles/core/net.enilink.composition.cache</module>
 		<module>../../bundles/core/net.enilink.composition.properties.komma</module>
 		<module>../../bundles/core/net.enilink.composition.properties</module>
-		<module>../../bundles/core/net.enilink.composition</module>
 		<module>../../bundles/core/net.enilink.komma.common</module>
 		<module>../../bundles/core/net.enilink.komma.core</module>
 		<module>../../bundles/core/net.enilink.komma.dm</module>

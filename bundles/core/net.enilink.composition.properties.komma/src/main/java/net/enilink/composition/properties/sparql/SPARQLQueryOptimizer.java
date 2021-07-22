@@ -28,7 +28,7 @@
  */
 package net.enilink.composition.properties.sparql;
 
-import net.enilink.composition.properties.PropertyDescriptor;
+import net.enilink.composition.mapping.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
