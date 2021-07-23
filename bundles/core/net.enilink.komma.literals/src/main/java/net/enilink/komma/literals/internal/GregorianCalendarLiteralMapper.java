@@ -28,34 +28,38 @@
  */
 package net.enilink.komma.literals.internal;
 
-import net.enilink.composition.properties.exceptions.ObjectConversionException;
+import java.util.GregorianCalendar;
+
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import com.google.inject.Inject;
 
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 
 /**
- * Converts {@link Class} to and from {@link ILiteral}.
+ * Converts {@link GregorianCalendar} to and from {@link ILiteral}.
  * 
  */
-public class ClassConverter implements IConverter<Class<?>> {
+public class GregorianCalendarLiteralMapper implements
+		ILiteralMapper<GregorianCalendar> {
 	private static final URI DATATYPE = URIs.createURI("java:"
-			+ Class.class.getName());
+			+ GregorianCalendar.class.getName());
 
 	@Inject
 	private ILiteralFactory lf;
 
 	@Inject
-	private ClassLoader cl;
+	private DatatypeFactory factory;
 
 	private URI datatype = DATATYPE;
 
 	public String getJavaClassName() {
-		return Class.class.getName();
+		return GregorianCalendar.class.getName();
 	}
 
 	public URI getDatatype() {
@@ -66,15 +70,13 @@ public class ClassConverter implements IConverter<Class<?>> {
 		this.datatype = datatype;
 	}
 
-	public Class<?> deserialize(String label) {
-		try {
-			return Class.forName(label, true, cl);
-		} catch (ClassNotFoundException e) {
-			throw new ObjectConversionException(e);
-		}
+	public GregorianCalendar deserialize(String label) {
+		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(label);
+		return gc.toGregorianCalendar();
 	}
 
-	public ILiteral serialize(Class<?> object) {
-		return lf.createLiteral(object.getName(), datatype, null);
+	public ILiteral serialize(GregorianCalendar object) {
+		String label = factory.newXMLGregorianCalendar(object).toXMLFormat();
+		return lf.createLiteral(label, datatype, null);
 	}
 }

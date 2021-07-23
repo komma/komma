@@ -28,7 +28,7 @@
  */
 package net.enilink.komma.literals.internal;
 
-import java.util.Date;
+import java.sql.Date;
 import java.util.GregorianCalendar;
 
 import javax.xml.datatype.DatatypeFactory;
@@ -36,7 +36,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import com.google.inject.Inject;
 
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
@@ -46,7 +46,7 @@ import net.enilink.komma.core.URIs;
  * Converts {@link Date} to and from {@link ILiteral}.
  * 
  */
-public class DateConverter implements IConverter<Date> {
+public class SqlDateLiteralMapper implements ILiteralMapper<Date> {
 	private static final URI DATATYPE = URIs.createURI("java:"
 			+ Date.class.getName());
 
@@ -72,7 +72,7 @@ public class DateConverter implements IConverter<Date> {
 
 	public Date deserialize(String label) {
 		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(label);
-		return gc.toGregorianCalendar().getTime();
+		return new Date(gc.toGregorianCalendar().getTimeInMillis());
 	}
 
 	public ILiteral serialize(Date object) {

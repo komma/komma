@@ -30,46 +30,39 @@ package net.enilink.komma.literals.internal;
 
 import com.google.inject.Inject;
 
-import net.enilink.komma.core.IConverter;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
 
 /**
- * Converts {@link Character} to and from {@link ILiteral}.
- * 
- * @author James Leigh
+ * Converts {@link Short} to and from {@link ILiteral}.
  * 
  */
-public class CharacterConverter implements IConverter<Character> {
-	private static final URI DATATYPE = URIs.createURI("java:"
-			+ Character.class.getName());
-
+public class ShortLiteralMapper implements ILiteralMapper<Short> {
 	@Inject
 	private ILiteralFactory lf;
 
-	private URI datatype = DATATYPE;
-
 	public String getJavaClassName() {
-		return Character.class.getName();
+		return Short.class.getName();
 	}
 
 	public URI getDatatype() {
-		return datatype;
+		return XMLSCHEMA.TYPE_SHORT;
 	}
 
 	public void setDatatype(URI datatype) {
-		this.datatype = datatype;
+		if (!datatype.equals(getDatatype()))
+			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public Character deserialize(String label) {
-		assert label.length() == 1 : label;
-		return label.charAt(0);
+	public Short deserialize(String label) {
+		return Short.valueOf(label);
 	}
 
-	public ILiteral serialize(Character object) {
-		return lf.createLiteral(object.toString(), datatype, null);
+	public ILiteral serialize(Short object) {
+		return lf.createLiteral(object.toString(), getDatatype(), null);
 	}
 
 }

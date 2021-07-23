@@ -28,42 +28,68 @@
  */
 package net.enilink.komma.literals.internal;
 
-import java.math.BigDecimal;
+import java.lang.reflect.Constructor;
+
+import net.enilink.composition.properties.exceptions.ObjectConversionException;
 
 import com.google.inject.Inject;
 
-import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIs;
 
 /**
- * Converts {@link BigDecimal} to and from {@link ILiteral}.
+ * Converts objects with a string constructor to and from {@link ILiteral}.
+ * 
+ * @author James Leigh
  * 
  */
-public class BigDecimalConverter implements IConverter<BigDecimal> {
+public class ObjectConstructorLiteralMapper<T> implements ILiteralMapper<T> {
 	@Inject
 	private ILiteralFactory lf;
 
+	private Constructor<T> constructor;
+
+	private URI datatype;
+
+	public ObjectConstructorLiteralMapper(Class<T> type)
+			throws NoSuchMethodException {
+		this.datatype = URIs.createURI("java:" + type.getName());
+		try {
+			constructor = type.getConstructor(new Class[] { String.class });
+		} catch (NoSuchMethodException e) {
+			try {
+				constructor = type
+						.getConstructor(new Class[] { CharSequence.class });
+			} catch (NoSuchMethodException e1) {
+				throw e;
+			}
+		}
+	}
+
 	public String getJavaClassName() {
-		return BigDecimal.class.getName();
+		return constructor.getDeclaringClass().getName();
 	}
 
 	public URI getDatatype() {
-		return XMLSCHEMA.TYPE_DECIMAL;
+		return datatype;
 	}
 
-	public void setDatatype(URI dt) {
-		if (!dt.equals(getDatatype()))
-			throw new IllegalArgumentException(dt.toString());
+	public void setDatatype(URI datatype) {
+		this.datatype = datatype;
 	}
 
-	public BigDecimal deserialize(String label) {
-		return new BigDecimal(label);
+	public T deserialize(String label) {
+		try {
+			return constructor.newInstance(new Object[] { label });
+		} catch (Exception e) {
+			throw new ObjectConversionException(e);
+		}
 	}
 
-	public ILiteral serialize(BigDecimal object) {
-		return lf.createLiteral(object.toString(), getDatatype(), null);
+	public ILiteral serialize(T object) {
+		return lf.createLiteral(object.toString(), datatype, null);
 	}
 }

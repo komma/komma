@@ -28,46 +28,40 @@
  */
 package net.enilink.komma.literals.internal;
 
-import java.util.regex.Pattern;
-
 import com.google.inject.Inject;
 
-import net.enilink.komma.core.IConverter;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
 
 /**
- * Converts {@link Pattern} to and from {@link ILiteral}.
+ * Converts {@link Boolean} to and from {@link ILiteral}.
  * 
  */
-public class PatternConverter implements IConverter<Pattern> {
-	private static final URI DATATYPE = URIs.createURI("java:"
-			+ Pattern.class.getName());
-
+public class BooleanLiteralMapper implements ILiteralMapper<Boolean> {
 	@Inject
 	private ILiteralFactory lf;
 
-	private URI datatype = DATATYPE;
-
 	public String getJavaClassName() {
-		return Pattern.class.getName();
+		return Boolean.class.getName();
 	}
 
 	public URI getDatatype() {
-		return datatype;
+		return XMLSCHEMA.TYPE_BOOLEAN;
 	}
 
 	public void setDatatype(URI datatype) {
-		this.datatype = datatype;
+		if (!datatype.equals(getDatatype()))
+			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public Pattern deserialize(String label) {
-		return Pattern.compile(label);
+	public Boolean deserialize(String label) {
+		return Boolean.valueOf(label);
 	}
 
-	public ILiteral serialize(Pattern object) {
-		return lf.createLiteral(object.toString(), datatype, null);
+	public ILiteral serialize(Boolean object) {
+		return lf.createLiteral(object.toString(), getDatatype(), null);
 	}
 }

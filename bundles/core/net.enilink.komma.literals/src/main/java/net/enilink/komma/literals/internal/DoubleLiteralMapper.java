@@ -28,69 +28,41 @@
  */
 package net.enilink.komma.literals.internal;
 
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
 import com.google.inject.Inject;
 
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
 
 /**
- * Converts {@link XMLGregorianCalendar} to and from {@link ILiteral}.
+ * Converts {@link Double} to and from {@link ILiteral}.
  * 
  */
-public class XMLGregorianCalendarConverter implements
-		IConverter<XMLGregorianCalendar> {
+public class DoubleLiteralMapper implements ILiteralMapper<Double> {
 	@Inject
 	private ILiteralFactory lf;
 
-	private DatatypeFactory factory;
-
-	private Class<? extends XMLGregorianCalendar> javaClass;
-
-	@Inject
-	public XMLGregorianCalendarConverter(DatatypeFactory factory) {
-		this.factory = factory;
-		javaClass = factory.newXMLGregorianCalendar().getClass();
-	}
-
 	public String getJavaClassName() {
-		return javaClass.getName();
+		return Double.class.getName();
 	}
 
 	public URI getDatatype() {
-		return XMLSCHEMA.TYPE_DATETIME;
+		return XMLSCHEMA.TYPE_DOUBLE;
 	}
 
 	public void setDatatype(URI datatype) {
-		if (datatype.equals(XMLSCHEMA.TYPE_DATETIME))
-			return;
-		if (datatype.equals(XMLSCHEMA.TYPE_DATE))
-			return;
-		if (datatype.equals(XMLSCHEMA.TYPE_TIME))
-			return;
-		if (datatype.equals(XMLSCHEMA.TYPE_GYEARMONTH))
-			return;
-		if (datatype.equals(XMLSCHEMA.TYPE_GMONTHDAY))
-			return;
-		if (datatype.equals(XMLSCHEMA.TYPE_GYEAR))
-			return;
-		if (datatype.equals(XMLSCHEMA.TYPE_GMONTH))
-			return;
-		if (datatype.equals(XMLSCHEMA.TYPE_GDAY))
-			return;
-		throw new IllegalArgumentException(datatype.toString());
+		if (!datatype.equals(getDatatype()))
+			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public XMLGregorianCalendar deserialize(String label) {
-		return factory.newXMLGregorianCalendar(label);
+	public Double deserialize(String label) {
+		return Double.valueOf(label);
 	}
 
-	public ILiteral serialize(XMLGregorianCalendar object) {
+	public ILiteral serialize(Double object) {
 		return lf.createLiteral(object.toString(), getDatatype(), null);
 	}
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2010, James Leigh All rights reserved.
+ * Copyright (c) 2008, 2010, James Leigh All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,38 +28,39 @@
  */
 package net.enilink.komma.literals.internal;
 
-import java.sql.Time;
-import java.util.GregorianCalendar;
-
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.datatype.Duration;
 
 import com.google.inject.Inject;
 
-import net.enilink.komma.core.IConverter;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
 
 /**
- * Converts {@link Time} to and from {@link ILiteral}.
+ * Converts {@link Duration} to and from {@link ILiteral}.
  * 
  */
-public class SqlTimeConverter implements IConverter<Time> {
-	private static final URI DATATYPE = URIs.createURI("java:"
-			+ Time.class.getName());
-
+public class DurationLiteralMapper implements ILiteralMapper<Duration> {
 	@Inject
 	private ILiteralFactory lf;
 
-	@Inject
 	private DatatypeFactory factory;
 
-	private URI datatype = DATATYPE;
+	private Class<? extends Duration> javaClass;
 
+	private URI datatype = XMLSCHEMA.TYPE_DURATION;
+
+	@Inject
+	public DurationLiteralMapper(DatatypeFactory factory) {
+		this.factory = factory;
+		javaClass = factory.newDuration(0).getClass();
+	}
+	
 	public String getJavaClassName() {
-		return Time.class.getName();
+		return javaClass.getName();
 	}
 
 	public URI getDatatype() {
@@ -70,15 +71,11 @@ public class SqlTimeConverter implements IConverter<Time> {
 		this.datatype = datatype;
 	}
 
-	public Time deserialize(String label) {
-		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(label);
-		return new Time(gc.toGregorianCalendar().getTimeInMillis());
+	public Duration deserialize(String label) {
+		return factory.newDuration(label);
 	}
 
-	public ILiteral serialize(Time object) {
-		GregorianCalendar gc = new GregorianCalendar(0, 0, 0);
-		gc.setTime(object);
-		String label = factory.newXMLGregorianCalendar(gc).toXMLFormat();
-		return lf.createLiteral(label, datatype, null);
+	public ILiteral serialize(Duration object) {
+		return lf.createLiteral(object.toString(), datatype, null);
 	}
 }

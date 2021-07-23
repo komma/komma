@@ -38,7 +38,7 @@ import net.enilink.composition.properties.exceptions.ObjectConversionException;
 
 import com.google.inject.Inject;
 
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
@@ -48,7 +48,7 @@ import net.enilink.komma.core.URIs;
  * Converts serializable objects to and from ILiteral.
  * 
  */
-public class ObjectSerializationConverter<T> implements IConverter<T> {
+public class ObjectSerializationLiteralMapper<T> implements ILiteralMapper<T> {
 	private static final String pseudo[] = { "0", "1", "2", "3", "4", "5", "6",
 			"7", "8", "9", "A", "B", "C", "D", "E", "F" };
 	@Inject
@@ -61,7 +61,7 @@ public class ObjectSerializationConverter<T> implements IConverter<T> {
 
 	private URI datatype;
 
-	public ObjectSerializationConverter(Class<T> type) {
+	public ObjectSerializationLiteralMapper(Class<T> type) {
 		this.type = type;
 		this.datatype = URIs.createURI("java:" + type.getName());
 	}

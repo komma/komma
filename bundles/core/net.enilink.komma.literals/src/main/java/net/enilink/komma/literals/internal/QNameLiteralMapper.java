@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2010, James Leigh All rights reserved.
+ * Copyright (c) 2008, 2010, James Leigh All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,55 +28,58 @@
  */
 package net.enilink.komma.literals.internal;
 
-import java.util.GregorianCalendar;
+import static javax.xml.XMLConstants.NULL_NS_URI;
 
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
 
 import com.google.inject.Inject;
 
-import net.enilink.komma.core.IConverter;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
 
 /**
- * Converts {@link GregorianCalendar} to and from {@link ILiteral}.
+ * Converts {@link QName} to and from {@link ILiteral}.
+ * 
+ * @author James Leigh
  * 
  */
-public class GregorianCalendarConverter implements
-		IConverter<GregorianCalendar> {
-	private static final URI DATATYPE = URIs.createURI("java:"
-			+ GregorianCalendar.class.getName());
-
+public class QNameLiteralMapper implements ILiteralMapper<QName> {
 	@Inject
 	private ILiteralFactory lf;
 
-	@Inject
-	private DatatypeFactory factory;
-
-	private URI datatype = DATATYPE;
-
 	public String getJavaClassName() {
-		return GregorianCalendar.class.getName();
+		return QName.class.getName();
 	}
 
 	public URI getDatatype() {
-		return datatype;
+		return XMLSCHEMA.TYPE_QNAME;
 	}
 
 	public void setDatatype(URI datatype) {
-		this.datatype = datatype;
+		if (!datatype.equals(getDatatype()))
+			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public GregorianCalendar deserialize(String label) {
-		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(label);
-		return gc.toGregorianCalendar();
+	public QName deserialize(String label) {
+		int idx = label.indexOf(':');
+		if (label.charAt(0) == '{' || idx < 0)
+			return QName.valueOf(label);
+		String prefix = label.substring(0, idx);
+		return new QName(NULL_NS_URI, label.substring(idx + 1), prefix);
 	}
 
-	public ILiteral serialize(GregorianCalendar object) {
-		String label = factory.newXMLGregorianCalendar(object).toXMLFormat();
-		return lf.createLiteral(label, datatype, null);
+	public ILiteral serialize(QName object) {
+		if (object.getPrefix().length() == 0)
+			return lf.createLiteral(object.toString(), getDatatype(),
+					null);
+		StringBuilder label = new StringBuilder();
+		label.append(object.getPrefix());
+		label.append(":");
+		label.append(object.getLocalPart());
+		return lf.createLiteral(label.toString(), getDatatype(), null);
 	}
+
 }

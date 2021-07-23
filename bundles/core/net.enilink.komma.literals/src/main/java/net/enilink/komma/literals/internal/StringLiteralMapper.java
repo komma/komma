@@ -28,49 +28,38 @@
  */
 package net.enilink.komma.literals.internal;
 
-import java.lang.reflect.Constructor;
-
-import net.enilink.composition.properties.exceptions.ObjectConversionException;
-
 import com.google.inject.Inject;
 
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
 
 /**
- * Converts objects with a string constructor to and from {@link ILiteral}.
- * 
- * @author James Leigh
+ * Converts {@link String} to and from {@link ILiteral}.
  * 
  */
-public class ObjectConstructorConverter<T> implements IConverter<T> {
+public class StringLiteralMapper implements ILiteralMapper<Object> {
 	@Inject
 	private ILiteralFactory lf;
-
-	private Constructor<T> constructor;
-
+	private String className;
 	private URI datatype;
 
-	public ObjectConstructorConverter(Class<T> type)
-			throws NoSuchMethodException {
-		this.datatype = URIs.createURI("java:" + type.getName());
-		try {
-			constructor = type.getConstructor(new Class[] { String.class });
-		} catch (NoSuchMethodException e) {
-			try {
-				constructor = type
-						.getConstructor(new Class[] { CharSequence.class });
-			} catch (NoSuchMethodException e1) {
-				throw e;
-			}
-		}
+	public StringLiteralMapper() {
+		this(String.class.getName());
+	}
+
+	public StringLiteralMapper(String className) {
+		this.className = className;
+	}
+
+	public StringLiteralMapper(String className, URI datatype) {
+		this(className);
+		this.datatype = datatype;
 	}
 
 	public String getJavaClassName() {
-		return constructor.getDeclaringClass().getName();
+		return className;
 	}
 
 	public URI getDatatype() {
@@ -81,15 +70,11 @@ public class ObjectConstructorConverter<T> implements IConverter<T> {
 		this.datatype = datatype;
 	}
 
-	public T deserialize(String label) {
-		try {
-			return constructor.newInstance(new Object[] { label });
-		} catch (Exception e) {
-			throw new ObjectConversionException(e);
-		}
+	public Object deserialize(String label) {
+		return label;
 	}
 
-	public ILiteral serialize(T object) {
+	public ILiteral serialize(Object object) {
 		return lf.createLiteral(object.toString(), datatype, null);
 	}
 }

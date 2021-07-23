@@ -28,39 +28,34 @@
  */
 package net.enilink.komma.literals.internal;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.GregorianCalendar;
-
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.google.inject.Inject;
 
-import net.enilink.komma.core.IConverter;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
 
 /**
- * Converts {@link Timestamp} to and from {@link ILiteral}.
+ * Converts {@link Locale} to and from {@link ILiteral}.
+ * 
+ * @author James Leigh
  * 
  */
-public class SqlTimestampConverter implements IConverter<Timestamp> {
-	private static final URI DATATYPE = URIs.createURI("java:"
-			+ Timestamp.class.getName());
-
+public class LocaleLiteralMapper implements ILiteralMapper<Locale> {
 	@Inject
 	private ILiteralFactory lf;
 
-	@Inject
-	private DatatypeFactory factory;
+	private URI datatype = XMLSCHEMA.TYPE_LANGUAGE;
 
-	private URI datatype = DATATYPE;
+	private ConcurrentMap<String, Locale> locales = new ConcurrentHashMap<String, Locale>();
 
 	public String getJavaClassName() {
-		return Timestamp.class.getName();
+		return Locale.class.getName();
 	}
 
 	public URI getDatatype() {
@@ -71,18 +66,24 @@ public class SqlTimestampConverter implements IConverter<Timestamp> {
 		this.datatype = datatype;
 	}
 
-	public Timestamp deserialize(String label) {
-		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(label);
-		return new Timestamp(gc.toGregorianCalendar().getTimeInMillis());
+	public Locale deserialize(String lang) {
+		Locale locale = locales.get(lang);
+		if (locale == null) {
+			String[] l = lang.split("-", 3);
+			String language = l.length < 1 ? "" : l[0];
+			String country = l.length < 2 ? "" : l[1];
+			String variant = l.length < 3 ? "" : l[2];
+			locale = new Locale(language, country.toUpperCase(), variant);
+			Locale o = locales.putIfAbsent(lang, locale);
+			if (o != null) {
+				locale = o;
+			}
+		}
+		return locale;
 	}
 
-	public ILiteral serialize(Timestamp object) {
-		GregorianCalendar gc = new GregorianCalendar(0, 0, 0);
-		gc.setTime(object);
-		XMLGregorianCalendar xgc = factory.newXMLGregorianCalendar(gc);
-		BigDecimal fraction = BigDecimal.valueOf(object.getNanos(), 9);
-		xgc.setFractionalSecond(fraction);
-		String label = xgc.toXMLFormat();
+	public ILiteral serialize(Locale object) {
+		String label = object.toString().toLowerCase().replace('_', '-');
 		return lf.createLiteral(label, datatype, null);
 	}
 }

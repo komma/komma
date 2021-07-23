@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2010, James Leigh All rights reserved.
+ * Copyright (c) 2007, 2010, James Leigh All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,34 +28,28 @@
  */
 package net.enilink.komma.literals.internal;
 
-import static javax.xml.XMLConstants.NULL_NS_URI;
-
-import javax.xml.namespace.QName;
-
 import com.google.inject.Inject;
 
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
 
 /**
- * Converts {@link QName} to and from {@link ILiteral}.
- * 
- * @author James Leigh
+ * Converts {@link Byte} to and from {@link ILiteral}.
  * 
  */
-public class QNameConverter implements IConverter<QName> {
+public class ByteLiteralMapper implements ILiteralMapper<Byte> {
 	@Inject
 	private ILiteralFactory lf;
 
 	public String getJavaClassName() {
-		return QName.class.getName();
+		return Byte.class.getName();
 	}
 
 	public URI getDatatype() {
-		return XMLSCHEMA.TYPE_QNAME;
+		return XMLSCHEMA.TYPE_BYTE;
 	}
 
 	public void setDatatype(URI datatype) {
@@ -63,23 +57,11 @@ public class QNameConverter implements IConverter<QName> {
 			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public QName deserialize(String label) {
-		int idx = label.indexOf(':');
-		if (label.charAt(0) == '{' || idx < 0)
-			return QName.valueOf(label);
-		String prefix = label.substring(0, idx);
-		return new QName(NULL_NS_URI, label.substring(idx + 1), prefix);
+	public Byte deserialize(String label) {
+		return Byte.valueOf(label);
 	}
 
-	public ILiteral serialize(QName object) {
-		if (object.getPrefix().length() == 0)
-			return lf.createLiteral(object.toString(), getDatatype(),
-					null);
-		StringBuilder label = new StringBuilder();
-		label.append(object.getPrefix());
-		label.append(":");
-		label.append(object.getLocalPart());
-		return lf.createLiteral(label.toString(), getDatatype(), null);
+	public ILiteral serialize(Byte object) {
+		return lf.createLiteral(object.toString(), getDatatype(), null);
 	}
-
 }

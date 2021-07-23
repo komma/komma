@@ -28,40 +28,53 @@
  */
 package net.enilink.komma.literals.internal;
 
+import net.enilink.composition.properties.exceptions.ObjectConversionException;
+
 import com.google.inject.Inject;
 
-import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIs;
 
 /**
- * Converts {@link Byte} to and from {@link ILiteral}.
+ * Converts {@link Class} to and from {@link ILiteral}.
  * 
  */
-public class ByteConverter implements IConverter<Byte> {
+public class ClassLiteralMapper implements ILiteralMapper<Class<?>> {
+	private static final URI DATATYPE = URIs.createURI("java:"
+			+ Class.class.getName());
+
 	@Inject
 	private ILiteralFactory lf;
 
+	@Inject
+	private ClassLoader cl;
+
+	private URI datatype = DATATYPE;
+
 	public String getJavaClassName() {
-		return Byte.class.getName();
+		return Class.class.getName();
 	}
 
 	public URI getDatatype() {
-		return XMLSCHEMA.TYPE_BYTE;
+		return datatype;
 	}
 
 	public void setDatatype(URI datatype) {
-		if (!datatype.equals(getDatatype()))
-			throw new IllegalArgumentException(datatype.toString());
+		this.datatype = datatype;
 	}
 
-	public Byte deserialize(String label) {
-		return Byte.valueOf(label);
+	public Class<?> deserialize(String label) {
+		try {
+			return Class.forName(label, true, cl);
+		} catch (ClassNotFoundException e) {
+			throw new ObjectConversionException(e);
+		}
 	}
 
-	public ILiteral serialize(Byte object) {
-		return lf.createLiteral(object.toString(), getDatatype(), null);
+	public ILiteral serialize(Class<?> object) {
+		return lf.createLiteral(object.getName(), datatype, null);
 	}
 }

@@ -25,9 +25,9 @@ import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 
 import net.enilink.vocab.rdfs.RDFS;
-import net.enilink.komma.em.internal.ByteArrayConverter;
+import net.enilink.komma.em.internal.ByteArrayLiteralMapper;
 import net.enilink.komma.em.internal.behaviours.EntitySupport;
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.literals.LiteralConverter;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.KommaModule;
@@ -151,7 +151,7 @@ public class ManagerCompositionModule extends AbstractModule {
 		}
 
 		// record additional converter for Base64 encoded byte arrays
-		IConverter<?> converter = new ByteArrayConverter();
+		ILiteralMapper<?> converter = new ByteArrayLiteralMapper();
 		literalConverter.registerConverter(converter.getJavaClassName(),
 				converter);
 		literalConverter.recordType(byte[].class, converter.getDatatype());

@@ -28,40 +28,61 @@
  */
 package net.enilink.komma.literals.internal;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.GregorianCalendar;
+
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import com.google.inject.Inject;
 
-import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIs;
 
 /**
- * Converts {@link Boolean} to and from {@link ILiteral}.
+ * Converts {@link Timestamp} to and from {@link ILiteral}.
  * 
  */
-public class BooleanConverter implements IConverter<Boolean> {
+public class SqlTimestampLiteralMapper implements ILiteralMapper<Timestamp> {
+	private static final URI DATATYPE = URIs.createURI("java:"
+			+ Timestamp.class.getName());
+
 	@Inject
 	private ILiteralFactory lf;
 
+	@Inject
+	private DatatypeFactory factory;
+
+	private URI datatype = DATATYPE;
+
 	public String getJavaClassName() {
-		return Boolean.class.getName();
+		return Timestamp.class.getName();
 	}
 
 	public URI getDatatype() {
-		return XMLSCHEMA.TYPE_BOOLEAN;
+		return datatype;
 	}
 
 	public void setDatatype(URI datatype) {
-		if (!datatype.equals(getDatatype()))
-			throw new IllegalArgumentException(datatype.toString());
+		this.datatype = datatype;
 	}
 
-	public Boolean deserialize(String label) {
-		return Boolean.valueOf(label);
+	public Timestamp deserialize(String label) {
+		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(label);
+		return new Timestamp(gc.toGregorianCalendar().getTimeInMillis());
 	}
 
-	public ILiteral serialize(Boolean object) {
-		return lf.createLiteral(object.toString(), getDatatype(), null);
+	public ILiteral serialize(Timestamp object) {
+		GregorianCalendar gc = new GregorianCalendar(0, 0, 0);
+		gc.setTime(object);
+		XMLGregorianCalendar xgc = factory.newXMLGregorianCalendar(gc);
+		BigDecimal fraction = BigDecimal.valueOf(object.getNanos(), 9);
+		xgc.setFractionalSecond(fraction);
+		String label = xgc.toXMLFormat();
+		return lf.createLiteral(label, datatype, null);
 	}
 }

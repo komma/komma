@@ -28,57 +28,41 @@
  */
 package net.enilink.komma.literals.internal;
 
-import java.sql.Date;
-import java.util.GregorianCalendar;
-
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
 import com.google.inject.Inject;
 
-import net.enilink.komma.core.IConverter;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
 
 /**
- * Converts {@link Date} to and from {@link ILiteral}.
+ * Converts {@link Float} to and from {@link ILiteral}.
  * 
  */
-public class SqlDateConverter implements IConverter<Date> {
-	private static final URI DATATYPE = URIs.createURI("java:"
-			+ Date.class.getName());
-
+public class FloatLiteralMapper implements ILiteralMapper<Float> {
 	@Inject
 	private ILiteralFactory lf;
 
-	@Inject
-	private DatatypeFactory factory;
-
-	private URI datatype = DATATYPE;
-
 	public String getJavaClassName() {
-		return Date.class.getName();
+		return Float.class.getName();
 	}
 
 	public URI getDatatype() {
-		return datatype;
+		return XMLSCHEMA.TYPE_FLOAT;
 	}
 
 	public void setDatatype(URI datatype) {
-		this.datatype = datatype;
+		if (!datatype.equals(getDatatype()))
+			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public Date deserialize(String label) {
-		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(label);
-		return new Date(gc.toGregorianCalendar().getTimeInMillis());
+	public Float deserialize(String label) {
+		return Float.valueOf(label);
 	}
 
-	public ILiteral serialize(Date object) {
-		GregorianCalendar gc = new GregorianCalendar(0, 0, 0);
-		gc.setTime(object);
-		String label = factory.newXMLGregorianCalendar(gc).toXMLFormat();
-		return lf.createLiteral(label, datatype, null);
+	public ILiteral serialize(Float object) {
+		return lf.createLiteral(object.toString(), getDatatype(), null);
 	}
+
 }

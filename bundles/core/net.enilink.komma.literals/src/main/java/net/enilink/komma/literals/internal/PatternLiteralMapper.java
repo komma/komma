@@ -28,41 +28,46 @@
  */
 package net.enilink.komma.literals.internal;
 
+import java.util.regex.Pattern;
+
 import com.google.inject.Inject;
 
-import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIs;
 
 /**
- * Converts {@link Short} to and from {@link ILiteral}.
+ * Converts {@link Pattern} to and from {@link ILiteral}.
  * 
  */
-public class ShortConverter implements IConverter<Short> {
+public class PatternLiteralMapper implements ILiteralMapper<Pattern> {
+	private static final URI DATATYPE = URIs.createURI("java:"
+			+ Pattern.class.getName());
+
 	@Inject
 	private ILiteralFactory lf;
 
+	private URI datatype = DATATYPE;
+
 	public String getJavaClassName() {
-		return Short.class.getName();
+		return Pattern.class.getName();
 	}
 
 	public URI getDatatype() {
-		return XMLSCHEMA.TYPE_SHORT;
+		return datatype;
 	}
 
 	public void setDatatype(URI datatype) {
-		if (!datatype.equals(getDatatype()))
-			throw new IllegalArgumentException(datatype.toString());
+		this.datatype = datatype;
 	}
 
-	public Short deserialize(String label) {
-		return Short.valueOf(label);
+	public Pattern deserialize(String label) {
+		return Pattern.compile(label);
 	}
 
-	public ILiteral serialize(Short object) {
-		return lf.createLiteral(object.toString(), getDatatype(), null);
+	public ILiteral serialize(Pattern object) {
+		return lf.createLiteral(object.toString(), datatype, null);
 	}
-
 }

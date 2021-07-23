@@ -30,36 +30,29 @@ package net.enilink.komma.literals.internal;
 
 import com.google.inject.Inject;
 
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIs;
 
 /**
- * Converts {@link String} to and from {@link ILiteral}.
+ * Converts {@link Character} to and from {@link ILiteral}.
+ * 
+ * @author James Leigh
  * 
  */
-public class StringConverter implements IConverter<Object> {
+public class CharacterLiteralMapper implements ILiteralMapper<Character> {
+	private static final URI DATATYPE = URIs.createURI("java:"
+			+ Character.class.getName());
+
 	@Inject
 	private ILiteralFactory lf;
-	private String className;
-	private URI datatype;
 
-	public StringConverter() {
-		this(String.class.getName());
-	}
-
-	public StringConverter(String className) {
-		this.className = className;
-	}
-
-	public StringConverter(String className, URI datatype) {
-		this(className);
-		this.datatype = datatype;
-	}
+	private URI datatype = DATATYPE;
 
 	public String getJavaClassName() {
-		return className;
+		return Character.class.getName();
 	}
 
 	public URI getDatatype() {
@@ -70,11 +63,13 @@ public class StringConverter implements IConverter<Object> {
 		this.datatype = datatype;
 	}
 
-	public Object deserialize(String label) {
-		return label;
+	public Character deserialize(String label) {
+		assert label.length() == 1 : label;
+		return label.charAt(0);
 	}
 
-	public ILiteral serialize(Object object) {
+	public ILiteral serialize(Character object) {
 		return lf.createLiteral(object.toString(), datatype, null);
 	}
+
 }

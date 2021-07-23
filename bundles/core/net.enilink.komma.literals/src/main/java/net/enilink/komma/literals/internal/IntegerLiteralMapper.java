@@ -31,25 +31,25 @@ package net.enilink.komma.literals.internal;
 import com.google.inject.Inject;
 
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
 
 /**
- * Converts {@link Float} to and from {@link ILiteral}.
+ * Converts {@link Integer} to and from {@link ILiteral}.
  * 
  */
-public class FloatConverter implements IConverter<Float> {
+public class IntegerLiteralMapper implements ILiteralMapper<Integer> {
 	@Inject
 	private ILiteralFactory lf;
 
 	public String getJavaClassName() {
-		return Float.class.getName();
+		return Integer.class.getName();
 	}
 
 	public URI getDatatype() {
-		return XMLSCHEMA.TYPE_FLOAT;
+		return XMLSCHEMA.TYPE_INT;
 	}
 
 	public void setDatatype(URI datatype) {
@@ -57,11 +57,11 @@ public class FloatConverter implements IConverter<Float> {
 			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public Float deserialize(String label) {
-		return Float.valueOf(label);
+	public Integer deserialize(String label) {
+		return Integer.valueOf(label);
 	}
 
-	public ILiteral serialize(Float object) {
+	public ILiteral serialize(Integer object) {
 		return lf.createLiteral(object.toString(), getDatatype(), null);
 	}
 

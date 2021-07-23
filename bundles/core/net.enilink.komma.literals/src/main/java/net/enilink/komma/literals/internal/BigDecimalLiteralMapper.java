@@ -28,41 +28,42 @@
  */
 package net.enilink.komma.literals.internal;
 
+import java.math.BigDecimal;
+
 import com.google.inject.Inject;
 
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
 
 /**
- * Converts {@link Integer} to and from {@link ILiteral}.
+ * Converts {@link BigDecimal} to and from {@link ILiteral}.
  * 
  */
-public class IntegerConverter implements IConverter<Integer> {
+public class BigDecimalLiteralMapper implements ILiteralMapper<BigDecimal> {
 	@Inject
 	private ILiteralFactory lf;
 
 	public String getJavaClassName() {
-		return Integer.class.getName();
+		return BigDecimal.class.getName();
 	}
 
 	public URI getDatatype() {
-		return XMLSCHEMA.TYPE_INT;
+		return XMLSCHEMA.TYPE_DECIMAL;
 	}
 
-	public void setDatatype(URI datatype) {
-		if (!datatype.equals(getDatatype()))
-			throw new IllegalArgumentException(datatype.toString());
+	public void setDatatype(URI dt) {
+		if (!dt.equals(getDatatype()))
+			throw new IllegalArgumentException(dt.toString());
 	}
 
-	public Integer deserialize(String label) {
-		return Integer.valueOf(label);
+	public BigDecimal deserialize(String label) {
+		return new BigDecimal(label);
 	}
 
-	public ILiteral serialize(Integer object) {
+	public ILiteral serialize(BigDecimal object) {
 		return lf.createLiteral(object.toString(), getDatatype(), null);
 	}
-
 }

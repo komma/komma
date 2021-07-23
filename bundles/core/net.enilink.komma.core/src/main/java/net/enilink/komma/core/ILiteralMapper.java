@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2007, 2010, James Leigh All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  * - Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution. 
+ *   and/or other materials provided with the distribution.
  * - Neither the name of the openrdf.org nor the names of its contributors may
  *   be used to endorse or promote products derived from this software without
  *   specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -24,47 +24,55 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  */
-package net.enilink.komma.literals.internal;
-
-import java.math.BigInteger;
-
-import com.google.inject.Inject;
-
-import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.core.IConverter;
-import net.enilink.komma.core.ILiteral;
-import net.enilink.komma.core.ILiteralFactory;
-import net.enilink.komma.core.URI;
+package net.enilink.komma.core;
 
 /**
- * Converts {@link BigInteger} to and from {@link ILiteral}.
- * 
+ * Interface used to convert between Java literal objects and {@link ILiteral}s.
+ *
+ * @param <T> Associated Java class type that can be serialized and deserialized by this converter.
  */
-public class BigIntegerConverter implements IConverter<BigInteger> {
-	@Inject
-	private ILiteralFactory lf;
+public interface ILiteralMapper<T> {
+	/**
+	 * The name of the target Java class for the literal.
+	 *
+	 * The class is represented as a string to allow the implementation
+	 * of converters without having the concrete classes or interfaces on the classpath.
+	 * An example are Groovy strings that are implemented by the class
+	 * <pre>org.codehaus.groovy.runtime.GStringImpl</pre>
+	 *
+	 * @return name of the target Java class
+	 */
+	String getJavaClassName();
 
-	public String getJavaClassName() {
-		return BigInteger.class.getName();
-	}
+	/**
+	 * Returns the RDF datatype URI of the literal.
+	 *
+	 * @return the literal's datatype
+	 */
+	URI getDatatype();
 
-	public URI getDatatype() {
-		return XMLSCHEMA.TYPE_INTEGER;
-	}
+	/**
+	 * Sets the RDF datatype URI of the literal.
+	 *
+	 * @param datatype the literal's datatype
+	 */
+	void setDatatype(URI datatype);
 
-	public void setDatatype(URI dt) {
-		if (!dt.equals(getDatatype()))
-			throw new IllegalArgumentException(dt.toString());
-	}
+	/**
+	 * Converts the label of a literal to a Java object
+	 *
+	 * @param label the literal's label
+	 * @return a Java object representing the literal
+	 */
+	T deserialize(String label);
 
-	public BigInteger deserialize(String label) {
-		return new BigInteger(label);
-	}
-
-	public ILiteral serialize(BigInteger object) {
-		return lf.createLiteral(object.toString(), getDatatype(), null);
-	}
-
+	/**
+	 * Converts a Java object into an RDF literal.
+	 *
+	 * @param object The Java object to converts
+	 * @return an RDF literal representing the Java object
+	 */
+	ILiteral serialize(T object);
 }

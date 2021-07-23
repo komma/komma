@@ -510,7 +510,7 @@ public interface IEntityManager extends AutoCloseable {
 	/**
 	 * Remove statements from this manager
 	 * 
-	 * @param statement
+	 * @param statements
 	 *            the statements to remove
 	 * @throws KommaException
 	 *             thrown if there is an error while removing the statements
@@ -599,7 +599,7 @@ public interface IEntityManager extends AutoCloseable {
 	 * 
 	 * @param prefix
 	 *            The new prefix.
-	 * @param name
+	 * @param uri
 	 *            The namespace name that the prefix maps to.
 	 */
 	void setNamespace(String prefix, URI uri);

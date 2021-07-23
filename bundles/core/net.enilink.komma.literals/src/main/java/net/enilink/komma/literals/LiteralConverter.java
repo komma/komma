@@ -44,7 +44,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.properties.exceptions.ObjectConversionException;
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,31 +54,31 @@ import com.google.inject.Injector;
 import com.google.inject.Provides;
 
 import net.enilink.vocab.rdf.RDF;
-import net.enilink.komma.literals.internal.BigDecimalConverter;
-import net.enilink.komma.literals.internal.BigIntegerConverter;
-import net.enilink.komma.literals.internal.BooleanConverter;
-import net.enilink.komma.literals.internal.ByteConverter;
-import net.enilink.komma.literals.internal.CharacterConverter;
-import net.enilink.komma.literals.internal.ClassConverter;
-import net.enilink.komma.literals.internal.DateConverter;
-import net.enilink.komma.literals.internal.DoubleConverter;
-import net.enilink.komma.literals.internal.DurationConverter;
-import net.enilink.komma.literals.internal.FloatConverter;
-import net.enilink.komma.literals.internal.GregorianCalendarConverter;
-import net.enilink.komma.literals.internal.IntegerConverter;
-import net.enilink.komma.literals.internal.LocaleConverter;
-import net.enilink.komma.literals.internal.LongConverter;
-import net.enilink.komma.literals.internal.ObjectConstructorConverter;
-import net.enilink.komma.literals.internal.ObjectSerializationConverter;
-import net.enilink.komma.literals.internal.PatternConverter;
-import net.enilink.komma.literals.internal.QNameConverter;
-import net.enilink.komma.literals.internal.ShortConverter;
-import net.enilink.komma.literals.internal.SqlDateConverter;
-import net.enilink.komma.literals.internal.SqlTimeConverter;
-import net.enilink.komma.literals.internal.SqlTimestampConverter;
-import net.enilink.komma.literals.internal.StringConverter;
-import net.enilink.komma.literals.internal.ValueOfConverter;
-import net.enilink.komma.literals.internal.XMLGregorianCalendarConverter;
+import net.enilink.komma.literals.internal.BigDecimalLiteralMapper;
+import net.enilink.komma.literals.internal.BigIntegerLiteralMapper;
+import net.enilink.komma.literals.internal.BooleanLiteralMapper;
+import net.enilink.komma.literals.internal.ByteLiteralMapper;
+import net.enilink.komma.literals.internal.CharacterLiteralMapper;
+import net.enilink.komma.literals.internal.ClassLiteralMapper;
+import net.enilink.komma.literals.internal.DateLiteralMapper;
+import net.enilink.komma.literals.internal.DoubleLiteralMapper;
+import net.enilink.komma.literals.internal.DurationLiteralMapper;
+import net.enilink.komma.literals.internal.FloatLiteralMapper;
+import net.enilink.komma.literals.internal.GregorianCalendarLiteralMapper;
+import net.enilink.komma.literals.internal.IntegerLiteralMapper;
+import net.enilink.komma.literals.internal.LocaleLiteralMapper;
+import net.enilink.komma.literals.internal.LongLiteralMapper;
+import net.enilink.komma.literals.internal.ObjectConstructorLiteralMapper;
+import net.enilink.komma.literals.internal.ObjectSerializationLiteralMapper;
+import net.enilink.komma.literals.internal.PatternLiteralMapper;
+import net.enilink.komma.literals.internal.QNameLiteralMapper;
+import net.enilink.komma.literals.internal.ShortLiteralMapper;
+import net.enilink.komma.literals.internal.SqlDateLiteralMapper;
+import net.enilink.komma.literals.internal.SqlTimeLiteralMapper;
+import net.enilink.komma.literals.internal.SqlTimestampLiteralMapper;
+import net.enilink.komma.literals.internal.StringLiteralMapper;
+import net.enilink.komma.literals.internal.ValueOfLiteralMapper;
+import net.enilink.komma.literals.internal.XMLGregorianCalendarLiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
@@ -94,7 +94,7 @@ public class LiteralConverter implements Cloneable {
 	private static final String JAVA_SCHEME = "java";
 
 	private ClassLoader cl;
-	private ConcurrentMap<String, IConverter<?>> converters = new ConcurrentHashMap<String, IConverter<?>>();
+	private ConcurrentMap<String, ILiteralMapper<?>> converters = new ConcurrentHashMap<String, ILiteralMapper<?>>();
 
 	Injector injector;
 
@@ -114,7 +114,7 @@ public class LiteralConverter implements Cloneable {
 			LiteralConverter cloned = (LiteralConverter) super.clone();
 			cloned.javaClasses = new ConcurrentHashMap<URI, Class<?>>(
 					javaClasses);
-			cloned.converters = new ConcurrentHashMap<String, IConverter<?>>(
+			cloned.converters = new ConcurrentHashMap<String, ILiteralMapper<?>>(
 					converters);
 			cloned.rdfTypes = new ConcurrentHashMap<Class<?>, URI>(rdfTypes);
 			return cloned;
@@ -129,11 +129,11 @@ public class LiteralConverter implements Cloneable {
 			return literalFactory
 					.createLiteral((String) object, datatype, null);
 		}
-		IConverter<Object> converter = null;
+		ILiteralMapper<Object> converter = null;
 		if (null != datatype) {
-			converter = (IConverter<Object>) findConverter(datatype);
+			converter = (ILiteralMapper<Object>) findConverter(datatype);
 		} else {
-			converter = (IConverter<Object>) findConverter(object.getClass());
+			converter = (ILiteralMapper<Object>) findConverter(object.getClass());
 		}
 		return converter.serialize(object);
 	}
@@ -143,7 +143,7 @@ public class LiteralConverter implements Cloneable {
 		if (datatype == null) {
 			return literal.getLabel();
 		}
-		IConverter<?> converter = findConverter(datatype);
+		ILiteralMapper<?> converter = findConverter(datatype);
 		try {
 			return converter.deserialize(literal.getLabel());
 		} catch (Exception e) {
@@ -167,20 +167,20 @@ public class LiteralConverter implements Cloneable {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> IConverter<T> findConverter(Class<T> type) {
+	private <T> ILiteralMapper<T> findConverter(Class<T> type) {
 		String name = type.getName();
 		if (converters.containsKey(name)) {
-			return (IConverter<T>) converters.get(name);
+			return (ILiteralMapper<T>) converters.get(name);
 		}
-		IConverter<T> converter;
+		ILiteralMapper<T> converter;
 		try {
-			converter = new ValueOfConverter<T>(type);
+			converter = new ValueOfLiteralMapper<T>(type);
 		} catch (NoSuchMethodException e1) {
 			try {
-				converter = new ObjectConstructorConverter<T>(type);
+				converter = new ObjectConstructorLiteralMapper<T>(type);
 			} catch (NoSuchMethodException e2) {
 				if (Serializable.class.isAssignableFrom(type)) {
-					converter = new ObjectSerializationConverter<T>(type);
+					converter = new ObjectSerializationLiteralMapper<T>(type);
 				} else {
 					throw new ObjectConversionException(e1);
 				}
@@ -188,14 +188,14 @@ public class LiteralConverter implements Cloneable {
 		}
 		injector.injectMembers(converter);
 
-		IConverter<?> o = converters.putIfAbsent(name, converter);
+		ILiteralMapper<?> o = converters.putIfAbsent(name, converter);
 		if (o != null) {
-			converter = (IConverter<T>) o;
+			converter = (ILiteralMapper<T>) o;
 		}
 		return converter;
 	}
 
-	private IConverter<?> findConverter(URI datatype) {
+	private ILiteralMapper<?> findConverter(URI datatype) {
 		Class<?> type;
 		if (javaClasses.containsKey(datatype)) {
 			type = javaClasses.get(datatype);
@@ -267,20 +267,20 @@ public class LiteralConverter implements Cloneable {
 			javaClasses.putIfAbsent(datatype, javaClass);
 		}
 		if (rdfTypes.putIfAbsent(javaClass, datatype) == null) {
-			IConverter<?> converter = findConverter(javaClass);
+			ILiteralMapper<?> converter = findConverter(javaClass);
 			converter.setDatatype(datatype);
 		}
 	}
 
-	public void registerConverter(Class<?> javaClass, IConverter<?> converter) {
+	public void registerConverter(Class<?> javaClass, ILiteralMapper<?> converter) {
 		registerConverter(javaClass.getName(), converter);
 	}
 
-	private void registerConverter(IConverter<?> converter) {
+	private void registerConverter(ILiteralMapper<?> converter) {
 		registerConverter(converter.getJavaClassName(), converter);
 	}
 
-	public void registerConverter(String javaClassName, IConverter<?> converter) {
+	public void registerConverter(String javaClassName, ILiteralMapper<?> converter) {
 		injector.injectMembers(converter);
 		converters.put(javaClassName, converter);
 	}
@@ -315,40 +315,40 @@ public class LiteralConverter implements Cloneable {
 				});
 
 		try {
-			registerConverter(new BigDecimalConverter());
-			registerConverter(new BigIntegerConverter());
-			registerConverter(new BooleanConverter());
-			registerConverter(new ByteConverter());
-			registerConverter(new DoubleConverter());
-			registerConverter(new FloatConverter());
-			registerConverter(new IntegerConverter());
-			registerConverter(new LongConverter());
-			registerConverter(new ShortConverter());
-			registerConverter(new CharacterConverter());
-			registerConverter(new DateConverter());
-			registerConverter(new LocaleConverter());
-			registerConverter(new PatternConverter());
-			registerConverter(new QNameConverter());
-			registerConverter(new GregorianCalendarConverter());
-			registerConverter(new SqlDateConverter());
-			registerConverter(new SqlTimeConverter());
-			registerConverter(new SqlTimestampConverter());
-			registerConverter(new ClassConverter());
+			registerConverter(new BigDecimalLiteralMapper());
+			registerConverter(new BigIntegerLiteralMapper());
+			registerConverter(new BooleanLiteralMapper());
+			registerConverter(new ByteLiteralMapper());
+			registerConverter(new DoubleLiteralMapper());
+			registerConverter(new FloatLiteralMapper());
+			registerConverter(new IntegerLiteralMapper());
+			registerConverter(new LongLiteralMapper());
+			registerConverter(new ShortLiteralMapper());
+			registerConverter(new CharacterLiteralMapper());
+			registerConverter(new DateLiteralMapper());
+			registerConverter(new LocaleLiteralMapper());
+			registerConverter(new PatternLiteralMapper());
+			registerConverter(new QNameLiteralMapper());
+			registerConverter(new GregorianCalendarLiteralMapper());
+			registerConverter(new SqlDateLiteralMapper());
+			registerConverter(new SqlTimeLiteralMapper());
+			registerConverter(new SqlTimestampLiteralMapper());
+			registerConverter(new ClassLiteralMapper());
 
-			DurationConverter dm = injector
-					.getInstance(DurationConverter.class);
+			DurationLiteralMapper dm = injector
+					.getInstance(DurationLiteralMapper.class);
 			registerConverter(dm.getJavaClassName(), dm);
 			registerConverter(Duration.class, dm);
-			XMLGregorianCalendarConverter xgcm = injector
-					.getInstance(XMLGregorianCalendarConverter.class);
+			XMLGregorianCalendarLiteralMapper xgcm = injector
+					.getInstance(XMLGregorianCalendarLiteralMapper.class);
 			registerConverter(xgcm.getJavaClassName(), xgcm);
 			registerConverter(XMLGregorianCalendar.class, xgcm);
-			registerConverter(new StringConverter(
+			registerConverter(new StringLiteralMapper(
 					"org.codehaus.groovy.runtime.GStringImpl"));
-			registerConverter(new StringConverter("groovy.lang.GString$1"));
-			registerConverter(new StringConverter("groovy.lang.GString$2"));
+			registerConverter(new StringLiteralMapper("groovy.lang.GString$1"));
+			registerConverter(new StringLiteralMapper("groovy.lang.GString$2"));
 
-			registerConverter(new StringConverter("java.lang.String",
+			registerConverter(new StringLiteralMapper("java.lang.String",
 					RDF.TYPE_XMLLITERAL));
 
 			loadDatatypes(getClass().getClassLoader(), DATATYPES_PROPERTIES);

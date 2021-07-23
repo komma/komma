@@ -28,34 +28,57 @@
  */
 package net.enilink.komma.literals.internal;
 
-import java.util.Locale;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
+import net.enilink.composition.properties.exceptions.ObjectConversionException;
 
 import com.google.inject.Inject;
 
-import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIs;
 
 /**
- * Converts {@link Locale} to and from {@link ILiteral}.
- * 
- * @author James Leigh
+ * Converts objects with a valueOf method to and from {@link ILiteral}.
  * 
  */
-public class LocaleConverter implements IConverter<Locale> {
+public class ValueOfLiteralMapper<T> implements ILiteralMapper<T> {
 	@Inject
 	private ILiteralFactory lf;
 
-	private URI datatype = XMLSCHEMA.TYPE_LANGUAGE;
+	private Method valueOfMethod;
 
-	private ConcurrentMap<String, Locale> locales = new ConcurrentHashMap<String, Locale>();
+	private URI datatype;
+
+	public ValueOfLiteralMapper(Class<T> type) throws NoSuchMethodException {
+		this.datatype = URIs.createURI("java:" + type.getName());
+		try {
+			this.valueOfMethod = type.getDeclaredMethod("valueOf",
+					new Class[] { String.class });
+			if (!Modifier.isStatic(valueOfMethod.getModifiers()))
+				throw new NoSuchMethodException("valueOf Method is not static");
+			if (!type.equals(valueOfMethod.getReturnType()))
+				throw new NoSuchMethodException("Invalid return type");
+		} catch (NoSuchMethodException e) {
+			try {
+				this.valueOfMethod = type.getDeclaredMethod("getInstance",
+						new Class[] { String.class });
+				if (!Modifier.isStatic(valueOfMethod.getModifiers()))
+					throw new NoSuchMethodException(
+							"getInstance Method is not static");
+				if (!type.equals(valueOfMethod.getReturnType()))
+					throw new NoSuchMethodException("Invalid return type");
+			} catch (NoSuchMethodException e2) {
+				throw e;
+			}
+		}
+	}
 
 	public String getJavaClassName() {
-		return Locale.class.getName();
+		return valueOfMethod.getDeclaringClass().getName();
 	}
 
 	public URI getDatatype() {
@@ -66,24 +89,17 @@ public class LocaleConverter implements IConverter<Locale> {
 		this.datatype = datatype;
 	}
 
-	public Locale deserialize(String lang) {
-		Locale locale = locales.get(lang);
-		if (locale == null) {
-			String[] l = lang.split("-", 3);
-			String language = l.length < 1 ? "" : l[0];
-			String country = l.length < 2 ? "" : l[1];
-			String variant = l.length < 3 ? "" : l[2];
-			locale = new Locale(language, country.toUpperCase(), variant);
-			Locale o = locales.putIfAbsent(lang, locale);
-			if (o != null) {
-				locale = o;
-			}
+	@SuppressWarnings("unchecked")
+	public T deserialize(String label) {
+		try {
+			return (T) valueOfMethod.invoke(null, new Object[] { label });
+		} catch (Exception e) {
+			throw new ObjectConversionException(e);
 		}
-		return locale;
 	}
 
-	public ILiteral serialize(Locale object) {
-		String label = object.toString().toLowerCase().replace('_', '-');
-		return lf.createLiteral(label, datatype, null);
+	public ILiteral serialize(T object) {
+		return lf.createLiteral(object.toString(), datatype, null);
 	}
+
 }

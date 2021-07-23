@@ -28,57 +28,38 @@
  */
 package net.enilink.komma.literals.internal;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.sql.Time;
+import java.util.GregorianCalendar;
 
-import net.enilink.composition.properties.exceptions.ObjectConversionException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import com.google.inject.Inject;
 
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 
 /**
- * Converts objects with a valueOf method to and from {@link ILiteral}.
+ * Converts {@link Time} to and from {@link ILiteral}.
  * 
  */
-public class ValueOfConverter<T> implements IConverter<T> {
+public class SqlTimeLiteralMapper implements ILiteralMapper<Time> {
+	private static final URI DATATYPE = URIs.createURI("java:"
+			+ Time.class.getName());
+
 	@Inject
 	private ILiteralFactory lf;
 
-	private Method valueOfMethod;
+	@Inject
+	private DatatypeFactory factory;
 
-	private URI datatype;
-
-	public ValueOfConverter(Class<T> type) throws NoSuchMethodException {
-		this.datatype = URIs.createURI("java:" + type.getName());
-		try {
-			this.valueOfMethod = type.getDeclaredMethod("valueOf",
-					new Class[] { String.class });
-			if (!Modifier.isStatic(valueOfMethod.getModifiers()))
-				throw new NoSuchMethodException("valueOf Method is not static");
-			if (!type.equals(valueOfMethod.getReturnType()))
-				throw new NoSuchMethodException("Invalid return type");
-		} catch (NoSuchMethodException e) {
-			try {
-				this.valueOfMethod = type.getDeclaredMethod("getInstance",
-						new Class[] { String.class });
-				if (!Modifier.isStatic(valueOfMethod.getModifiers()))
-					throw new NoSuchMethodException(
-							"getInstance Method is not static");
-				if (!type.equals(valueOfMethod.getReturnType()))
-					throw new NoSuchMethodException("Invalid return type");
-			} catch (NoSuchMethodException e2) {
-				throw e;
-			}
-		}
-	}
+	private URI datatype = DATATYPE;
 
 	public String getJavaClassName() {
-		return valueOfMethod.getDeclaringClass().getName();
+		return Time.class.getName();
 	}
 
 	public URI getDatatype() {
@@ -89,17 +70,15 @@ public class ValueOfConverter<T> implements IConverter<T> {
 		this.datatype = datatype;
 	}
 
-	@SuppressWarnings("unchecked")
-	public T deserialize(String label) {
-		try {
-			return (T) valueOfMethod.invoke(null, new Object[] { label });
-		} catch (Exception e) {
-			throw new ObjectConversionException(e);
-		}
+	public Time deserialize(String label) {
+		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(label);
+		return new Time(gc.toGregorianCalendar().getTimeInMillis());
 	}
 
-	public ILiteral serialize(T object) {
-		return lf.createLiteral(object.toString(), datatype, null);
+	public ILiteral serialize(Time object) {
+		GregorianCalendar gc = new GregorianCalendar(0, 0, 0);
+		gc.setTime(object);
+		String label = factory.newXMLGregorianCalendar(gc).toXMLFormat();
+		return lf.createLiteral(label, datatype, null);
 	}
-
 }

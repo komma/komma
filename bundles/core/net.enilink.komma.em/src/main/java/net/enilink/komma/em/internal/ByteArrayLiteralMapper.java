@@ -15,12 +15,12 @@ import org.apache.commons.codec.binary.Base64;
 import com.google.inject.Inject;
 
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
-import net.enilink.komma.core.IConverter;
+import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.ILiteralFactory;
 import net.enilink.komma.core.URI;
 
-public class ByteArrayConverter implements IConverter<byte[]> {
+public class ByteArrayLiteralMapper implements ILiteralMapper<byte[]> {
 	@Inject
 	private ILiteralFactory lf;
 
