@@ -51,10 +51,6 @@ public class CharacterLiteralMapper implements ILiteralMapper<Character> {
 
 	private URI datatype = DATATYPE;
 
-	public String getJavaClassName() {
-		return Character.class.getName();
-	}
-
 	public URI getDatatype() {
 		return datatype;
 	}

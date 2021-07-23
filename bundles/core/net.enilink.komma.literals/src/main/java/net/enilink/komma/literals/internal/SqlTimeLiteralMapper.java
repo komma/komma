@@ -58,10 +58,6 @@ public class SqlTimeLiteralMapper implements ILiteralMapper<Time> {
 
 	private URI datatype = DATATYPE;
 
-	public String getJavaClassName() {
-		return Time.class.getName();
-	}
-
 	public URI getDatatype() {
 		return datatype;
 	}

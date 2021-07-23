@@ -44,10 +44,6 @@ public class FloatLiteralMapper implements ILiteralMapper<Float> {
 	@Inject
 	private ILiteralFactory lf;
 
-	public String getJavaClassName() {
-		return Float.class.getName();
-	}
-
 	public URI getDatatype() {
 		return XMLSCHEMA.TYPE_FLOAT;
 	}

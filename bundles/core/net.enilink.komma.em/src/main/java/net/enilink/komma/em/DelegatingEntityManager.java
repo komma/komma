@@ -71,11 +71,6 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public boolean contains(Object entity) {
-		return getDelegate().contains(entity);
-	}
-
-	@Override
 	public <T> T create(Class<T> concept, Class<?>... concepts) {
 		return getDelegate().create(concept, concepts);
 	}

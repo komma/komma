@@ -44,10 +44,6 @@ public class LongLiteralMapper implements ILiteralMapper<Long> {
 	@Inject
 	private ILiteralFactory lf;
 
-	public String getJavaClassName() {
-		return Long.class.getName();
-	}
-
 	public URI getDatatype() {
 		return XMLSCHEMA.TYPE_LONG;
 	}

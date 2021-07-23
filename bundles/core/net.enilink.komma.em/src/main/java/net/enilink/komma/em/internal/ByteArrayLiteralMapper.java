@@ -35,11 +35,6 @@ public class ByteArrayLiteralMapper implements ILiteralMapper<byte[]> {
 	}
 
 	@Override
-	public String getJavaClassName() {
-		return byte[].class.getName();
-	}
-
-	@Override
 	public ILiteral serialize(byte[] data) {
 		return lf.createLiteral(new String(Base64.encodeBase64(data)),
 				getDatatype(), null);

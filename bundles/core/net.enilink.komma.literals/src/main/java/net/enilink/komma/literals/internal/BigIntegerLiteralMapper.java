@@ -46,10 +46,6 @@ public class BigIntegerLiteralMapper implements ILiteralMapper<BigInteger> {
 	@Inject
 	private ILiteralFactory lf;
 
-	public String getJavaClassName() {
-		return BigInteger.class.getName();
-	}
-
 	public URI getDatatype() {
 		return XMLSCHEMA.TYPE_INTEGER;
 	}

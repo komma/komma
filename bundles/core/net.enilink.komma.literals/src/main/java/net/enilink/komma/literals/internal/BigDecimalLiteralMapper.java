@@ -46,10 +46,6 @@ public class BigDecimalLiteralMapper implements ILiteralMapper<BigDecimal> {
 	@Inject
 	private ILiteralFactory lf;
 
-	public String getJavaClassName() {
-		return BigDecimal.class.getName();
-	}
-
 	public URI getDatatype() {
 		return XMLSCHEMA.TYPE_DECIMAL;
 	}

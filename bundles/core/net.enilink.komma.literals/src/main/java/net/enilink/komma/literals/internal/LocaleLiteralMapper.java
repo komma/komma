@@ -54,10 +54,6 @@ public class LocaleLiteralMapper implements ILiteralMapper<Locale> {
 
 	private ConcurrentMap<String, Locale> locales = new ConcurrentHashMap<String, Locale>();
 
-	public String getJavaClassName() {
-		return Locale.class.getName();
-	}
-
 	public URI getDatatype() {
 		return datatype;
 	}

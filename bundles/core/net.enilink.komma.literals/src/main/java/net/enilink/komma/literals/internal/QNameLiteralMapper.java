@@ -50,10 +50,6 @@ public class QNameLiteralMapper implements ILiteralMapper<QName> {
 	@Inject
 	private ILiteralFactory lf;
 
-	public String getJavaClassName() {
-		return QName.class.getName();
-	}
-
 	public URI getDatatype() {
 		return XMLSCHEMA.TYPE_QNAME;
 	}

@@ -58,10 +58,6 @@ public class SqlDateLiteralMapper implements ILiteralMapper<Date> {
 
 	private URI datatype = DATATYPE;
 
-	public String getJavaClassName() {
-		return Date.class.getName();
-	}
-
 	public URI getDatatype() {
 		return datatype;
 	}

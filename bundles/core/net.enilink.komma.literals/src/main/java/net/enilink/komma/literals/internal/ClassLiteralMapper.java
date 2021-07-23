@@ -54,10 +54,6 @@ public class ClassLiteralMapper implements ILiteralMapper<Class<?>> {
 
 	private URI datatype = DATATYPE;
 
-	public String getJavaClassName() {
-		return Class.class.getName();
-	}
-
 	public URI getDatatype() {
 		return datatype;
 	}

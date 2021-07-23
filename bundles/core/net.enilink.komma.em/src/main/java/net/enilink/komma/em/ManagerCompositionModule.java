@@ -24,16 +24,11 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 
+import net.enilink.komma.core.*;
 import net.enilink.vocab.rdfs.RDFS;
 import net.enilink.komma.em.internal.ByteArrayLiteralMapper;
 import net.enilink.komma.em.internal.behaviours.EntitySupport;
-import net.enilink.komma.core.ILiteralMapper;
 import net.enilink.komma.literals.LiteralConverter;
-import net.enilink.komma.core.ILiteralFactory;
-import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.LiteralFactory;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
 
 public class ManagerCompositionModule extends AbstractModule {
 	private static Map<ClassLoader, WeakReference<ClassLoader>> classLoaders = new WeakHashMap<ClassLoader, WeakReference<ClassLoader>>();
@@ -145,18 +140,28 @@ public class ManagerCompositionModule extends AbstractModule {
 		LiteralConverter literalConverter = new LiteralConverter();
 		injector.injectMembers(literalConverter);
 
-		for (KommaModule.Association e : module.getDatatypes()) {
+		module.getDatatypes().forEach(e -> {
 			literalConverter.addDatatype(e.getJavaClass(),
 					URIs.createURI(e.getRdfType()));
-		}
+		});
+
+		module.getLiteralMappers().forEach((className, mapper) -> {
+			literalConverter.registerMapper(className, mapper);
+		});
 
 		// record additional converter for Base64 encoded byte arrays
-		ILiteralMapper<?> converter = new ByteArrayLiteralMapper();
-		literalConverter.registerConverter(converter.getJavaClassName(),
-				converter);
-		literalConverter.recordType(byte[].class, converter.getDatatype());
+		ILiteralMapper<?> mapper = new ByteArrayLiteralMapper();
+		literalConverter.registerMapper(byte[].class, mapper);
+		literalConverter.recordType(byte[].class, mapper.getDatatype());
 
 		return literalConverter;
+	}
+
+	@Provides
+	@Singleton
+	protected Map<Class<?>, IObjectMapper> provideObjectMappers() {
+		// the map is read-only and therefore also thread-safe
+		return module.getObjectMappers();
 	}
 
 	@Provides
@@ -182,13 +187,12 @@ public class ManagerCompositionModule extends AbstractModule {
 						internedLoader = loaderRef.get();
 					}
 					if (internedLoader == null) {
-						classLoaders.put(internedLoader,
-								new WeakReference<ClassLoader>(internedLoader));
+						classLoaders.put(cl, new WeakReference<>(cl));
 						internedLoader = cl;
 					}
 				}
 				definer = new ClassDefiner(internedLoader);
-				definers.put(internedLoader, new WeakReference<ClassDefiner>(
+				definers.put(internedLoader, new WeakReference<>(
 						definer));
 			}
 		}

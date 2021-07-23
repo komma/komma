@@ -42,24 +42,13 @@ import net.enilink.komma.core.URI;
 public class StringLiteralMapper implements ILiteralMapper<Object> {
 	@Inject
 	private ILiteralFactory lf;
-	private String className;
 	private URI datatype;
 
 	public StringLiteralMapper() {
-		this(String.class.getName());
 	}
 
-	public StringLiteralMapper(String className) {
-		this.className = className;
-	}
-
-	public StringLiteralMapper(String className, URI datatype) {
-		this(className);
+	public StringLiteralMapper(URI datatype) {
 		this.datatype = datatype;
-	}
-
-	public String getJavaClassName() {
-		return className;
 	}
 
 	public URI getDatatype() {

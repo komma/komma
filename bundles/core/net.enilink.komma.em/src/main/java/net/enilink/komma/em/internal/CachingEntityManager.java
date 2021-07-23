@@ -78,7 +78,7 @@ public class CachingEntityManager extends DecoratingEntityManager {
 	}
 
 	@Override
-	protected void initializeCache(IEntity entity, Object property, Object value) {
+	protected void initializeCache(Object entity, Object property, Object value) {
 		log.trace("init cache for {}/{}: {}", new Object[] { entity, property, value });
 		propertyCache.put(entity, property, new Object[0], value);
 	}

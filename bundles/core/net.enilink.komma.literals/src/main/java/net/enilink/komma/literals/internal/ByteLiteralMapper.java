@@ -44,10 +44,6 @@ public class ByteLiteralMapper implements ILiteralMapper<Byte> {
 	@Inject
 	private ILiteralFactory lf;
 
-	public String getJavaClassName() {
-		return Byte.class.getName();
-	}
-
 	public URI getDatatype() {
 		return XMLSCHEMA.TYPE_BYTE;
 	}

@@ -58,10 +58,6 @@ public class GregorianCalendarLiteralMapper implements
 
 	private URI datatype = DATATYPE;
 
-	public String getJavaClassName() {
-		return GregorianCalendar.class.getName();
-	}
-
 	public URI getDatatype() {
 		return datatype;
 	}

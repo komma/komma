@@ -35,18 +35,6 @@ package net.enilink.komma.core;
  */
 public interface ILiteralMapper<T> {
 	/**
-	 * The name of the target Java class for the literal.
-	 *
-	 * The class is represented as a string to allow the implementation
-	 * of converters without having the concrete classes or interfaces on the classpath.
-	 * An example are Groovy strings that are implemented by the class
-	 * <pre>org.codehaus.groovy.runtime.GStringImpl</pre>
-	 *
-	 * @return name of the target Java class
-	 */
-	String getJavaClassName();
-
-	/**
 	 * Returns the RDF datatype URI of the literal.
 	 *
 	 * @return the literal's datatype
@@ -71,7 +59,7 @@ public interface ILiteralMapper<T> {
 	/**
 	 * Converts a Java object into an RDF literal.
 	 *
-	 * @param object The Java object to converts
+	 * @param object The Java object to convert
 	 * @return an RDF literal representing the Java object
 	 */
 	ILiteral serialize(T object);

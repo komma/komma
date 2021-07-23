@@ -20,7 +20,6 @@ import java.util.EventObject;
  * 
  * @author khussey
  * 
- * @see org.eclipse.gmf.runtime.common.ui.action.IActionManagerChangeListener
  */
 public class ActionManagerChangeEvent extends EventObject {
 

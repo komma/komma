@@ -49,6 +49,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.enilink.komma.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,29 +72,6 @@ import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.PropertySetOwner;
 import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.composition.traits.Behaviour;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.IEntityManagerFactory;
-import net.enilink.komma.core.IGraph;
-import net.enilink.komma.core.ILiteral;
-import net.enilink.komma.core.INamespace;
-import net.enilink.komma.core.IQuery;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IReferenceable;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.IStatementPattern;
-import net.enilink.komma.core.ITransaction;
-import net.enilink.komma.core.IUpdate;
-import net.enilink.komma.core.IValue;
-import net.enilink.komma.core.InferencingCapability;
-import net.enilink.komma.core.Initializable;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.core.Literal;
-import net.enilink.komma.core.Statement;
-import net.enilink.komma.core.StatementPattern;
-import net.enilink.komma.core.TransactionRequiredException;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerUpdate;
 import net.enilink.komma.em.concepts.IResource;
@@ -147,6 +125,9 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	private URI[] modifyContexts = NO_CONTEXTS;
 
 	protected Map<String, Object> properties;
+
+	@Inject
+	private Map<Class<?>, IObjectMapper> objectMappers;
 
 	@Override
 	public void add(Iterable<? extends IStatement> statements) {
@@ -262,20 +243,6 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	}
 
 	@Override
-	public boolean contains(Object entity) {
-		if (entity instanceof IEntity) {
-			return this.equals(((IEntity) entity).getEntityManager());
-		} else if (entity instanceof Behaviour<?>) {
-			Behaviour<?> behaviour = (Behaviour<?>) entity;
-			Object delegate = behaviour.getBehaviourDelegate();
-			if (delegate instanceof IEntity) {
-				return this.equals(((IEntity) delegate).getEntityManager());
-			}
-		}
-		return false;
-	}
-
-	@Override
 	public <T> T create(Class<T> concept, Class<?>... concepts) {
 		return createNamed((net.enilink.komma.core.URI) null, concept, concepts);
 	}
@@ -291,6 +258,18 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		if (resource == null) {
 			throw new IllegalArgumentException("Resource argument must not be null.");
 		}
+
+		// try to create the bean via a registered object mapper
+		// the result may be an arbitrary object not implementing IReference/IEntity
+		Object bean;
+		if (objectMappers != null && !objectMappers.isEmpty() && concepts != null && concepts.size() == 1) {
+			Class<?> concept = concepts.iterator().next();
+			IObjectMapper mapper = objectMappers.get(concept);
+			if (mapper != null) {
+				return mapper.toObject(resource, injector.getInstance(IEntityManager.class), graph);
+			}
+		}
+
 		entityTypes = entityTypes != null ? new HashSet<URI>(entityTypes) : new HashSet<URI>();
 		if (!restrictTypes) {
 			boolean retrieveTypes = true;
@@ -326,14 +305,14 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 			}
 		}
 
-		IEntity bean = createBeanForClass(resource, classResolver.resolveComposite(entityTypes));
+		bean = createBeanForClass(resource, classResolver.resolveComposite(entityTypes));
 		if (initialize) {
 			if (bean instanceof Initializable) {
 				// bean knows how to initialize itself
 				((Initializable) bean).init(graph);
 			}
 			if (graph != null) {
-				initializeBean(bean, graph);
+				initializeBean((IEntity) bean, graph);
 			}
 		}
 		return bean;
@@ -638,6 +617,13 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		if (bean instanceof IReference) {
 			return (IReference) bean;
 		}
+		// try to determine the RDF reference via an object mapper
+		if (objectMappers != null && !objectMappers.isEmpty()) {
+			IObjectMapper mapper = objectMappers.get(bean.getClass());
+			if (mapper != null) {
+				return mapper.getReference(bean, injector.getInstance(IEntityManager.class));
+			}
+		}
 		return null;
 	}
 
@@ -765,7 +751,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		}
 	}
 
-	protected void initializeCache(IEntity entity, Object property, Object value) {
+	protected void initializeCache(Object entity, Object property, Object value) {
 		// does nothing - overridden by subclasses
 	}
 

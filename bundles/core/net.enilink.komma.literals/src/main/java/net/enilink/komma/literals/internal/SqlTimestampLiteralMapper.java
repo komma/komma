@@ -59,10 +59,6 @@ public class SqlTimestampLiteralMapper implements ILiteralMapper<Timestamp> {
 
 	private URI datatype = DATATYPE;
 
-	public String getJavaClassName() {
-		return Timestamp.class.getName();
-	}
-
 	public URI getDatatype() {
 		return datatype;
 	}

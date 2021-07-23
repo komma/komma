@@ -5,6 +5,15 @@ package net.enilink.komma.core;
  */
 public interface IObjectMapper {
 	/**
+	 * Returns a blank node or URI for the given object.
+	 *
+	 * @param object a Java object
+	 * @param em the associated entity manager
+	 * @return an RDF reference
+	 */
+	IReference getReference(Object object, IEntityManager em);
+
+	/**
 	 * Converts an RDF resource into a Java object.
 	 *
 	 * @param reference URI or blank node of the resource
@@ -20,5 +29,5 @@ public interface IObjectMapper {
 	 * @param object the Java object to convert
 	 * @param em the associated entity manager
 	 */
-	void toRdf(Object object, IEntityManager em);
+	void merge(Object object, IEntityManager em);
 }

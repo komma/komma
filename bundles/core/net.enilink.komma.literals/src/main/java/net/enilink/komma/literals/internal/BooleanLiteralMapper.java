@@ -44,10 +44,6 @@ public class BooleanLiteralMapper implements ILiteralMapper<Boolean> {
 	@Inject
 	private ILiteralFactory lf;
 
-	public String getJavaClassName() {
-		return Boolean.class.getName();
-	}
-
 	public URI getDatatype() {
 		return XMLSCHEMA.TYPE_BOOLEAN;
 	}

@@ -30,17 +30,22 @@ package net.enilink.komma.literals;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Properties;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
 
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.properties.exceptions.ObjectConversionException;
@@ -94,7 +99,7 @@ public class LiteralConverter implements Cloneable {
 	private static final String JAVA_SCHEME = "java";
 
 	private ClassLoader cl;
-	private ConcurrentMap<String, ILiteralMapper<?>> converters = new ConcurrentHashMap<String, ILiteralMapper<?>>();
+	private ConcurrentMap<String, ILiteralMapper<?>> mappers = new ConcurrentHashMap<String, ILiteralMapper<?>>();
 
 	Injector injector;
 
@@ -114,8 +119,8 @@ public class LiteralConverter implements Cloneable {
 			LiteralConverter cloned = (LiteralConverter) super.clone();
 			cloned.javaClasses = new ConcurrentHashMap<URI, Class<?>>(
 					javaClasses);
-			cloned.converters = new ConcurrentHashMap<String, ILiteralMapper<?>>(
-					converters);
+			cloned.mappers = new ConcurrentHashMap<String, ILiteralMapper<?>>(
+					mappers);
 			cloned.rdfTypes = new ConcurrentHashMap<Class<?>, URI>(rdfTypes);
 			return cloned;
 		} catch (CloneNotSupportedException e) {
@@ -129,13 +134,13 @@ public class LiteralConverter implements Cloneable {
 			return literalFactory
 					.createLiteral((String) object, datatype, null);
 		}
-		ILiteralMapper<Object> converter = null;
+		ILiteralMapper<Object> mapper;
 		if (null != datatype) {
-			converter = (ILiteralMapper<Object>) findConverter(datatype);
+			mapper = (ILiteralMapper<Object>) findMapper(datatype);
 		} else {
-			converter = (ILiteralMapper<Object>) findConverter(object.getClass());
+			mapper = (ILiteralMapper<Object>) findMapper(object.getClass());
 		}
-		return converter.serialize(object);
+		return mapper.serialize(object);
 	}
 
 	public Object createObject(ILiteral literal) {
@@ -143,59 +148,45 @@ public class LiteralConverter implements Cloneable {
 		if (datatype == null) {
 			return literal.getLabel();
 		}
-		ILiteralMapper<?> converter = findConverter(datatype);
+		ILiteralMapper<?> mapper = findMapper(datatype);
 		try {
-			return converter.deserialize(literal.getLabel());
+			return mapper.deserialize(literal.getLabel());
 		} catch (Exception e) {
 			logger.warn("Conversion of literal " + literal + " failed.", e);
 			return literal;
 		}
 	}
 
-	public Class<?> findClass(URI datatype) {
-		if (javaClasses.containsKey(datatype)) {
-			return javaClasses.get(datatype);
-		}
-		try {
-			if (datatype.scheme().equals(JAVA_SCHEME)) {
-				return Class.forName(datatype.localPart(), true, cl);
-			}
-		} catch (ClassNotFoundException e) {
-			throw new ObjectConversionException(e);
-		}
-		return null;
-	}
-
 	@SuppressWarnings("unchecked")
-	private <T> ILiteralMapper<T> findConverter(Class<T> type) {
+	private <T> ILiteralMapper<T> findMapper(Class<T> type) {
 		String name = type.getName();
-		if (converters.containsKey(name)) {
-			return (ILiteralMapper<T>) converters.get(name);
+		if (mappers.containsKey(name)) {
+			return (ILiteralMapper<T>) mappers.get(name);
 		}
-		ILiteralMapper<T> converter;
+		ILiteralMapper<T> mapper;
 		try {
-			converter = new ValueOfLiteralMapper<T>(type);
+			mapper = new ValueOfLiteralMapper<T>(type);
 		} catch (NoSuchMethodException e1) {
 			try {
-				converter = new ObjectConstructorLiteralMapper<T>(type);
+				mapper = new ObjectConstructorLiteralMapper<T>(type);
 			} catch (NoSuchMethodException e2) {
 				if (Serializable.class.isAssignableFrom(type)) {
-					converter = new ObjectSerializationLiteralMapper<T>(type);
+					mapper = new ObjectSerializationLiteralMapper<T>(type);
 				} else {
 					throw new ObjectConversionException(e1);
 				}
 			}
 		}
-		injector.injectMembers(converter);
+		injector.injectMembers(mapper);
 
-		ILiteralMapper<?> o = converters.putIfAbsent(name, converter);
+		ILiteralMapper<?> o = mappers.putIfAbsent(name, mapper);
 		if (o != null) {
-			converter = (ILiteralMapper<T>) o;
+			mapper = (ILiteralMapper<T>) o;
 		}
-		return converter;
+		return mapper;
 	}
 
-	private ILiteralMapper<?> findConverter(URI datatype) {
+	private ILiteralMapper<?> findMapper(URI datatype) {
 		Class<?> type;
 		if (javaClasses.containsKey(datatype)) {
 			type = javaClasses.get(datatype);
@@ -208,22 +199,12 @@ public class LiteralConverter implements Cloneable {
 		} else {
 			throw new ObjectConversionException("Unknown datatype: " + datatype);
 		}
-		return findConverter(type);
-	}
-
-	public URI findDatatype(Class<?> type) {
-		if (type.equals(String.class))
-			return null;
-		if (rdfTypes.containsKey(type))
-			return rdfTypes.get(type);
-		URI datatype = URIs.createURI(JAVA_SCHEME + ":" + type.getName());
-		recordType(type, datatype);
-		return datatype;
+		return findMapper(type);
 	}
 
 	// TODO: check if this two-part test is required
 	public boolean isDatatype(Class<?> type) {
-		return rdfTypes.containsKey(type) || null != findConverter(type);
+		return rdfTypes.containsKey(type) || null != findMapper(type);
 	}
 
 	private void loadDatatypes(ClassLoader cl, String properties)
@@ -255,8 +236,7 @@ public class LiteralConverter implements Cloneable {
 				}
 			} catch (IOException e) {
 				String msg = e.getMessage() + " in: " + url;
-				IOException ioe = new IOException(msg);
-				ioe.initCause(e);
+				IOException ioe = new IOException(msg, e);
 				throw ioe;
 			}
 		}
@@ -267,22 +247,18 @@ public class LiteralConverter implements Cloneable {
 			javaClasses.putIfAbsent(datatype, javaClass);
 		}
 		if (rdfTypes.putIfAbsent(javaClass, datatype) == null) {
-			ILiteralMapper<?> converter = findConverter(javaClass);
+			ILiteralMapper<?> converter = findMapper(javaClass);
 			converter.setDatatype(datatype);
 		}
 	}
 
-	public void registerConverter(Class<?> javaClass, ILiteralMapper<?> converter) {
-		registerConverter(javaClass.getName(), converter);
+	public void registerMapper(Class<?> javaClass, ILiteralMapper<?> converter) {
+		registerMapper(javaClass.getName(), converter);
 	}
 
-	private void registerConverter(ILiteralMapper<?> converter) {
-		registerConverter(converter.getJavaClassName(), converter);
-	}
-
-	public void registerConverter(String javaClassName, ILiteralMapper<?> converter) {
+	public void registerMapper(String javaClassName, ILiteralMapper<?> converter) {
 		injector.injectMembers(converter);
-		converters.put(javaClassName, converter);
+		mappers.put(javaClassName, converter);
 	}
 
 	@Inject
@@ -315,41 +291,39 @@ public class LiteralConverter implements Cloneable {
 				});
 
 		try {
-			registerConverter(new BigDecimalLiteralMapper());
-			registerConverter(new BigIntegerLiteralMapper());
-			registerConverter(new BooleanLiteralMapper());
-			registerConverter(new ByteLiteralMapper());
-			registerConverter(new DoubleLiteralMapper());
-			registerConverter(new FloatLiteralMapper());
-			registerConverter(new IntegerLiteralMapper());
-			registerConverter(new LongLiteralMapper());
-			registerConverter(new ShortLiteralMapper());
-			registerConverter(new CharacterLiteralMapper());
-			registerConverter(new DateLiteralMapper());
-			registerConverter(new LocaleLiteralMapper());
-			registerConverter(new PatternLiteralMapper());
-			registerConverter(new QNameLiteralMapper());
-			registerConverter(new GregorianCalendarLiteralMapper());
-			registerConverter(new SqlDateLiteralMapper());
-			registerConverter(new SqlTimeLiteralMapper());
-			registerConverter(new SqlTimestampLiteralMapper());
-			registerConverter(new ClassLiteralMapper());
+			registerMapper(BigDecimal.class, new BigDecimalLiteralMapper());
+			registerMapper(BigInteger.class, new BigIntegerLiteralMapper());
+			registerMapper(Boolean.class, new BooleanLiteralMapper());
+			registerMapper(Byte.class, new ByteLiteralMapper());
+			registerMapper(Double.class, new DoubleLiteralMapper());
+			registerMapper(Float.class, new FloatLiteralMapper());
+			registerMapper(Integer.class, new IntegerLiteralMapper());
+			registerMapper(Long.class, new LongLiteralMapper());
+			registerMapper(Short.class, new ShortLiteralMapper());
+			registerMapper(Character.class, new CharacterLiteralMapper());
+			registerMapper(java.util.Date.class, new DateLiteralMapper());
+			registerMapper(Locale.class, new LocaleLiteralMapper());
+			registerMapper(Pattern.class, new PatternLiteralMapper());
+			registerMapper(QName.class, new QNameLiteralMapper());
+			registerMapper(GregorianCalendar.class, new GregorianCalendarLiteralMapper());
+			registerMapper(Date.class, new SqlDateLiteralMapper());
+			registerMapper(Time.class, new SqlTimeLiteralMapper());
+			registerMapper(Timestamp.class, new SqlTimestampLiteralMapper());
+			registerMapper(Class.class, new ClassLiteralMapper());
 
 			DurationLiteralMapper dm = injector
 					.getInstance(DurationLiteralMapper.class);
-			registerConverter(dm.getJavaClassName(), dm);
-			registerConverter(Duration.class, dm);
+			registerMapper(dm.getJavaClassName(), dm);
+			registerMapper(Duration.class, dm);
 			XMLGregorianCalendarLiteralMapper xgcm = injector
 					.getInstance(XMLGregorianCalendarLiteralMapper.class);
-			registerConverter(xgcm.getJavaClassName(), xgcm);
-			registerConverter(XMLGregorianCalendar.class, xgcm);
-			registerConverter(new StringLiteralMapper(
-					"org.codehaus.groovy.runtime.GStringImpl"));
-			registerConverter(new StringLiteralMapper("groovy.lang.GString$1"));
-			registerConverter(new StringLiteralMapper("groovy.lang.GString$2"));
+			registerMapper(xgcm.getJavaClassName(), xgcm);
+			registerMapper(XMLGregorianCalendar.class, xgcm);
+			registerMapper("org.codehaus.groovy.runtime.GStringImpl", new StringLiteralMapper());
+			registerMapper("groovy.lang.GString$1", new StringLiteralMapper());
+			registerMapper("groovy.lang.GString$2", new StringLiteralMapper());
 
-			registerConverter(new StringLiteralMapper("java.lang.String",
-					RDF.TYPE_XMLLITERAL));
+			registerMapper(String.class, new StringLiteralMapper(RDF.TYPE_XMLLITERAL));
 
 			loadDatatypes(getClass().getClassLoader(), DATATYPES_PROPERTIES);
 			loadDatatypes(cl, DATATYPES_PROPERTIES);

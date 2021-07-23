@@ -44,10 +44,6 @@ public class DoubleLiteralMapper implements ILiteralMapper<Double> {
 	@Inject
 	private ILiteralFactory lf;
 
-	public String getJavaClassName() {
-		return Double.class.getName();
-	}
-
 	public URI getDatatype() {
 		return XMLSCHEMA.TYPE_DOUBLE;
 	}

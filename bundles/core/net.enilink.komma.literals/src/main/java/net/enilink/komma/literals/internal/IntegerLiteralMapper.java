@@ -44,10 +44,6 @@ public class IntegerLiteralMapper implements ILiteralMapper<Integer> {
 	@Inject
 	private ILiteralFactory lf;
 
-	public String getJavaClassName() {
-		return Integer.class.getName();
-	}
-
 	public URI getDatatype() {
 		return XMLSCHEMA.TYPE_INT;
 	}

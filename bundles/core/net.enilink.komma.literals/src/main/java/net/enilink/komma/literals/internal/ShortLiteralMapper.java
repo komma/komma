@@ -44,10 +44,6 @@ public class ShortLiteralMapper implements ILiteralMapper<Short> {
 	@Inject
 	private ILiteralFactory lf;
 
-	public String getJavaClassName() {
-		return Short.class.getName();
-	}
-
 	public URI getDatatype() {
 		return XMLSCHEMA.TYPE_SHORT;
 	}

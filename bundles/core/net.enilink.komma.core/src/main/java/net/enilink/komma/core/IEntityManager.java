@@ -115,15 +115,6 @@ public interface IEntityManager extends AutoCloseable {
 	void close(Iterator<?> iter);
 
 	/**
-	 * Check if the instance belongs to the current persistence context.
-	 * 
-	 * @param entity
-	 * @return <code>true</code> if the instance belongs to the current
-	 *         persistence context.
-	 */
-	boolean contains(Object entity);
-
-	/**
 	 * Assigns <code>type</code> to a new anonymous entity.
 	 * 
 	 * @param concept
