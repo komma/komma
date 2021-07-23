@@ -15,12 +15,7 @@ public class CachedEntity {
 	/**
 	 * A factory that can be used with Guava's cache implementation.
 	 */
-	public static final Callable<CachedEntity> FACTORY = new Callable<CachedEntity>() {
-		@Override
-		public CachedEntity call() throws Exception {
-			return new CachedEntity();
-		}
-	};
+	public static final Callable<CachedEntity> FACTORY = () -> new CachedEntity();
 
 	final Map<Object, Object> contextToSelf = new HashMap<>();
 	Map<Object, Map<Object, Object>> contextToProperties;

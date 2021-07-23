@@ -271,7 +271,7 @@ public abstract class AnnotationLiteral<T extends Annotation> implements Annotat
 
     private static Object invoke(Method method, Object instance) {
         try {
-            if (!method.isAccessible())
+            if (!method.canAccess(instance))
                 method.setAccessible(true);
             return method.invoke(instance);
         } catch (IllegalArgumentException e) {

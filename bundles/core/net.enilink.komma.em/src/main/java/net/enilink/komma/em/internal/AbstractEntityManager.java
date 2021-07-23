@@ -196,7 +196,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		}
 	}
 
-	private boolean assertConceptsRecorded(IEntity bean, Class<?>... concepts) {
+	private boolean assertConceptsRecorded(Object bean, Class<?>... concepts) {
 		for (Class<?> concept : concepts) {
 			assert !concept.isInterface()
 					|| concept.isAssignableFrom(bean.getClass()) : "Concept has not been recorded: "
@@ -286,7 +286,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	}
 
 	@SuppressWarnings("unchecked")
-	public IEntity createBean(IReference resource, Collection<URI> entityTypes, Collection<Class<?>> concepts,
+	public Object createBean(IReference resource, Collection<URI> entityTypes, Collection<Class<?>> concepts,
 			boolean restrictTypes, boolean initialize, IGraph graph) {
 		if (resource == null) {
 			throw new IllegalArgumentException("Resource argument must not be null.");
@@ -342,7 +342,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	protected IEntity createBeanForClass(IReference resource, Class<?> type) {
 		Object obj;
 		try {
-			obj = type.newInstance();
+			obj = type.getDeclaredConstructor().newInstance();
 
 			injector.injectMembers(obj);
 
@@ -393,7 +393,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 			throw new KommaException(e);
 		}
 		Class<?>[] allConcepts = combine(concept, concepts);
-		IEntity bean = createBean(resource, types, Arrays.asList(allConcepts), true, false, null);
+		Object bean = createBean(resource, types, Arrays.asList(allConcepts), true, false, null);
 		assert assertConceptsRecorded(bean, allConcepts);
 		return (T) bean;
 	}
@@ -429,7 +429,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 				}
 			}
 		}
-		return createBean(resource, types, null, true, false, null);
+		return (IEntity) createBean(resource, types, null, true, false, null);
 	}
 
 	public IQuery<?> createQuery(String query) {
@@ -512,7 +512,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		}
 
 		Class<?>[] allConcepts = combine(concept, concepts);
-		IEntity bean = createBean(resource, types, null, false, true, null);
+		Object bean = createBean(resource, types, null, false, true, null);
 		assert assertConceptsRecorded(bean, allConcepts);
 		return (T) bean;
 	}
@@ -528,7 +528,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 
 	@Override
 	public IEntity find(IReference reference) {
-		return createBean(reference, null, null, false, true, null);
+		return (IEntity) createBean(reference, null, null, false, true, null);
 	}
 
 	@Override
@@ -540,7 +540,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	}
 
 	public IEntity find(IReference reference, Collection<Class<?>> concepts) {
-		return createBean(reference, null, concepts, false, true, null);
+		return (IEntity) createBean(reference, null, concepts, false, true, null);
 	}
 
 	public <T> IExtendedIterator<T> findAll(final Class<T> concept) {
@@ -567,7 +567,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 				return reference;
 			}
 		}
-		return createBean(reference, null, concepts, true, true, null);
+		return (IReference) createBean(reference, null, concepts, true, true, null);
 	}
 
 	@Override
@@ -1097,7 +1097,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 					types = Collections.singleton(typeUri);
 				}
 			}
-			IEntity bean = createBean((IReference) value, types, null, false, true, graph);
+			Object bean = createBean((IReference) value, types, null, false, true, graph);
 			if (log.isTraceEnabled()) {
 				if (!createQuery("ASK {?s ?p ?o}").setParameter("s", (IReference) value).getBooleanResult()) {
 					log.trace("Warning: Unknown entity: " + value);

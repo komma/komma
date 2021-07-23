@@ -40,7 +40,7 @@ public class CachingEntityManager extends DecoratingEntityManager {
 		super(decorators);
 	}
 
-	public IEntity createBean(IReference resource, Collection<URI> types, Collection<Class<?>> concepts,
+	public Object createBean(IReference resource, Collection<URI> types, Collection<Class<?>> concepts,
 			boolean restrictTypes, boolean initialize, IGraph graph) {
 		CachedEntity cached = cache.getIfPresent(resource);
 		Object element = cached != null ? cached.getSelf(contextKey) : null;
@@ -55,16 +55,18 @@ public class CachingEntityManager extends DecoratingEntityManager {
 				}
 			}
 			if (hasValidTypes) {
-				if (graph != null) {
+				if (graph != null && element instanceof IEntity) {
 					initializeBean((IEntity) element, graph);
 				}
-				return (IEntity) element;
+				return element;
 			}
 		}
-		IEntity entity = super.createBean(resource, types, concepts, restrictTypes, initialize, graph);
+		Object entity = super.createBean(resource, types, concepts, restrictTypes, initialize, graph);
 		// do not cache entities created during transactions or with restricted
 		// types
-		if (!(restrictTypes || getTransaction().isActive())) {
+		if (!(restrictTypes || getTransaction().isActive()) &&
+				// only cache full KOMMA entities and not instances created via object mappers
+				entity instanceof IEntity) {
 			try {
 				CachedEntity cachedEntity = cache.get(resource, CachedEntity.FACTORY);
 				cachedEntity.setSelf(contextKey, entity);
