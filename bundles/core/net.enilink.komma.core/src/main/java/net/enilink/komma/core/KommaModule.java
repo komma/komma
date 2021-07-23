@@ -56,7 +56,7 @@ public class KommaModule {
 	private Set<INamespace> namespaces = new HashSet<INamespace>();
 	private Map<Class<?>, IObjectMapper> objectMappers = new HashMap<>();
 	private Map<Class<?>, IPropertyMapper> propertyMappers = new HashMap<>();
-	private Map<Class<?>, ILiteralMapper> literalMappers = new HashMap<>();
+	private Map<String, ILiteralMapper> literalMappers = new HashMap<>();
 
 	public KommaModule() {
 		cl = new CombinedClassLoader(getClass().getClassLoader());
@@ -252,12 +252,29 @@ public class KommaModule {
 	/**
 	 * Adds a literal mapper for the given literal class.
 	 *
-	 * @param literalClass the literal class
+	 * @param literalClass  the literal class
 	 * @param literalMapper a literal mapper
 	 * @return this
 	 */
 	public KommaModule addLiteralMapper(Class<?> literalClass, ILiteralMapper literalMapper) {
-		literalMappers.put(literalClass, literalMapper);
+		literalMappers.put(literalClass.getName(), literalMapper);
+		return this;
+	}
+
+	/**
+	 * Adds a literal mapper for the given literal class.
+	 * <p>
+	 * The class is represented as a string to allow the implementation
+	 * of converters without having the concrete classes or interfaces on the classpath.
+	 * An example are Groovy strings that are implemented by the class
+	 * <pre>org.codehaus.groovy.runtime.GStringImpl</pre>
+	 *
+	 * @param literalClassName the literal class name
+	 * @param literalMapper    a literal mapper
+	 * @return this
+	 */
+	public KommaModule addLiteralMapper(String literalClassName, ILiteralMapper literalMapper) {
+		literalMappers.put(literalClassName, literalMapper);
 		return this;
 	}
 
@@ -297,7 +314,7 @@ public class KommaModule {
 
 	public Map<Class<?>, IPropertyMapper> getPropertyMappers() { return unmodifiableMap(propertyMappers); }
 
-	public Map<Class<?>, ILiteralMapper> getLiteralMappers() { return unmodifiableMap(literalMappers); }
+	public Map<String, ILiteralMapper> getLiteralMappers() { return unmodifiableMap(literalMappers); }
 
 	/**
 	 * Include all the information from the given module in this module.
@@ -346,6 +363,9 @@ public class KommaModule {
 		datatypes.addAll(module.datatypes);
 		concepts.addAll(module.concepts);
 		behaviours.addAll(module.behaviours);
+		objectMappers.putAll(module.objectMappers);
+		propertyMappers.putAll(module.propertyMappers);
+		literalMappers.putAll(module.literalMappers);
 		if (includeGraphsAndNamespaces) {
 			writableGraphs.addAll(module.writableGraphs);
 			readableGraphs.addAll(module.readableGraphs);
