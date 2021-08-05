@@ -25,8 +25,8 @@ public class ByteArrayLiteralMapper implements ILiteralMapper<byte[]> {
 	private ILiteralFactory lf;
 
 	@Override
-	public byte[] deserialize(String label) {
-		return Base64.decodeBase64(label.getBytes());
+	public byte[] deserialize(ILiteral literal) {
+		return Base64.decodeBase64(literal.getLabel().getBytes());
 	}
 
 	@Override
