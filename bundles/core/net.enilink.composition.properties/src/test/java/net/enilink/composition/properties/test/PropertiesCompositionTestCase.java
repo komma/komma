@@ -10,6 +10,7 @@
  *******************************************************************************/
 package net.enilink.composition.properties.test;
 
+import net.enilink.composition.mapping.IPropertyMapper;
 import org.junit.Before;
 import net.enilink.composition.ClassResolver;
 import net.enilink.composition.CompositionModule;
@@ -17,7 +18,7 @@ import net.enilink.composition.DefaultObjectFactory;
 import net.enilink.composition.ObjectFactory;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.mappers.TypeFactory;
-import net.enilink.composition.properties.PropertyMapper;
+import net.enilink.composition.properties.mapper.IriAnnotationPropertyMapper;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.behaviours.PropertyMapperProcessor;
 
@@ -90,14 +91,18 @@ public abstract class PropertiesCompositionTestCase {
 
 			@Provides
 			protected @Singleton
-			PropertyMapper providePropertyMapper() {
-				return new PropertyMapper();
+			IPropertyMapper providePropertyMapper() {
+				return createPropertyMapper();
 			}
 		};
 	}
 
 	protected void initRoleMapper(RoleMapper<String> roleMapper) {
 
+	}
+
+	protected IPropertyMapper createPropertyMapper() {
+		return new IriAnnotationPropertyMapper();
 	}
 
 	protected RoleMapper<String> getRoleMapper() {

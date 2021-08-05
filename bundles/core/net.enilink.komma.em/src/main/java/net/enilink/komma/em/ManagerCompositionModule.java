@@ -13,8 +13,10 @@ import net.enilink.composition.ObjectFactory;
 import net.enilink.composition.mappers.ComposedRoleMapper;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.mappers.TypeFactory;
-import net.enilink.composition.properties.PropertyMapper;
+import net.enilink.composition.mapping.IPropertyMapper;
+import net.enilink.composition.properties.mapper.CompoundPropertyMapper;
 import net.enilink.composition.properties.behaviours.PropertyMapperProcessor;
+import net.enilink.composition.properties.mapper.IriAnnotationPropertyMapper;
 import net.enilink.composition.properties.sparql.SparqlBehaviourMethodProcessor;
 
 import com.google.inject.AbstractModule;
@@ -124,8 +126,8 @@ public class ManagerCompositionModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	protected PropertyMapper providePropertyMapper() {
-		return new PropertyMapper();
+	protected IPropertyMapper providePropertyMapper() {
+		return new CompoundPropertyMapper(module.getPropertyMappers(), new IriAnnotationPropertyMapper());
 	}
 
 	@Provides

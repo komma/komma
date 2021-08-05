@@ -17,7 +17,7 @@ public class PropertyDescriptor {
 	private final Method readMethod;
 	private final Method writeMethod;
 	private final String predicate;
-	private boolean enforceCollection = false;
+	private boolean enforceList = false;
 	private final PropertyAttribute[] attributes;
 
 	public PropertyDescriptor(String propertyName, Method readMethod, Method writeMethod,
@@ -50,12 +50,12 @@ public class PropertyDescriptor {
 		return result;
 	}
 
-	public void setEnforceCollection(boolean enforceCollection) {
-		this.enforceCollection = enforceCollection;
+	public void setEnforceList(boolean enforceList) {
+		this.enforceList = enforceList;
 	}
 
-	public boolean isEnforceCollection() {
-		return enforceCollection;
+	public boolean isEnforceList() {
+		return enforceList;
 	}
 
 	public String getName() {

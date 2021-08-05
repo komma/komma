@@ -31,6 +31,7 @@ package net.enilink.composition.properties.sparql;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import net.enilink.composition.mapping.IPropertyMapper;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -44,7 +45,6 @@ import net.enilink.composition.asm.Types;
 import net.enilink.composition.asm.util.BehaviourMethodGenerator;
 import net.enilink.composition.asm.util.MethodNodeGenerator;
 import net.enilink.composition.exceptions.BehaviourException;
-import net.enilink.composition.properties.PropertyMapper;
 
 import com.google.inject.Inject;
 
@@ -62,7 +62,7 @@ public class SparqlBehaviourMethodProcessor implements
 			"getContext", Type.getMethodDescriptor(MANAGER_TYPE, new Type[0]));
 
 	@Inject
-	private PropertyMapper propertyMapper;
+	private IPropertyMapper propertyMapper;
 
 	@Override
 	public boolean implementsMethod(Class<?> targetClass, Method method) {

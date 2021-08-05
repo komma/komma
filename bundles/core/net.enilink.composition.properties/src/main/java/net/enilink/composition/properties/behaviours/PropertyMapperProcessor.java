@@ -35,12 +35,14 @@ import net.enilink.composition.asm.BehaviourClassProcessor;
 import net.enilink.composition.asm.ExtendedMethod;
 import net.enilink.composition.asm.Types;
 import net.enilink.composition.asm.util.BehaviourMethodGenerator;
+import net.enilink.composition.mapping.IPropertyMapper;
 import net.enilink.composition.mapping.PropertyAttribute;
 import net.enilink.composition.mapping.PropertyDescriptor;
 import net.enilink.composition.properties.*;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.PropertySetOwner;
 import net.enilink.composition.properties.traits.Refreshable;
+import net.enilink.composition.properties.util.CollectionAsListWrapper;
 import net.enilink.composition.properties.util.UnmodifiablePropertySet;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -67,7 +69,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 	@Inject
 	protected ClassDefiner definer;
 
-	protected PropertyMapper propertyMapper;
+	protected IPropertyMapper propertyMapper;
 
 	private void addPropertySetFactoryField(BehaviourClassNode node) {
 		FieldNode factoryField = new FieldNode(Opcodes.ACC_PRIVATE,
@@ -224,7 +226,22 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 		loadPropertySet(pd, gen);
 
-		if (isCollection(pd, classType)) {
+		if (pd.isEnforceList()) {
+			// the set-based collection must be wrapped as a Java list,
+			// although it represents an unordered set of statements
+			Type wrapperType = Type.getType(CollectionAsListWrapper.class);
+			gen.newInstance(wrapperType);
+			// duplicate and push before property set
+			gen.dupX1();
+			// move property set to top of stack
+			gen.swap();
+			gen.invoke(Methods.PROPERTYSET_GET_ALL);
+			gen.invokeConstructor(wrapperType, org.objectweb.asm.commons.Method
+					.getMethod("void <init>(java.util.Collection)"));
+			// return the wrapped property set as list
+			gen.returnValue();
+		} else if (isCollection(pd, classType)) {
+			// this is a normal set-based collection
 			gen.invoke(Methods.PROPERTYSET_GET_ALL);
 			gen.returnValue();
 		} else if (classType.isPrimitive()) {
@@ -325,7 +342,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 	}
 
 	private boolean isCollection(PropertyDescriptor pd, Class<?> type) {
-		return pd.isEnforceCollection() || Set.class.equals(type) || Collection.class.equals(type);
+		return pd.isEnforceList() || Set.class.equals(type) || Collection.class.equals(type);
 	}
 
 	private void loadFactory(BehaviourClassNode node,
@@ -541,7 +558,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 	}
 
 	@Inject
-	public void setPropertyMapper(PropertyMapper mapper) {
+	public void setPropertyMapper(IPropertyMapper mapper) {
 		this.propertyMapper = mapper;
 	}
 }

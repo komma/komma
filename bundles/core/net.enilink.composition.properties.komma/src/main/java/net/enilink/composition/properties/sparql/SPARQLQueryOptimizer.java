@@ -28,6 +28,7 @@
  */
 package net.enilink.composition.properties.sparql;
 
+import net.enilink.composition.mapping.IPropertyMapper;
 import net.enilink.composition.mapping.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -44,7 +45,6 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import net.enilink.composition.asm.util.BehaviourMethodGenerator;
 import net.enilink.composition.exceptions.ConfigException;
-import net.enilink.composition.properties.PropertyMapper;
 import net.enilink.composition.properties.annotations.Name;
 
 import net.enilink.commons.iterator.IExtendedIterator;
@@ -70,7 +70,7 @@ public class SPARQLQueryOptimizer {
 	private static final Type OBJECT_ARRAY_TYPE = Type.getType(Object[].class);
 
 	/** @return map of name to uri */
-	public Map<String, String> findEagerProperties(PropertyMapper pm, Class<?> type) {
+	public Map<String, String> findEagerProperties(IPropertyMapper pm, Class<?> type) {
 		Map<String, String> properties = new HashMap<String, String>();
 		findEagerProperties(pm, type, properties);
 		if (properties.isEmpty())
@@ -79,7 +79,7 @@ public class SPARQLQueryOptimizer {
 		return properties;
 	}
 
-	private Map<String, String> findEagerProperties(PropertyMapper pm, Class<?> concept,
+	private Map<String, String> findEagerProperties(IPropertyMapper pm, Class<?> concept,
 													Map<String, String> properties) {
 		for (PropertyDescriptor pd : pm.getProperties(concept)) {
 			Class<?> type = pd.getPropertyType();
@@ -100,7 +100,7 @@ public class SPARQLQueryOptimizer {
 		return !Set.class.equals(type);
 	}
 
-	public void implementQuery(String sparql, String base, PropertyMapper pm,
+	public void implementQuery(String sparql, String base, IPropertyMapper pm,
 			Method method, BehaviourMethodGenerator gen) throws Exception {
 		Class<?> range = method.getReturnType();
 
