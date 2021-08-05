@@ -144,11 +144,23 @@ public class LiteralConverter implements Cloneable {
 	}
 
 	public Object createObject(ILiteral literal) {
+		return createObject(literal, null);
+	}
+
+	public Object createObject(ILiteral literal, Class<?> type) {
 		URI datatype = literal.getDatatype();
 		if (datatype == null) {
 			return literal.getLabel();
 		}
-		ILiteralMapper<?> mapper = findMapper(datatype);
+		ILiteralMapper<?> mapper = null;
+		if (type != null) {
+			// try to find mapper by Java class
+			mapper = findMapper(type);
+		}
+		if (mapper == null) {
+			// fallback if mapper is only registered for datatype
+			mapper = findMapper(datatype);
+		}
 		try {
 			return mapper.deserialize(literal.getLabel());
 		} catch (Exception e) {

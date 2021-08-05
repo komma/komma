@@ -1097,7 +1097,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		if (type != null && IValue.class.isAssignableFrom(type)) {
 			instance = createLiteral(literal.getLabel(), literal.getDatatype(), literal.getLanguage());
 		} else {
-			instance = literalConverter.createObject(literal);
+			instance = literalConverter.createObject(literal, type);
 			if (type != null) {
 				if (instance == null) {
 					if (type.isPrimitive()) {
