@@ -59,8 +59,8 @@ public class StringLiteralMapper implements ILiteralMapper<Object> {
 		this.datatype = datatype;
 	}
 
-	public Object deserialize(String label) {
-		return label;
+	public Object deserialize(ILiteral literal) {
+		return literal.getLabel();
 	}
 
 	public ILiteral serialize(Object object) {

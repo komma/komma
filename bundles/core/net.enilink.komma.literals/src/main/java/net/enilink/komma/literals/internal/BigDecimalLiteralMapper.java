@@ -55,8 +55,8 @@ public class BigDecimalLiteralMapper implements ILiteralMapper<BigDecimal> {
 			throw new IllegalArgumentException(dt.toString());
 	}
 
-	public BigDecimal deserialize(String label) {
-		return new BigDecimal(label);
+	public BigDecimal deserialize(ILiteral literal) {
+		return new BigDecimal(literal.getLabel());
 	}
 
 	public ILiteral serialize(BigDecimal object) {

@@ -66,7 +66,7 @@ public class SqlTimeLiteralMapper implements ILiteralMapper<Time> {
 		this.datatype = datatype;
 	}
 
-	public Time deserialize(String label) {
+	public Time deserialize(ILiteral literal) {
 		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(label);
 		return new Time(gc.toGregorianCalendar().getTimeInMillis());
 	}

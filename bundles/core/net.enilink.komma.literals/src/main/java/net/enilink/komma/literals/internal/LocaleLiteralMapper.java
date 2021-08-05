@@ -62,7 +62,8 @@ public class LocaleLiteralMapper implements ILiteralMapper<Locale> {
 		this.datatype = datatype;
 	}
 
-	public Locale deserialize(String lang) {
+	public Locale deserialize(ILiteral literal) {
+		String lang = literal.getLabel();
 		Locale locale = locales.get(lang);
 		if (locale == null) {
 			String[] l = lang.split("-", 3);

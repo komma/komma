@@ -66,8 +66,8 @@ public class GregorianCalendarLiteralMapper implements
 		this.datatype = datatype;
 	}
 
-	public GregorianCalendar deserialize(String label) {
-		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(label);
+	public GregorianCalendar deserialize(ILiteral literal) {
+		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(literal.getLabel());
 		return gc.toGregorianCalendar();
 	}
 

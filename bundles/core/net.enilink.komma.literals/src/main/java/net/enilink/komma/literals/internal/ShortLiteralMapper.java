@@ -53,8 +53,8 @@ public class ShortLiteralMapper implements ILiteralMapper<Short> {
 			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public Short deserialize(String label) {
-		return Short.valueOf(label);
+	public Short deserialize(ILiteral literal) {
+		return Short.valueOf(literal.getLabel());
 	}
 
 	public ILiteral serialize(Short object) {

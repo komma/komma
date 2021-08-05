@@ -67,8 +67,8 @@ public class SqlTimestampLiteralMapper implements ILiteralMapper<Timestamp> {
 		this.datatype = datatype;
 	}
 
-	public Timestamp deserialize(String label) {
-		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(label);
+	public Timestamp deserialize(ILiteral literal) {
+		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(literal.getLabel());
 		return new Timestamp(gc.toGregorianCalendar().getTimeInMillis());
 	}
 

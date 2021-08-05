@@ -62,9 +62,9 @@ public class ClassLiteralMapper implements ILiteralMapper<Class<?>> {
 		this.datatype = datatype;
 	}
 
-	public Class<?> deserialize(String label) {
+	public Class<?> deserialize(ILiteral literal) {
 		try {
-			return Class.forName(label, true, cl);
+			return Class.forName(literal.getLabel(), true, cl);
 		} catch (ClassNotFoundException e) {
 			throw new ObjectConversionException(e);
 		}

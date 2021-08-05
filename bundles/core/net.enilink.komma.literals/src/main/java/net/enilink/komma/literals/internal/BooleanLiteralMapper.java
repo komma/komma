@@ -53,8 +53,8 @@ public class BooleanLiteralMapper implements ILiteralMapper<Boolean> {
 			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public Boolean deserialize(String label) {
-		return Boolean.valueOf(label);
+	public Boolean deserialize(ILiteral literal) {
+		return Boolean.valueOf(literal.getLabel());
 	}
 
 	public ILiteral serialize(Boolean object) {

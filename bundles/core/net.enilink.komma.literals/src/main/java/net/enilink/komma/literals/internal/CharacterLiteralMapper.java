@@ -59,7 +59,8 @@ public class CharacterLiteralMapper implements ILiteralMapper<Character> {
 		this.datatype = datatype;
 	}
 
-	public Character deserialize(String label) {
+	public Character deserialize(ILiteral literal) {
+		String label = literal.getLabel();
 		assert label.length() == 1 : label;
 		return label.charAt(0);
 	}

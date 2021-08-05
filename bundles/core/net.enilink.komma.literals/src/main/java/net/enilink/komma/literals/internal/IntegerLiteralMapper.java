@@ -53,8 +53,8 @@ public class IntegerLiteralMapper implements ILiteralMapper<Integer> {
 			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public Integer deserialize(String label) {
-		return Integer.valueOf(label);
+	public Integer deserialize(ILiteral literal) {
+		return Integer.valueOf(literal.getLabel());
 	}
 
 	public ILiteral serialize(Integer object) {

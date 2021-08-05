@@ -86,8 +86,8 @@ public class XMLGregorianCalendarLiteralMapper implements
 		throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public XMLGregorianCalendar deserialize(String label) {
-		return factory.newXMLGregorianCalendar(label);
+	public XMLGregorianCalendar deserialize(ILiteral literal) {
+		return factory.newXMLGregorianCalendar(literal.getLabel());
 	}
 
 	public ILiteral serialize(XMLGregorianCalendar object) {

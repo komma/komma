@@ -53,8 +53,8 @@ public class ByteLiteralMapper implements ILiteralMapper<Byte> {
 			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public Byte deserialize(String label) {
-		return Byte.valueOf(label);
+	public Byte deserialize(ILiteral literal) {
+		return Byte.valueOf(literal.getLabel());
 	}
 
 	public ILiteral serialize(Byte object) {

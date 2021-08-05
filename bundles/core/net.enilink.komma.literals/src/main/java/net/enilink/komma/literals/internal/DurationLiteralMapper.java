@@ -71,8 +71,8 @@ public class DurationLiteralMapper implements ILiteralMapper<Duration> {
 		this.datatype = datatype;
 	}
 
-	public Duration deserialize(String label) {
-		return factory.newDuration(label);
+	public Duration deserialize(ILiteral literal) {
+		return factory.newDuration(literal.getLabel());
 	}
 
 	public ILiteral serialize(Duration object) {

@@ -81,9 +81,9 @@ public class ObjectConstructorLiteralMapper<T> implements ILiteralMapper<T> {
 		this.datatype = datatype;
 	}
 
-	public T deserialize(String label) {
+	public T deserialize(ILiteral literal) {
 		try {
-			return constructor.newInstance(new Object[] { label });
+			return constructor.newInstance(new Object[] { literal.getLabel() });
 		} catch (Exception e) {
 			throw new ObjectConversionException(e);
 		}

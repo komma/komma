@@ -53,8 +53,8 @@ public class LongLiteralMapper implements ILiteralMapper<Long> {
 			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public Long deserialize(String label) {
-		return Long.valueOf(label);
+	public Long deserialize(ILiteral literal) {
+		return Long.valueOf(literal.getLabel());
 	}
 
 	public ILiteral serialize(Long object) {

@@ -78,9 +78,9 @@ public class ObjectSerializationLiteralMapper<T> implements ILiteralMapper<T> {
 		this.datatype = datatype;
 	}
 
-	public T deserialize(String label) {
+	public T deserialize(ILiteral literal) {
 		try {
-			byte[] decoded = decode(label);
+			byte[] decoded = decode(literal.getLabel());
 			InputStream is = new ByteArrayInputStream(decoded);
 			ObjectInputStream ois = new ObjectInputStream(is) {
 				protected java.lang.Class<?> resolveClass(

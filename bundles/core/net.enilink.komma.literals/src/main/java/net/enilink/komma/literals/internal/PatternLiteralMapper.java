@@ -59,8 +59,8 @@ public class PatternLiteralMapper implements ILiteralMapper<Pattern> {
 		this.datatype = datatype;
 	}
 
-	public Pattern deserialize(String label) {
-		return Pattern.compile(label);
+	public Pattern deserialize(ILiteral literal) {
+		return Pattern.compile(literal.getLabel());
 	}
 
 	public ILiteral serialize(Pattern object) {

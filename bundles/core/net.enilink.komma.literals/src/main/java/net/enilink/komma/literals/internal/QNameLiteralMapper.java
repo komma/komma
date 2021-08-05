@@ -59,7 +59,8 @@ public class QNameLiteralMapper implements ILiteralMapper<QName> {
 			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public QName deserialize(String label) {
+	public QName deserialize(ILiteral literal) {
+		String label = literal.getLabel();
 		int idx = label.indexOf(':');
 		if (label.charAt(0) == '{' || idx < 0)
 			return QName.valueOf(label);

@@ -90,9 +90,9 @@ public class ValueOfLiteralMapper<T> implements ILiteralMapper<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public T deserialize(String label) {
+	public T deserialize(ILiteral literal) {
 		try {
-			return (T) valueOfMethod.invoke(null, new Object[] { label });
+			return (T) valueOfMethod.invoke(null, new Object[] { literal.getLabel() });
 		} catch (Exception e) {
 			throw new ObjectConversionException(e);
 		}

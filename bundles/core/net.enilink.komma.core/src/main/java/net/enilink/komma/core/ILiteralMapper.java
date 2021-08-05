@@ -51,10 +51,10 @@ public interface ILiteralMapper<T> {
 	/**
 	 * Converts the label of a literal to a Java object
 	 *
-	 * @param label the literal's label
+	 * @param literal the literal label
 	 * @return a Java object representing the literal
 	 */
-	T deserialize(String label);
+	T deserialize(ILiteral literal);
 
 	/**
 	 * Converts a Java object into an RDF literal.

@@ -53,8 +53,8 @@ public class DoubleLiteralMapper implements ILiteralMapper<Double> {
 			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public Double deserialize(String label) {
-		return Double.valueOf(label);
+	public Double deserialize(ILiteral literal) {
+		return Double.valueOf(literal.getLabel());
 	}
 
 	public ILiteral serialize(Double object) {

@@ -162,7 +162,7 @@ public class LiteralConverter implements Cloneable {
 			mapper = findMapper(datatype);
 		}
 		try {
-			return mapper.deserialize(literal.getLabel());
+			return mapper.deserialize(literal);
 		} catch (Exception e) {
 			logger.warn("Conversion of literal " + literal + " failed.", e);
 			return literal;

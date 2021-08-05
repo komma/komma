@@ -55,8 +55,8 @@ public class BigIntegerLiteralMapper implements ILiteralMapper<BigInteger> {
 			throw new IllegalArgumentException(dt.toString());
 	}
 
-	public BigInteger deserialize(String label) {
-		return new BigInteger(label);
+	public BigInteger deserialize(ILiteral literal) {
+		return new BigInteger(literal.getLabel());
 	}
 
 	public ILiteral serialize(BigInteger object) {

@@ -53,8 +53,8 @@ public class FloatLiteralMapper implements ILiteralMapper<Float> {
 			throw new IllegalArgumentException(datatype.toString());
 	}
 
-	public Float deserialize(String label) {
-		return Float.valueOf(label);
+	public Float deserialize(ILiteral literal) {
+		return Float.valueOf(literal.getLabel());
 	}
 
 	public ILiteral serialize(Float object) {

@@ -66,8 +66,8 @@ public class SqlDateLiteralMapper implements ILiteralMapper<Date> {
 		this.datatype = datatype;
 	}
 
-	public Date deserialize(String label) {
-		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(label);
+	public Date deserialize(ILiteral literal) {
+		XMLGregorianCalendar gc = factory.newXMLGregorianCalendar(literal.getLabel());
 		return new Date(gc.toGregorianCalendar().getTimeInMillis());
 	}
 
