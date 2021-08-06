@@ -49,6 +49,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.enilink.composition.properties.exceptions.ObjectConversionException;
 import net.enilink.komma.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1128,19 +1129,26 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 			return (IValue) instance;
 		}
 
-		Class<?> type = instance.getClass();
-		if (literalConverter.isDatatype(type)) {
-			return literalConverter.createLiteral(instance, null);
-		}
 		synchronized (merged) {
 			if (merged.containsKey(instance)) {
 				return merged.get(instance);
 			}
 		}
+
+		Class<?> type = instance.getClass();
+		if (literalConverter.isLiteralType(type)) {
+			return literalConverter.createLiteral(instance, null);
+		}
 		if (IEntity.class.isAssignableFrom(type) || isEntity(type)) {
 			return toValue(merge(instance));
 		}
-
+		try {
+			// tries to use serialization etc. for unknown instance types
+			return literalConverter.createLiteral(instance, null);
+		} catch (ObjectConversionException e) {
+			// finding a possible mapper failed
+		}
+		// just convert instance to string
 		return literalConverter.createLiteral(String.valueOf(instance), XMLSCHEMA.TYPE_STRING);
 	}
 }

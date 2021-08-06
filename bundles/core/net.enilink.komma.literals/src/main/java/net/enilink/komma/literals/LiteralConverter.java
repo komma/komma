@@ -223,9 +223,14 @@ public class LiteralConverter {
 		return findMapper(type);
 	}
 
-	// TODO: check if this two-part test is required
-	public boolean isDatatype(Class<?> type) {
-		return rdfTypes.containsKey(type) || null != findMapper(type);
+	/**
+	 * Checks if the given type is a known literal type.
+	 *
+	 * @param type the type of a Java object instance
+	 * @return <code>true</code> if type is a known literal type, else <code>false</code>
+	 */
+	public boolean isLiteralType(Class<?> type) {
+		return rdfTypes.containsKey(type) || mappers.containsKey(type.getName());
 	}
 
 	private void loadDatatypes(ClassLoader cl, String properties)
