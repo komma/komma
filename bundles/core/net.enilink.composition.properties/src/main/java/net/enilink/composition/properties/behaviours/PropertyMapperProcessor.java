@@ -166,7 +166,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 
 		// load element type
 		Class<?> propertyType = pd.getPropertyType();
-		if (Set.class.equals(propertyType)) {
+		if (isCollection(pd, propertyType)) {
 			java.lang.reflect.Type t = pd.getReadMethod()
 					.getGenericReturnType();
 			if (t instanceof ParameterizedType) {
