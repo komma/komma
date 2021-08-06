@@ -47,6 +47,7 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
+import com.google.common.collect.ImmutableMap;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.properties.exceptions.ObjectConversionException;
 import net.enilink.komma.core.ILiteralMapper;
@@ -93,7 +94,7 @@ import net.enilink.komma.core.URIs;
  * Converts between simple Java Objects and Strings.
  * 
  */
-public class LiteralConverter implements Cloneable {
+public class LiteralConverter {
 	private static final String DATATYPES_PROPERTIES = "META-INF/net.enilink.komma.datatypes";
 
 	private static final String JAVA_SCHEME = "java";
@@ -110,22 +111,27 @@ public class LiteralConverter implements Cloneable {
 			.getLogger(LiteralConverter.class);
 	private ConcurrentMap<Class<?>, URI> rdfTypes = new ConcurrentHashMap<Class<?>, URI>();
 
-	public void addDatatype(Class<?> javaClass, URI datatype) {
-		recordType(javaClass, datatype);
+	// safe because both Long.class and long.class are of type Class<Long>
+	@SuppressWarnings("unchecked")
+	private static <T> Class<T> wrap(Class<T> c) {
+		return c.isPrimitive() ? (Class<T>) PRIMITIVES_TO_WRAPPERS.get(c) : c;
 	}
 
-	public LiteralConverter clone() {
-		try {
-			LiteralConverter cloned = (LiteralConverter) super.clone();
-			cloned.javaClasses = new ConcurrentHashMap<URI, Class<?>>(
-					javaClasses);
-			cloned.mappers = new ConcurrentHashMap<String, ILiteralMapper<?>>(
-					mappers);
-			cloned.rdfTypes = new ConcurrentHashMap<Class<?>, URI>(rdfTypes);
-			return cloned;
-		} catch (CloneNotSupportedException e) {
-			throw new AssertionError(e);
-		}
+	private static final Map<Class<?>, Class<?>> PRIMITIVES_TO_WRAPPERS
+			= new ImmutableMap.Builder<Class<?>, Class<?>>()
+			.put(boolean.class, Boolean.class)
+			.put(byte.class, Byte.class)
+			.put(char.class, Character.class)
+			.put(double.class, Double.class)
+			.put(float.class, Float.class)
+			.put(int.class, Integer.class)
+			.put(long.class, Long.class)
+			.put(short.class, Short.class)
+			.put(void.class, Void.class)
+			.build();
+
+	public void addDatatype(Class<?> javaClass, URI datatype) {
+		recordType(javaClass, datatype);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -171,6 +177,9 @@ public class LiteralConverter implements Cloneable {
 
 	@SuppressWarnings("unchecked")
 	private <T> ILiteralMapper<T> findMapper(Class<T> type) {
+		// use wrapper classes for primitive types
+		type = wrap(type);
+
 		String name = type.getName();
 		if (mappers.containsKey(name)) {
 			return (ILiteralMapper<T>) mappers.get(name);
@@ -274,8 +283,7 @@ public class LiteralConverter implements Cloneable {
 	}
 
 	@Inject
-	protected void setClassLoaderAndInjector(final ClassLoader cl,
-			Injector injector) {
+	protected void setClassLoaderAndInjector(final ClassLoader cl, Injector injector) {
 		this.cl = cl;
 		this.injector = injector = injector
 				.createChildInjector(new AbstractModule() {
