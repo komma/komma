@@ -13,7 +13,7 @@ import java.util.Set;
  * iteration order.
  * 
  */
-public interface IGraph extends Set<IStatement>, Serializable {
+public interface IGraph extends Set<IStatement>, IStatementSource, Serializable {
 
 	/**
 	 * Determines if statements with the specified subject, predicate, object

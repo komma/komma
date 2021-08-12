@@ -24,8 +24,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import net.enilink.commons.iterator.Filter;
-import net.enilink.commons.iterator.FilterIterator;
+import net.enilink.commons.iterator.*;
 
 /**
  * Implementation of the {@link IGraph} interface using an underlying
@@ -140,8 +139,26 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 		return remove(null, null, null, contexts);
 	}
 
+	@Override
+	public IExtendedIterator<IStatement> match(IReference subject, IReference predicate, IValue object, boolean includeInferred, IReference... contexts) {
+		IExtendedIterator<IStatement> it = WrappedIterator.create(filter(subject, predicate, object, contexts).iterator());
+		if (!includeInferred) {
+			it = it.filterDrop(e -> e.isInferred());
+		}
+		return it;
+	}
+
+	@Override
+	public boolean hasMatch(IReference subject, IReference predicate, IValue object, boolean includeInferred, IReference... contexts) {
+		Iterator<IStatement> it = match(subject, predicate, object, contexts);
+		if (!includeInferred) {
+			it = WrappedIterator.create(it).filterDrop(e -> e.isInferred());
+		}
+		return it.hasNext();
+	}
+
 	public IGraph filter(IReference subj, IReference pred, Object obj,
-			IReference... contexts) {
+						 IReference... contexts) {
 		return new FilteredGraph(subj, pred, obj, contexts);
 	}
 
@@ -622,6 +639,16 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 			return emptyGraph();
 		}
 
+		@Override
+		public IExtendedIterator<IStatement> match(IReference subject, IReference predicate, IValue object, boolean includeInferred, IReference... contexts) {
+			return NiceIterator.emptyIterator();
+		}
+
+		@Override
+		public boolean hasMatch(IReference subject, IReference predicate, IValue object, boolean includeInferred, IReference... contexts) {
+			return false;
+		}
+
 		public Set<Object> objects() {
 			return Collections.emptySet();
 		}
@@ -701,7 +728,7 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 
 		@Override
 		public Iterator<IStatement> iterator() {
-			return match(subj, pred, obj, contexts);
+			return LinkedHashGraph.this.match(subj, pred, obj, contexts);
 		}
 
 		@Override
@@ -830,6 +857,21 @@ public class LinkedHashGraph extends AbstractSet<IStatement> implements IGraph {
 				c = contexts;
 			}
 			return LinkedHashGraph.this.filter(s, p, o, c);
+		}
+
+		@Override
+		public IExtendedIterator<IStatement> match(IReference subject, IReference predicate, IValue object,
+												   boolean includeInferred, IReference... contexts) {
+			IExtendedIterator<IStatement> it = WrappedIterator.create(filter(subject, predicate, object, contexts).iterator());
+			if (!includeInferred) {
+				it = it.filterDrop(e -> e.isInferred());
+			}
+			return it;
+		}
+
+		@Override
+		public boolean hasMatch(IReference subject, IReference predicate, IValue object, boolean includeInferred, IReference... contexts) {
+			return match(subject, predicate, object, includeInferred, contexts).hasNext();
 		}
 
 		public Set<IReference> contexts() {
