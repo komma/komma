@@ -61,7 +61,7 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 			Collection<ILiteral> values) {
 		int score = best;
 		String l = literal.getLanguage();
-		if (language == l || language != null && language.equals(l)) {
+		if (Objects.equals(language, l)) {
 			if (score < Integer.MAX_VALUE)
 				values.clear();
 			values.add(literal);
