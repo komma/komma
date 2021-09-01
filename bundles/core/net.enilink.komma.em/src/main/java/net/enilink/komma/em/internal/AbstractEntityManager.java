@@ -622,7 +622,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		if (objectMappers != null && !objectMappers.isEmpty()) {
 			IObjectMapper mapper = objectMappers.get(bean.getClass());
 			if (mapper != null) {
-				return mapper.getReference(bean, injector.getInstance(IEntityManager.class));
+				return mapper.getReference(bean);
 			}
 		}
 		return null;
