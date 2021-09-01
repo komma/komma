@@ -66,27 +66,6 @@ public class DefaultObjectFactory<T> implements ObjectFactory<T> {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.enilink.composition.objects.ObjectFactory#createObject(R)
-	 */
-	public Object createObject() {
-		return createInstance(resolver
-				.resolveComposite(Collections.<T> emptyList()));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.enilink.composition.objects.ObjectFactory#createObject(R,
-	 * java.lang.Class)
-	 */
-	public <C> C createObject(Class<C> type) {
-		Set<T> types = Collections.singleton(getType(type));
-		return type.cast(createObject(types));
-	}
-
 	@Override
 	public <C> C createObject(Class<C> type, Class<?>... types) {
 		Set<T> typeList = new HashSet<T>(1 + types.length);
@@ -121,13 +100,5 @@ public class DefaultObjectFactory<T> implements ObjectFactory<T> {
 
 	protected T getType(Class<?> concept) {
 		return mapper.findType(concept);
-	}
-
-	/**
-	 * @return <code>true</code> If the given type can be used as a concept
-	 *         parameter.
-	 */
-	public boolean isNamedConcept(Class<?> type) {
-		return mapper.findType(type) != null;
 	}
 }

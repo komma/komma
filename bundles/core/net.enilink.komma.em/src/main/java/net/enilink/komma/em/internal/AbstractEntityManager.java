@@ -267,7 +267,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 			Class<?> concept = concepts.iterator().next();
 			IObjectMapper mapper = objectMappers.get(concept);
 			if (mapper != null) {
-				return mapper.toObject(resource, injector.getInstance(IEntityManager.class), graph);
+				return mapper.readObject(resource, graph, injector.getInstance(IEntityManager.class));
 			}
 		}
 

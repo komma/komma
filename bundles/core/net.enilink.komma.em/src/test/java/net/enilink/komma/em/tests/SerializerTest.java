@@ -3,17 +3,19 @@ package net.enilink.komma.em.tests;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.MembersInjector;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.visitor.IDataVisitor;
+import net.enilink.komma.core.*;
 import net.enilink.komma.em.ManagerCompositionModule;
 import net.enilink.komma.em.Serializer;
 import net.enilink.komma.em.tests.concepts.Person;
+import net.enilink.vocab.rdf.RDF;
+import net.enilink.vocab.xmlschema.XMLSCHEMA;
 import org.junit.Test;
 
 import java.util.Locale;
 import java.util.Set;
+
+import static net.enilink.komma.em.tests.concepts.Concepts.NS;
+import static org.junit.Assert.assertTrue;
 
 public class SerializerTest {
 	class SimplePerson implements Person {
@@ -66,22 +68,11 @@ public class SerializerTest {
 		Person p = new SimplePerson();
 		p.setName("Karl");
 		p.setAge(12);
-		serializer.serialize(p, new IDataVisitor<Void>() {
-			@Override
-			public Void visitBegin() {
-				return null;
-			}
+		IGraph graph = new LinkedHashGraph();
+		serializer.serialize(p, stmt -> graph.add(stmt));
 
-			@Override
-			public Void visitStatement(IStatement stmt) {
-				System.out.println(stmt);
-				return null;
-			}
-
-			@Override
-			public Void visitEnd() {
-				return null;
-			}
-		});
+		assertTrue(graph.contains(null, RDF.PROPERTY_TYPE, URIs.createURI(NS + "Person")));
+		assertTrue(graph.contains(null, URIs.createURI(NS + "name"), new Literal("Karl")));
+		assertTrue(graph.contains(null, URIs.createURI(NS + "age"), new Literal("12", XMLSCHEMA.TYPE_INT)));
 	}
 }

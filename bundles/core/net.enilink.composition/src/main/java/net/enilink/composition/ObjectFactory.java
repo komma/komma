@@ -20,22 +20,12 @@ import java.util.Collection;
  */
 public interface ObjectFactory<T> {
 	/**
-	 * Creates an object with no rdf:type.
-	 */
-	Object createObject();
-
-	/**
-	 * Creates an object with an assumed rdf:type.
-	 */
-	<C> C createObject(Class<C> type);
-
-	/**
-	 * Creates an object with an assumed rdf:type.
+	 * Creates an object for the given Java types.
 	 */
 	<C> C createObject(Class<C> type, Class<?>... types);
 
 	/**
-	 * Creates an object with assumed rdf:types.
+	 * Creates an object for given rdf:types.
 	 */
 	Object createObject(Collection<T> types);
 
