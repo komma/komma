@@ -1,34 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+		xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.enilink.komma</groupId>
 	<artifactId>komma-launch-bnd</artifactId>
-	<version>1.4.2-SNAPSHOT</version>
+	<version>1.6.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>biz.aQute.bnd</groupId>
-				<artifactId>bnd-resolver-maven-plugin</artifactId>
-				<version>4.3.1</version>
-				<configuration>
-					<failOnChanges>false</failOnChanges>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>resolve</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+	<properties>
+		<bnd.version>6.1.0</bnd.version>
+	</properties>
+
+	<profiles>
+		<profile>
+			<id>run</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>biz.aQute.bnd</groupId>
+						<artifactId>bnd-run-maven-plugin</artifactId>
+						<version>${bnd.version}</version>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<bndrun>komma.bndrun</bndrun>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>resolve</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>biz.aQute.bnd</groupId>
+						<artifactId>bnd-resolver-maven-plugin</artifactId>
+						<version>${bnd.version}</version>
+						<configuration>
+							<failOnChanges>false</failOnChanges>
+						</configuration>
+						<executions>
+							<execution>
+								<phase>package</phase>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 	<dependencies>
 		<dependency>
@@ -36,6 +65,12 @@
 			<artifactId>org.apache.batik.css</artifactId>
 			<version>1.12</version>
 		</dependency>
+		<dependency>
+			<groupId>net.enilink.bundles</groupId>
+			<artifactId>javax.annotation</artifactId>
+			<version>1.3.5</version>
+		</dependency>
+
 		<dependency>
 			<groupId>net.enilink.komma</groupId>
 			<artifactId>net.enilink.komma.feature</artifactId>
@@ -98,37 +133,57 @@
 		<dependency>
 			<groupId>org.apache.felix</groupId>
 			<artifactId>org.apache.felix.scr</artifactId>
-			<version>2.1.16</version>
+			<version>2.1.26</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.equinox.console</artifactId>
-			<version>1.4.0</version>
+			<version>1.4.300</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.osgi.util</artifactId>
-			<version>3.5.300</version>
+			<version>3.6.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.e4.core.di.extensions.supplier</artifactId>
-			<version>0.15.400</version>
+			<version>0.15.800</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.equinox.p2.repository</artifactId>
-			<version>2.4.500</version>
+			<version>2.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.equinox.p2.artifact.repository</artifactId>
+			<version>1.4.200</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.equinox.p2.metadata.repository</artifactId>
-			<version>1.3.200</version>
+			<version>1.3.500</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.equinox.p2.jarprocessor</artifactId>
+			<version>1.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.osgi.services</artifactId>
-			<version>3.8.0</version>
+			<version>3.10.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.equinox.simpleconfigurator</artifactId>
+			<version>1.3.600</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.equinox.launcher</artifactId>
+			<version>1.6.100</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.directory.studio</groupId>
@@ -138,18 +193,39 @@
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.ui.ide.application</artifactId>
-			<version>1.3.400</version>
+			<version>1.4.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.eclipse.platform</groupId>
+					<artifactId>org.eclipse.core.runtime</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.eclipse.platform</groupId>
+					<artifactId>org.eclipse.equinox.common</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.eclipse.platform</groupId>
+					<artifactId>org.eclipse.urischeme</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.annotation</groupId>
+					<artifactId>javax.annotation-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.jface.notifications</artifactId>
+			<version>0.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
-			<version>3.114.0</version>
+			<version>3.116.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.eclipse.platform</groupId>
@@ -164,27 +240,48 @@
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.equinox.security</artifactId>
-			<version>1.3.300</version>
+			<version>1.3.600</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.felix</groupId>
+			<artifactId>org.apache.felix.gogo.shell</artifactId>
+			<version>1.1.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.felix</groupId>
 			<artifactId>org.apache.felix.gogo.command</artifactId>
-			<version>1.1.0</version>
+			<version>1.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.osgi.compatibility.state</artifactId>
-			<version>1.1.600</version>
+			<version>1.2.300</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.equinox.event</artifactId>
-			<version>1.5.200</version>
+			<version>1.6.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>1.70</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-ext-jdk15on</artifactId>
+			<version>1.70</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpg-jdk15on</artifactId>
+			<version>1.70</version>
 		</dependency>
 	</dependencies>
 
 	<modules>
 		<module>../features</module>
 		<module>../launch/org.apache.batik.css</module>
+		<module>../launch/javax.annotation</module>
 	</modules>
 </project>
