@@ -30,7 +30,7 @@
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.ui.ide</artifactId>
-			<version>3.18.100</version>
+			<version>3.18.400</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.eclipse.platform</groupId>
@@ -57,7 +57,7 @@
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.urischeme</artifactId>
-			<version>1.1.300</version>
+			<version>1.2.100</version>
 		</dependency>
 	</dependencies>
 </project>

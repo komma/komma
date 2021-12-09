@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.equinox.supplement</artifactId>
-			<version>1.10.100</version>
+			<version>1.10.300</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

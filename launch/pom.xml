@@ -127,7 +127,7 @@
 				<dependency>
 					<groupId>org.eclipse.birt.runtime</groupId>
 					<artifactId>com.ibm.icu</artifactId>
-					<version>4.4.2.v20110823</version>
+					<version>56.1.0.v201601250100</version>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.felix</groupId>
@@ -137,52 +137,52 @@
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.console</artifactId>
-					<version>1.4.300</version>
+					<version>1.4.500</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.osgi.util</artifactId>
-					<version>3.6.0</version>
+					<version>3.6.100</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.e4.core.di.extensions.supplier</artifactId>
-					<version>0.15.800</version>
+					<version>0.16.200</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.p2.repository</artifactId>
-					<version>2.5.0</version>
+					<version>2.5.300</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.p2.artifact.repository</artifactId>
-					<version>1.4.200</version>
+					<version>1.4.300</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.p2.metadata.repository</artifactId>
-					<version>1.3.500</version>
+					<version>1.4.0</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.p2.jarprocessor</artifactId>
-					<version>1.2.0</version>
+					<version>1.2.100</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.osgi.services</artifactId>
-					<version>3.10.0</version>
+					<version>3.10.200</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.simpleconfigurator</artifactId>
-					<version>1.3.600</version>
+					<version>1.4.0</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.launcher</artifactId>
-					<version>1.6.100</version>
+					<version>1.6.400</version>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.directory.studio</groupId>
@@ -192,7 +192,7 @@
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.ui.ide.application</artifactId>
-					<version>1.4.0</version>
+					<version>1.4.200</version>
 					<exclusions>
 						<exclusion>
 							<groupId>org.eclipse.platform</groupId>
@@ -219,12 +219,12 @@
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.jface.notifications</artifactId>
-					<version>0.3.0</version>
+					<version>0.4.0</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
-					<version>3.116.0</version>
+					<version>3.118.0</version>
 					<exclusions>
 						<exclusion>
 							<groupId>org.eclipse.platform</groupId>
@@ -239,7 +239,7 @@
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.security</artifactId>
-					<version>1.3.600</version>
+					<version>1.3.800</version>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.felix</groupId>
@@ -254,12 +254,12 @@
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.osgi.compatibility.state</artifactId>
-					<version>1.2.300</version>
+					<version>1.2.500</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.event</artifactId>
-					<version>1.6.0</version>
+					<version>1.6.100</version>
 				</dependency>
 				<dependency>
 					<groupId>org.bouncycastle</groupId>
