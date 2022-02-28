@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.em.tests;
+package net.enilink.komma.em;
 
 import static org.junit.Assert.assertTrue;
 
@@ -18,7 +18,7 @@ import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
-import net.enilink.komma.em.tests.concepts.Person;
+import net.enilink.komma.em.concepts.Person;
 
 public class CachingEntityManagerTest extends EntityManagerTest {
 	private static final String NS = "test:";

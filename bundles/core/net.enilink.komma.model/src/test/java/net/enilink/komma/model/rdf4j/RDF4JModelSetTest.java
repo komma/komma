@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.model.rdf4j.test;
+package net.enilink.komma.model.rdf4j;
 
 import static org.junit.Assert.assertEquals;
 

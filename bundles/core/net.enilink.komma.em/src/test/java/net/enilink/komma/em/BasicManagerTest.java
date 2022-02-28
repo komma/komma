@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.em.tests;
+package net.enilink.komma.em;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -18,7 +18,7 @@ import org.junit.Test;
 
 import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URIs;
-import net.enilink.komma.em.tests.concepts.Person;
+import net.enilink.komma.em.concepts.Person;
 
 public class BasicManagerTest extends EntityManagerTest {
 	private static final String NS = "test:";

@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.em.tests;
+package net.enilink.komma.em;
 
 import java.util.ArrayList;
 import java.util.List;

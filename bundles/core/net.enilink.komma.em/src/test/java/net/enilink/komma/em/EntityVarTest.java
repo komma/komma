@@ -1,4 +1,4 @@
-package net.enilink.komma.em.tests;
+package net.enilink.komma.em;
 
 import org.junit.Test;
 import net.enilink.composition.annotations.Iri;

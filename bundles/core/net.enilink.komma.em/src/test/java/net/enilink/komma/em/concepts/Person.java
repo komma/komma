@@ -1,6 +1,6 @@
-package net.enilink.komma.em.tests.concepts;
+package net.enilink.komma.em.concepts;
 
-import static net.enilink.komma.em.tests.concepts.Concepts.NS;
+import static net.enilink.komma.em.concepts.Concepts.NS;
 
 import java.util.Set;
 

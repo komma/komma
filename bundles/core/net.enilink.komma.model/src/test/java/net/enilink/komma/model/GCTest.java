@@ -8,7 +8,7 @@
  * Contributors:
  *     Fraunhofer IWU - initial API and implementation
  *******************************************************************************/
-package net.enilink.komma.model.test;
+package net.enilink.komma.model;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;

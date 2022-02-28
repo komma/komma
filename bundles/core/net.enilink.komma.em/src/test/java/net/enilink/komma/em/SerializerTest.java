@@ -1,12 +1,10 @@
-package net.enilink.komma.em.tests;
+package net.enilink.komma.em;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import net.enilink.komma.core.*;
-import net.enilink.komma.em.ManagerCompositionModule;
-import net.enilink.komma.em.Serializer;
-import net.enilink.komma.em.tests.concepts.Person;
+import net.enilink.komma.em.concepts.Person;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
 import org.junit.Test;
@@ -14,7 +12,7 @@ import org.junit.Test;
 import java.util.Locale;
 import java.util.Set;
 
-import static net.enilink.komma.em.tests.concepts.Concepts.NS;
+import static net.enilink.komma.em.concepts.Concepts.NS;
 import static org.junit.Assert.assertTrue;
 
 public class SerializerTest {
