@@ -71,5 +71,18 @@ public class ClassSupportTest extends EntityManagerTest {
 
 			assertSame(directSubClasses.length, c.getDirectNamedSubClasses().toSet().size());
 		});
+
+		classes.keySet().forEach(name -> {
+			IClass c = manager.find(URIs.createURI(NS + name), IClass.class);
+			assertTrue(c.hasNamedSubClasses(true));
+			assertTrue(c.hasSubClasses(true));
+		});
+
+		classes.forEach((name, directSubClasses) -> {
+			for (String subClass : directSubClasses) {
+				IClass c = manager.find(URIs.createURI(NS + subClass), IClass.class);
+				assertTrue(c.getNamedSuperClasses().toList().size() == 1);
+			}
+		});
 	}
 }

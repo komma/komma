@@ -189,7 +189,8 @@ public class ResultDescriptor<R> extends QueryBase<IResultDescriptor<R>> impleme
 	}
 
 	public String toQueryString() {
-		return "construct { " + constructTemplate + " } where { " +
+		return (constructTemplate.length() == 0 ? "ask" : "construct { " + constructTemplate + " } where") +
+				" { " +
 				queryFragment.whereClause +
 				" } " + queryFragment.modifiers;
 	}
