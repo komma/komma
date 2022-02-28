@@ -115,11 +115,6 @@
 		</dependency>
 		<dependency>
 			<groupId>net.enilink.komma</groupId>
-			<artifactId>net.enilink.komma.query</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.enilink.komma</groupId>
 			<artifactId>net.enilink.komma.rdf4j</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -167,7 +162,6 @@
 		<module>../../bundles/core/net.enilink.komma.literals</module>
 		<module>../../bundles/core/net.enilink.komma.model</module>
 		<module>../../bundles/core/net.enilink.komma.parser</module>
-		<module>../../bundles/core/net.enilink.komma.query</module>
 		<module>../../bundles/core/net.enilink.komma.rdf4j</module>
 		<module>../../bundles/vocab/net.enilink.vocab.foaf</module>
 		<module>../../bundles/vocab/net.enilink.vocab.komma</module>

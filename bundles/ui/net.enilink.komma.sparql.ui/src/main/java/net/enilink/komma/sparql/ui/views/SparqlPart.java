@@ -10,14 +10,6 @@
  *******************************************************************************/
 package net.enilink.komma.sparql.ui.views;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.ui.editor.AbstractEditorPart;
 import net.enilink.commons.ui.editor.EditorWidgetFactory;
@@ -27,35 +19,13 @@ import net.enilink.commons.ui.progress.ProgressDistributor;
 import net.enilink.commons.ui.progress.UiProgressMonitorWrapper;
 import net.enilink.commons.util.Pair;
 import net.enilink.commons.util.extensions.RegistryReader;
-import net.enilink.komma.common.ui.assist.ContentProposals;
-import net.enilink.komma.core.IBindings;
-import net.enilink.komma.core.IBooleanResult;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.IEntityManagerFactory;
-import net.enilink.komma.core.IGraphResult;
-import net.enilink.komma.core.INamespace;
-import net.enilink.komma.core.IQuery;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.ITupleResult;
-import net.enilink.komma.core.IUnitOfWork;
-import net.enilink.komma.edit.assist.ParboiledProposalProvider;
-import net.enilink.komma.edit.ui.assist.JFaceProposalProvider;
+import net.enilink.komma.core.*;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelAware;
-import net.enilink.komma.parser.sparql.Sparql11Parser;
-import net.enilink.komma.query.SparqlBuilder;
 import net.enilink.komma.sparql.ui.SparqlUI;
-import net.enilink.komma.sparql.ui.assist.SparqlProposals;
-
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.wizard.ProgressMonitorPart;
@@ -66,7 +36,6 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -79,7 +48,10 @@ import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
-import org.parboiled.Parboiled;
+
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class SparqlPart extends AbstractEditorPart {
 	private class LoadResultsJob extends FinishInUIJob {
@@ -490,22 +462,19 @@ class SparqlPart extends AbstractEditorPart {
 		menuManager.add(new Action("Format") {
 			@Override
 			public void run() {
-				try {
-					queryText.setText(new SparqlBuilder(queryText.getText())
-							.toString());
-				} catch (Exception e) {
-					// ignore
-				}
+				// TODO implement format action
 			}
 		});
 		queryText.setMenu(menuManager.createContextMenu(queryText));
-		ContentProposalAdapter proposalAdapter = ContentProposals
-				.enableContentProposal(queryText, JFaceProposalProvider
-						.wrap(new ParboiledProposalProvider(Parboiled
-								.createParser(Sparql11Parser.class).Query(),
-								new SparqlProposals())), null);
-		proposalAdapter.setAutoActivationDelay(1000);
-		proposalAdapter.setPopupSize(new Point(200, 120));
+
+		// TODO implement simple content proposals without parser
+//		ContentProposalAdapter proposalAdapter = ContentProposals
+//				.enableContentProposal(queryText, JFaceProposalProvider
+//						.wrap(new ParboiledProposalProvider(Parboiled
+//								.createParser(Sparql11Parser.class).Query(),
+//								new SparqlProposals())), null);
+//		proposalAdapter.setAutoActivationDelay(1000);
+//		proposalAdapter.setPopupSize(new Point(200, 120));
 
 		Button button = getWidgetFactory().createButton(queryComposite, "Run",
 				SWT.PUSH);
