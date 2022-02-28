@@ -40,11 +40,6 @@
 		</dependency>
 		<dependency>
 			<groupId>net.enilink.komma</groupId>
-			<artifactId>net.enilink.komma.parser</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.enilink.komma</groupId>
 			<artifactId>net.enilink.composition.properties</artifactId>
 			<version>${project.version}</version>
 		</dependency>
