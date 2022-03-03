@@ -1,0 +1,2 @@
+# dummy export to satisfy com.google.inject https://github.com/google/guice/issues/1611
+Export-Package: com.google.errorprone.annotations; version=1.0.0
