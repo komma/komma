@@ -223,6 +223,7 @@ public class Serializer {
 					throw new KommaException(e);
 				}
 			}
+			return name;
 		}
 		try {
 			// tries to use serialization etc. for unknown instance types
@@ -328,12 +329,12 @@ public class Serializer {
 			return false;
 		if (properties.containsKey(type))
 			return true;
-		for (Class<?> face : type.getInterfaces()) {
-			if (roleMapper.findType(face) != null)
-				return true;
-		}
 		if (roleMapper.findType(type) != null)
 			return true;
+		for (Class<?> face : type.getInterfaces()) {
+			if (isEntity(face))
+				return true;
+		}
 		return isEntity(type.getSuperclass());
 	}
 

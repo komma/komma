@@ -9,6 +9,8 @@ import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
@@ -66,11 +68,19 @@ public class SerializerTest {
 		Person p = new SimplePerson();
 		p.setName("Karl");
 		p.setAge(12);
+
+		Person f = new SimplePerson();
+		f.setName("Karla");
+		f.setAge(11);
+
+		p.setFriends(new HashSet<>(Arrays.asList(f)));
+
 		IGraph graph = new LinkedHashGraph();
 		serializer.serialize(p, stmt -> graph.add(stmt));
 
 		assertTrue(graph.contains(null, RDF.PROPERTY_TYPE, URIs.createURI(NS + "Person")));
 		assertTrue(graph.contains(null, URIs.createURI(NS + "name"), new Literal("Karl")));
 		assertTrue(graph.contains(null, URIs.createURI(NS + "age"), new Literal("12", XMLSCHEMA.TYPE_INT)));
+		assertTrue(graph.filter(null, URIs.createURI(NS + "friend"), null).objectReference() != null);
 	}
 }
