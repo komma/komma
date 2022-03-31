@@ -3,6 +3,7 @@ Bundle-ClassPath: .
 Bundle-Activator: net.enilink.komma.common.ui.CommonUIPlugin$Implementation
 Bundle-Localization: plugin
 Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.ui.ide;resolution:=optional
 Import-Package: org.osgi.framework.*;version="[1.8,2)", \
   org.eclipse.core.resources;resolution:=optional, \
   org.eclipse.team.core.history;resolution:=optional, \
