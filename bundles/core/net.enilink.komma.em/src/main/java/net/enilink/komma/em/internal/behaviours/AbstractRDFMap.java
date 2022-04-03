@@ -284,7 +284,7 @@ public abstract class AbstractRDFMap extends
 		}
 
 		// anonym. Entry anlegen
-		IEntity mapEntry = manager.create(manager.find(KOMMA.TYPE_MAPENTRY));
+		IEntity mapEntry = manager.create(KOMMA.TYPE_MAPENTRY);
 
 		// Entry zu Map zuordnen
 		addStatement(this, KOMMA.PROPERTY_ENTRY, mapEntry);

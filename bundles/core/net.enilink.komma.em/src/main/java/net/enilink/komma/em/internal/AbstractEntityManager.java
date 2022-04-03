@@ -245,7 +245,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 
 	@Override
 	public <T> T create(Class<T> concept, Class<?>... concepts) {
-		return createNamed((net.enilink.komma.core.URI) null, concept, concepts);
+		return createNamed(null, concept, concepts);
 	}
 
 	@Override
@@ -519,8 +519,8 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		return (T) find(reference, Arrays.asList(allConcepts));
 	}
 
-	public IEntity find(IReference reference, Collection<Class<?>> concepts) {
-		return (IEntity) createBean(reference, null, concepts, false, true, null);
+	public Object find(IReference reference, Collection<Class<?>> concepts) {
+		return createBean(reference, null, concepts, false, true, null);
 	}
 
 	public <T> IExtendedIterator<T> findAll(final Class<T> concept) {

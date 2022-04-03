@@ -304,7 +304,7 @@ public interface IEntityManager extends AutoCloseable {
 	 *            Reference of the entity.
 	 * @param concept
 	 *            The primary type of the resulting bean.
-	 * @param conepts
+	 * @param concepts
 	 *            Additional types.
 	 * @return JavaBean representing the subject.
 	 */

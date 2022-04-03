@@ -62,7 +62,7 @@ public class GraphIterator extends ConvertingIterator<IStatement, IStatement>
 		if (resolve) {
 			return new net.enilink.komma.core.Statement(manager.find(stmt
 					.getSubject()), manager.find(stmt.getPredicate()),
-					manager.toInstance((IValue) stmt.getObject(), null, null));
+					manager.toInstance(stmt.getObject(), null, null));
 		}
 		return stmt;
 	}
