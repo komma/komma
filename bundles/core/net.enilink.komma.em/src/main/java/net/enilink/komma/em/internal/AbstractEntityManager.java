@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2007, 2010, James Leigh All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  * - Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution. 
+ *   and/or other materials provided with the distribution.
  * - Neither the name of the openrdf.org nor the names of its contributors may
  *   be used to endorse or promote products derived from this software without
  *   specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -24,42 +24,15 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  */
 package net.enilink.komma.em.internal;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import net.enilink.composition.properties.exceptions.ObjectConversionException;
-import net.enilink.komma.core.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.MapMaker;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
-
 import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.IExtendedIterator;
@@ -68,11 +41,13 @@ import net.enilink.composition.ClassResolver;
 import net.enilink.composition.cache.annotations.Cacheable;
 import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.properties.PropertySet;
+import net.enilink.composition.properties.exceptions.ObjectConversionException;
 import net.enilink.composition.properties.komma.ConversionUtil;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.composition.properties.traits.PropertySetOwner;
 import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.composition.traits.Behaviour;
+import net.enilink.komma.core.*;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerUpdate;
 import net.enilink.komma.em.concepts.IResource;
@@ -83,18 +58,25 @@ import net.enilink.komma.em.util.RESULTS;
 import net.enilink.komma.literals.LiteralConverter;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.xmlschema.XMLSCHEMA;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Handles operations of {@link IEntityManager}.
  */
 public abstract class AbstractEntityManager implements IEntityManager, IEntityManagerInternal {
 
-	protected static Logger log = LoggerFactory.getLogger(AbstractEntityManager.class);
-
 	private static final URI RESULT_NODE = RESULTS.TYPE_RESULT;
-
-	private ClassResolver<URI> classResolver;
-
+	private static final URI[] NO_CONTEXTS = new URI[0];
+	protected static Logger log = LoggerFactory.getLogger(AbstractEntityManager.class);
 	protected IDataManager dm;
 
 	@Inject
@@ -102,31 +84,20 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 
 	@Inject
 	protected Injector injector;
-
+	protected Map<String, Object> properties;
+	private ClassResolver<URI> classResolver;
 	@Inject
 	private LiteralConverter literalConverter;
-
 	@Inject
 	private Provider<Locale> locale;
-
 	private RoleMapper<URI> mapper;
-
 	private Map<Object, IReference> merged = new MapMaker().weakKeys().makeMap();
-
 	private volatile ResourceManager resourceManager;
-
 	private volatile TypeManager typeManager;
-
 	private volatile Map<URI, String> uriToPrefix = new ConcurrentHashMap<>();
 	private volatile Map<String, URI> prefixToUri = new ConcurrentHashMap<>();
-
-	private static final URI[] NO_CONTEXTS = new URI[0];
-
 	private URI[] readContexts = NO_CONTEXTS;
 	private URI[] modifyContexts = NO_CONTEXTS;
-
-	protected Map<String, Object> properties;
-
 	@Inject
 	private Map<Class<?>, IObjectMapper> objectMappers;
 
@@ -162,7 +133,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	}
 
 	private void appendFilter(Class<?> concept, StringBuilder query) {
-		Collection<URI> types = new HashSet<URI>();
+		Collection<URI> types = new HashSet<>();
 		mapper.findSubTypes(concept, types);
 		Iterator<URI> iter = types.iterator();
 		if (iter.hasNext()) {
@@ -182,7 +153,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		for (Class<?> concept : concepts) {
 			assert !concept.isInterface()
 					|| concept.isAssignableFrom(bean.getClass()) : "Concept has not been recorded: "
-							+ concept.getSimpleName();
+					+ concept.getSimpleName();
 		}
 		return true;
 	}
@@ -234,7 +205,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	private <T> Class<?>[] combine(Class<T> concept, Class<?>... concepts) {
 		Class<?>[] roles;
 		if (concepts == null || concepts.length == 0) {
-			roles = new Class<?>[] { concept };
+			roles = new Class<?>[]{concept};
 		} else {
 			roles = new Class<?>[concepts.length + 1];
 			roles[0] = concept;
@@ -255,7 +226,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 
 	@SuppressWarnings("unchecked")
 	public Object createBean(IReference resource, Collection<URI> entityTypes, Collection<Class<?>> concepts,
-			boolean restrictTypes, boolean initialize, IGraph graph) {
+	                         boolean restrictTypes, boolean initialize, IGraph graph) {
 		if (resource == null) {
 			throw new IllegalArgumentException("Resource argument must not be null.");
 		}
@@ -267,11 +238,12 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 			Class<?> concept = concepts.iterator().next();
 			IObjectMapper mapper = objectMappers.get(concept);
 			if (mapper != null) {
-				return mapper.readObject(resource, graph, injector.getInstance(IEntityManager.class));
+				return mapper.readObject(resource, graph == null || graph.isEmpty() ? dm :
+						new CompositeStatementSource(graph, dm));
 			}
 		}
 
-		entityTypes = entityTypes != null ? new HashSet<URI>(entityTypes) : new HashSet<URI>();
+		entityTypes = entityTypes != null ? new HashSet<>(entityTypes) : new HashSet<>();
 		if (!restrictTypes) {
 			boolean retrieveTypes = true;
 			if (graph != null) {
@@ -349,7 +321,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	@SuppressWarnings("unchecked")
 	public <T> T createNamed(net.enilink.komma.core.URI uri, Class<T> concept, Class<?>... concepts) {
 		IReference resource = getResourceManager().createResource(uri);
-		Set<URI> types = new HashSet<URI>();
+		Set<URI> types = new HashSet<>();
 		boolean isActive = false;
 		try {
 			isActive = getTransaction().isActive();
@@ -402,7 +374,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		// bean
 		List<URI> types = null;
 		if (concepts.length > 0) {
-			types = new ArrayList<URI>();
+			types = new ArrayList<>();
 			for (IReference concept : concepts) {
 				if (concept.getURI() != null) {
 					types.add(concept.getURI());
@@ -427,7 +399,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	public IQuery<?> createQuery(String query, String baseURI, boolean includeInferred) {
 		log.debug("Query: {}", query);
 
-		IQuery<?> result = new Query<Object>(this, dm.createQuery(query, baseURI, includeInferred, readContexts));
+		IQuery<?> result = new Query<>(this, dm.createQuery(query, baseURI, includeInferred, readContexts));
 		injector.injectMembers(result);
 		if (properties != null) {
 			// set properties on the query object
@@ -465,7 +437,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	@SuppressWarnings("unchecked")
 	public <T> T assignTypes(Object entity, Class<T> concept, Class<?>... concepts) {
 		IReference resource = getReference(entity);
-		Collection<URI> types = new ArrayList<URI>();
+		Collection<URI> types = new ArrayList<>();
 
 		boolean isActive = false;
 		try {
@@ -498,7 +470,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	}
 
 	protected <T> IExtendedIterator<T> filterResultNode(Set<T> values) {
-		return WrappedIterator.create(values.iterator()).filterDrop(new Filter<T>() {
+		return WrappedIterator.create(values.iterator()).filterDrop(new Filter<>() {
 			@Override
 			public boolean accept(T o) {
 				return RESULT_NODE.equals(o);
@@ -561,7 +533,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	}
 
 	protected List<Object> getInstances(Iterator<?> values, Class<?> type, IGraph graph) {
-		List<Object> instances = new ArrayList<Object>();
+		List<Object> instances = new ArrayList<>();
 		while (values.hasNext()) {
 			instances.add(toInstance(values.next(), type, graph));
 		}
@@ -608,7 +580,12 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 
 	@Override
 	public Map<String, Object> getProperties() {
-		return properties == null ? Collections.<String, Object> emptyMap() : Collections.unmodifiableMap(properties);
+		return properties == null ? Collections.<String, Object>emptyMap() : Collections.unmodifiableMap(properties);
+	}
+
+	@Inject(optional = true)
+	protected void setProperties(@Named("net.enilink.komma.properties") Map<String, Object> properties) {
+		ensureProperties().putAll(properties);
 	}
 
 	protected IReference getReference(Object bean) {
@@ -669,12 +646,12 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		}
 		try {
 			if (bean instanceof PropertySetOwner) {
-				for (IReference predicate : new ArrayList<IReference>(graph.filter(bean, null, null).predicates())) {
+				for (IReference predicate : new ArrayList<>(graph.filter(bean, null, null).predicates())) {
 					if (graph.contains(bean, predicate, null)) {
 						PropertySet<Object> propertySet = ((PropertySetOwner) bean)
 								.getPropertySet(predicate.toString());
 						if (propertySet != null) {
-							Set<Object> objects = new LinkedHashSet<Object>(
+							Set<Object> objects = new LinkedHashSet<>(
 									graph.filter(bean, predicate, null).objects());
 							graph.remove(bean, predicate, null);
 							propertySet
@@ -702,13 +679,13 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 					Collection<Object> collection = null;
 					if (Iterator.class.isAssignableFrom(returnType)) {
 						isIterator = true;
-						collection = new ArrayList<Object>();
+						collection = new ArrayList<>();
 					} else if (Set.class.isAssignableFrom(returnType)) {
-						collection = new HashSet<Object>();
+						collection = new HashSet<>();
 					} else if (List.class.isAssignableFrom(returnType)) {
-						collection = new ArrayList<Object>();
+						collection = new ArrayList<>();
 					} else if (Collection.class.isAssignableFrom(returnType)) {
-						collection = new ArrayList<Object>();
+						collection = new ArrayList<>();
 					} else if (Boolean.class.equals(returnType) || Boolean.TYPE.equals(returnType)) {
 						isBoolean = true;
 					}
@@ -716,7 +693,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 					if (collection != null || isBoolean) {
 						URI keyUri = URIs.createURI(cacheable.key());
 						if (graph.contains(bean, keyUri, null)) {
-							Set<Object> objects = new LinkedHashSet<Object>(graph.filter(bean, keyUri, null).objects());
+							Set<Object> objects = new LinkedHashSet<>(graph.filter(bean, keyUri, null).objects());
 							graph.remove(bean, keyUri, null);
 
 							IExtendedIterator<Object> valuesIt = filterResultNode(objects);
@@ -801,7 +778,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		} else if (bean instanceof Set<?>) {
 			// so we can merge both a List and a Set
 			Set<?> old = (Set<?>) bean;
-			Set<Object> set = new HashSet<Object>(old.size());
+			Set<Object> set = new HashSet<>(old.size());
 			for (Object o : old) {
 				set.add(merge(o));
 			}
@@ -814,8 +791,10 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 				getTransaction().begin();
 			}
 			try {
-				Class<?> proxy = bean.getClass();
-				Set<URI> types = new HashSet<URI>();
+				boolean storedViaMapper = false;
+
+				Class<?> beanType = bean.getClass();
+				Set<URI> types = new HashSet<>();
 				if (bean instanceof IResource) {
 					// this is already a mapped RDF resource
 					for (IReference type : ((IResource) bean).getRdfTypes()) {
@@ -825,13 +804,28 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 					}
 				} else {
 					// this is a detached object
-					types = getTypes(proxy, types);
-					for (URI type : types) {
-						getTypeManager().addType(resource, type);
+
+					// try to use object mapper to convert the bean
+					if (objectMappers != null && !objectMappers.isEmpty()) {
+						IObjectMapper mapper = objectMappers.get(beanType);
+						if (mapper != null) {
+							mapper.writeObject(bean, stmt -> add(stmt));
+							storedViaMapper = true;
+						}
+					}
+
+					if (! storedViaMapper) {
+						// assign RDF types to the newly created RDF resource
+						types = getTypes(beanType, types);
+						for (URI type : types) {
+							getTypeManager().addType(resource, type);
+						}
 					}
 				}
+				// create proxy object for the RDF resource
 				Object result = createBean(resource, types, null, false, true, null);
-				if (result instanceof Mergeable) {
+				if (!storedViaMapper && result instanceof Mergeable) {
+					// merge only if not mapper was used to convert the bean data
 					((Mergeable) result).merge(bean);
 				}
 				if (!isActive) {
@@ -915,7 +909,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 
 		if (resource != null) {
 			Set<IReference> seen = new HashSet<>();
-			Queue<IReference> nodes = new LinkedList<IReference>();
+			Queue<IReference> nodes = new LinkedList<>();
 			nodes.add(((IReference) resource));
 			while (!nodes.isEmpty()) {
 				IReference node = nodes.remove();
@@ -1008,10 +1002,10 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 
 	@Inject(optional = true)
 	protected void setContexts(@Named("modifyContexts") Set<URI> modifyContexts,
-			@Named("readContexts") Set<URI> readContexts) {
+	                           @Named("readContexts") Set<URI> readContexts) {
 		this.modifyContexts = modifyContexts.toArray(new URI[modifyContexts.size()]);
 
-		LinkedHashSet<URI> readAndModifyContexts = new LinkedHashSet<URI>(readContexts);
+		LinkedHashSet<URI> readAndModifyContexts = new LinkedHashSet<>(readContexts);
 		readAndModifyContexts.retainAll(modifyContexts);
 		readAndModifyContexts.addAll(readContexts);
 		this.readContexts = readAndModifyContexts.toArray(new URI[readAndModifyContexts.size()]);
@@ -1020,9 +1014,8 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	/**
 	 * If it is bound then the current child entity manager factory is injected
 	 * with this method that overrides the previously injected field.
-	 * 
-	 * @param factory
-	 *            The current child entity manager factory.
+	 *
+	 * @param factory The current child entity manager factory.
 	 */
 	@Inject(optional = true)
 	protected void setCurrentFactory(@Named("currentFactory") IEntityManagerFactory factory) {
@@ -1047,11 +1040,6 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		ensureProperties().put(propertyName, value);
 	}
 
-	@Inject(optional = true)
-	protected void setProperties(@Named("net.enilink.komma.properties") Map<String, Object> properties) {
-		ensureProperties().putAll(properties);
-	}
-
 	@Inject
 	protected void setRoleMapper(RoleMapper<URI> mapper) {
 		this.mapper = mapper;
@@ -1064,7 +1052,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 
 	@Override
 	public Collection<Class<?>> rolesForType(URI type) {
-		return mapper.findRoles(type, new HashSet<Class<?>>());
+		return mapper.findRoles(type, new HashSet<>());
 	}
 
 	@Override

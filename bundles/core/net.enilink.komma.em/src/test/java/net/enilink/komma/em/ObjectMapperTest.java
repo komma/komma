@@ -32,7 +32,7 @@ public class ObjectMapperTest extends EntityManagerTest {
 			}
 
 			@Override
-			public Object readObject(IReference reference, IStatementSource initialData, IEntityManager manager) {
+			public Object readObject(IReference reference, IStatementSource source) {
 				return Type.valueOf(reference.getURI().localPart());
 			}
 

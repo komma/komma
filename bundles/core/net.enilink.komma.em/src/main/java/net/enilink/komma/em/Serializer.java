@@ -38,6 +38,9 @@ public class Serializer {
 	@Inject
 	private Injector injector;
 
+	@Inject
+	private Map<Class<?>, IObjectMapper> objectMappers;
+
 	private IPropertyMapper propertyMapper;
 
 	private LiteralConverter literalConverter;
@@ -48,16 +51,37 @@ public class Serializer {
 		return toValue(instance, sink);
 	}
 
+	public Object read(IStatementSource source, IReference id) {
+		return read(source, id, null, null);
+	}
+
 	public Object read(IStatementSource source, IReference id, ObjectFactory<URI> objectFactory) {
+		return read(source, id, null, objectFactory);
+	}
+
+	public <T> T read(IStatementSource source, IReference id, Class<T> concept, ObjectFactory<URI> objectFactory) {
 		List<URI> types = source.match(id, RDF.PROPERTY_TYPE, null, true)
 				.filterKeep(stmt -> stmt.getObject() instanceof URI)
 				.mapWith(stmt -> (URI) stmt.getObject()).toList();
-		Object instance;
+		Object instance = null;
+
+		// try to create the bean via a registered object mapper
+		// the result may be an arbitrary object not implementing IReference/IEntity
+		if (objectMappers != null && !objectMappers.isEmpty() && concept != null) {
+			IObjectMapper mapper = objectMappers.get(concept);
+			if (mapper != null) {
+				return (T) mapper.readObject(id, source);
+			}
+		}
+
 		if (objectFactory != null) {
 			instance = objectFactory.createObject(types);
-		} else {
+		}
+
+		if (instance == null) {
 			instance = injector.getInstance(classResolver.resolveComposite(types));
 		}
+
 		for (PropertyDescriptor pd : getProperties(instance.getClass())) {
 			if (pd.getWriteMethod() == null) {
 				continue;
@@ -118,7 +142,7 @@ public class Serializer {
 				throw new KommaException(e);
 			}
 		}
-		return instance;
+		return (T) instance;
 	}
 
 	protected Object toJava(IStatementSource source, Object value, ObjectFactory<URI> objectFactory) {
@@ -157,6 +181,17 @@ public class Serializer {
 			}
 			return literalConverter.createLiteral(instance, null);
 		}
+
+		// use object mapper to serialize the instance if available
+		if (objectMappers != null && !objectMappers.isEmpty()) {
+			IObjectMapper mapper = objectMappers.get(type);
+			if (mapper != null) {
+				name = mapper.getReference(instance);
+				mapper.writeObject(instance, sink);
+				return name;
+			}
+		}
+
 		if (IEntity.class.isAssignableFrom(type) || isEntity(type)) {
 			if (instance instanceof IReferenceable) {
 				name = ((IReferenceable) instance).getReference();

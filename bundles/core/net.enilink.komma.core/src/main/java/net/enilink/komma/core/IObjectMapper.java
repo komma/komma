@@ -18,11 +18,10 @@ public interface IObjectMapper {
 	 * Converts an RDF resource into a Java object.
 	 *
 	 * @param reference URI or blank node of the resource
-	 * @param initialData initial data that can be used for initialization
-	 * @param manager an associated entity manager or <code>null</code>
+	 * @param source data source with triples for initialization
 	 * @return a Java object for the given RDF resource
 	 */
-	Object readObject(IReference reference, IStatementSource initialData, IEntityManager manager);
+	Object readObject(IReference reference, IStatementSource source);
 
 	/**
 	 * Converts a Java object to RDF triples.
