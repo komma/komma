@@ -514,6 +514,12 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
+			<!-- use fixed version as newer versions seem to be broken as they require non-existent dependencies -->
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.equinox.preferences</artifactId>
+				<version>3.9.100</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
