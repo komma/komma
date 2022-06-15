@@ -36,12 +36,10 @@
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.equinox.registry</artifactId>
-			<version>3.11.100</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.equinox.supplement</artifactId>
-			<version>1.10.300</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

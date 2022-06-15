@@ -51,7 +51,6 @@
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.core.contenttype</artifactId>
-			<version>3.8.100</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

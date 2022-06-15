@@ -31,7 +31,6 @@
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.core.commands</artifactId>
-			<version>3.10.100</version>
 		</dependency>
 		<dependency>
 			<groupId>net.enilink.komma</groupId>
