@@ -15,9 +15,6 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.security.auth.Refreshable;
-import javax.transaction.TransactionRequiredException;
-
 import net.enilink.commons.iterator.IExtendedIterator;
 
 /**
@@ -448,7 +445,7 @@ public interface IEntityManager extends AutoCloseable {
 	 * created outside the scope of the active transaction to associate it with
 	 * the current transaction.
 	 * 
-	 * @throws TransactionRequiredException
+	 * @throws KommaException
 	 *             if there is no transaction.
 	 */
 	void joinTransaction();
@@ -502,7 +499,7 @@ public interface IEntityManager extends AutoCloseable {
 
 	/**
 	 * If <code>entity</code> implements Refreshable, its method
-	 * {@link Refreshable#refresh()} will be called. This call instructs
+	 * {@link IEntity#refresh()} will be called. This call instructs
 	 * entities that their property values may have changed and they should
 	 * reload them as needed.
 	 * 
