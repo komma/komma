@@ -30,6 +30,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.equinox.supplement</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.core.commands</artifactId>
 		</dependency>
 		<dependency>
