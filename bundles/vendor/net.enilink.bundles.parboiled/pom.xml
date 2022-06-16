@@ -20,7 +20,7 @@
 	</scm>
 
 	<artifactId>net.enilink.bundles.parboiled</artifactId>
-	<version>${parboiled.version}</version>
+	<version>${bundles.parboiled.version}</version>
 	<packaging>jar</packaging>
 
 	<dependencies>

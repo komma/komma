@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>net.enilink.bundles</groupId>
 			<artifactId>net.enilink.bundles.parboiled</artifactId>
-			<version>${parboiled.version}</version>
+			<version>${bundles.parboiled.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.parboiled</groupId>

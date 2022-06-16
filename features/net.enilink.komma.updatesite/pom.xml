@@ -498,7 +498,7 @@ version(s), and exceptions or additional permissions here}."
 												</artifact>
 
 												<artifact>
-													<id>net.enilink.bundles:net.enilink.bundles.parboiled:${parboiled.version}</id>
+													<id>net.enilink.bundles:net.enilink.bundles.parboiled:${bundles.parboiled.version}</id>
 													<transitive>false</transitive>
 													<source>false</source>
 												</artifact>
