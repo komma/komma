@@ -36,6 +36,7 @@
 		<javax.inject.version>1</javax.inject.version>
 		<jackson.version>2.11.4</jackson.version>
 		<jsonld.version>0.13.3</jsonld.version>
+		<junit.version>4.13.2</junit.version>
 		<logback.version>1.2.3</logback.version>
 		<mapdb.version>1.0.8</mapdb.version>
 		<opencsv.version>4.6</opencsv.version>
@@ -130,9 +131,10 @@
 					files -->
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>flatten-maven-plugin</artifactId>
-				<version>1.1.0</version>
+				<version>1.2.7</version>
 				<configuration>
 					<flattenMode>ossrh</flattenMode>
+					<flattenDependencyMode>all</flattenDependencyMode>
 				</configuration>
 				<executions>
 					<!-- enable flattening -->
@@ -352,6 +354,15 @@
 		</resources>
 	</build>
 
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -519,6 +530,7 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
+			<!-- Eclipse platform components -->
 			<dependency>
 				<groupId>org.eclipse.platform</groupId>
 				<artifactId>org.eclipse.core.contenttype</artifactId>
