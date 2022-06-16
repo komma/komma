@@ -123,6 +123,7 @@ Import-Package: org.slf4j.*, \
 	org.locationtech.*;resolution:=optional, \
 	org.elasticsearch.*;resolution:=optional, \
 	ch.qos.logback.*;resolution:=optional, \
+	org.lwjgl.*;resolution:=optional, \
 	*
 					]]></bnd>
 					<skip>false</skip>
