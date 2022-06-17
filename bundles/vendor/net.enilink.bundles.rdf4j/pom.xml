@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+		xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<name>Eclipse RDF4J (OSGi Bundle)</name>
@@ -26,15 +26,23 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.eclipse.rdf4j</groupId>
-			<artifactId>rdf4j-runtime-osgi</artifactId>
+			<artifactId>rdf4j-storage</artifactId>
+			<type>pom</type>
 			<version>${rdf4j.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.eclipse.rdf4j</groupId>
+			<artifactId>rdf4j-tools-federation</artifactId>
+			<version>${rdf4j.version}</version>
+			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
 					<artifactId>*</artifactId>
 				</exclusion>
 			</exclusions>
-			<scope>provided</scope>
 		</dependency>
 
 		<!-- selected RDF4J dependencies -->
@@ -101,12 +109,55 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
+				<configuration>
+					<!-- use maven assembly plugin below -->
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.3.0</version>
+				<configuration>
+					<outputDirectory>${project.build.directory}</outputDirectory>
+					<attach>false</attach>
+					<appendAssemblyId>false</appendAssemblyId>
+					<formats>
+						<format>dir</format>
+					</formats>
+					<descriptors>
+						<descriptor>assembly.xml</descriptor>
+					</descriptors>
+				</configuration>
 				<executions>
 					<execution>
 						<id>unpack-dependencies</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- move the unpacked dependencies to classes directory -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>move-assembly</id>
+						<phase>generate-sources</phase>
 						<configuration>
-							<includeGroupIds>org.eclipse.rdf4j</includeGroupIds>
+							<target>
+								<move file="${project.build.directory}/${project.build.finalName}"
+									  tofile="${project.build.directory}/classes" overwrite="true"
+									  failonerror="false"/>
+							</target>
 						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
@@ -115,17 +166,6 @@
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>
 				<configuration>
-					<bnd><![CDATA[
-Import-Package: org.slf4j.*, \
-	javax.*;resolution:=optional, \
-	org.apache.*;resolution:=optional, \
-	org.springframework.*;resolution:=optional, \
-	org.locationtech.*;resolution:=optional, \
-	org.elasticsearch.*;resolution:=optional, \
-	ch.qos.logback.*;resolution:=optional, \
-	org.lwjgl.*;resolution:=optional, \
-	*
-					]]></bnd>
 					<skip>false</skip>
 				</configuration>
 			</plugin>

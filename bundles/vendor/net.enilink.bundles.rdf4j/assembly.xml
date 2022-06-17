@@ -1,0 +1,31 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.0"
+		  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		  xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.0 http://maven.apache.org/xsd/assembly-2.1.0.xsd">
+	<id>combined-services</id>
+
+	<includeBaseDirectory>false</includeBaseDirectory>
+
+	<dependencySets>
+		<dependencySet>
+			<useProjectArtifact>false</useProjectArtifact>
+			<scope>provided</scope>
+			<useTransitiveFiltering>false</useTransitiveFiltering>
+			<unpack>true</unpack>
+			<unpackOptions>
+				<excludes>
+					<exclude>META-INF/maven/**</exclude>
+					<exclude>META-INF/MANIFEST.MF</exclude>
+				</excludes>
+			</unpackOptions>
+			<includes>
+				<include>org.eclipse.rdf4j:*:jar:*</include>
+			</includes>
+		</dependencySet>
+	</dependencySets>
+
+	<containerDescriptorHandlers>
+		<containerDescriptorHandler>
+			<handlerName>metaInf-services</handlerName>
+		</containerDescriptorHandler>
+	</containerDescriptorHandlers>
+</assembly>
