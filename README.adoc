@@ -33,7 +33,8 @@ mvn package -Pupdatesite
 
 to create it. Afterwards a P2 repository can be found at `features/net.enilink.komma.updatesite/target/repository`.
 
-== Develop KOMMA with Eclipse
-For working with the sources we suggest you to download a recent version of 
-http://www.eclipse.org/downloads/[Eclipse]. You can import the KOMMA projects into your workspace by executing 
+== Develop KOMMA with an IDE
+- *Eclipse:* You can import the KOMMA projects into your workspace by executing
 __File > Import > Maven > Existing Maven Projects__.
+- *IntelliJ IDEA:* You can import the KOMMA projects by executing
+__File > New > Project from Existing Sources...__.
