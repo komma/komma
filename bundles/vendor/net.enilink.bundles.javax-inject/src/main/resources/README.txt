@@ -1,0 +1,1 @@
+javax.inject Interfaces (OSGi Bundle)
