@@ -30,10 +30,15 @@ jobs:
           java-version: '11'
 
       - name: Setup key for signing
+        env:
+          GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
         run: |
              echo $GPG_PASSWORD | gpg --batch --passphrase-fd 0 -o releng/enilink.asc --decrypt releng/enilink.asc.gpg
              gpg --import releng/enilink.asc
 
       # Runs the Maven build
       - name: Build and deploy with Maven
+        env:
+          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
         run: mvn deploy -P ossrh,updatesite -s ./.ossrh.maven-settings.xml
