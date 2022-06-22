@@ -30,8 +30,9 @@ jobs:
           java-version: '11'
 
       - name: Setup key for signing
-        - run: echo $GPG_PASSWORD | gpg --batch --passphrase-fd 0 -o releng/enilink.asc --decrypt releng/enilink.asc.gpg
-        - run: gpg --import releng/enilink.asc
+        run: |
+             echo $GPG_PASSWORD | gpg --batch --passphrase-fd 0 -o releng/enilink.asc --decrypt releng/enilink.asc.gpg
+             gpg --import releng/enilink.asc
 
       # Runs the Maven build
       - name: Build and deploy with Maven
