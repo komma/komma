@@ -10,10 +10,9 @@
 
 	<name>KOMMA: Parent</name>
 	<url>https://komma.enilink.net/</url>
-	<description>KOMMA is a framework for linked data applications. It supports the management and editing of RDF, RDFS
-		and OWL. It provides Object-Triple-Mapping (comparable to JPA), an editing framework as well as Eclipse RCP and
-		RAP integration.
-	</description>
+	<description><![CDATA[
+KOMMA is a framework> for linked data applications. It supports the management and editing of RDF, RDFS	and OWL. It provides Object-Triple-Mapping (comparable to JPA), an editing framework as well as Eclipse RCP and RAP integration.
+	]]></description>
 
 	<properties>
 		<path.to.root>../../..</path.to.root>
@@ -50,8 +49,8 @@
 		<bundles.javax-inject.deploy.skip>true</bundles.javax-inject.deploy.skip>
 		<bundles.parboiled.version>${parboiled.version}</bundles.parboiled.version>
 		<bundles.parboiled.deploy.skip>true</bundles.parboiled.deploy.skip>
-		<bundles.rdf4j.version>${rdf4j.version}</bundles.rdf4j.version>
-		<bundles.rdf4j.deploy.skip>true</bundles.rdf4j.deploy.skip>
+		<bundles.rdf4j.version>${rdf4j.version}-sp</bundles.rdf4j.version>
+		<bundles.rdf4j.deploy.skip>false</bundles.rdf4j.deploy.skip>
 
 		<komma.scm.connection>scm:git:git://github.com:komma/komma.git</komma.scm.connection>
 		<komma.scm.developerConnection>scm:git:git@github.com:komma/komma.git</komma.scm.developerConnection>

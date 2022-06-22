@@ -52,15 +52,6 @@
 						</goals>
 					</execution>
 				</executions>
-				<configuration>
-					<bnd><![CDATA[
--exportcontents: *
-Import-Package: *;resolution:=optional
-Bundle-ActivationPolicy: lazy
-Eclipse-BuddyPolicy: dependent
--removeheaders: Bundle-Developers
-					]]></bnd>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
