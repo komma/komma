@@ -5,9 +5,7 @@ import net.enilink.composition.mapping.PropertyAttribute;
 import net.enilink.composition.mapping.PropertyDescriptor;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static java.util.Locale.ENGLISH;
 
@@ -24,13 +22,19 @@ abstract public class AbstractPropertyMapper implements IPropertyMapper {
 
 	@Override
 	public Collection<PropertyDescriptor> getProperties(Class<?> concept) {
+		Set<String> seenPropertyNames = new HashSet<>();
 		List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
 		while (concept != null) {
 			for (Method method : concept.getDeclaredMethods()) {
-				if (isMappedGetter(method)) {
-					properties.add(createPropertyDescriptor(method));
+				if (! method.isDefault() && isMappedGetter(method)) {
+					PropertyDescriptor pd = createPropertyDescriptor(method);
+					// ensure that overwritten (polymorphic) properties are filtered to avoid duplicate fields
+					if (seenPropertyNames.add(pd.getName())) {
+						properties.add(pd);
+					}
 				}
 			}
+			// this is required if concept is a behaviour class
 			concept = concept.getSuperclass();
 		}
 		return properties;
