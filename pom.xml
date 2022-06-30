@@ -40,7 +40,7 @@ KOMMA is a framework for linked data applications. It supports the management an
 		<mapdb.version>1.0.8</mapdb.version>
 		<opencsv.version>4.6</opencsv.version>
 		<parboiled.version>1.4.1</parboiled.version>
-		<rdf4j.version>4.0.2</rdf4j.version>
+		<rdf4j.version>4.0.3</rdf4j.version>
 		<slf4j.version>1.7.26</slf4j.version>
 
 		<bnd.version>6.3.1</bnd.version>
@@ -49,8 +49,8 @@ KOMMA is a framework for linked data applications. It supports the management an
 		<bundles.javax-inject.deploy.skip>true</bundles.javax-inject.deploy.skip>
 		<bundles.parboiled.version>${parboiled.version}</bundles.parboiled.version>
 		<bundles.parboiled.deploy.skip>true</bundles.parboiled.deploy.skip>
-		<bundles.rdf4j.version>${rdf4j.version}-sp</bundles.rdf4j.version>
-		<bundles.rdf4j.deploy.skip>true</bundles.rdf4j.deploy.skip>
+		<bundles.rdf4j.version>${rdf4j.version}-SNAPSHOT</bundles.rdf4j.version>
+		<bundles.rdf4j.deploy.skip>false</bundles.rdf4j.deploy.skip>
 
 		<komma.scm.connection>scm:git:git://github.com:komma/komma.git</komma.scm.connection>
 		<komma.scm.developerConnection>scm:git:git@github.com:komma/komma.git</komma.scm.developerConnection>
