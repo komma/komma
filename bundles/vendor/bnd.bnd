@@ -1,0 +1,5 @@
+-exportcontents: *
+Import-Package: *;resolution:=optional
+Bundle-ActivationPolicy: lazy
+Eclipse-BuddyPolicy: dependent
+-removeheaders: Bundle-Developers
