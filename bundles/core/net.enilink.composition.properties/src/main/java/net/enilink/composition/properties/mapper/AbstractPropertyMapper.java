@@ -22,20 +22,30 @@ abstract public class AbstractPropertyMapper implements IPropertyMapper {
 
 	@Override
 	public Collection<PropertyDescriptor> getProperties(Class<?> concept) {
-		Set<String> seenPropertyNames = new HashSet<>();
-		List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
+		Set<String> seenPropertyNames = null;
+		List<PropertyDescriptor> properties = new ArrayList<>();
 		while (concept != null) {
 			for (Method method : concept.getDeclaredMethods()) {
 				if (! method.isDefault() && isMappedGetter(method)) {
 					PropertyDescriptor pd = createPropertyDescriptor(method);
 					// ensure that overwritten (polymorphic) properties are filtered to avoid duplicate fields
-					if (seenPropertyNames.add(pd.getName())) {
+					if (seenPropertyNames == null || seenPropertyNames.add(pd.getName())) {
 						properties.add(pd);
 					}
 				}
 			}
 			// this is required if concept is a behaviour class
 			concept = concept.getSuperclass();
+			if (Object.class.equals(concept)) {
+				concept = null;
+			}
+			if (seenPropertyNames == null && concept != null) {
+				// initialize seen properties if class hierarchy is walked
+				seenPropertyNames = new HashSet<>();
+				for (PropertyDescriptor pd : properties) {
+					seenPropertyNames.add(pd.getName());
+				}
+			}
 		}
 		return properties;
 	}

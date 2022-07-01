@@ -140,14 +140,14 @@ public class ClassComposer<T> implements Types, Opcodes {
 		if (baseClass != null && !Object.class.equals(baseClass)) {
 			javaClasses.add(baseClass);
 		}
+
 		methods = getMethods();
 
 		namedMethods = new HashMap<String, Method>(methods.size());
 		for (Method method : methods) {
 			if (method.isAnnotationPresent(Iri.class)) {
 				String uri = method.getAnnotation(Iri.class).value();
-				if (!namedMethods.containsKey(uri)
-						|| !isBridge(method, methods)) {
+				if (!namedMethods.containsKey(uri) || !isBridge(method, methods)) {
 					namedMethods.put(uri, method);
 				}
 			}
@@ -268,8 +268,7 @@ public class ClassComposer<T> implements Types, Opcodes {
 		return types;
 	}
 
-	private boolean implementMethod(Method method, String name, boolean bridge)
-			throws Exception {
+	private boolean implementMethod(Method method, String name, boolean bridge)	throws Exception {
 		List<Class<?>> chain = chain(method);
 		List<Object[]> implementations = getImplementations(chain, method);
 		if (implementations.isEmpty()) {
@@ -281,8 +280,7 @@ public class ClassComposer<T> implements Types, Opcodes {
 		for (Object[] ar : implementations) {
 			Method m = (Method) ar[1];
 			Class<?>[] parameterTypes = m.getParameterTypes();
-			if (parameterTypes.length == 1
-					&& MethodInvocation.class.equals(parameterTypes[0])) {
+			if (parameterTypes.length == 1 && MethodInvocation.class.equals(parameterTypes[0])) {
 				dynamicChained = true;
 				break;
 			}
@@ -469,8 +467,7 @@ public class ClassComposer<T> implements Types, Opcodes {
 	/**
 	 * @return list of <String, Method>
 	 */
-	private List<Object[]> getImplementations(List<Class<?>> behaviours,
-			Method method) throws Exception {
+	private List<Object[]> getImplementations(List<Class<?>> behaviours, Method method) throws Exception {
 		List<Object[]> list = new ArrayList<Object[]>();
 		Class<?> type = method.getReturnType();
 		Class<?> superclass = compositeClass.getParentClass();
@@ -579,12 +576,20 @@ public class ClassComposer<T> implements Types, Opcodes {
 			gen.invokeSpecial(Type.getType(baseClass),
 					org.objectweb.asm.commons.Method.getMethod(method));
 		} else {
-			if (!"this".equals(target)) {
+			boolean targetIsThis = "this".equals(target);
+			if (! targetIsThis) {
 				loadBehaviour((Class<?>) target, gen);
 			}
 			gen.loadArgs();
-			gen.invokeVirtual(Type.getType(method.getDeclaringClass()),
-					org.objectweb.asm.commons.Method.getMethod(method));
+			if (method.isDefault()) {
+				// call the default method
+				gen.invokeVirtual(targetIsThis ? compositeClass.getType() : Type.getType((Class<?>) target),
+						org.objectweb.asm.commons.Method.getMethod(method));
+			} else {
+				// call an interface method
+				gen.invokeVirtual(Type.getType(method.getDeclaringClass()),
+						org.objectweb.asm.commons.Method.getMethod(method));
+			}
 		}
 	}
 
@@ -593,13 +598,11 @@ public class ClassComposer<T> implements Types, Opcodes {
 		return getMethod(javaClass, method) != null;
 	}
 
-	private Method getMethod(Class<?> javaClass, Method method)
-			throws Exception {
+	private Method getMethod(Class<?> javaClass, Method method)	throws Exception {
 		Class<?>[] types = method.getParameterTypes();
 		try {
 			Method m = javaClass.getMethod(method.getName(), types);
-			if (!isAbstract(m.getModifiers()) && !isTransient(m.getModifiers())
-					&& !isObjectMethod(m)) {
+			if (!m.isDefault() && !isAbstract(m.getModifiers()) && !isTransient(m.getModifiers()) && !isObjectMethod(m)) {
 				return m;
 			}
 		} catch (NoSuchMethodException e) {

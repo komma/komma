@@ -382,8 +382,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 			gen.mark(end);
 		}
 	}
-
-	private void overrideMergeMethod(BehaviourClassNode node) throws Exception {
+	private void overrideMergeMethod(BehaviourClassNode node, Collection<PropertyDescriptor> properties) throws Exception {
 		Method merge = Mergeable.class.getMethod("merge", Object.class);
 		BehaviourMethodGenerator gen = new BehaviourMethodGenerator(
 				node.addExtendedMethod(merge, definer));
@@ -397,8 +396,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		gen.ifZCmp(IFEQ, notInstanceOf);
 
 		// access property value with corresponding interface method
-		for (PropertyDescriptor pd : propertyMapper.getProperties(node
-				.getParentClass())) {
+		for (PropertyDescriptor pd : properties) {
 			gen.loadArg(0);
 			gen.checkCast(Type.getType(pd.getReadMethod().getDeclaringClass()));
 			gen.invoke(pd.getReadMethod());
@@ -417,8 +415,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 		// access property set with "getPropertySet" method
 		Method getPropertySet = PropertySetOwner.class.getMethod(
 				"getPropertySet", String.class);
-		for (PropertyDescriptor pd : propertyMapper.getProperties(node
-				.getParentClass())) {
+		for (PropertyDescriptor pd : properties) {
 			// load other property set
 			gen.loadArg(0);
 			gen.push(pd.getPredicate());
@@ -552,7 +549,7 @@ public class PropertyMapperProcessor implements BehaviourClassProcessor,
 			implementProperty(pd, classNode);
 		}
 
-		overrideMergeMethod(classNode);
+		overrideMergeMethod(classNode, properties);
 		overrideRefreshMethod(classNode);
 		overrideGetPropertySetMethod(classNode, properties);
 	}
