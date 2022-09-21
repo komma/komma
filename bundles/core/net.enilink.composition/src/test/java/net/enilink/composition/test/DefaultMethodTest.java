@@ -39,7 +39,7 @@ public class DefaultMethodTest extends CompositionTestCase {
 			return 1;
 		}
 
-		default int testInterceptMethod() {
+		default int testIntercept() {
 			return 0;
 		}
 
@@ -69,7 +69,7 @@ public class DefaultMethodTest extends CompositionTestCase {
 		}
 
 		@Override
-		public int testInterceptMethod() {
+		public int testIntercept() {
 			return 1;
 		}
 	}
@@ -84,7 +84,7 @@ public class DefaultMethodTest extends CompositionTestCase {
 		public abstract int testAbstractMethod();
 
 		@ParameterTypes({})
-		public int testInterceptMethod(MethodInvocation invocation) {
+		public int testIntercept(MethodInvocation invocation) {
 			return 3;
 		}
 	}
@@ -111,7 +111,7 @@ public class DefaultMethodTest extends CompositionTestCase {
 		Assert.assertEquals(object.getValue(), value);
 		Assert.assertTrue(object.hasValue());
 		Assert.assertEquals(1, object.testAbstractMethod());
-		Assert.assertEquals(3, object.testInterceptMethod());
+		Assert.assertEquals(3, object.testIntercept());
 		Assert.assertEquals("a", object.testOnlyDefaultNoImpl());
 	}
 }
