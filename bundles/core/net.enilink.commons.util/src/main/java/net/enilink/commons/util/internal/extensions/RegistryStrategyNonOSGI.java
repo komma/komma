@@ -187,13 +187,13 @@ public class RegistryStrategyNonOSGI extends RegistryStrategy {
 		Optional<String> symbolicName = Optional.empty();
 		try {
 			symbolicName = new BufferedReader(new InputStreamReader(manifestURL.openStream()))
-					  .lines().filter(line -> line.startsWith("Bundle-SymbolicName")).map(line -> {
-						 return line.replaceAll("^[^:]+\\s*", "").replaceAll(";.*",""); 
-					  }).findFirst();
+					.lines().filter(line -> line.startsWith("Bundle-SymbolicName")).map(line ->
+							line.replaceAll("^[^:]+\\s*:\\s+", "")
+									.replaceAll(";.*", "")
+					).findFirst();
 		} catch (Exception e) {
 			if (DebugHelper.DEBUG) {
-				DebugHelper.logError("<plugin.xml> [ERROR] : ("
-						+ pluginManifest.getPath() + "): ", 1);
+				DebugHelper.logError("<plugin.xml> [ERROR] : (" + pluginManifest.getPath() + "): ", 1);
 				DebugHelper.logError("Error while parsing MANIFEST.MF=<"
 						+ manifestURL.getPath() + ">", 2);
 				DebugHelper.logError(e);
@@ -204,11 +204,9 @@ public class RegistryStrategyNonOSGI extends RegistryStrategy {
 		// Get Bundle-SymbolicName from the MANIFEST.MF
 		if (!symbolicName.isPresent() || Utils.isEmpty(symbolicName.get())) {
 			if (DebugHelper.DEBUG) {
-				DebugHelper.logError("<plugin.xml> [ERROR] : ("
-						+ pluginManifest.getPath() + "): ", 1);
-				DebugHelper.logError(
-						"Cannot found <Bundle-SymbolicName> from the MANIFEST.MF=<"
-								+ manifestURL.getPath() + ">", 2);
+				DebugHelper.logError("<plugin.xml> [ERROR] : (" + pluginManifest.getPath() + "): ", 1);
+				DebugHelper.logError("Cannot found <Bundle-SymbolicName> from the MANIFEST.MF=<"
+						+ manifestURL.getPath() + ">", 2);
 			}
 			return false;
 		}
@@ -243,10 +241,9 @@ public class RegistryStrategyNonOSGI extends RegistryStrategy {
 		}
 
 		if (DebugHelper.DEBUG) {
-			DebugHelper.log(
-					"<plugin.xml> [OK] loaded with time="
-							+ (System.currentTimeMillis() - startTime)
-							+ "(ms) : (" + pluginManifest.getPath() + ")", 1);
+			DebugHelper.log("<plugin.xml> [OK] loaded with time="
+					+ (System.currentTimeMillis() - startTime)
+					+ "(ms) : (" + pluginManifest.getPath() + ")", 1);
 		}
 		return true;
 	}
