@@ -14,16 +14,22 @@ import net.enilink.composition.mappers.RoleMapper;
 import net.enilink.composition.mapping.IPropertyMapper;
 import net.enilink.composition.mapping.PropertyAttribute;
 import net.enilink.composition.mapping.PropertyDescriptor;
+import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.mapper.AbstractPropertyMapper;
 import net.enilink.composition.properties.traits.PropertySetOwner;
+import net.enilink.composition.properties.traits.Refreshable;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.*;
 
 public class CustomPropertyMapperTest extends
 		PropertiesCompositionTestCase {
+	private Set<String> refreshed = new HashSet<>();
+
 	public interface Node<T> {
 		Node<T> getParent();
 
@@ -63,6 +69,11 @@ public class CustomPropertyMapperTest extends
 			}
 			return pd;
 		}
+	}
+
+	@Before
+	public void init() {
+		refreshed.clear();
 	}
 
 	@Override
@@ -106,6 +117,9 @@ public class CustomPropertyMapperTest extends
 		node.setChildren(Arrays.asList("a", "b", "c"));
 		Assert.assertEquals(node.getChildren(), Arrays.asList("a", "b", "c"));
 
+		((Refreshable)node).refresh();
+		Assert.assertTrue(refreshed.contains("urn:test:children"));
+
 		node.getChildren().clear();
 		Assert.assertTrue(node.getChildren().isEmpty());
 	}
@@ -124,5 +138,16 @@ public class CustomPropertyMapperTest extends
 		Set<String> children = ((PropertySetOwner) node)
 				.<String> getPropertySet("urn:test:children").getAll();
 		Assert.assertEquals(new HashSet<>(node.getChildren()), children);
+	}
+
+	@Override
+	public <E> PropertySet<E> createPropertySet(Object bean, String uri,
+	                                            Class<E> elementType, PropertyAttribute... attributes) {
+		return new TestPropertySet<>() {
+			@Override
+			public void refresh() {
+				refreshed.add(uri);
+			}
+		};
 	}
 }

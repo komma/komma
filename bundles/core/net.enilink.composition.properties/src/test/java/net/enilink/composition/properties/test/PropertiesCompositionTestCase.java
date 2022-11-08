@@ -11,6 +11,8 @@
 package net.enilink.composition.properties.test;
 
 import net.enilink.composition.mapping.IPropertyMapper;
+import net.enilink.composition.mapping.PropertyAttribute;
+import net.enilink.composition.properties.PropertySet;
 import org.junit.Before;
 import net.enilink.composition.ClassResolver;
 import net.enilink.composition.CompositionModule;
@@ -30,7 +32,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 
-public abstract class PropertiesCompositionTestCase {
+public abstract class PropertiesCompositionTestCase implements PropertySetFactory {
 	ObjectFactory<String> objectFactory;
 	ClassResolver<String> classResolver;
 	private RoleMapper<String> roleMapper;
@@ -38,9 +40,9 @@ public abstract class PropertiesCompositionTestCase {
 	@Before
 	public void setUp() throws Exception {
 		Injector injector = Guice.createInjector(createModule());
-		objectFactory = injector.getInstance(new Key<ObjectFactory<String>>() {
+		objectFactory = injector.getInstance(new Key<>() {
 		});
-		classResolver = injector.getInstance(new Key<ClassResolver<String>>() {
+		classResolver = injector.getInstance(new Key<>() {
 		});
 	}
 
@@ -65,8 +67,7 @@ public abstract class PropertiesCompositionTestCase {
 				});
 				bind(new TypeLiteral<ClassResolver<String>>() {
 				});
-				bind(PropertySetFactory.class).to(TestPropertySetFactory.class)
-						.in(Singleton.class);
+				bind(PropertySetFactory.class).toInstance(PropertiesCompositionTestCase.this);
 
 				bind(PropertyMapperProcessor.class).in(Singleton.class);
 				getBehaviourClassProcessorBinder().addBinding().to(
@@ -76,7 +77,7 @@ public abstract class PropertiesCompositionTestCase {
 			@Provides
 			@Singleton
 			protected TypeFactory<String> provideTypeFactory() {
-				return new TypeFactory<String>() {
+				return new TypeFactory<>() {
 					@Override
 					public String createType(String type) {
 						return type;
@@ -107,5 +108,17 @@ public abstract class PropertiesCompositionTestCase {
 
 	protected RoleMapper<String> getRoleMapper() {
 		return roleMapper;
+	}
+
+	@Override
+	public <E> PropertySet<E> createPropertySet(Object bean, String uri,
+	                                            Class<E> elementType, PropertyAttribute... attributes) {
+		boolean localized = false;
+		for (PropertyAttribute attribute : attributes) {
+			if (PropertyAttribute.LOCALIZED.equals(attribute.getName())) {
+				localized = true;
+			}
+		}
+		return new TestPropertySet<E>();
 	}
 }

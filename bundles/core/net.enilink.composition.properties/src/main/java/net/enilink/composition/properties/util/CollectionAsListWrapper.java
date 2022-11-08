@@ -1,5 +1,7 @@
 package net.enilink.composition.properties.util;
 
+import net.enilink.composition.properties.traits.Refreshable;
+
 import java.util.*;
 
 /**
@@ -7,7 +9,7 @@ import java.util.*;
  *
  * @param <E> The set's element type
  */
-public class CollectionAsListWrapper<E> extends AbstractSequentialList<E> {
+public class CollectionAsListWrapper<E> extends AbstractSequentialList<E> implements Refreshable {
 	protected final Collection<E> base;
 
 	public CollectionAsListWrapper(Collection<E> base) {
@@ -85,5 +87,13 @@ public class CollectionAsListWrapper<E> extends AbstractSequentialList<E> {
 	@Override
 	public int size() {
 		return base.size();
+	}
+
+	@Override
+	public void refresh() {
+		if (base instanceof Refreshable) {
+			// refresh base collection if it also implements the refreshable interface
+			((Refreshable) base).refresh();
+		}
 	}
 }
