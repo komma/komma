@@ -19,6 +19,8 @@ import java.util.Set;
 
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
+import net.enilink.composition.properties.komma.KommaPropertySet;
+import net.enilink.composition.properties.komma.KommaPropertySetFactory;
 import net.enilink.composition.properties.traits.PropertySetOwner;
 import net.enilink.composition.properties.util.UnmodifiablePropertySet;
 import net.enilink.composition.traits.Behaviour;
@@ -64,6 +66,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 			if (property instanceof IProperty
 					&& ((IProperty) property).isOrderedContainment()) {
 				propertySet = new OrderedPropertySet<Object>(
+						(KommaPropertySetFactory) injector.getInstance(PropertySetFactory.class),
 						getBehaviourDelegate(), property);
 				injector.injectMembers(propertySet);
 			} else {

@@ -35,7 +35,7 @@ public interface ITransaction {
 	 * 
 	 * @throws IllegalStateException
 	 *             if isActive() is false.
-	 * @throws PersistenceException
+	 * @throws KommaException
 	 *             if an unexpected error condition is encountered.
 	 */
 	void rollback();
@@ -61,7 +61,7 @@ public interface ITransaction {
 	/**
 	 * Indicate whether a resource transaction is in progress.
 	 * 
-	 * @throws PersistenceException
+	 * @throws KommaException
 	 *             if an unexpected error condition is encountered.
 	 */
 	boolean isActive();
