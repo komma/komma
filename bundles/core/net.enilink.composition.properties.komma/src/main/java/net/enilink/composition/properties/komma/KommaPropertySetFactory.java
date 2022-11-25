@@ -10,7 +10,10 @@
  *******************************************************************************/
 package net.enilink.composition.properties.komma;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.collect.MapMaker;
@@ -20,15 +23,15 @@ import com.google.inject.Injector;
 import net.enilink.composition.mapping.PropertyAttribute;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IReferenceable;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
+import net.enilink.komma.core.*;
 
 public class KommaPropertySetFactory implements PropertySetFactory {
 	// Use weak references to property sets.
 	// This ensures that a property set is shared between multiple beans
 	final ConcurrentMap<Key, PropertySet<?>> propertySetCache = new MapMaker().weakValues().makeMap();
+	final List<ITransaction> activeTxns = new ArrayList<>();
+	@Inject
+	protected IEntityManager manager;
 
 	static class Key {
 		IReference subject;
@@ -90,8 +93,9 @@ public class KommaPropertySetFactory implements PropertySetFactory {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <E> PropertySet<E> createPropertySet(Object bean, String uri, Class<E> elementType,
-			PropertyAttribute... attributes) {
-		Key cacheKey = new Key(((IReferenceable) bean).getReference(), uri, elementType);
+	                                            PropertyAttribute... attributes) {
+		IReference subject = ((IReferenceable) bean).getReference();
+		Key cacheKey = new Key(subject, uri, elementType);
 		return (PropertySet<E>) propertySetCache.computeIfAbsent(cacheKey, k -> {
 			URI predicate = URIs.createURI(uri);
 			URI rdfValueType = null;
@@ -104,19 +108,57 @@ public class KommaPropertySetFactory implements PropertySetFactory {
 				}
 			}
 
-			PropertySet<E> propertySet;
-			if (localized) {
-				propertySet = (PropertySet<E>) new LocalizedKommaPropertySet((IReference) bean, predicate);
-			} else {
-				propertySet = new KommaPropertySet<E>((IReference) bean, predicate, elementType, rdfValueType);
-			}
+			KommaPropertySet<E> propertySet = createPropertySetInternal(localized, subject, predicate, elementType, rdfValueType);
+			propertySet.addOwner(bean);
 			injector.injectMembers(propertySet);
 			return propertySet;
 		});
 	}
 
+	protected <E> KommaPropertySet<E> createPropertySetInternal(boolean localized, IReference subject,
+	                                                            IReference property, Class<E> valueType, URI rdfValueType) {
+		if (localized) {
+			return (KommaPropertySet<E>) new LocalizedKommaPropertySet(this, subject, property);
+		} else {
+			return new KommaPropertySet<E>(this, (IReference) subject, property, valueType, rdfValueType);
+		}
+	}
+
 	// for testing purposes
 	public ConcurrentMap<Key, PropertySet<?>> getPropertySetCache() {
 		return propertySetCache;
+	}
+
+	/**
+	 * Tracks active connections and checks if a transaction is active in the current thread
+	 * or any thread that has called this method.
+	 *
+	 * @return <code>true</code> if a transaction is currently active, else <code>false</code>
+	 */
+	public synchronized boolean trackActiveTransactions() {
+		ITransaction tx = manager.getTransaction();
+		if (tx.isActive()) {
+			if (!activeTxns.contains(tx)) {
+				activeTxns.add(tx);
+			}
+		} else {
+			if (!activeTxns.isEmpty()) {
+				for (Iterator<ITransaction> it = activeTxns.iterator(); it.hasNext(); ) {
+					if (!it.next().isActive()) {
+						it.remove();
+					}
+				}
+			}
+		}
+		return ! activeTxns.isEmpty();
+	}
+
+	/**
+	 * Returns the associated entity manager.
+	 *
+	 * @return the entity manager instance
+	 */
+	public IEntityManager getManager() {
+		return manager;
 	}
 }

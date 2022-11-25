@@ -53,8 +53,8 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 
 	Map<String, List<ILiteral>> cache;
 
-	public LocalizedKommaPropertySet(IReference subject, IReference property) {
-		super(subject, property, String.class, null);
+	public LocalizedKommaPropertySet(KommaPropertySetFactory factory, IReference subject, IReference property) {
+		super(factory, subject, property, String.class, null);
 	}
 
 	private int addBestValues(ILiteral literal, String language, int best,
@@ -94,7 +94,7 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 	}
 
 	protected Collection<ILiteral> bestValues() {
-		String language = manager.getLocale().getLanguage();
+		String language = factory.getManager().getLocale().getLanguage();
 
 		List<ILiteral> values = cache != null ? cache.get(language) : null;
 		if (values != null) {
@@ -104,7 +104,7 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 		int score = -1;
 		values = new ArrayList<ILiteral>();
 		try {
-			IExtendedIterator<ILiteral> literals = manager.createQuery(QUERY)
+			IExtendedIterator<ILiteral> literals = factory.getManager().createQuery(QUERY)
 					.setParameter("s", subject).setParameter("p", property)
 					.evaluateRestricted(ILiteral.class);
 			try {
@@ -127,7 +127,7 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 
 	@Override
 	public void clear() {
-		ITransaction transaction = manager.getTransaction();
+		ITransaction transaction = factory.getManager().getTransaction();
 		try {
 			boolean active = transaction.isActive();
 			if (!active) {
@@ -149,7 +149,7 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 		if (instance instanceof ILiteral) {
 			return (ILiteral) instance;
 		}
-		String language = manager.getLocale().getLanguage();
+		String language = factory.getManager().getLocale().getLanguage();
 		return lf.createLiteral(instance.toString(), null, language);
 	}
 
@@ -198,15 +198,15 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 			return;
 		}
 		Set<String> c = new HashSet<String>(elements);
-		ITransaction transaction = manager.getTransaction();
+		ITransaction transaction = factory.getManager().getTransaction();
 		try {
 			boolean active = transaction.isActive();
 			if (!active) {
 				transaction.begin();
 			}
-			String language = manager.getLocale().getLanguage();
+			String language = factory.getManager().getLocale().getLanguage();
 
-			IExtendedIterator<ILiteral> literals = manager.createQuery(QUERY)
+			IExtendedIterator<ILiteral> literals = factory.getManager().createQuery(QUERY)
 					.setParameter("s", subject).setParameter("p", property)
 					.evaluateRestricted(ILiteral.class);
 			try {

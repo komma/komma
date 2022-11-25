@@ -23,6 +23,7 @@ import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.commons.util.IPartialOrderProvider;
 import net.enilink.commons.util.LinearExtension;
 import net.enilink.composition.properties.komma.KommaPropertySet;
+import net.enilink.composition.properties.komma.KommaPropertySetFactory;
 import net.enilink.composition.properties.traits.Refreshable;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.em.concepts.IResource;
@@ -136,8 +137,8 @@ public class OrderedPropertySet<E> extends KommaPropertySet<E> implements
 		}
 	};
 
-	public OrderedPropertySet(IReference subject, IReference property) {
-		super(subject, property);
+	public OrderedPropertySet(KommaPropertySetFactory factory, IReference subject, IReference property) {
+		super(factory, subject, property);
 	}
 
 	@Override

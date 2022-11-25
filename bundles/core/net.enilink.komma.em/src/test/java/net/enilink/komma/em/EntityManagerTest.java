@@ -43,7 +43,7 @@ public abstract class EntityManagerTest {
 	protected Injector injector;
 	protected IEntityManagerFactory factory;
 	protected IEntityManager manager;
-	protected UnitOfWork uow;
+	protected IUnitOfWork uow;
 
 	protected Module createStorageModule() {
 		// create an RDF4J memory store
@@ -73,7 +73,7 @@ public abstract class EntityManagerTest {
 		List<Module> modules = new ArrayList<>();
 		modules.add(createStorageModule());
 		modules.add(new EntityManagerFactoryModule(createModule(), null,
-				enableCaching() ? new CachingEntityManagerModule() : new DecoratingEntityManagerModule()));
+				createEntityManagerModule()));
 		if (enableCaching()) {
 			modules.add(new CacheModule());
 		}
@@ -90,6 +90,11 @@ public abstract class EntityManagerTest {
 		injector = Guice.createInjector(modules);
 		factory = injector.getInstance(IEntityManagerFactory.class);
 		manager = factory.get();
+		uow = factory.getUnitOfWork();
+	}
+
+	protected Module createEntityManagerModule() {
+		return enableCaching() ? new CachingEntityManagerModule() : new DecoratingEntityManagerModule();
 	}
 
 	protected KommaModule createModule() throws Exception {

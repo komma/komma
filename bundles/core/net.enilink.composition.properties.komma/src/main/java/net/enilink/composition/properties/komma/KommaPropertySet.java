@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2007, 2010, James Leigh All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  * - Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution. 
+ *   and/or other materials provided with the distribution.
  * - Neither the name of the openrdf.org nor the names of its contributors may
  *   be used to endorse or promote products derived from this software without
  *   specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -24,21 +24,19 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  */
 package net.enilink.composition.properties.komma;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 import net.enilink.commons.iterator.ConvertingIterator;
-import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.NiceIterator;
 import net.enilink.commons.iterator.WrappedIterator;
@@ -47,7 +45,6 @@ import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.exceptions.PropertyException;
 import net.enilink.composition.properties.traits.Mergeable;
 import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.ILiteral;
 import net.enilink.komma.core.IQuery;
 import net.enilink.komma.core.IReference;
@@ -57,40 +54,33 @@ import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 
-import com.google.inject.Inject;
-
 /**
  * A set for a given subject and predicate.
- * 
+ *
  * @param <E>
  */
-public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
-		Filterable<E> {
-	private static final int CACHE_LIMIT = 10;
-
+public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E> {
 	protected static final String QUERY = "SELECT DISTINCT ?o WHERE { ?s ?p ?o }";
-	protected final IReference subject;
+	private static final int CACHE_LIMIT = 10;
 	protected final List<WeakReference<Object>> ownerBeans = new ArrayList<>(1);
 
+	protected final KommaPropertySetFactory factory;
+	protected final IReference subject;
+	protected final IReference property;
+	protected Class<E> valueType;
+	protected URI rdfValueType;
 	private volatile List<E> cache;
 
-	@Inject
-	protected IEntityManager manager;
-
-	protected IReference property;
-
-	protected Class<E> valueType;
-
-	protected URI rdfValueType;
-
-	public KommaPropertySet(IReference subject, IReference property) {
-		this(subject, property, null, null);
+	public KommaPropertySet(KommaPropertySetFactory factory, IReference subject, IReference property) {
+		this(factory, subject, property, null, null);
 	}
 
-	public KommaPropertySet(IReference subject, IReference property,
-			Class<E> valueType, URI rdfValueType) {
+	public KommaPropertySet(KommaPropertySetFactory factory, IReference subject, IReference property,
+	                        Class<E> valueType, URI rdfValueType) {
+		assert factory != null;
 		assert subject != null;
 		assert property != null;
+		this.factory = factory;
 		this.subject = subject;
 		this.property = property;
 		this.valueType = valueType;
@@ -99,7 +89,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 
 	/**
 	 * Adds <code>bean</code> as additional owner for this property set.
-	 * 
+	 *
 	 * @param bean Additional bean that uses this property set.
 	 */
 	public void addOwner(Object bean) {
@@ -111,11 +101,13 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 				Object target = ref.get();
 				if (target == null) {
 					it.remove();
-				} else if (!found && bean.equals(target)) {
+					// use identity equality here as two beans are always equal if they have the same
+					// RDF reference
+				} else if (!found && bean == target) {
 					found = true;
 				}
 			}
-			if (! found) {
+			if (!found) {
 				ownerBeans.add(new WeakReference<>(bean));
 			}
 		}
@@ -139,27 +131,32 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		}
 	}
 
-	/**
-	 * This method always returns <code>true</code>
-	 * 
-	 * @return <code>true</code>
-	 */
-	public boolean add(E o) {
-		refresh();
+	protected boolean addWithoutRefresh(E o) {
 		try {
-			manager.add(new Statement(subject, property, convertInstance(o)));
+			factory.getManager().add(new Statement(subject, property, convertInstance(o)));
 		} catch (KommaException e) {
 			throw new PropertyException(e);
 		}
+		return true;
+	}
+
+	/**
+	 * This method always returns <code>true</code>
+	 *
+	 * @return <code>true</code>
+	 */
+	public synchronized boolean add(E o) {
+		refresh();
+		addWithoutRefresh(o);
 		refreshOwners();
 		refresh(o);
 		return true;
 	}
 
-	public boolean addAll(Collection<? extends E> c) {
+	public synchronized boolean addAll(Collection<? extends E> c) {
 		refresh();
 		boolean modified = false;
-		ITransaction transaction = manager.getTransaction();
+		ITransaction transaction = factory.getManager().getTransaction();
 		try {
 			boolean active = transaction.isActive();
 			if (!active) {
@@ -167,7 +164,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 			}
 			try {
 				for (E o : c) {
-					if (add(o)) {
+					if (addWithoutRefresh(o)) {
 						modified = true;
 					}
 				}
@@ -186,8 +183,8 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		return modified;
 	}
 
-	public void clear() {
-		manager.remove(new Statement(subject, property, null));
+	public synchronized void clear() {
+		factory.getManager().remove(new Statement(subject, property, null));
 		refreshCache();
 		refresh();
 		refreshOwners();
@@ -195,7 +192,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 
 	protected boolean containsWithoutCache(Object o) {
 		try {
-			return manager.createQuery("ASK { ?s ?p ?o }")
+			return factory.getManager().createQuery("ASK { ?s ?p ?o }")
 					.setParameter("s", subject).setParameter("p", property)
 					.setParameter("o", convertInstance(o)).getBooleanResult();
 		} catch (KommaException e) {
@@ -203,7 +200,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		}
 	}
 
-	public boolean contains(Object o) {
+	public synchronized boolean contains(Object o) {
 		if (!(o instanceof ILiteral)) {
 			// raw literals are handled different
 			List<E> cache = getCache();
@@ -217,7 +214,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		return containsWithoutCache(o);
 	}
 
-	public boolean containsAll(Collection<?> c) {
+	public synchronized boolean containsAll(Collection<?> c) {
 		List<E> cache = getCache();
 		if (cache != null) {
 			boolean allInCache = true;
@@ -245,14 +242,9 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 	}
 
 	protected Collection<Class<?>> findConcepts(URI rdfType) {
-		Collection<Class<?>> roles = manager.rolesForType(rdfType);
+		Collection<Class<?>> roles = factory.getManager().rolesForType(rdfType);
 		return WrappedIterator.create(roles.iterator())
-				.filterKeep(new Filter<Class<?>>() {
-					@Override
-					public boolean accept(Class<?> o) {
-						return o.isInterface();
-					}
-				}).toList();
+				.filterKeep(o -> o.isInterface()).toList();
 	}
 
 	protected Object convertInstance(Object instance) {
@@ -271,7 +263,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 				}
 				if (!hasValidType) {
 					// create a new instance with correct rdf:type
-					IEntity newEntity = (IEntity) manager.create(rdfValueType);
+					IEntity newEntity = factory.getManager().create(rdfValueType);
 					if (newEntity instanceof Mergeable) {
 						try {
 							((Mergeable) newEntity).merge(instance);
@@ -305,8 +297,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		return (IExtendedIterator<E>) query.evaluate();
 	}
 
-	protected IQuery<?> createElementsQuery(String query, String filterPattern,
-			int limit) {
+	protected IQuery<?> createElementsQuery(String query, String filterPattern, int limit) {
 		boolean useFilter = filterPattern != null && !filterPattern.isEmpty();
 		if (useFilter || limit != Integer.MAX_VALUE) {
 			StringBuilder querySb = new StringBuilder(query);
@@ -319,7 +310,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 			}
 			query = querySb.toString();
 		}
-		IQuery<?> result = manager.createQuery(query).setParameter("s", subject)
+		IQuery<?> result = factory.getManager().createQuery(query).setParameter("s", subject)
 				.setParameter("p", property);
 		if (useFilter) {
 			result.setParameter("filter", ".*" + filterPattern + ".*");
@@ -334,9 +325,9 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 	protected IExtendedIterator<E> createElementsIterator(
 			final String filterPattern, final int limit) {
 		IQuery<?> query = createElementsQuery(QUERY, filterPattern, limit);
-		return new ConvertingIterator<E, E>(evaluateQueryForTypes(query)) {
+		return new ConvertingIterator<>(evaluateQueryForTypes(query)) {
 			private List<E> list = filterPattern == null
-					&& limit == Integer.MAX_VALUE ? new ArrayList<E>(Math.min(
+					&& limit == Integer.MAX_VALUE ? new ArrayList<>(Math.min(
 					CACHE_LIMIT, getCacheLimit())) : null;
 			private E current;
 
@@ -402,14 +393,10 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 				return false;
 		} else if (!subject.equals(other.subject))
 			return false;
-		if (manager == null) {
-			if (other.manager != null)
-				return false;
-		} else if (!manager.equals(other.manager))
+		if (!factory.equals(other.factory))
 			return false;
 		if (property == null) {
-			if (other.property != null)
-				return false;
+			return other.property == null;
 		} else if (!property.equals(other.property))
 			return false;
 		return true;
@@ -419,8 +406,55 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		return this;
 	}
 
+	public void setAll(Collection<E> elements) {
+		if (this == elements) {
+			return;
+		}
+		if (elements == null) {
+			clear();
+			return;
+		}
+		ITransaction transaction = factory.getManager().getTransaction();
+		try {
+			boolean active = transaction.isActive();
+			if (!active) {
+				transaction.begin();
+			}
+			try {
+				List<E> cache = getCache();
+				if (cache == null || !cache.isEmpty()) {
+					clear();
+				}
+				addAll(elements);
+				if (!active) {
+					transaction.commit();
+				}
+			} finally {
+				if (!active && transaction.isActive()) {
+					transaction.rollback();
+				}
+			}
+		} catch (KommaException e) {
+			throw new PropertyException(e);
+		}
+		refreshCache();
+	}
+
 	protected final List<E> getCache() {
 		return cache;
+	}
+
+	protected void setCache(List<E> cache) {
+		// short-circuit to avoid complex checks if invoked several times in a row
+		if (this.cache == cache) {
+			return;
+		}
+		// the cache should only be used if no transactions are currently active
+		// that have touched this property set so far
+		boolean anyTxActive = factory.trackActiveTransactions();
+		if (! anyTxActive || cache == null) {
+			this.cache = cache;
+		}
 	}
 
 	protected int getCacheLimit() {
@@ -445,17 +479,44 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 			}
 		}
 		try {
-			IExtendedIterator<E> iter = createElementsIterator();
-			try {
+			try (IExtendedIterator<E> iter = createElementsIterator()) {
 				if (iter.hasNext()) {
 					return iter.next();
 				}
 				return null;
-			} finally {
-				iter.close();
 			}
 		} catch (KommaException e) {
 			throw new PropertyException(e);
+		}
+	}
+
+	public void setSingle(E o) {
+		if (o == null) {
+			clear();
+		} else {
+			ITransaction transaction = factory.getManager().getTransaction();
+			try {
+				boolean active = transaction.isActive();
+				if (!active) {
+					transaction.begin();
+				}
+				try {
+					List<E> cache = getCache();
+					if (cache == null || !cache.isEmpty()) {
+						clear();
+					}
+					add(o);
+					if (!active) {
+						transaction.commit();
+					}
+				} finally {
+					if (!active && transaction.isActive()) {
+						transaction.rollback();
+					}
+				}
+			} catch (KommaException e) {
+				throw new PropertyException(e);
+			}
 		}
 	}
 
@@ -464,7 +525,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((subject == null) ? 0 : subject.hashCode());
-		result = prime * result + ((manager == null) ? 0 : manager.hashCode());
+		result = prime * result + ((factory == null) ? 0 : factory.hashCode());
 		result = prime * result
 				+ ((property == null) ? 0 : property.hashCode());
 		return result;
@@ -473,7 +534,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 	@Override
 	public void init(Collection<? extends E> values) {
 		if (getCache() == null) {
-			setCache(new ArrayList<E>(values));
+			setCache(new ArrayList<>(values));
 		}
 	}
 
@@ -486,11 +547,8 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		if (cache != null) {
 			return cache.isEmpty();
 		}
-		IExtendedIterator<E> iter = createElementsIterator();
-		try {
+		try (IExtendedIterator<E> iter = createElementsIterator()) {
 			return !iter.hasNext();
-		} finally {
-			iter.close();
 		}
 	}
 
@@ -498,7 +556,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		List<E> cache = getCache();
 		if (isCacheComplete(cache)) {
 			final Iterator<E> iter = cache.iterator();
-			return new NiceIterator<E>() {
+			return new NiceIterator<>() {
 				private E e;
 
 				public boolean hasNext() {
@@ -526,7 +584,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 	}
 
 	protected void refresh(Object o) {
-		manager.refresh(o);
+		factory.getManager().refresh(o);
 	}
 
 	protected void refreshCache() {
@@ -540,21 +598,21 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 
 	/**
 	 * This method always returns <code>true</code>
-	 * 
+	 *
 	 * @return <code>true</code>
 	 */
 	public boolean remove(Object o) {
 		refresh();
-		manager.remove(new Statement(subject, property, convertInstance(o)));
+		factory.getManager().remove(new Statement(subject, property, convertInstance(o)));
 		refresh(o);
 		refreshOwners();
 		return true;
 	}
 
-	public boolean removeAll(Collection<?> c) {
+	public synchronized boolean removeAll(Collection<?> c) {
 		boolean modified = false;
 		try {
-			ITransaction transaction = manager.getTransaction();
+			ITransaction transaction = factory.getManager().getTransaction();
 			boolean active = transaction.isActive();
 			if (!active) {
 				transaction.begin();
@@ -581,26 +639,23 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		return modified;
 	}
 
-	public boolean retainAll(Collection<?> c) {
+	public synchronized boolean retainAll(Collection<?> c) {
 		refresh();
 		boolean modified = false;
 		try {
-			ITransaction transaction = manager.getTransaction();
+			ITransaction transaction = factory.getManager().getTransaction();
 			boolean active = transaction.isActive();
 			if (!active) {
 				transaction.begin();
 			}
 			try {
-				IExtendedIterator<E> e = createElementsIterator();
-				try {
+				try (IExtendedIterator<E> e = createElementsIterator()) {
 					while (e.hasNext()) {
 						if (!c.contains(e.next())) {
 							remove(e);
 							modified = true;
 						}
 					}
-				} finally {
-					e.close();
 				}
 				if (!active) {
 					transaction.commit();
@@ -618,90 +673,19 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		return modified;
 	}
 
-	public void setAll(Collection<E> elements) {
-		if (this == elements) {
-			return;
-		}
-		if (elements == null) {
-			clear();
-			return;
-		}
-		ITransaction transaction = manager.getTransaction();
-		try {
-			boolean active = transaction.isActive();
-			if (!active) {
-				transaction.begin();
-			}
-			try {
-				List<E> cache = getCache();
-				if (cache == null || !cache.isEmpty()) {
-					clear();
-				}
-				addAll(elements);
-				if (!active) {
-					transaction.commit();
-				}
-			} finally {
-				if (!active && transaction.isActive()) {
-					transaction.rollback();
-				}
-			}
-		} catch (KommaException e) {
-			throw new PropertyException(e);
-		}
-		refreshCache();
-	}
-
-	protected void setCache(List<E> cache) {
-		this.cache = cache;
-	}
-
-	public void setSingle(E o) {
-		if (o == null) {
-			clear();
-		} else {
-			ITransaction transaction = manager.getTransaction();
-			try {
-				boolean active = transaction.isActive();
-				if (!active) {
-					transaction.begin();
-				}
-				try {
-					List<E> cache = getCache();
-					if (cache == null || !cache.isEmpty()) {
-						clear();
-					}
-					add(o);
-					if (!active) {
-						transaction.commit();
-					}
-				} finally {
-					if (!active && transaction.isActive()) {
-						transaction.rollback();
-					}
-				}
-			} catch (KommaException e) {
-				throw new PropertyException(e);
-			}
-		}
-	}
-
 	public int size() {
 		List<E> cache = getCache();
 		if (isCacheComplete(cache)) {
 			return cache.size();
 		}
-		IExtendedIterator<IReference> values = manager.createQuery(QUERY)
+		try (IExtendedIterator<IReference> values = factory.getManager().createQuery(QUERY)
 				.setParameter("s", subject).setParameter("p", property)
-				.evaluateRestricted(IReference.class);
-		try {
+				.evaluateRestricted(IReference.class)) {
 			int size;
 			for (size = 0; values.hasNext(); size++) {
 				values.next();
 			}
 			return size;
-		} finally {
-			values.close();
 		}
 	}
 
@@ -710,11 +694,8 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		if (isCacheComplete(cache)) {
 			return cache.toArray();
 		}
-		IExtendedIterator<E> iter = createElementsIterator();
-		try {
+		try (IExtendedIterator<E> iter = createElementsIterator()) {
 			return iter.toList().toArray();
-		} finally {
-			iter.close();
 		}
 	}
 
@@ -723,11 +704,8 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		if (isCacheComplete(cache)) {
 			return cache.toArray(a);
 		}
-		IExtendedIterator<E> iter = createElementsIterator();
-		try {
+		try (IExtendedIterator<E> iter = createElementsIterator()) {
 			return iter.toList().toArray(a);
-		} finally {
-			iter.close();
 		}
 	}
 
