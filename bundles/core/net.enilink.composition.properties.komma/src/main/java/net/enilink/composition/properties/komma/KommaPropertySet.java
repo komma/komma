@@ -59,8 +59,7 @@ import net.enilink.komma.core.URI;
  *
  * @param <E>
  */
-public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
-		Filterable<E> {
+public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E> {
 	protected static final String QUERY = "SELECT DISTINCT ?o WHERE { ?s ?p ?o }";
 	private static final int CACHE_LIMIT = 10;
 	protected final List<WeakReference<Object>> ownerBeans = new ArrayList<>(1);
@@ -132,24 +131,29 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		}
 	}
 
-	/**
-	 * This method always returns <code>true</code>
-	 *
-	 * @return <code>true</code>
-	 */
-	public boolean add(E o) {
-		refresh();
+	protected boolean addWithoutRefresh(E o) {
 		try {
 			factory.getManager().add(new Statement(subject, property, convertInstance(o)));
 		} catch (KommaException e) {
 			throw new PropertyException(e);
 		}
+		return true;
+	}
+
+	/**
+	 * This method always returns <code>true</code>
+	 *
+	 * @return <code>true</code>
+	 */
+	public synchronized boolean add(E o) {
+		refresh();
+		addWithoutRefresh(o);
 		refreshOwners();
 		refresh(o);
 		return true;
 	}
 
-	public boolean addAll(Collection<? extends E> c) {
+	public synchronized boolean addAll(Collection<? extends E> c) {
 		refresh();
 		boolean modified = false;
 		ITransaction transaction = factory.getManager().getTransaction();
@@ -160,7 +164,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 			}
 			try {
 				for (E o : c) {
-					if (add(o)) {
+					if (addWithoutRefresh(o)) {
 						modified = true;
 					}
 				}
@@ -179,7 +183,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		return modified;
 	}
 
-	public void clear() {
+	public synchronized void clear() {
 		factory.getManager().remove(new Statement(subject, property, null));
 		refreshCache();
 		refresh();
@@ -196,7 +200,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		}
 	}
 
-	public boolean contains(Object o) {
+	public synchronized boolean contains(Object o) {
 		if (!(o instanceof ILiteral)) {
 			// raw literals are handled different
 			List<E> cache = getCache();
@@ -210,7 +214,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		return containsWithoutCache(o);
 	}
 
-	public boolean containsAll(Collection<?> c) {
+	public synchronized boolean containsAll(Collection<?> c) {
 		List<E> cache = getCache();
 		if (cache != null) {
 			boolean allInCache = true;
@@ -441,6 +445,10 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 	}
 
 	protected void setCache(List<E> cache) {
+		// short-circuit to avoid complex checks if invoked several times in a row
+		if (this.cache == cache) {
+			return;
+		}
 		// the cache should only be used if no transactions are currently active
 		// that have touched this property set so far
 		boolean anyTxActive = factory.trackActiveTransactions();
@@ -601,7 +609,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		return true;
 	}
 
-	public boolean removeAll(Collection<?> c) {
+	public synchronized boolean removeAll(Collection<?> c) {
 		boolean modified = false;
 		try {
 			ITransaction transaction = factory.getManager().getTransaction();
@@ -631,7 +639,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>,
 		return modified;
 	}
 
-	public boolean retainAll(Collection<?> c) {
+	public synchronized boolean retainAll(Collection<?> c) {
 		refresh();
 		boolean modified = false;
 		try {
