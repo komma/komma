@@ -69,6 +69,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 	protected final IReference property;
 	protected Class<E> valueType;
 	protected URI rdfValueType;
+	protected List<ITransaction> activeTxns = null;
 	private volatile List<E> cache;
 
 	public KommaPropertySet(KommaPropertySetFactory factory, IReference subject, IReference property) {
@@ -85,6 +86,38 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 		this.property = property;
 		this.valueType = valueType;
 		this.rdfValueType = rdfValueType;
+	}
+
+	/**
+	 * Tracks active connections and checks if a transaction is active in the current thread
+	 * or any thread that has called this method.
+	 *
+	 * @return <code>true</code> if a transaction is currently active, else <code>false</code>
+	 */
+	public synchronized boolean trackRelatedActiveTransactions() {
+		ITransaction tx = factory.getManager().getTransaction();
+		if (tx.isActive()) {
+			if (activeTxns == null) {
+				activeTxns = new ArrayList<>();
+				activeTxns.add(tx);
+			} else if (!activeTxns.contains(tx)) {
+				activeTxns.add(tx);
+			}
+		} else {
+			if (activeTxns != null) {
+				boolean removed = false;
+				for (int i = 0; i < activeTxns.size(); i++) {
+					if (!activeTxns.get(i).isActive()) {
+						activeTxns.remove(i--);
+						removed = true;
+					}
+				}
+				if (removed && activeTxns.isEmpty()) {
+					activeTxns = null;
+				}
+			}
+		}
+		return activeTxns != null;
 	}
 
 	/**
@@ -445,14 +478,10 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 	}
 
 	protected void setCache(List<E> cache) {
-		// short-circuit to avoid complex checks if invoked several times in a row
-		if (this.cache == cache) {
-			return;
-		}
 		// the cache should only be used if no transactions are currently active
 		// that have touched this property set so far
-		boolean anyTxActive = factory.trackActiveTransactions();
-		if (! anyTxActive || cache == null) {
+		boolean anyTxActive = trackRelatedActiveTransactions();
+		if (!anyTxActive || cache == null) {
 			this.cache = cache;
 		}
 	}

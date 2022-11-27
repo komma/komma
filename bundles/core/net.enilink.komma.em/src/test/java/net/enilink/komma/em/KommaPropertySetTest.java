@@ -92,7 +92,37 @@ public class KommaPropertySetTest extends EntityManagerTest {
 	 * with transactions are used.
 	 */
 	@Test
-	public void testCachingMultipleThreads() throws InterruptedException {
+	public void testCachingTxAndThreads() throws InterruptedException {
+		URI uri = URIs.createURI(NS + "one");
+		Concept a = manager.createNamed(uri, Concept.class);
+		a.setName("a");
+
+		ITransaction tx = manager.getTransaction();
+		tx.begin();
+		a.setName("b");
+		Thread thread = new Thread(() -> {
+			uow.begin();
+			try {
+				assertEquals("a", a.getName());
+			} finally {
+				uow.end();
+			}
+		});
+		thread.start();
+		thread.join();
+
+		assertEquals("b", a.getName());
+
+		tx.commit();
+		assertEquals("b", a.getName());
+	}
+
+	/**
+	 * Tests that no stale values are cached when multiple threads
+	 * with transactions are used.
+	 */
+	@Test
+	public void testCachingMultipleThreadsReadInBetween() throws InterruptedException {
 		URI uri = URIs.createURI(NS + "one");
 		Concept a = manager.createNamed(uri, Concept.class);
 		a.setName("a");
@@ -102,6 +132,8 @@ public class KommaPropertySetTest extends EntityManagerTest {
 		ITransaction tx = manager.getTransaction();
 		tx.begin();
 		a.setName("b");
+		assertEquals("b", a.getName());
+
 		Thread thread = new Thread(() -> {
 			uow.begin();
 			try {

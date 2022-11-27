@@ -29,7 +29,7 @@ public class KommaPropertySetFactory implements PropertySetFactory {
 	// Use weak references to property sets.
 	// This ensures that a property set is shared between multiple beans
 	final ConcurrentMap<Key, PropertySet<?>> propertySetCache = new MapMaker().weakValues().makeMap();
-	final List<ITransaction> activeTxns = new ArrayList<>();
+
 	@Inject
 	protected IEntityManager manager;
 
@@ -127,30 +127,6 @@ public class KommaPropertySetFactory implements PropertySetFactory {
 	// for testing purposes
 	public ConcurrentMap<Key, PropertySet<?>> getPropertySetCache() {
 		return propertySetCache;
-	}
-
-	/**
-	 * Tracks active connections and checks if a transaction is active in the current thread
-	 * or any thread that has called this method.
-	 *
-	 * @return <code>true</code> if a transaction is currently active, else <code>false</code>
-	 */
-	public synchronized boolean trackActiveTransactions() {
-		ITransaction tx = manager.getTransaction();
-		if (tx.isActive()) {
-			if (!activeTxns.contains(tx)) {
-				activeTxns.add(tx);
-			}
-		} else {
-			if (!activeTxns.isEmpty()) {
-				for (Iterator<ITransaction> it = activeTxns.iterator(); it.hasNext(); ) {
-					if (!it.next().isActive()) {
-						it.remove();
-					}
-				}
-			}
-		}
-		return ! activeTxns.isEmpty();
 	}
 
 	/**
