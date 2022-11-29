@@ -76,14 +76,13 @@ public class KommaPropertySetTest extends EntityManagerTest {
 			if (localized) {
 				throw new IllegalArgumentException("Not supported by this test");
 			}
-			return new TestKommaPropertySet<E>(this, subject, property, valueType, rdfValueType);
+			return new TestKommaPropertySet<E>(subject, property, valueType, rdfValueType);
 		}
 	}
 
 	public static class TestKommaPropertySet<E> extends KommaPropertySet<E> {
-		public TestKommaPropertySet(KommaPropertySetFactory factory, IReference subject, IReference property,
-		                            Class valueType, URI rdfValueType) {
-			super(factory, subject, property, valueType, rdfValueType);
+		public TestKommaPropertySet(IReference subject, IReference property, Class valueType, URI rdfValueType) {
+			super(subject, property, valueType, rdfValueType);
 		}
 	}
 

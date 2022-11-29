@@ -40,6 +40,7 @@ import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.NiceIterator;
 import net.enilink.commons.iterator.WrappedIterator;
+import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.traits.Filterable;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.exceptions.PropertyException;
@@ -54,6 +55,8 @@ import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 
+import javax.inject.Inject;
+
 /**
  * A set for a given subject and predicate.
  *
@@ -64,7 +67,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 	private static final int CACHE_LIMIT = 10;
 	protected final List<WeakReference<Object>> ownerBeans = new ArrayList<>(1);
 
-	protected final KommaPropertySetFactory factory;
+	protected KommaPropertySetFactory factory;
 	protected final IReference subject;
 	protected final IReference property;
 	protected Class<E> valueType;
@@ -72,20 +75,27 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 	protected List<ITransaction> activeTxns = null;
 	private volatile List<E> cache;
 
-	public KommaPropertySet(KommaPropertySetFactory factory, IReference subject, IReference property) {
-		this(factory, subject, property, null, null);
+	public KommaPropertySet(IReference subject, IReference property) {
+		this(subject, property, null, null);
 	}
 
-	public KommaPropertySet(KommaPropertySetFactory factory, IReference subject, IReference property,
-	                        Class<E> valueType, URI rdfValueType) {
-		assert factory != null;
+	public KommaPropertySet(IReference subject, IReference property, Class<E> valueType, URI rdfValueType) {
 		assert subject != null;
 		assert property != null;
-		this.factory = factory;
 		this.subject = subject;
 		this.property = property;
 		this.valueType = valueType;
 		this.rdfValueType = rdfValueType;
+	}
+
+	/**
+	 * Inject factory to keep constructors clean.
+	 *
+	 * @param factory the property set factory
+	 */
+	@Inject
+	void setFactory(PropertySetFactory factory) {
+		this.factory = (KommaPropertySetFactory) factory;
 	}
 
 	/**

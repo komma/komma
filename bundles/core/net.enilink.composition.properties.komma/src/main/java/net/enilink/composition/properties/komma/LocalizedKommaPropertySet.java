@@ -53,8 +53,8 @@ public class LocalizedKommaPropertySet extends KommaPropertySet<String> {
 
 	Map<String, List<ILiteral>> cache;
 
-	public LocalizedKommaPropertySet(KommaPropertySetFactory factory, IReference subject, IReference property) {
-		super(factory, subject, property, String.class, null);
+	public LocalizedKommaPropertySet(IReference subject, IReference property) {
+		super(subject, property, String.class, null);
 	}
 
 	private int addBestValues(ILiteral literal, String language, int best,

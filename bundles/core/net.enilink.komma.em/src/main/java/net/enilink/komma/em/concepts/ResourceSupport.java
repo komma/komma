@@ -65,9 +65,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 			}
 			if (property instanceof IProperty
 					&& ((IProperty) property).isOrderedContainment()) {
-				propertySet = new OrderedPropertySet<Object>(
-						(KommaPropertySetFactory) injector.getInstance(PropertySetFactory.class),
-						getBehaviourDelegate(), property);
+				propertySet = new OrderedPropertySet<>(getBehaviourDelegate(), property);
 				injector.injectMembers(propertySet);
 			} else {
 				Object self = getBehaviourDelegate();

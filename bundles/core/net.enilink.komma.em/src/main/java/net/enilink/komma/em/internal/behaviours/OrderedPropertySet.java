@@ -137,8 +137,8 @@ public class OrderedPropertySet<E> extends KommaPropertySet<E> implements
 		}
 	};
 
-	public OrderedPropertySet(KommaPropertySetFactory factory, IReference subject, IReference property) {
-		super(factory, subject, property);
+	public OrderedPropertySet(IReference subject, IReference property) {
+		super(subject, property);
 	}
 
 	@Override

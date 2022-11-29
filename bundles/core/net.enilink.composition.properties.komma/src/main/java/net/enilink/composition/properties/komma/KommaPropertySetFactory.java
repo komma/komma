@@ -118,9 +118,9 @@ public class KommaPropertySetFactory implements PropertySetFactory {
 	protected <E> KommaPropertySet<E> createPropertySetInternal(boolean localized, IReference subject,
 	                                                            IReference property, Class<E> valueType, URI rdfValueType) {
 		if (localized) {
-			return (KommaPropertySet<E>) new LocalizedKommaPropertySet(this, subject, property);
+			return (KommaPropertySet<E>) new LocalizedKommaPropertySet(subject, property);
 		} else {
-			return new KommaPropertySet<E>(this, (IReference) subject, property, valueType, rdfValueType);
+			return new KommaPropertySet<E>(subject, property, valueType, rdfValueType);
 		}
 	}
 
