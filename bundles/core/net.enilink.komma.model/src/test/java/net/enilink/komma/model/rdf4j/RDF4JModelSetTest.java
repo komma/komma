@@ -30,7 +30,6 @@ import org.junit.Test;
 import net.enilink.komma.core.URIs;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.rdf4j.RDF4JModelSetFactory;
 
 public class RDF4JModelSetTest {
 	Repository repository;
