@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.google.inject.Inject;
 import net.enilink.commons.iterator.ConvertingIterator;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.NiceIterator;
@@ -54,8 +55,6 @@ import net.enilink.komma.core.ITransaction;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
-
-import javax.inject.Inject;
 
 /**
  * A set for a given subject and predicate.
@@ -94,7 +93,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 	 * @param factory the property set factory
 	 */
 	@Inject
-	void setFactory(PropertySetFactory factory) {
+	protected void setFactory(PropertySetFactory factory) {
 		this.factory = (KommaPropertySetFactory) factory;
 	}
 
