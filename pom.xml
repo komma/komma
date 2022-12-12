@@ -24,24 +24,24 @@ KOMMA is a framework for linked data applications. It supports the management an
 		<commons-collections.version>3.2.2</commons-collections.version>
 		<commons-collections4.version>4.4</commons-collections4.version>
 		<commons-beanutils.version>1.9.4</commons-beanutils.version>
-		<commons-codec.version>1.13</commons-codec.version>
-		<commons-io.version>2.8.0</commons-io.version>
+		<commons-codec.version>1.15</commons-codec.version>
+		<commons-io.version>2.11.0</commons-io.version>
 		<commons-lang3.version>3.12.0</commons-lang3.version>
-		<commons-text.version>1.9</commons-text.version>
+		<commons-text.version>1.10.0</commons-text.version>
 		<guava.version>30.1.1-jre</guava.version>
 		<guice.version>5.1.0</guice.version>
 		<httpclient.version>4.5.13</httpclient.version>
-		<httpcore.version>4.4.14</httpcore.version>
+		<httpcore.version>4.4.15</httpcore.version>
 		<javax.inject.version>1</javax.inject.version>
-		<jackson.version>2.11.4</jackson.version>
-		<jsonld.version>0.13.3</jsonld.version>
+		<jackson.version>2.13.4</jackson.version>
+		<jsonld.version>0.13.4</jsonld.version>
 		<junit.version>4.13.2</junit.version>
-		<logback.version>1.2.3</logback.version>
+		<logback.version>1.2.11</logback.version>
 		<mapdb.version>1.0.8</mapdb.version>
-		<opencsv.version>4.6</opencsv.version>
+		<opencsv.version>5.3</opencsv.version>
 		<parboiled.version>1.4.1</parboiled.version>
-		<rdf4j.version>4.0.5</rdf4j.version>
-		<slf4j.version>1.7.26</slf4j.version>
+		<rdf4j.version>4.2.2</rdf4j.version>
+		<slf4j.version>1.7.36</slf4j.version>
 
 		<bnd.version>6.3.1</bnd.version>
 
