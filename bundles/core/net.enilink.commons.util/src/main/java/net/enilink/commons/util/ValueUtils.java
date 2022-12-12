@@ -12,6 +12,7 @@ package net.enilink.commons.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -47,20 +48,20 @@ public class ValueUtils {
 
 		defaultValues.put(Boolean.TYPE, Boolean.FALSE);
 		defaultValues.put(Boolean.class, Boolean.FALSE);
-		defaultValues.put(Byte.TYPE, new Byte((byte) 0));
-		defaultValues.put(Byte.class, new Byte((byte) 0));
-		defaultValues.put(Character.TYPE, new Character((char) 0));
-		defaultValues.put(Character.class, new Character((char) 0));
-		defaultValues.put(Short.TYPE, new Short((short) 0));
-		defaultValues.put(Short.class, new Short((short) 0));
-		defaultValues.put(Integer.TYPE, new Integer(0));
-		defaultValues.put(Integer.class, new Integer(0));
-		defaultValues.put(Long.TYPE, new Long(0L));
-		defaultValues.put(Long.class, new Long(0L));
-		defaultValues.put(Float.TYPE, new Float(0.0f));
-		defaultValues.put(Float.class, new Float(0.0f));
-		defaultValues.put(Double.TYPE, new Double(0.0));
-		defaultValues.put(Double.class, new Double(0.0));
+		defaultValues.put(Byte.TYPE, (byte) 0);
+		defaultValues.put(Byte.class, (byte) 0);
+		defaultValues.put(Character.TYPE, (char) 0);
+		defaultValues.put(Character.class, (char) 0);
+		defaultValues.put(Short.TYPE, (short) 0);
+		defaultValues.put(Short.class, (short) 0);
+		defaultValues.put(Integer.TYPE, 0);
+		defaultValues.put(Integer.class, 0);
+		defaultValues.put(Long.TYPE, 0L);
+		defaultValues.put(Long.class, 0L);
+		defaultValues.put(Float.TYPE, 0.0f);
+		defaultValues.put(Float.class, 0.0f);
+		defaultValues.put(Double.TYPE, 0.0);
+		defaultValues.put(Double.class, 0.0);
 	}
 
 	public static synchronized ValueUtils getInstance() {
@@ -255,11 +256,11 @@ public class ValueUtils {
 		}
 
 		if (c == Character.class) {
-			return ((Character) value).charValue();
+			return (Character) value;
 		}
 
 		if (c == Boolean.class) {
-			return ((Boolean) value).booleanValue() ? 1 : 0;
+			return (Boolean) value ? 1 : 0;
 		}
 
 		return Long.parseLong(stringValue(value, true));
@@ -287,11 +288,11 @@ public class ValueUtils {
 		}
 
 		if (c == Character.class) {
-			return ((Character) value).charValue();
+			return (Character) value;
 		}
 
 		if (c == Boolean.class) {
-			return ((Boolean) value).booleanValue() ? 1 : 0;
+			return (Boolean) value ? 1 : 0;
 		}
 
 		String s = stringValue(value, true);
@@ -328,11 +329,11 @@ public class ValueUtils {
 		}
 
 		if (c == Character.class) {
-			return BigDecimal.valueOf(((Character) value).charValue());
+			return BigDecimal.valueOf((Character) value);
 		}
 
 		if (c == Boolean.class) {
-			return BigDecimal.valueOf(((Boolean) value).booleanValue() ? 1 : 0);
+			return BigDecimal.valueOf((Boolean) value ? 1 : 0);
 		}
 
 		return new BigDecimal(stringValue(value, true));
@@ -368,11 +369,11 @@ public class ValueUtils {
 		}
 
 		if (c == Character.class) {
-			return BigInteger.valueOf(((Character) value).charValue());
+			return BigInteger.valueOf((Character) value);
 		}
 
 		if (c == Boolean.class) {
-			return BigInteger.valueOf(((Boolean) value).booleanValue() ? 1 : 0);
+			return BigInteger.valueOf((Boolean) value ? 1 : 0);
 		}
 
 		return new BigInteger(stringValue(value, true));
@@ -391,7 +392,7 @@ public class ValueUtils {
 				|| (value instanceof String)
 				&& !Boolean.parseBoolean((String) value)
 				|| (value instanceof Character)
-				&& ((Character) value).charValue() == 0) {
+				&& (Character) value == 0) {
 			return Boolean.FALSE;
 		}
 		return Boolean.TRUE;
@@ -536,7 +537,7 @@ public class ValueUtils {
 
 		case BIGDECIMAL:
 			return bigDecValue(v1).divide(bigDecValue(v2),
-					BigDecimal.ROUND_HALF_EVEN);
+					RoundingMode.HALF_EVEN);
 
 		case FLOAT:
 		case DOUBLE:
@@ -589,30 +590,30 @@ public class ValueUtils {
 		case BOOLEAN:
 		case CHARACTER:
 		case INTEGER:
-			return new Integer((int) value);
+			return (int) value;
 
 		case FLOAT:
 
 			if ((long) (float) value == value) {
-				return new Float((float) value);
+				return (float) value;
 			}
 
 			// else fall through:
 		case DOUBLE:
 
 			if ((long) (double) value == value) {
-				return new Double((double) value);
+				return (double) value;
 			}
 
 			// else fall through:
 		case LONG:
-			return new Long(value);
+			return value;
 
 		case BYTE:
-			return new Byte((byte) value);
+			return (byte) value;
 
 		case SHORT:
-			return new Short((short) value);
+			return (short) value;
 
 		default:
 			return BigInteger.valueOf(value);
@@ -635,10 +636,10 @@ public class ValueUtils {
 	 */
 	public Number createReal(ValueType type, double value) {
 		if (type == ValueType.FLOAT) {
-			return new Float((float) value);
+			return (float) value;
 		}
 
-		return new Double(value);
+		return value;
 	}
 
 	/**
@@ -661,21 +662,21 @@ public class ValueUtils {
 
 		if (value != null) {
 			if (toType == Integer.class || toType == Integer.TYPE) {
-				result = new Integer((int) longValue(value));
+				result = (int) longValue(value);
 			} else if (toType == Double.class || toType == Double.TYPE) {
-				result = new Double(doubleValue(value));
+				result = doubleValue(value);
 			} else if (toType == Boolean.class || toType == Boolean.TYPE) {
 				result = booleanValue(value) ? Boolean.TRUE : Boolean.FALSE;
 			} else if (toType == Byte.class || toType == Byte.TYPE) {
-				result = new Byte((byte) longValue(value));
+				result = (byte) longValue(value);
 			} else if (toType == Character.class || toType == Character.TYPE) {
-				result = new Character((char) longValue(value));
+				result = (char) longValue(value);
 			} else if (toType == Short.class || toType == Short.TYPE) {
-				result = new Short((short) longValue(value));
+				result = (short) longValue(value);
 			} else if (toType == Long.class || toType == Long.TYPE) {
-				result = new Long(longValue(value));
+				result = longValue(value);
 			} else if (toType == Float.class || toType == Float.TYPE) {
-				result = new Float(doubleValue(value));
+				result = (float) doubleValue(value);
 			} else if (toType == BigInteger.class) {
 				result = bigIntValue(value);
 			} else if (toType == BigDecimal.class) {

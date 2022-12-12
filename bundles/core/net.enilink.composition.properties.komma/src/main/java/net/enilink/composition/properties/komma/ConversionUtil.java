@@ -12,7 +12,7 @@ public class ConversionUtil {
 	private static final Map<Class<?>, Class<?>> primitiveWrappers;
 
 	static {
-		primitiveWrappers = new HashMap<Class<?>, Class<?>>();
+		primitiveWrappers = new HashMap<>();
 		primitiveWrappers.put(boolean.class, Boolean.class);
 		primitiveWrappers.put(char.class, Character.class);
 		primitiveWrappers.put(byte.class, Byte.class);
@@ -86,11 +86,11 @@ public class ConversionUtil {
 		}
 
 		if (c == Character.class) {
-			return ((Character) value).charValue();
+			return (Character) value;
 		}
 
 		if (c == Boolean.class) {
-			return ((Boolean) value).booleanValue() ? 1 : 0;
+			return (Boolean) value ? 1 : 0;
 		}
 
 		return Long.parseLong(stringValue(value, true));
@@ -118,11 +118,11 @@ public class ConversionUtil {
 		}
 
 		if (c == Character.class) {
-			return ((Character) value).charValue();
+			return (Character) value;
 		}
 
 		if (c == Boolean.class) {
-			return ((Boolean) value).booleanValue() ? 1 : 0;
+			return (Boolean) value ? 1 : 0;
 		}
 
 		String s = stringValue(value, true);
@@ -156,15 +156,15 @@ public class ConversionUtil {
 		}
 
 		if (c.getSuperclass() == Number.class) {
-			return new BigDecimal(((Number) value).doubleValue());
+			return BigDecimal.valueOf(((Number) value).doubleValue());
 		}
 
 		if (c == Character.class) {
-			return BigDecimal.valueOf(((Character) value).charValue());
+			return BigDecimal.valueOf((Character) value);
 		}
 
 		if (c == Boolean.class) {
-			return BigDecimal.valueOf(((Boolean) value).booleanValue() ? 1 : 0);
+			return BigDecimal.valueOf((Boolean) value ? 1 : 0);
 		}
 
 		return new BigDecimal(stringValue(value, true));
@@ -201,11 +201,11 @@ public class ConversionUtil {
 		}
 
 		if (c == Character.class) {
-			return BigInteger.valueOf(((Character) value).charValue());
+			return BigInteger.valueOf((Character) value);
 		}
 
 		if (c == Boolean.class) {
-			return BigInteger.valueOf(((Boolean) value).booleanValue() ? 1 : 0);
+			return BigInteger.valueOf((Boolean) value ? 1 : 0);
 		}
 
 		return new BigInteger(stringValue(value, true));
@@ -224,7 +224,7 @@ public class ConversionUtil {
 				|| (value instanceof String)
 				&& !Boolean.parseBoolean((String) value)
 				|| (value instanceof Character)
-				&& ((Character) value).charValue() == 0) {
+				&& (Character) value == 0) {
 			return Boolean.FALSE;
 		}
 		return Boolean.TRUE;
@@ -250,21 +250,21 @@ public class ConversionUtil {
 
 		if (value != null) {
 			if (toType == Integer.class || toType == Integer.TYPE) {
-				result = new Integer((int) longValue(value));
+				result = (int) longValue(value);
 			} else if (toType == Double.class || toType == Double.TYPE) {
-				result = new Double(doubleValue(value));
+				result = doubleValue(value);
 			} else if (toType == Boolean.class || toType == Boolean.TYPE) {
 				result = booleanValue(value) ? Boolean.TRUE : Boolean.FALSE;
 			} else if (toType == Byte.class || toType == Byte.TYPE) {
-				result = new Byte((byte) longValue(value));
+				result = (byte) longValue(value);
 			} else if (toType == Character.class || toType == Character.TYPE) {
-				result = new Character((char) longValue(value));
+				result = (char) longValue(value);
 			} else if (toType == Short.class || toType == Short.TYPE) {
-				result = new Short((short) longValue(value));
+				result = (short) longValue(value);
 			} else if (toType == Long.class || toType == Long.TYPE) {
-				result = new Long(longValue(value));
+				result = longValue(value);
 			} else if (toType == Float.class || toType == Float.TYPE) {
-				result = new Float(doubleValue(value));
+				result = (float) doubleValue(value);
 			} else if (toType == BigInteger.class) {
 				result = bigIntValue(value);
 			} else if (toType == BigDecimal.class) {

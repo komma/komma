@@ -10,20 +10,20 @@
  *******************************************************************************/
 package net.enilink.composition.properties.komma;
 
-import java.util.ArrayList;
+import net.enilink.composition.mapping.PropertyAttribute;
+import net.enilink.composition.properties.PropertySet;
+import net.enilink.composition.properties.PropertySetFactory;
+import net.enilink.komma.core.IEntityManager;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.core.IReferenceable;
+import net.enilink.komma.core.URI;
+import net.enilink.komma.core.URIs;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.collect.MapMaker;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-
-import net.enilink.composition.mapping.PropertyAttribute;
-import net.enilink.composition.properties.PropertySet;
-import net.enilink.composition.properties.PropertySetFactory;
-import net.enilink.komma.core.*;
 
 public class KommaPropertySetFactory implements PropertySetFactory {
 	// Use weak references to property sets.

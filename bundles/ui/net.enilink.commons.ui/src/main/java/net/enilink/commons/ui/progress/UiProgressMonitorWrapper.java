@@ -28,8 +28,7 @@ import org.eclipse.swt.widgets.Display;
  * Clients may subclass.
  * </p>
  */
-public class UiProgressMonitorWrapper implements IProgressMonitor,
-		IProgressMonitorWithBlocking {
+public class UiProgressMonitorWrapper implements IProgressMonitor {
 
 	/** The wrapped progress monitor. */
 	private IProgressMonitor progressMonitor;
@@ -70,17 +69,13 @@ public class UiProgressMonitorWrapper implements IProgressMonitor,
 	 * This implementation of a <code>IProgressMonitorWithBlocking</code> method
 	 * forwards to the wrapped progress monitor. Clients may override this
 	 * method to do additional processing.
-	 * 
-	 * @see IProgressMonitorWithBlocking#clearBlocked()
 	 */
 	public void clearBlocked() {
 		if (!display.isDisposed()) {
 			display.asyncExec(new Runnable() {
 				@Override
 				public void run() {
-					if (progressMonitor instanceof IProgressMonitorWithBlocking)
-						((IProgressMonitorWithBlocking) progressMonitor)
-								.clearBlocked();
+					progressMonitor.clearBlocked();
 				}
 			});
 		}
@@ -156,17 +151,13 @@ public class UiProgressMonitorWrapper implements IProgressMonitor,
 	 * This implementation of a <code>IProgressMonitorWithBlocking</code> method
 	 * forwards to the wrapped progress monitor. Clients may override this
 	 * method to do additional processing.
-	 * 
-	 * @see IProgressMonitorWithBlocking#setBlocked(IStatus)
 	 */
 	public void setBlocked(final IStatus reason) {
 		if (!display.isDisposed()) {
 			display.syncExec(new Runnable() {
 				@Override
 				public void run() {
-					if (progressMonitor instanceof IProgressMonitorWithBlocking)
-						((IProgressMonitorWithBlocking) progressMonitor)
-								.setBlocked(reason);
+					progressMonitor.setBlocked(reason);
 				}
 			});
 		}
