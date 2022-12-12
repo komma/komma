@@ -34,6 +34,7 @@ KOMMA is a framework for linked data applications. It supports the management an
 		<httpcore.version>4.4.15</httpcore.version>
 		<javax.inject.version>1</javax.inject.version>
 		<jackson.version>2.13.4</jackson.version>
+		<jacksondb.version>2.13.4.2</jacksondb.version>
 		<jsonld.version>0.13.4</jsonld.version>
 		<junit.version>4.13.2</junit.version>
 		<logback.version>1.2.11</logback.version>
@@ -471,7 +472,7 @@ KOMMA is a framework for linked data applications. It supports the management an
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
-				<version>${jackson.version}</version>
+				<version>${jacksondb.version}</version>
 				<exclusions>
 					<exclusion>
 						<groupId>*</groupId>
