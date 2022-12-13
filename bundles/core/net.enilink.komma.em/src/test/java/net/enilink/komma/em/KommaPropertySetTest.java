@@ -25,6 +25,8 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
+import java.util.Set;
+
 public class KommaPropertySetTest extends EntityManagerTest {
 	private static final String NS = "test:";
 
@@ -56,6 +58,9 @@ public class KommaPropertySetTest extends EntityManagerTest {
 		String getName();
 
 		void setName(String name);
+
+		@Iri(NS + "anyProperty")
+		Set<Object> getAnyProperty();
 
 		Injector getInjector();
 	}
@@ -205,5 +210,22 @@ public class KommaPropertySetTest extends EntityManagerTest {
 
 		assertSame(a.getName(), b.getName());
 		assertSame(b.getName(), c.getName());
+	}
+
+    /**
+     * Tests that also properties of type {@link java.lang.Object} are working correctly.
+     */
+	@Test
+	public void testObjectValuedProperty() {
+		URI uri = URIs.createURI(NS + "one");
+		URI anyProperty = URIs.createURI(NS + "anyProperty");
+		Concept a = manager.createNamed(uri, Concept.class);
+		a.setName("name");
+		manager.add(new Statement(uri, anyProperty, "string"));
+		assertEquals("string", a.getAnyProperty().toArray()[0]);
+		manager.remove(new Statement(uri, anyProperty, null));
+		manager.add(new Statement(uri, anyProperty, 1337));
+		manager.refresh(a);
+		assertEquals(1337, a.getAnyProperty().toArray()[0]);
 	}
 }

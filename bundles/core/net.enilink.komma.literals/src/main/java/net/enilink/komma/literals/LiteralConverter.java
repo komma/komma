@@ -159,7 +159,7 @@ public class LiteralConverter {
 			return literal.getLabel();
 		}
 		ILiteralMapper<?> mapper = null;
-		if (type != null) {
+		if (type != null && type != Object.class) {
 			// try to find mapper by Java class
 			mapper = findMapper(type);
 		}
