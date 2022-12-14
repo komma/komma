@@ -28,6 +28,7 @@
  */
 package net.enilink.komma.internal.rdf4j;
 
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 
 import net.enilink.komma.core.ITransaction;
@@ -106,7 +107,8 @@ public class RDF4JTransaction implements ITransaction {
 
 	public boolean isActive() {
 		try {
-			return dm.getConnection().isActive();
+			RepositoryConnection connection = dm.getConnection();
+			return connection != null && connection.isActive();
 		} catch (RepositoryException e) {
 			throw new KommaException(e);
 		}
