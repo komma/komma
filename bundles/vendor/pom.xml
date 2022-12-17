@@ -36,6 +36,8 @@
 						<configuration>
 							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
 							<excludeTransitive>true</excludeTransitive>
+							<!-- exclude logging and test dependencies -->
+							<excludeGroupIds>junit,org.junit,org.junit.jupiter,org.mockito,org.slf4j</excludeGroupIds>
 						</configuration>
 					</execution>
 				</executions>
