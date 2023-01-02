@@ -551,7 +551,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	}
 
 	@Override
-	public void refresh() {
+	public synchronized void refresh() {
 		// reset all cached properties
 		properties = null;
 	}
