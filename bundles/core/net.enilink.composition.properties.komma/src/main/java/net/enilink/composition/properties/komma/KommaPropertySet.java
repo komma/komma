@@ -187,48 +187,54 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 	 *
 	 * @return <code>true</code>
 	 */
-	public synchronized boolean add(E o) {
-		refresh();
-		addWithoutRefresh(o);
+	public boolean add(E o) {
+		synchronized (this) {
+			refresh();
+			addWithoutRefresh(o);
+		}
 		refreshOwners();
 		refresh(o);
 		return true;
 	}
 
-	public synchronized boolean addAll(Collection<? extends E> c) {
-		refresh();
+	public boolean addAll(Collection<? extends E> c) {
 		boolean modified = false;
-		ITransaction transaction = factory.getManager().getTransaction();
-		try {
-			boolean active = transaction.isActive();
-			if (!active) {
-				transaction.begin();
-			}
+		synchronized (this) {
+			refresh();
+			ITransaction transaction = factory.getManager().getTransaction();
 			try {
-				for (E o : c) {
-					if (addWithoutRefresh(o)) {
-						modified = true;
+				boolean active = transaction.isActive();
+				if (!active) {
+					transaction.begin();
+				}
+				try {
+					for (E o : c) {
+						if (addWithoutRefresh(o)) {
+							modified = true;
+						}
+					}
+					if (!active) {
+						transaction.commit();
+					}
+				} finally {
+					if (!active && transaction.isActive()) {
+						transaction.rollback();
 					}
 				}
-				if (!active) {
-					transaction.commit();
-				}
-			} finally {
-				if (!active && transaction.isActive()) {
-					transaction.rollback();
-				}
+			} catch (KommaException e) {
+				throw new PropertyException(e);
 			}
-		} catch (KommaException e) {
-			throw new PropertyException(e);
 		}
 		refreshOwners();
 		return modified;
 	}
 
-	public synchronized void clear() {
-		factory.getManager().remove(new Statement(subject, property, null));
-		refreshCache();
-		refresh();
+	public void clear() {
+		synchronized (this) {
+			factory.getManager().remove(new Statement(subject, property, null));
+			refreshCache();
+			refresh();
+		}
 		refreshOwners();
 	}
 
@@ -640,73 +646,79 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 	 * @return <code>true</code>
 	 */
 	public boolean remove(Object o) {
-		refresh();
-		factory.getManager().remove(new Statement(subject, property, convertInstance(o)));
+		synchronized (this) {
+			refresh();
+			factory.getManager().remove(new Statement(subject, property, convertInstance(o)));
+		}
 		refresh(o);
 		refreshOwners();
 		return true;
 	}
 
-	public synchronized boolean removeAll(Collection<?> c) {
+	public boolean removeAll(Collection<?> c) {
 		boolean modified = false;
-		try {
-			ITransaction transaction = factory.getManager().getTransaction();
-			boolean active = transaction.isActive();
-			if (!active) {
-				transaction.begin();
-			}
+		synchronized (this) {
 			try {
-				for (Object o : c) {
-					if (remove(o)) {
-						modified = true;
+				ITransaction transaction = factory.getManager().getTransaction();
+				boolean active = transaction.isActive();
+				if (!active) {
+					transaction.begin();
+				}
+				try {
+					for (Object o : c) {
+						if (remove(o)) {
+							modified = true;
+						}
+					}
+					if (!active) {
+						transaction.commit();
+					}
+				} finally {
+					if (!active && transaction.isActive()) {
+						transaction.rollback();
 					}
 				}
-				if (!active) {
-					transaction.commit();
-				}
-			} finally {
-				if (!active && transaction.isActive()) {
-					transaction.rollback();
-				}
+			} catch (KommaException e) {
+				throw new PropertyException(e);
 			}
-		} catch (KommaException e) {
-			throw new PropertyException(e);
+			refreshCache();
 		}
-		refreshCache();
 		refreshOwners();
 		return modified;
 	}
 
-	public synchronized boolean retainAll(Collection<?> c) {
-		refresh();
+	public boolean retainAll(Collection<?> c) {
 		boolean modified = false;
-		try {
-			ITransaction transaction = factory.getManager().getTransaction();
-			boolean active = transaction.isActive();
-			if (!active) {
-				transaction.begin();
-			}
+		synchronized (this) {
+			refresh();
 			try {
-				try (IExtendedIterator<E> e = createElementsIterator()) {
-					while (e.hasNext()) {
-						if (!c.contains(e.next())) {
-							remove(e);
-							modified = true;
+				ITransaction transaction = factory.getManager().getTransaction();
+				boolean active = transaction.isActive();
+				if (!active) {
+					transaction.begin();
+				}
+				try {
+					try (IExtendedIterator<E> e = createElementsIterator()) {
+						while (e.hasNext()) {
+							if (!c.contains(e.next())) {
+								remove(e);
+								modified = true;
+							}
 						}
 					}
+					if (!active) {
+						transaction.commit();
+					}
+				} finally {
+					if (!active && transaction.isActive()) {
+						transaction.rollback();
+					}
 				}
-				if (!active) {
-					transaction.commit();
-				}
-			} finally {
-				if (!active && transaction.isActive()) {
-					transaction.rollback();
-				}
+			} catch (KommaException e) {
+				throw new PropertyException(e);
 			}
-		} catch (KommaException e) {
-			throw new PropertyException(e);
+			refreshCache();
 		}
-		refreshCache();
 		refreshOwners();
 		return modified;
 	}
