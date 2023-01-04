@@ -59,6 +59,11 @@ public class KommaPropertySetTest extends EntityManagerTest {
 
 		void setName(String name);
 
+		@Iri(NS + "flag")
+		Boolean getFlag();
+
+		void setFlag(Boolean flag);
+
 		@Iri(NS + "anyProperty")
 		Set<Object> getAnyProperty();
 
@@ -100,14 +105,18 @@ public class KommaPropertySetTest extends EntityManagerTest {
 		URI uri = URIs.createURI(NS + "one");
 		Concept a = manager.createNamed(uri, Concept.class);
 		a.setName("a");
+		a.setFlag(true);
 
 		ITransaction tx = manager.getTransaction();
 		tx.begin();
 		a.setName("b");
+		a.setFlag(false);
+
 		Thread thread = new Thread(() -> {
 			uow.begin();
 			try {
 				assertEquals("a", a.getName());
+				assertEquals(true, a.getFlag());
 			} finally {
 				uow.end();
 			}
@@ -116,9 +125,11 @@ public class KommaPropertySetTest extends EntityManagerTest {
 		thread.join();
 
 		assertEquals("b", a.getName());
+		assertEquals(false, a.getFlag());
 
 		tx.commit();
 		assertEquals("b", a.getName());
+		assertEquals(false, a.getFlag());
 	}
 
 	/**
@@ -130,18 +141,21 @@ public class KommaPropertySetTest extends EntityManagerTest {
 		URI uri = URIs.createURI(NS + "one");
 		Concept a = manager.createNamed(uri, Concept.class);
 		a.setName("a");
+		a.setFlag(true);
 
 		assertEquals("a", a.getName());
 
 		ITransaction tx = manager.getTransaction();
 		tx.begin();
 		a.setName("b");
+		a.setFlag(null);
 		assertEquals("b", a.getName());
 
 		Thread thread = new Thread(() -> {
 			uow.begin();
 			try {
 				assertEquals("a", a.getName());
+				assertEquals(true, a.getFlag());
 			} finally {
 				uow.end();
 			}
@@ -150,9 +164,11 @@ public class KommaPropertySetTest extends EntityManagerTest {
 		thread.join();
 
 		assertEquals("b", a.getName());
+		assertEquals(null, a.getFlag());
 
 		tx.commit();
 		assertEquals("b", a.getName());
+		assertEquals(null, a.getFlag());
 	}
 
 	/**
