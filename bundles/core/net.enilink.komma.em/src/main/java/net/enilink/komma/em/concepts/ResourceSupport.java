@@ -12,15 +12,12 @@ package net.enilink.komma.em.concepts;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
-import net.enilink.composition.properties.komma.KommaPropertySet;
-import net.enilink.composition.properties.komma.KommaPropertySetFactory;
 import net.enilink.composition.properties.traits.PropertySetOwner;
 import net.enilink.composition.properties.util.UnmodifiablePropertySet;
 import net.enilink.composition.traits.Behaviour;
@@ -53,13 +50,13 @@ public abstract class ResourceSupport extends BehaviorBase implements
 	class PropertyInfo {
 		private IReference property;
 		private PropertySet<Object> propertySet;
-		private Boolean single;
+		private volatile Boolean single;
 
 		PropertyInfo(IReference property) {
 			this.property = getEntityManager().find(property);
 		}
 
-		PropertySet<Object> getPropertySet() {
+		synchronized PropertySet<Object> getPropertySet() {
 			if (propertySet != null) {
 				return propertySet;
 			}
@@ -241,7 +238,7 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	private synchronized PropertyInfo ensurePropertyInfo(IReference property) {
 		if (properties == null) {
-			properties = new HashMap<IReference, PropertyInfo>();
+			properties = new HashMap<>();
 		}
 		PropertyInfo propertyInfo = properties.get(property);
 		if (propertyInfo == null) {
