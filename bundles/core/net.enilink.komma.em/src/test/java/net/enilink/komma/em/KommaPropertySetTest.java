@@ -13,6 +13,10 @@ package net.enilink.komma.em;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+
+import net.enilink.commons.iterator.IExtendedIterator;
+import net.enilink.commons.iterator.NiceIterator;
+import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.composition.annotations.Iri;
 import net.enilink.composition.mapping.PropertyAttribute;
 import net.enilink.composition.properties.PropertySet;
@@ -20,11 +24,16 @@ import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.komma.KommaPropertySet;
 import net.enilink.composition.properties.komma.KommaPropertySetFactory;
 import net.enilink.komma.core.*;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 
+import java.util.AbstractList;
+import java.util.List;
 import java.util.Set;
 
 public class KommaPropertySetTest extends EntityManagerTest {
@@ -94,6 +103,30 @@ public class KommaPropertySetTest extends EntityManagerTest {
 		public TestKommaPropertySet(IReference subject, IReference property, Class valueType, URI rdfValueType) {
 			super(subject, property, valueType, rdfValueType);
 		}
+
+		@Override
+		protected IExtendedIterator<E> createElementsIterator(String filterPattern, int limit) {
+			return new WrappedIterator<>(super.createElementsIterator(filterPattern, limit)) {
+				@Override
+				public boolean hasNext() {
+					while (waitInIteration) {
+						try {
+							Thread.sleep(5);
+						} catch (InterruptedException ex) {
+							ex.printStackTrace();
+						}
+					}
+					return super.hasNext();
+				}
+			};
+		}
+	}
+
+	volatile static boolean waitInIteration = false;
+
+	@BeforeClass
+	public static void before() {
+		waitInIteration = false;
 	}
 
 	/**
@@ -149,6 +182,7 @@ public class KommaPropertySetTest extends EntityManagerTest {
 		tx.begin();
 		a.setName("b");
 		a.setFlag(null);
+		assertEquals(null, a.getFlag());
 		assertEquals("b", a.getName());
 
 		Thread thread = new Thread(() -> {
@@ -168,6 +202,44 @@ public class KommaPropertySetTest extends EntityManagerTest {
 
 		tx.commit();
 		assertEquals("b", a.getName());
+		assertEquals(null, a.getFlag());
+	}
+
+	@Test
+	public void testCachingMultipleThreadsWithoutTx() throws InterruptedException {
+		URI uri = URIs.createURI(NS + "one");
+		Concept a = manager.createNamed(uri, Concept.class);
+		a.setName("a");
+		a.setFlag(true);
+
+		assertEquals("a", a.getName());
+
+		Thread thread = new Thread(() -> {
+			uow.begin();
+			try {
+				a.setFlag(null);
+			} finally {
+				uow.end();
+			}
+			waitInIteration = false;
+		});
+
+		Thread thread2 = new Thread(() -> {
+			waitInIteration = true;
+			uow.begin();
+			try {
+				a.getFlag();
+			} finally {
+				uow.end();
+			}
+		});
+
+		thread2.start();
+		thread.start();
+		thread.join();
+		thread2.join();
+
+		waitInIteration = false;
 		assertEquals(null, a.getFlag());
 	}
 

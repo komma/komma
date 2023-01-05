@@ -71,8 +71,17 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 	protected final IReference property;
 	protected Class<E> valueType;
 	protected URI rdfValueType;
-	protected List<ITransaction> activeTxns = null;
 	private volatile List<E> cache;
+	/**
+	 * Tracks active transactions to avoid using the cache while any transaction is active.
+	 */
+	protected List<ITransaction> activeTxns = null;
+	/**
+	 * Tracks number of cache refreshes to avoid setting a cache at the end of an iterator
+	 * created by {@link #createElementsIterator()} if a refresh has occurred from another
+	 * thread while iterating the elements.
+	 */
+	private int refreshVersion;
 
 	public KommaPropertySet(IReference subject, IReference property) {
 		this(subject, property, null, null);
@@ -370,8 +379,8 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 		return createElementsIterator(null, Integer.MAX_VALUE);
 	}
 
-	protected IExtendedIterator<E> createElementsIterator(
-			final String filterPattern, final int limit) {
+	protected IExtendedIterator<E> createElementsIterator(final String filterPattern, final int limit) {
+		final int startRefreshVersion = refreshVersion;
 		IQuery<?> query = createElementsQuery(QUERY, filterPattern, limit);
 		return new ConvertingIterator<>(evaluateQueryForTypes(query)) {
 			private List<E> list = filterPattern == null
@@ -381,9 +390,13 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 
 			@Override
 			public void close() {
-				if (list != null
-						&& (!hasNext() || list.size() == getCacheLimit())) {
-					setCache(list);
+				if (list != null && (!hasNext() || list.size() == getCacheLimit())) {
+					synchronized (KommaPropertySet.this) {
+						if (startRefreshVersion == refreshVersion) {
+							// only set cache if no refreshes have occurred after the creation of the iterator
+							setCache(list);
+						}
+					}
 				}
 				try {
 					super.close();
@@ -497,6 +510,9 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 		// that have touched this property set so far
 		boolean anyTxActive = trackRelatedActiveTransactions();
 		if (!anyTxActive || cache == null) {
+			synchronized (this) {
+				refreshVersion++;
+			}
 			this.cache = cache;
 		}
 	}
