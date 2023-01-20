@@ -1,0 +1,12 @@
+@prefix : <http://example.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+@base <http://example.org/> .
+<x> <p> _:n1 .
+_:n1 <p> _:n2 .
+_:bnode123 <p> _:n5 .
+_:n2 <p> _:n7 .
+<y> <p> _:n3 .

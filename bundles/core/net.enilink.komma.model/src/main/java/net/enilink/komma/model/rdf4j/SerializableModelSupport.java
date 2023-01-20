@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2022 Fraunhofer IWU and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * Contributors:
+ *     Fraunhofer IWU - initial API and implementation
+ *******************************************************************************/
 package net.enilink.komma.model.rdf4j;
 
 import java.io.IOException;
@@ -110,9 +120,9 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 		return contentDescription;
 	}
 
-	class ReconstructNodeIds implements IMap<IStatement, IStatement> {
+	static class ReconstructNodeIds implements IMap<IStatement, IStatement> {
 		final Map<String, IReference> bnodeMap = new HashMap<>();
-		Pattern idPattern = Pattern.compile("^_:n([0-9a-z]{1,13})$");
+		static final Pattern idPattern = Pattern.compile("^_:n([0-9a-z]{1,13})$");
 		String prefix = BlankNode.generateId();
 		long maxNodeId = 0;
 
@@ -135,9 +145,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 					if (bnode == null) {
 						long id = Long.parseLong(idStr, 36);
 						maxNodeId = Math.max(maxNodeId, id);
-						String fixedLenSuffix = ("0000000000000" + idStr)
-								.substring(idStr.length());
-						String newId = prefix + "__" + fixedLenSuffix;
+						String newId = prefix + "__" + shortIdToSuffix(idStr);
 						bnode = new BlankNode(newId);
 						bnodeMap.put(idStr, bnode);
 					}
@@ -148,6 +156,10 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 				}
 			}
 			return value;
+		}
+
+		static String shortIdToSuffix(String shortId) {
+			return ("0000000000000" + shortId).substring(shortId.length());
 		}
 	}
 
@@ -266,10 +278,16 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 		setModelLoaded(true);
 	}
 
-	class ShortenNodeIds implements IMap<IStatement, IStatement> {
+	static class ShortenNodeIds implements IMap<IStatement, IStatement> {
 		final Map<String, IReference> bnodeMap = new HashMap<>();
-		Pattern idPattern = Pattern.compile("^.*__0*([0-9a-z]+)$");
-		long nextNodeId = maxNodeId() + 1;
+		final Map<String, IReference> usedShortIds = new HashMap<>();
+		final Map<String, Integer> seenPrefixes = new HashMap<>();
+		static final Pattern idPattern = Pattern.compile("^(.+)__0*([0-9a-z]+)$");
+		long nextNodeId;
+
+		ShortenNodeIds(long nextNodeId) {
+			this.nextNodeId = nextNodeId;
+		}
 
 		@Override
 		public IStatement map(IStatement stmt) {
@@ -280,8 +298,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 
 		@SuppressWarnings("unchecked")
 		<V> V convert(V value) {
-			if (value instanceof IReference
-					&& ((IReference) value).getURI() == null) {
+			if (value instanceof IReference	&& ((IReference) value).getURI() == null) {
 				String valueAsString = value.toString();
 				if (valueAsString.startsWith("_:")) {
 					String id = valueAsString.substring(2);
@@ -290,9 +307,22 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 						Matcher m = idPattern.matcher(id);
 						String shortId;
 						if (m.matches()) {
-							shortId = m.group(1);
+							String prefix = m.group(1);
+							int prefixId = seenPrefixes.computeIfAbsent(prefix, key -> seenPrefixes.size() + 1);
+
+							shortId = m.group(2);
+							if (! usedShortIds.computeIfAbsent(shortId, key -> (IReference)value).equals(value)) {
+								// another bnode exists that uses the same short ID
+								// ensure that shortId is unique by appending prefixId
+								shortId += "-" + prefixId;
+							}
 						} else {
 							shortId = Long.toString(nextNodeId++, 36);
+							if (! usedShortIds.computeIfAbsent(shortId, key -> (IReference)value).equals(value)) {
+								// another bnode exists that uses the same short ID, this could happen if nextNodeId is not correctly initialized
+								// ensure that shortId is unique by appending the fixed suffix "-0" as prefix IDs start with 1
+								shortId += "-0";
+							}
 						}
 						String newId = "_:n" + shortId;
 						bnode = new BlankNode(newId);
@@ -391,7 +421,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 				}
 			}
 
-			ShortenNodeIds idMapper = new ShortenNodeIds();
+			ShortenNodeIds idMapper = new ShortenNodeIds(maxNodeId() + 1);
 			// use sorting to improve readability of serialized output
 			// store URI descriptions first
 			String query = ISparqlConstants.PREFIX + "construct { ?s ?p ?o0 . "
