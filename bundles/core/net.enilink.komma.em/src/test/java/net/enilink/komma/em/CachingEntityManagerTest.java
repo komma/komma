@@ -10,6 +10,7 @@
  *******************************************************************************/
 package net.enilink.komma.em;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -19,6 +20,7 @@ import net.enilink.komma.core.KommaModule;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 import net.enilink.komma.em.concepts.Person;
+import net.enilink.vocab.rdfs.Resource;
 
 public class CachingEntityManagerTest extends EntityManagerTest {
 	private static final String NS = "test:";
@@ -26,6 +28,7 @@ public class CachingEntityManagerTest extends EntityManagerTest {
 	protected KommaModule createModule() throws Exception {
 		KommaModule module = super.createModule();
 		module.addConcept(Person.class);
+		module.addConcept(Resource.class);
 		return module;
 	}
 
@@ -53,5 +56,18 @@ public class CachingEntityManagerTest extends EntityManagerTest {
 
 		entity = manager.find(uriMax);
 		assertTrue(uriMax + " must be a person", entity instanceof Person);
+	}
+
+	@Test
+	public void testAdHocConversion() throws Exception {
+		URI uriMoritz = URIs.createURI(NS + "moritz");
+		// this line does not yet add the bean to the cache because createNamed interprets types as "restricted" to the given ones
+		IEntity moritz = manager.createNamed(uriMoritz, Resource.class);
+		assertNotNull(moritz);
+		// the following statement adds the bean to the cache
+		moritz = manager.find(uriMoritz, Resource.class);
+		assertNotNull(moritz);
+		assertTrue(uriMoritz + " must be converted to a person",
+			manager.toInstance(uriMoritz, Person.class, null) instanceof Person);
 	}
 }

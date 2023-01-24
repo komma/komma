@@ -1072,7 +1072,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 					types = Collections.singleton(typeUri);
 				}
 			}
-			Object bean = createBean((IReference) value, types, null, false, true, graph);
+			Object bean = createBean((IReference) value, types, type != null ? Collections.singleton(type) : null, false, true, graph);
 			if (log.isTraceEnabled()) {
 				if (!createQuery("ASK {?s ?p ?o}").setParameter("s", (IReference) value).getBooleanResult()) {
 					log.trace("Warning: Unknown entity: " + value);
