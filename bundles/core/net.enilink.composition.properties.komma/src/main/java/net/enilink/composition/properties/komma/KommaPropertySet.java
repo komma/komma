@@ -75,7 +75,7 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 	/**
 	 * Tracks active transactions to avoid using the cache while any transaction is active.
 	 */
-	protected List<ITransaction> activeTxns = null;
+	protected final List<ITransaction> activeTxns = new ArrayList<>(0);
 	/**
 	 * Tracks number of cache refreshes to avoid setting a cache at the end of an iterator
 	 * created by {@link #createElementsIterator()} if a refresh has occurred from another
@@ -112,30 +112,24 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 	 *
 	 * @return <code>true</code> if a transaction is currently active, else <code>false</code>
 	 */
-	public synchronized boolean trackRelatedActiveTransactions() {
-		ITransaction tx = factory.getManager().getTransaction();
-		if (tx.isActive()) {
-			if (activeTxns == null) {
-				activeTxns = new ArrayList<>();
+	public boolean trackRelatedActiveTransactions() {
+		// do not synchronize on 'this' as it may lead to a deadlock
+		// if multiple property sets mutually call this method while they locked 'this'
+		synchronized (activeTxns) {
+			ITransaction tx = factory.getManager().getTransaction();
+			if (tx.isActive()) {
 				activeTxns.add(tx);
-			} else if (!activeTxns.contains(tx)) {
-				activeTxns.add(tx);
-			}
-		} else {
-			if (activeTxns != null) {
-				boolean removed = false;
-				for (int i = 0; i < activeTxns.size(); i++) {
-					if (!activeTxns.get(i).isActive()) {
-						activeTxns.remove(i--);
-						removed = true;
+			} else {
+				if (!activeTxns.isEmpty()) {
+					for (int i = 0; i < activeTxns.size(); i++) {
+						if (!activeTxns.get(i).isActive()) {
+							activeTxns.remove(i--);
+						}
 					}
 				}
-				if (removed && activeTxns.isEmpty()) {
-					activeTxns = null;
-				}
 			}
+			return !activeTxns.isEmpty();
 		}
-		return activeTxns != null;
 	}
 
 	/**
