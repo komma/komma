@@ -30,7 +30,7 @@
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.ui.views.properties.tabbed</artifactId>
-			<version>3.9.100</version>
+			<version>3.10.100</version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>

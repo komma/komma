@@ -17,7 +17,7 @@
 	</scm>
 
 	<artifactId>org.apache.batik.css</artifactId>
-	<version>1.12</version>
+	<version>1.17</version>
 	<packaging>jar</packaging>
 
 	<dependencies>

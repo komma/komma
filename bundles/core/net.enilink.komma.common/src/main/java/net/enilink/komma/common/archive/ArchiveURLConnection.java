@@ -310,10 +310,10 @@ public class ArchiveURLConnection extends URLConnection {
 			throw new IOException("Archive entry not found " + urlString);
 		}
 
-		return yield(inputZipEntry, inputStream);
+		return deliver(inputZipEntry, inputStream);
 	}
 
-	protected InputStream yield(ZipEntry zipEntry, InputStream inputStream)
+	protected InputStream deliver(ZipEntry zipEntry, InputStream inputStream)
 			throws IOException {
 		return inputStream;
 	}
@@ -564,7 +564,7 @@ public class ArchiveURLConnection extends URLConnection {
 					}
 				}
 			};
-			return outputZipEntry == null ? result : yield(outputZipEntry,
+			return outputZipEntry == null ? result : deliver(outputZipEntry,
 					result);
 		} finally {
 			// Close in case of failure to complete.
@@ -581,7 +581,7 @@ public class ArchiveURLConnection extends URLConnection {
 		}
 	}
 
-	protected OutputStream yield(ZipEntry zipEntry, OutputStream outputStream)
+	protected OutputStream deliver(ZipEntry zipEntry, OutputStream outputStream)
 			throws IOException {
 		return outputStream;
 	}
