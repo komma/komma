@@ -359,11 +359,6 @@ version(s), and exceptions or additional permissions here}."
 													<transitive>false</transitive>
 													<source>false</source>
 												</artifact>
-												<artifact>
-													<id>net.enilink.bundles:net.enilink.bundles.javax-inject:${javax.inject.version}</id>
-													<transitive>false</transitive>
-													<source>false</source>
-												</artifact>
 
 												<artifact>
 													<id>commons-beanutils:commons-beanutils:${commons-beanutils.version}</id>

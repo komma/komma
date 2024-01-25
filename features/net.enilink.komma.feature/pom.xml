@@ -27,11 +27,6 @@
 			<artifactId>net.enilink.bundles.aopalliance</artifactId>
 			<version>${aopalliance.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>net.enilink.bundles</groupId>
-			<artifactId>net.enilink.bundles.javax-inject</artifactId>
-			<version>${javax.inject.version}</version>
-		</dependency>
 
 		<dependency>
 			<groupId>net.enilink.komma</groupId>
@@ -143,7 +138,6 @@
 	<modules>
 		<module>../../bundles/core/org.slf4j.logback</module>
 		<module>../../bundles/vendor/net.enilink.bundles.aopalliance</module>
-		<module>../../bundles/vendor/net.enilink.bundles.javax-inject</module>
 		<module>../../bundles/vendor/net.enilink.bundles.parboiled</module>
 		<module>../../bundles/vendor/net.enilink.bundles.rdf4j</module>
 
