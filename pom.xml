@@ -41,7 +41,7 @@ KOMMA is a framework for linked data applications. It supports the management an
 		<mapdb.version>1.0.8</mapdb.version>
 		<opencsv.version>5.3</opencsv.version>
 		<parboiled.version>1.4.1</parboiled.version>
-		<rdf4j.version>4.2.2</rdf4j.version>
+		<rdf4j.version>4.3.9</rdf4j.version>
 		<slf4j.version>1.7.36</slf4j.version>
 
 		<bnd.version>6.3.1</bnd.version>
