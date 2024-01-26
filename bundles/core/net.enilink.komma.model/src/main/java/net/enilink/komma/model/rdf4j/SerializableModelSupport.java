@@ -229,7 +229,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 									.map(format -> format.getDefaultMIMEType())
 									.orElse(null);
 							}
-							ModelUtil.readData(in, getURI().toString(),	mimeType, nodeIdMapper != null, visitor);
+							ModelUtil.readData(in, getURI().toString(), mimeType, nodeIdMapper != null, visitor);
 						} catch (IOException e) {
 							exception[0] = e;
 						} catch (RuntimeException e) {
