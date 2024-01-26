@@ -82,13 +82,13 @@
       </content-type>
       <content-type
             base-type="net.enilink.komma.contenttype.rdf"
-            default-charset="US-ASCII"
+            default-charset="UTF-8"
             file-extensions="nt"
             id="net.enilink.komma.contenttype.ntriples"
             name="N-TRIPLES"
             priority="normal">
          <property
-               default="text/plain"
+               default="application/n-triples"
                name="mimeType">
          </property>
          <property
@@ -161,10 +161,26 @@
          </property>
       </content-type>
       <content-type
-            base-type="org.eclipse.core.runtime.text"
-            id="net.enilink.komma.contenttype.rdf"
-            name="RDF"
-            priority="normal">
+        base-type="net.enilink.komma.contenttype.rdf"
+        default-charset="UTF-8"
+        file-extensions="jsonld"
+        id="net.enilink.komma.contenttype.jsonld"
+        name="JSON-LD"
+        priority="normal">
+         <property
+           default="application/ld+json"
+           name="mimeType">
+         </property>
+         <property
+           default="true"
+           name="hasWriter">
+         </property>
+      </content-type>
+      <content-type
+        base-type="org.eclipse.core.runtime.text"
+        id="net.enilink.komma.contenttype.rdf"
+        name="RDF"
+        priority="normal">
       </content-type>
    </extension>
       <extension

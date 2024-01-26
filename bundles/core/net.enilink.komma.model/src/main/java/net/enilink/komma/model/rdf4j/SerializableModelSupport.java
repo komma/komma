@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -51,6 +52,7 @@ import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.concepts.Model;
 
 import org.eclipse.core.runtime.content.IContentDescription;
+import org.eclipse.rdf4j.rio.Rio;
 
 @Iri(MODELS.NAMESPACE + "SerializableModel")
 public abstract class SerializableModelSupport implements IModel.Internal,
@@ -216,12 +218,18 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 							String mimeType = (String) options
 									.get(IModel.OPTION_MIME_TYPE);
 							if (mimeType == null) {
+								// determine mimeType from registered content types
 								IContentDescription contentDescription = determineContentDescription(options);
-								mimeType = ModelUtil
-										.mimeType(contentDescription);
+								mimeType = ModelUtil.mimeType(contentDescription);
 							}
-							ModelUtil.readData(in, getURI().toString(),
-									mimeType, nodeIdMapper != null, visitor);
+							if (mimeType == null) {
+								// determine mimeType from file extension
+								mimeType = Optional.ofNullable(getURI().fileExtension())
+									.flatMap(ext -> Rio.getParserFormatForFileName("test." + ext))
+									.map(format -> format.getDefaultMIMEType())
+									.orElse(null);
+							}
+							ModelUtil.readData(in, getURI().toString(),	mimeType, nodeIdMapper != null, visitor);
 						} catch (IOException e) {
 							exception[0] = e;
 						} catch (RuntimeException e) {

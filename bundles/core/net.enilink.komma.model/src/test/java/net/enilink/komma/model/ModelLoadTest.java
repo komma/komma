@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.URIs;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelSetFactory;
@@ -32,40 +33,50 @@ import org.junit.Test;
 import com.google.inject.Guice;
 
 public class ModelLoadTest {
-	IModelSet modelSet;
 
-	@Before
-	public void beforeTest() throws Exception {
-		KommaModule module = ModelPlugin.createModelSetModule(getClass()
-				.getClassLoader());
+    IModelSet modelSet;
 
-		IModelSetFactory factory = Guice.createInjector(
-				new ModelSetModule(module)).getInstance(IModelSetFactory.class);
+    @Before
+    public void beforeTest() throws Exception {
+        KommaModule module = ModelPlugin.createModelSetModule(getClass()
+            .getClassLoader());
 
-		modelSet = factory.createModelSet(MODELS.NAMESPACE_URI
-				.appendFragment("MemoryModelSet"));
-	}
+        IModelSetFactory factory = Guice.createInjector(
+            new ModelSetModule(module)).getInstance(IModelSetFactory.class);
 
-	@After
-	public void afterTest() throws Exception {
-		modelSet.dispose();
-	}
+        modelSet = factory.createModelSet(MODELS.NAMESPACE_URI
+            .appendFragment("MemoryModelSet"));
+    }
 
-	@Test
-	public void testModel() throws Exception {
-		IModel model = modelSet.createModel(KOMMA.NAMESPACE_URI
-				.trimFragment());
-		Map<Object, Object> options = new HashMap<>();
-		options.put(IModel.OPTION_MIME_TYPE, "text/turtle");
-		model.load(getClass().getResourceAsStream("/simple-model.ttl"), options);
+    @After
+    public void afterTest() throws Exception {
+        modelSet.dispose();
+    }
 
-		List<?> test = model
-				.getManager()
-				.createQuery(
-						"SELECT DISTINCT ?property WHERE { ?property a owl:ObjectProperty }")
-				.getResultList();
+    @Test
+    public void testLoadTurtle() throws Exception {
+        IModel model = modelSet.createModel(KOMMA.NAMESPACE_URI.trimFragment());
+        Map<Object, Object> options = new HashMap<>();
+        options.put(IModel.OPTION_MIME_TYPE, "text/turtle");
+        model.load(getClass().getResourceAsStream("/simple-model.ttl"), options);
 
-		assertEquals("The object properties couldn't be resolved.", 2,
-				test.size());
-	}
+        List<?> test = model.getManager()
+            .createQuery(
+                "SELECT DISTINCT ?property WHERE { ?property a owl:ObjectProperty }")
+            .getResultList();
+
+        assertEquals("The object properties couldn't be resolved.", 2, test.size());
+    }
+
+
+    @Test
+    public void testLoadJsonLd() throws Exception {
+        IModel model = modelSet.getModel(URIs.createURI(getClass().getResource("/simple-jsonld.jsonld").toURI().toString()), true);
+
+        List<?> test = model.getManager()
+            .createQuery("SELECT DISTINCT ?stage { ?stage a <urn:clamp40:vocab:PressStage> }")
+            .getResultList();
+
+        assertEquals("The elements where not found.", 1, test.size());
+    }
 }
