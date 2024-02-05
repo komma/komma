@@ -35,6 +35,6 @@ public class RDF4JModelSetFactory {
 		}).getInstance(IModelSetFactory.class);
 
 		// create a model set with the given repository
-		return factory.createModelSet(MODELS.NAMESPACE_URI.appendFragment("RDF4JRepositoryModelSet"));
+		return factory.createModelSet(MODELS.NAMESPACE_URI.appendFragment("InjectedRepositoryModelSet"));
 	}
 }

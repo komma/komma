@@ -33,8 +33,8 @@ import net.enilink.komma.rdf4j.RDF4JDataManagerFactory;
  * provided via Guice.
  * 
  */
-@Iri(MODELS.NAMESPACE + "RDF4JRepositoryModelSet")
-public abstract class RDF4JRepositoryModelSetSupport implements IModelSet, IModelSet.Internal {
+@Iri(MODELS.NAMESPACE + "InjectedRepositoryModelSet")
+public abstract class InjectedRepositoryModelSetSupport implements IModelSet, IModelSet.Internal {
 	/**
 	 * Data manager factory that does not close the underlying repository if factory is closed.
 	 * This prevents {@link IModelSet#dispose()} to close the wrapped repository. 
