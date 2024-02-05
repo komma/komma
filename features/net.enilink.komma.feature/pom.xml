@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>net.enilink.komma</groupId>
 		<artifactId>komma-features</artifactId>
-		<version>1.7.5-SNAPSHOT</version>
+		<version>1.8.0-SNAPSHOT</version>
 	</parent>
 
 	<scm>
@@ -26,11 +26,6 @@
 			<groupId>net.enilink.bundles</groupId>
 			<artifactId>net.enilink.bundles.aopalliance</artifactId>
 			<version>${aopalliance.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.enilink.bundles</groupId>
-			<artifactId>net.enilink.bundles.javax-inject</artifactId>
-			<version>${javax.inject.version}</version>
 		</dependency>
 
 		<dependency>
@@ -143,7 +138,6 @@
 	<modules>
 		<module>../../bundles/core/org.slf4j.logback</module>
 		<module>../../bundles/vendor/net.enilink.bundles.aopalliance</module>
-		<module>../../bundles/vendor/net.enilink.bundles.javax-inject</module>
 		<module>../../bundles/vendor/net.enilink.bundles.parboiled</module>
 		<module>../../bundles/vendor/net.enilink.bundles.rdf4j</module>
 

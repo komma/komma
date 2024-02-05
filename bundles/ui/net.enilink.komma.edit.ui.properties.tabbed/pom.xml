@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>net.enilink.komma</groupId>
 		<artifactId>komma-parent</artifactId>
-		<version>1.7.5-SNAPSHOT</version>
+		<version>1.8.0-SNAPSHOT</version>
 		<relativePath>../../../pom.xml</relativePath>
 	</parent>
 
@@ -30,7 +30,7 @@
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.ui.views.properties.tabbed</artifactId>
-			<version>3.9.100</version>
+			<version>3.10.100</version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>

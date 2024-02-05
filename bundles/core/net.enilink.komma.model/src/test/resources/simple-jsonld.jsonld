@@ -1,0 +1,20 @@
+{
+    "@context": {
+      "@vocab": "urn:clamp40:vocab:",
+      "label": "http://www.w3.org/2000/01/rdf-schema#label",
+      "@base": "http://example.org/clamp40/"
+    },
+    "@id": "press-line-1",
+    "@type": "PressLine",
+    "label" : "Pressenlinie 1",
+    "contains" : [{
+        "@id": "stage-1",
+        "@type": "PressStage",
+        "index": 1,
+        "clamp": [{
+            "@id": "clamp-1-1",
+            "@type": "Clamp",
+            "plcId": "plc-clamp-1"
+        }]
+    }]
+}

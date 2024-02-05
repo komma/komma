@@ -21,14 +21,14 @@ jobs:
 
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4.1.1
 
       # Sets up JDK
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3.4.0
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4.0.0
         with:
           distribution: 'temurin'
-          java-version: '11'
+          java-version: '17'
 
       - name: Setup key for signing
         env:
