@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="KOMMA IDE" uid="komma-ide" id="net.enilink.komma.ide.product"
+	application="org.eclipse.ui.ide.workbench" version="1.8.0" useFeatures="true"
+	includeLaunchers="true">
+
+	<configIni use="default">
+	</configIni>
+
+	<launcherArgs>
+		<programArgs>-clearPersistedState
+		</programArgs>
+		<vmArgs>-Dorg.eclipse.equinox.http.jetty.http.host=127.0.0.1
+		</vmArgs>
+		<vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+		</vmArgsMac>
+	</launcherArgs>
+
+	<launcher name="KOMMA-IDE">
+		<win useIco="false">
+			<bmp/>
+		</win>
+	</launcher>
+
+	<vm>
+		<linux include="false">
+			org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11
+		</linux>
+		<windows include="false">
+			org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11
+		</windows>
+	</vm>
+
+	<plugins>
+	</plugins>
+
+	<features>
+		<feature id="net.enilink.komma.edit.feature"/>
+		<feature id="net.enilink.komma.edit.ui.feature"/>
+		<feature id="net.enilink.komma.editor.feature"/>
+		<feature id="net.enilink.komma.feature"/>
+		<!-- feature id="org.eclipse.e4.rcp"/ -->
+		<feature id="org.eclipse.ecf.core.feature"/>
+		<feature id="org.eclipse.ecf.filetransfer.feature"/>
+		<feature id="org.eclipse.emf.common"/>
+		<feature id="org.eclipse.emf.ecore"/>
+		<feature id="org.eclipse.equinox.compendium.sdk"/>
+		<feature id="org.eclipse.equinox.core.feature"/>
+		<feature id="org.eclipse.equinox.executable"/>
+		<feature id="org.eclipse.equinox.p2.core.feature"/>
+		<feature id="org.eclipse.equinox.p2.extras.feature"/>
+		<feature id="org.eclipse.equinox.p2.rcp.feature"/>
+		<feature id="org.eclipse.equinox.p2.user.ui"/>
+		<!-- feature id="org.eclipse.equinox.server.core"/ -->
+		<!-- feature id="org.eclipse.equinox.server.jetty"/ -->
+		<feature id="org.eclipse.help"/>
+		<feature id="org.eclipse.platform"/>
+		<feature id="org.eclipse.rcp"/>
+	</features>
+
+	<configurations>
+		<plugin id="org.apache.felix.scr" autoStart="true" startLevel="2"/>
+		<plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0"/>
+		<plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2"/>
+		<plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2"/>
+		<!--plugin id="org.eclipse.equinox.http.jetty" autoStart="true" startLevel="5" /-->
+		<plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1"/>
+	</configurations>
+
+	<preferencesInfo>
+		<targetfile overwrite="false"/>
+	</preferencesInfo>
+
+	<cssInfo>
+	</cssInfo>
+</product>

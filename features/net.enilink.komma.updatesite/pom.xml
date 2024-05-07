@@ -355,6 +355,16 @@ version(s), and exceptions or additional permissions here}."
 													<source>false</source>
 												</artifact>
 												<artifact>
+													<id>com.google.guava:failureaccess:1.0.2</id>
+													<transitive>false</transitive>
+													<source>false</source>
+												</artifact>
+												<artifact>
+													<id>jakarta.inject:jakarta.inject-api:2.0.1</id>
+													<transitive>false</transitive>
+													<source>false</source>
+												</artifact>
+												<artifact>
 													<id>com.google.inject:guice:${guice.version}</id>
 													<transitive>false</transitive>
 													<source>false</source>
@@ -521,6 +531,11 @@ version(s), and exceptions or additional permissions here}."
 												</artifact>
 												<artifact>
 													<id>net.enilink.komma:net.enilink.commons.util:${project.version}</id>
+													<transitive>false</transitive>
+													<source>true</source>
+												</artifact>
+												<artifact>
+													<id>net.enilink.komma:net.enilink.composition.api:${project.version}</id>
 													<transitive>false</transitive>
 													<source>true</source>
 												</artifact>
