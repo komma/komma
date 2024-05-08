@@ -245,15 +245,13 @@ public class PropertyTreePart extends AbstractEditingDomainPart {
 
 		public TreeLabelProvider(ColumnType column) {
 			this.column = column;
-			background = new Color(Display.getDefault(), 229, 229, 229);
-			invalidBackground = Display.getDefault().getSystemColor(
-					SWT.COLOR_YELLOW);
+			background = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW);
+			invalidBackground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_YELLOW);
 		}
 
 		@Override
 		public void dispose() {
 			super.dispose();
-			background.dispose();
 		}
 
 		@Override
