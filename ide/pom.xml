@@ -81,7 +81,7 @@
 	<repositories>
 		<repository>
 			<id>Eclipse</id>
-			<url>https://download.eclipse.org/eclipse/updates/4.29</url>
+			<url>https://download.eclipse.org/eclipse/updates/4.31</url>
 			<layout>p2</layout>
 		</repository>
 		<repository>
