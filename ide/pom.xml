@@ -54,6 +54,36 @@
 						</configuration>
 					</plugin>
 					<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.8</version>
+						<executions>
+							<execution>
+								<!-- add resources to exported products -->
+								<id>documents</id>
+								<phase>package</phase>
+								<configuration>
+									<target>
+										<fileset id="resources" dir=".">
+											<include name="logback.xml"/>
+										</fileset>
+										<copy failonerror="false" quiet="true" overwrite="true"
+											todir="${project.build.directory}/products/komma-ide/linux/gtk/x86_64/">
+											<fileset refid="resources"/>
+										</copy>
+										<copy failonerror="false" quiet="true" overwrite="true"
+											todir="${project.build.directory}/products/komma-ide/win32/win32/x86_64/">
+											<fileset refid="resources"/>
+										</copy>
+									</target>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
 						<groupId>org.eclipse.tycho</groupId>
 						<artifactId>tycho-p2-director-plugin</artifactId>
 						<version>${tycho.version}</version>
