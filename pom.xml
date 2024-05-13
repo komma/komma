@@ -219,7 +219,7 @@ KOMMA is a framework for linked data applications. It supports the management an
 					<version>3.3.1</version>
 					<configuration>
 						<source>8</source>
-						<additionalparam>${javadoc.opts}</additionalparam>
+						<additionalJOption>${javadoc.opts}</additionalJOption>
 					</configuration>
 				</plugin>
 
