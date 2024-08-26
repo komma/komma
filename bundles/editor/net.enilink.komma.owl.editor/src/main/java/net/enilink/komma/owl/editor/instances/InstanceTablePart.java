@@ -2,6 +2,7 @@ package net.enilink.komma.owl.editor.instances;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewer;
@@ -203,7 +204,7 @@ public class InstanceTablePart extends InstancesPart {
 				column.setMoveable(true);
 				column.addSelectionListener(getSelectionAdapter(column, col++));
 				column.pack();
-				if (property == sortProperty || property != null && property.equals(sortProperty)) {
+				if (Objects.equals(property, sortProperty)) {
 					sortColumn = column;
 				}
 				viewerColumn.setLabelProvider(new CellLabelProvider() {

@@ -11,6 +11,7 @@
 package net.enilink.komma.owl.editor.instances;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.commands.ExecutionException;
@@ -26,6 +27,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -38,8 +40,10 @@ import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
 import net.enilink.komma.common.command.SimpleCommand;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.edit.provider.IViewerNotification;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
@@ -200,15 +204,16 @@ public class InstancesPart extends AbstractEditingDomainPart {
 		try {
 			ICommand cmd = new SimpleCommand("Create instance") {
 				@Override
-				protected CommandResult doExecuteWithResult(IProgressMonitor progressMonitor, IAdaptable info)
-						throws ExecutionException {
+				protected CommandResult doExecuteWithResult(IProgressMonitor progressMonitor, IAdaptable info) {
 					final IResource individual = clazz.newInstance(name);
 					return CommandResult.newOKCommandResult(individual);
 				}
 			};
 			getEditingDomain().getCommandStack().execute(cmd, null, null);
 			if (cmd.getCommandResult().getStatus().isOK()) {
-				viewer.setSelection(new StructuredSelection(cmd.getCommandResult().getReturnValue()));
+				viewer.getControl().getDisplay().asyncExec(() -> {
+					viewer.setSelection(new StructuredSelection(cmd.getCommandResult().getReturnValue()));
+				});
 			}
 		} catch (ExecutionException e) {
 			OWLEditorPlugin.INSTANCE.log(e);
@@ -223,12 +228,11 @@ public class InstancesPart extends AbstractEditingDomainPart {
 		try {
 			getEditingDomain().getCommandStack().execute(new SimpleCommand("Delete instance") {
 				@Override
-				protected CommandResult doExecuteWithResult(IProgressMonitor progressMonitor, IAdaptable info)
-						throws ExecutionException {
+				protected CommandResult doExecuteWithResult(IProgressMonitor progressMonitor, IAdaptable info) {
 					final List<?> list = ((IStructuredSelection) viewer.getSelection()).toList();
 					for (Object selected : list) {
 						if (selected instanceof IResource) {
-							((IResource) selected).getEntityManager().removeRecursive((IResource) selected, true);
+							((IResource) selected).getEntityManager().removeRecursive(selected, true);
 						}
 					}
 					return CommandResult.newOKCommandResult();
@@ -245,13 +249,6 @@ public class InstancesPart extends AbstractEditingDomainPart {
 			return true;
 		}
 		return super.setFocus();
-	}
-
-	public void reveal(IResource resource) {
-		if (resource instanceof IObject) {
-			viewer.setInput(resource);
-			refresh();
-		}
 	}
 
 	@Override
@@ -293,18 +290,29 @@ public class InstancesPart extends AbstractEditingDomainPart {
 	}
 
 	protected void setInputToViewer(StructuredViewer viewer, IClass input) {
-		if (input == null) {
-			viewer.setInput(null);
-		} else {
-			List<IObject> instances = input.getEntityManager().createQuery(instancesQuery()).setParameter("c", input)
-					.evaluateRestricted(IObject.class).toList();
-			viewer.setInput(instances.toArray());
-		}
+		viewer.setInput(input);
 	}
 
 	protected void adapterFactoryChanged() {
 		viewer.setLabelProvider(new AdapterFactoryLabelProvider(getAdapterFactory()));
-		viewer.setContentProvider(new LazyAdapterFactoryContentProvider(getAdapterFactory()));
+		viewer.setContentProvider(new LazyAdapterFactoryContentProvider(getAdapterFactory()) {
+			@Override
+			protected Object[] internalGetChildren(Object element) {
+				if (element == null) {
+					return new Object[0];
+				} else if (element == input) {
+					List<IObject> instances = ((IEntity)element).getEntityManager().createQuery(instancesQuery()).setParameter("c", input)
+						.evaluateRestricted(IObject.class).toList();
+					return instances.toArray(new Object[instances.size()]);
+				}
+				return super.internalGetChildren(element);
+			}
+
+			@Override
+			public void notifyChanged(Collection<? extends IViewerNotification> notifications) {
+				super.notifyChanged(notifications);
+			}
+		});
 		createContextMenuFor(viewer);
 	}
 }

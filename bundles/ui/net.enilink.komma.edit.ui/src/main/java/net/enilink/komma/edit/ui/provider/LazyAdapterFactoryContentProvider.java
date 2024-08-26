@@ -9,6 +9,7 @@ import org.eclipse.jface.viewers.ILazyTreeContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.widgets.Tree;
 
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.core.IEntity;
@@ -30,11 +31,8 @@ public class LazyAdapterFactoryContentProvider extends
 		parentToChildren.clear();
 		super.inputChanged(viewer, oldInput, newInput);
 		if (viewer instanceof TableViewer) {
-			if (newInput instanceof Object[]) {
-				((TableViewer) viewer).setItemCount(((Object[])newInput).length);
-			} else {
-				((TableViewer) viewer).setItemCount(0);
-			}
+			// enforce update of element count
+			getChildren(viewer.getInput());
 		}
 	}
 
@@ -91,14 +89,25 @@ public class LazyAdapterFactoryContentProvider extends
 	@Override
 	public Object[] getChildren(Object element) {
 		Object[] children;
+		boolean updateCount = false;
 		if (element instanceof Object[]) {
 			children = (Object[]) element;
+			updateCount = true;
 		} else {
 			children = parentToChildren.get(element);
 			if (children == null) {
 				children = internalGetChildren(element);
 				parentToChildren.put(element, children);
+				updateCount = true;
+			}
+		}
+		if (updateCount) {
+			if (viewer instanceof TreeViewer) {
+				// only update child counts for tree viewers
 				((TreeViewer) viewer).setChildCount(element, children.length);
+			} else if (viewer instanceof TableViewer) {
+				// set item count if input element is updated
+				((TableViewer) viewer).setItemCount(children.length);
 			}
 		}
 		return children;

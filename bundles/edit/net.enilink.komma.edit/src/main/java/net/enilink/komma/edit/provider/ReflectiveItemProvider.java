@@ -60,7 +60,7 @@ public class ReflectiveItemProvider extends ItemProviderAdapter
 	/**
 	 * This handles model notifications by calling {@link #updateChildren} to
 	 * update any cached children and by creating a viewer notification, which
-	 * it passes to {@link #fireNotifyChanged}.
+	 * it passes to {@link #fireNotifications(Collection)}.
 	 */
 	@Override
 	public void notifyChanged(Collection<? extends INotification> notifications) {
@@ -74,9 +74,12 @@ public class ReflectiveItemProvider extends ItemProviderAdapter
 				// the current entity types
 				if (RDF.PROPERTY_TYPE.equals(stmtNotification.getPredicate())
 						&& adapterFactory instanceof AdapterFactory) {
-					IEntity object = resolveReference(notification.getSubject());
-					if (object != null) {
-						viewerNotifications.add(new ViewerNotification(object, true, true));
+					for (Object ref : new Object[] {((IStatementNotification) notification).getSubject(),
+						((IStatementNotification) notification).getObject()}) {
+						IEntity target = resolveReference(ref);
+						if (target != null) {
+							viewerNotifications.add(new ViewerNotification(target, true, true));
+						}
 					}
 					((AdapterFactory) adapterFactory).unlinkAdapter(stmtNotification.getSubject());
 				}

@@ -17,6 +17,7 @@
 package net.enilink.komma.edit.ui.provider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -65,7 +66,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 		IPropertySourceProvider, INotificationListener<IViewerNotification> {
 	/**
 	 * This keeps track of the one factory we are using. Use a
-	 * {@link org.eclipse.emf.edit.provider.ComposedAdapterFactory} if adapters
+	 * {@link net.enilink.komma.edit.provider.ComposedAdapterFactory} if adapters
 	 * from more the one factory are involved in the model.
 	 */
 	protected IAdapterFactory adapterFactory;
@@ -89,7 +90,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 	/**
 	 * This constructs an instance that wraps this factory. The factory should
 	 * yield adapters that implement the various IItemContentProvider
-	 * interfaces. If the adapter factory is an {@link IChangeNotifier}, a
+	 * interfaces. If the adapter factory is an {@link INotifier}, a
 	 * listener is added to it, so it's important to call {@link #dispose()}.
 	 */
 	@SuppressWarnings("unchecked")
@@ -103,7 +104,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 
 	/**
 	 * This sets the wrapped factory. If the adapter factory is an
-	 * {@link IChangeNotifier}, a listener is added to it, so it's important to
+	 * {@link INotifier}, a listener is added to it, so it's important to
 	 * call {@link #dispose()}.
 	 */
 	@SuppressWarnings("unchecked")
@@ -141,7 +142,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 	 * This implements
 	 * {@link org.eclipse.jface.viewers.IStructuredContentProvider}.getElements
 	 * to forward the call to an object that implements
-	 * {@link org.eclipse.emf.edit.provider.IStructuredItemContentProvider#getElements
+	 * {@link IStructuredItemContentProvider#getElements
 	 * IStructuredItemContentProvider.getElements}.
 	 */
 	public Object[] getElements(Object object) {
@@ -160,7 +161,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 	/**
 	 * This implements {@link org.eclipse.jface.viewers.ITreeContentProvider}
 	 * .getChildren to forward the call to an object that implements
-	 * {@link org.eclipse.emf.edit.provider.ITreeItemContentProvider#getChildren
+	 * {@link ITreeItemContentProvider#getChildren
 	 * ITreeItemContentProvider.getChildren}.
 	 */
 	public Object[] getChildren(Object object) {
@@ -176,7 +177,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 	/**
 	 * This implements {@link org.eclipse.jface.viewers.ITreeContentProvider}
 	 * .hasChildren to forward the call to an object that implements
-	 * {@link org.eclipse.emf.edit.provider.ITreeItemContentProvider#hasChildren
+	 * {@link ITreeItemContentProvider#hasChildren
 	 * ITreeItemContentProvider.hasChildren}.
 	 */
 	public boolean hasChildren(Object object) {
@@ -192,7 +193,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 	/**
 	 * This implements {@link org.eclipse.jface.viewers.ITreeContentProvider}
 	 * .getParent to forward the call to an object that implements
-	 * {@link org.eclipse.emf.edit.provider.ITreeItemContentProvider#getParent
+	 * {@link ITreeItemContentProvider#getParent
 	 * ITreeItemContentProvider.getParent}.
 	 */
 	public Object getParent(Object object) {
@@ -222,7 +223,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 	 * This implements
 	 * {@link org.eclipse.ui.views.properties.IPropertySourceProvider}
 	 * .getPropertySource to forward the call to an object that implements
-	 * {@link org.eclipse.emf.edit.provider.IItemPropertySource}.
+	 * {@link IItemPropertySource}.
 	 */
 	public IPropertySource getPropertySource(Object object) {
 		if (object instanceof IPropertySource) {
@@ -259,7 +260,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 				}
 
 				executeRefresh |= viewerRefresh
-						.addNotification((IViewerNotification) notification);
+						.addNotification(notification);
 			}
 
 			if (executeRefresh) {
@@ -271,7 +272,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 	/**
 	 * A runnable class that efficiently updates a
 	 * {@link org.eclipse.jface.viewers.Viewer} via standard APIs, based on
-	 * queued {@link org.eclipse.emf.edit.provider.IViewerNotification}s from
+	 * queued {@link IViewerNotification}s from
 	 * the model's item providers.
 	 */
 	public static class ViewerRefresh implements Runnable {
@@ -443,8 +444,12 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 							}
 						}
 						if (notification.isContentRefresh()) {
-							structuredViewer.refresh(element,
-									notification.isLabelUpdate());
+							if (element == structuredViewer.getInput()) {
+								// refresh whole viewer if element is the viewer's input
+								structuredViewer.refresh(notification.isLabelUpdate());
+							} else {
+								structuredViewer.refresh(element, notification.isLabelUpdate());
+							}
 						} else if (notification.isLabelUpdate()) {
 							structuredViewer.update(element, null);
 						}
