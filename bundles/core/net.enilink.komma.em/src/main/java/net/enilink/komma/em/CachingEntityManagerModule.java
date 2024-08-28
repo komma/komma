@@ -121,6 +121,11 @@ public class CachingEntityManagerModule extends DecoratingEntityManagerModule {
 		}
 	}
 
+	@Override
+	protected void bindNoopPropertyCache() {
+		// do nothing
+	}
+
 	@Singleton
 	@Provides
 	IPropertyCache providePropertyCache(final Cache<Object, CachedEntity> cache, final Fqn contextKey) {

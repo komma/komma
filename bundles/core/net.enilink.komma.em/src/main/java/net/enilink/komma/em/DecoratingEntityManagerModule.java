@@ -10,6 +10,7 @@
  *******************************************************************************/
 package net.enilink.komma.em;
 
+import net.enilink.composition.cache.IPropertyCache;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.komma.KommaPropertySetFactory;
 import net.enilink.komma.core.IEntityManager;
@@ -30,6 +31,8 @@ public class DecoratingEntityManagerModule extends AbstractModule {
 		Class<? extends PropertySetFactory> factoryClass = getPropertySetFactoryClass();
 		bind(factoryClass).in(Singleton.class);
 		bind(PropertySetFactory.class).to(factoryClass);
+
+		bindNoopPropertyCache();
 	}
 
 	protected Class<? extends IEntityManager> getManagerClass() {
@@ -38,5 +41,23 @@ public class DecoratingEntityManagerModule extends AbstractModule {
 
 	protected Class<? extends PropertySetFactory> getPropertySetFactoryClass() {
 		return KommaPropertySetFactory.class;
+	}
+
+	/**
+	 * Installs a no-op property cache to support beans that expect an existing property cache.
+	 */
+	protected void bindNoopPropertyCache() {
+		bind(IPropertyCache.class).toInstance(
+			new IPropertyCache() {
+				@Override
+				public Object put(Object entity, Object property, Object[] parameters, Object value) {
+					return value;
+				}
+
+				@Override
+				public Object get(Object entity, Object property, Object[] parameters) {
+					return null;
+				}
+			});
 	}
 }

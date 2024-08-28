@@ -43,7 +43,7 @@ public class CachingEntityManagerTest extends EntityManagerTest {
 	}
 
 	@Test
-	public void testCacheInvalidation() throws Exception {
+	public void testCacheInvalidation() {
 		URI uriMax = URIs.createURI(NS + "max");
 		IEntity entity = manager.find(uriMax);
 
@@ -59,7 +59,7 @@ public class CachingEntityManagerTest extends EntityManagerTest {
 	}
 
 	@Test
-	public void testAdHocConversion() throws Exception {
+	public void testAdHocConversion() {
 		URI uriMoritz = URIs.createURI(NS + "moritz");
 		// this line does not yet add the bean to the cache because createNamed interprets types as "restricted" to the given ones
 		IEntity moritz = manager.createNamed(uriMoritz, Resource.class);
