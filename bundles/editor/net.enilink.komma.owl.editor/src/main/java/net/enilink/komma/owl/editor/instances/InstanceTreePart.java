@@ -1,25 +1,28 @@
 package net.enilink.komma.owl.editor.instances;
 
-import java.util.List;
-
-import org.eclipse.jface.viewers.StructuredViewer;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Tree;
-
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.core.IEntity;
 import net.enilink.komma.edit.provider.ISearchableItemProvider;
+import net.enilink.komma.edit.provider.IViewerNotification;
 import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
 import net.enilink.komma.edit.ui.provider.LazyAdapterFactoryContentProvider;
 import net.enilink.komma.em.concepts.IClass;
 import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.komma.model.IObject;
 import net.enilink.vocab.rdf.RDF;
+import java.util.Collection;
+import java.util.List;
+
+import org.eclipse.jface.viewers.IContentProvider;
+import org.eclipse.jface.viewers.StructuredViewer;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Tree;
 
 public class InstanceTreePart extends InstancesPart {
-	class ContentProvider extends LazyAdapterFactoryContentProvider implements
+	class ContentProvider extends InstancesPart.ContentProvider implements
 			ISearchableItemProvider {
 		public ContentProvider(IAdapterFactory adapterFactory) {
 			super(adapterFactory);
@@ -27,22 +30,21 @@ public class InstanceTreePart extends InstancesPart {
 
 		public IExtendedIterator<?> find(Object expression, Object parent,
 				int limit) {
+			Object input = getViewer().getInput();
 			SparqlSearchableItemProvider searchableProvider = new SparqlSearchableItemProvider() {
 				@Override
 				protected String getQueryFindPatterns(Object parent) {
-					if (RDF.TYPE_PROPERTY.equals(currentInput)
-							|| currentInput.getRdfsSubClassOf().contains(
-									RDF.TYPE_PROPERTY)) {
+					if (RDF.TYPE_PROPERTY.equals(input)
+							|| (input instanceof IClass && ((IClass)input).getRdfsSubClassOf().contains(
+									RDF.TYPE_PROPERTY))) {
 						return "?s rdfs:subPropertyOf [ a ?parent ] . ";
 					}
 					return "[ a ?parent; komma:child* ?s ] . ";
 				}
 			};
-			return searchableProvider.find(expression, currentInput, 20);
+			return searchableProvider.find(expression, input, 20);
 		}
 	}
-
-	protected IClass currentInput;
 
 	@Override
 	protected StructuredViewer createViewer(Composite parent) {
@@ -53,36 +55,20 @@ public class InstanceTreePart extends InstancesPart {
 		return viewer;
 	}
 
-	@Override
-	protected void adapterFactoryChanged() {
-		super.adapterFactoryChanged();
-		getViewer()
-				.setContentProvider(new ContentProvider(getAdapterFactory()));
+	protected IContentProvider createContentProvider() {
+		return new ContentProvider(getAdapterFactory());
 	}
 
-	protected String instancesQuery() {
+	protected String instancesQuery(IClass input) {
 		StringBuilder sb = new StringBuilder(ISparqlConstants.PREFIX)
 				.append("SELECT DISTINCT ?r WHERE { ?r a [ rdfs:subClassOf* ?c ] FILTER NOT EXISTS { ");
-		if (RDF.TYPE_PROPERTY.equals(currentInput)
-				|| currentInput.getRdfsSubClassOf().contains(RDF.TYPE_PROPERTY)) {
+		if (RDF.TYPE_PROPERTY.equals(input)
+				|| input.getRdfsSubClassOf().contains(RDF.TYPE_PROPERTY)) {
 			sb.append("?other a ?c . ?r rdfs:subPropertyOf ?other FILTER (?r != ?other)");
 		} else {
 			sb.append("?childProp rdfs:subPropertyOf* komma:child . ?other a [ rdfs:subClassOf* ?c ]; ?childProp ?r FILTER (?r != ?other)");
 		}
 		sb.append(" }} ORDER BY ?r");
 		return sb.toString();
-	}
-
-	@Override
-	protected void setInputToViewer(StructuredViewer viewer, IClass input) {
-		currentInput = input;
-		if (input == null) {
-			viewer.setInput(null);
-		} else {
-			List<IObject> instances = input.getEntityManager()
-					.createQuery(instancesQuery()).setParameter("c", input)
-					.evaluateRestricted(IObject.class).toList();
-			viewer.setInput(instances.toArray());
-		}
 	}
 }

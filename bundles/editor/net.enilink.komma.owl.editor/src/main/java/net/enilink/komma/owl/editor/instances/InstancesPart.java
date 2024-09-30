@@ -10,32 +10,6 @@
  *******************************************************************************/
 package net.enilink.komma.owl.editor.instances;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.StructuredViewer;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.ToolBar;
-
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
@@ -58,8 +32,56 @@ import net.enilink.komma.em.concepts.IResource;
 import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.komma.model.IObject;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.viewers.IContentProvider;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StructuredViewer;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.ToolBar;
 
 public class InstancesPart extends AbstractEditingDomainPart {
+	class ContentProvider extends LazyAdapterFactoryContentProvider {
+		ContentProvider(IAdapterFactory adapterFactory) {
+			super(adapterFactory);
+		}
+
+		@Override
+		protected Object[] internalGetChildren(Object element) {
+			if (element == null) {
+				return new Object[0];
+			} else if (element == input) {
+				List<IObject> instances = ((IEntity)element).getEntityManager().createQuery(instancesQuery((IClass) input)).setParameter("c", input)
+					.evaluateRestricted(IObject.class).toList();
+				return instances.toArray(new Object[instances.size()]);
+			}
+			return super.internalGetChildren(element);
+		}
+
+		@Override
+		public void notifyChanged(Collection<? extends IViewerNotification> notifications) {
+			super.notifyChanged(notifications);
+		}
+	};
+
 	private StructuredViewer viewer;
 	private IAdapterFactory adapterFactory;
 	private IClass input;
@@ -283,7 +305,7 @@ public class InstancesPart extends AbstractEditingDomainPart {
 		super.refresh();
 	}
 
-	protected String instancesQuery() {
+	protected String instancesQuery(IClass input) {
 		StringBuilder sb = new StringBuilder(ISparqlConstants.PREFIX)
 				.append("SELECT DISTINCT ?r WHERE { ?r a [ rdfs:subClassOf* ?c ] } ORDER BY ?r");
 		return sb.toString();
@@ -293,26 +315,13 @@ public class InstancesPart extends AbstractEditingDomainPart {
 		viewer.setInput(input);
 	}
 
+	protected IContentProvider createContentProvider() {
+		return new ContentProvider(getAdapterFactory());
+	}
+
 	protected void adapterFactoryChanged() {
 		viewer.setLabelProvider(new AdapterFactoryLabelProvider(getAdapterFactory()));
-		viewer.setContentProvider(new LazyAdapterFactoryContentProvider(getAdapterFactory()) {
-			@Override
-			protected Object[] internalGetChildren(Object element) {
-				if (element == null) {
-					return new Object[0];
-				} else if (element == input) {
-					List<IObject> instances = ((IEntity)element).getEntityManager().createQuery(instancesQuery()).setParameter("c", input)
-						.evaluateRestricted(IObject.class).toList();
-					return instances.toArray(new Object[instances.size()]);
-				}
-				return super.internalGetChildren(element);
-			}
-
-			@Override
-			public void notifyChanged(Collection<? extends IViewerNotification> notifications) {
-				super.notifyChanged(notifications);
-			}
-		});
+		viewer.setContentProvider(createContentProvider());
 		createContextMenuFor(viewer);
 	}
 }

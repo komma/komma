@@ -422,7 +422,7 @@ public class AdapterFactoryContentProvider implements ITreeContentProvider,
 						// https://bugs.eclipse.org/bugs/show_bug.cgi?id=389482
 						if (viewer instanceof TreeViewer
 								&& (viewer.getControl().getStyle() & SWT.VIRTUAL) != 0) {
-							if (widget != null && !widget.isDisposed()) {
+							if (widget instanceof TreeItem && !widget.isDisposed()) {
 								// force widget to be refreshed
 								((TreeItem) widget).getChecked();
 							}
