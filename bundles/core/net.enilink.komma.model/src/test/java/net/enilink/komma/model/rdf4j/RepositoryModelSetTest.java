@@ -12,7 +12,6 @@ package net.enilink.komma.model.rdf4j;
 
 import com.google.inject.Guice;
 import net.enilink.komma.core.*;
-import net.enilink.komma.core.visitor.IDataVisitor;
 import net.enilink.komma.model.*;
 import net.enilink.vocab.owl.Restriction;
 import org.junit.Assert;
@@ -27,26 +26,28 @@ public class RepositoryModelSetTest {
 
 		IGraph config = new LinkedHashGraph();
 		ModelUtil.readData(getClass().getResourceAsStream("/repository-modelset-config.ttl"), null,
-				"text/turtle", new IDataVisitor<Object>() {
-			@Override
-			public Object visitBegin() {
-				return null;
-			}
+				"text/turtle", stmt -> config.add(stmt));
 
-			@Override
-			public Object visitEnd() {
-				return null;
-			}
-
-			@Override
-			public Object visitStatement(IStatement stmt) {
-				return config.add(stmt);
-			}
-		});
-
-		IModelSet modelSet = factory.createModelSet(URIs.createURI("urn:enilink:data"), config);
+		IModelSet modelSet = factory.createModelSet(URIs.createURI("test:modelset"), config);
 		Assert.assertTrue(modelSet.createModel(URIs.createURI("test:model"))
 				.getManager().create(Restriction.class) instanceof Restriction);
+		modelSet.dispose();
+	}
+
+	@Test
+	public void testPersistentConfig() {
+		// create configuration and a model set factory
+		KommaModule module = ModelPlugin.createModelSetModule(getClass().getClassLoader());
+		IModelSetFactory factory = Guice.createInjector(new ModelSetModule(module)).getInstance(IModelSetFactory.class);
+
+		IGraph config = new LinkedHashGraph();
+		ModelUtil.readData(getClass().getResourceAsStream("/repository-modelset-nativestore-config.ttl"), null,
+			"text/turtle", stmt -> config.add(stmt));
+
+		IModelSet modelSet = factory.createModelSet(URIs.createURI("test:modelset"), config);
+		Assert.assertTrue(modelSet.isPersistent());
+		Assert.assertTrue(modelSet.createModel(URIs.createURI("test:model"))
+			.getManager().create(Restriction.class) instanceof Restriction);
 		modelSet.dispose();
 	}
 }

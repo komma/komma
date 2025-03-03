@@ -186,17 +186,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 					@Override
 					public void run() {
 						try {
-							IDataAndNamespacesVisitor<Void> visitor = new IDataAndNamespacesVisitor<Void>() {
-								@Override
-								public Void visitBegin() {
-									return null;
-								}
-
-								@Override
-								public Void visitEnd() {
-									return null;
-								}
-
+							IDataAndNamespacesVisitor<Void> visitor = new IDataAndNamespacesVisitor<>() {
 								@Override
 								public Void visitStatement(IStatement stmt) {
 									if (nodeIdMapper != null) {

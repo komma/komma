@@ -6,7 +6,7 @@
 @prefix sb: <http://www.openrdf.org/config/sail/base#>.
 @prefix models: <http://enilink.net/vocab/komma/models#> .
 
-<urn:enilink:data> a models:RepositoryModelSet ;
+<test:modelset> a models:RepositoryModelSet ;
 	models:repository <test:repo> .
 
 <test:repo> a rep:Repository ;

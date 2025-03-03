@@ -156,7 +156,6 @@ public class RegistryStrategyNonOSGI extends RegistryStrategy {
 		try {
 			is = new BufferedInputStream(pluginManifest.openStream());
 		} catch (IOException ex) {
-			is = null;
 			if (DebugHelper.DEBUG) {
 				DebugHelper.logError("<plugin.xml> [ERROR] : ("
 						+ pluginManifest.getPath() + "): ", 1);

@@ -17,9 +17,8 @@ import org.eclipse.core.runtime.IConfigurationElement;
 
 /**
  * A plugin extension reader that populates the
- * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Registry#INSTANCE
- * global} resource factory's
- * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Registry#getContentTypeToFactoryMap()
+ * {@link IModel.Factory.Registry} model factory's
+ * {@link IModel.Factory.Registry#getContentTypeToFactoryMap()
  * content type} map. Clients are not expected to use this class directly.
  */
 public class ContentFactoriesRegistryReader extends KommaRegistryReader {

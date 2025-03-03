@@ -3,9 +3,13 @@ package net.enilink.komma.core.visitor;
 import net.enilink.komma.core.IStatement;
 
 public interface IDataVisitor<T> {
-	T visitBegin();
+	default T visitBegin() {
+		return null;
+	}
 
-	T visitEnd();
+	default T visitEnd() {
+		return null;
+	}
 
 	T visitStatement(IStatement stmt);
 }

@@ -136,7 +136,7 @@ public interface IModelSet extends INotifier<INotification> {
 	 * It delegates to the model factory {@link #getModelFactoryRegistry()
 	 * model} to determine the {@link IModel.Factory.Registry#getFactory(URI)
 	 * correct} factory, and then it uses that factory to
-	 * {@link IModel.Factory#createModel(URI) create} the resource and adds it
+	 * {@link IModel.Factory#createModel create} the resource and adds it
 	 * to the {@link #getModels() contents}. If there is no registered factory,
 	 * <code>null</code> will be returned; when running within Eclipse, a
 	 * default RDF/XML factory will be registered, and this will never return
@@ -155,7 +155,7 @@ public interface IModelSet extends INotifier<INotification> {
 	 * It delegates to the resource factory {@link #getModelFactoryRegistry
 	 * registry} to determine the
 	 * {@link IModel.Factory.Registry#getFactory(URI, String) correct} factory,
-	 * and then it uses that factory to {@link IModel.Factory#createModel(URI)
+	 * and then it uses that factory to {@link IModel.Factory#createModel
 	 * create} the ontology and adds it to the {@link #getModels() contents}. If
 	 * there is no registered factory, <code>null</code> will be returned; when
 	 * running within Eclipse, a default RDF/XML factory will be registered, and
@@ -297,6 +297,7 @@ public interface IModelSet extends INotifier<INotification> {
 	 * 
 	 * @return the state of persistence for this model set
 	 */
+	@Iri(MODELS.NAMESPACE + "persistent")
 	boolean isPersistent();
 
 	/**

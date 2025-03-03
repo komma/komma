@@ -134,16 +134,6 @@ public class SerializableModelSetTest {
         }
 
         @Override
-        public IStatement visitBegin() {
-            return null;
-        }
-
-        @Override
-        public IStatement visitEnd() {
-            return null;
-        }
-
-        @Override
         public IStatement visitStatement(IStatement stmt) {
             addNodeId(stmt.getSubject());
             addNodeId(stmt.getObject());

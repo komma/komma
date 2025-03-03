@@ -180,29 +180,16 @@ public class ProjectModelSetManager {
 									.get(IURIConverter.ATTRIBUTE_MIME_TYPE);
 						}
 						try (InputStream in = new BufferedInputStream(uriConverter.createInputStream(uri))) {
-							ModelUtil.readData(in, baseUri, mimeType, new IDataVisitor<Void>() {
-								@Override
-								public Void visitBegin() {
-									return null;
-								}
-
-								@Override
-								public Void visitEnd() {
-									return null;
-								}
-
-								@Override
-								public Void visitStatement(IStatement stmt) {
-									config.add(stmt);
-									if (OWL.PROPERTY_IMPORTS.equals(stmt.getPredicate())
-											&& stmt.getObject() instanceof IReference) {
-										URI imported = ((IReference) stmt.getObject()).getURI();
-										if (imported != null) {
-											toLoad.add(imported);
-										}
+							ModelUtil.readData(in, baseUri, mimeType, stmt -> {
+								config.add(stmt);
+								if (OWL.PROPERTY_IMPORTS.equals(stmt.getPredicate())
+										&& stmt.getObject() instanceof IReference) {
+									URI imported = ((IReference) stmt.getObject()).getURI();
+									if (imported != null) {
+										toLoad.add(imported);
 									}
-									return null;
 								}
+								return null;
 							});
 						}
 					} catch (Exception e) {
