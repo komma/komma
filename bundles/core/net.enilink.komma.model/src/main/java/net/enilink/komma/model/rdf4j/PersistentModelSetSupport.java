@@ -68,4 +68,9 @@ public abstract class PersistentModelSetSupport extends MemoryModelSetSupport {
 		addBasicKnowledge(repository);
 		return repository;
 	}
+
+	@Override
+	public boolean isPersistent() {
+		return true;
+	}
 }
