@@ -32,7 +32,7 @@ public class LazyAdapterFactoryContentProvider extends
 		super.inputChanged(viewer, oldInput, newInput);
 		if (viewer instanceof TableViewer) {
 			// enforce update of element count
-			getChildren(viewer.getInput());
+			getChildren(input);
 		}
 	}
 
