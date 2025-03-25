@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.core.runtime.Assert;
@@ -58,8 +59,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.ViewForm;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.ModifyEvent;
@@ -154,19 +153,17 @@ public abstract class FilteredList {
 
 	private ActionContributionItem removeHistoryActionContributionItem;
 
-	private IStatus status;
+	private volatile RefreshCacheJob refreshCacheJob;
 
-	private RefreshCacheJob refreshCacheJob;
-
-	private RefreshProgressMessageJob refreshProgressMessageJob;
+	private volatile RefreshProgressMessageJob refreshProgressMessageJob;
 
 	private Object[] lastSelection;
 
 	private ContentProvider contentProvider;
 
-	private FilterHistoryJob filterHistoryJob;
+	private volatile FilterHistoryJob filterHistoryJob;
 
-	private FilterJob filterJob;
+	private volatile FilterJob filterJob;
 
 	private ItemsFilter filter;
 
@@ -183,8 +180,6 @@ public abstract class FilteredList {
 	private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
 	private boolean refreshWithLastSelection = false;
-
-	private Object preSelected;
 
 	/**
 	 * Creates a new instance of the class.
@@ -421,20 +416,14 @@ public abstract class FilteredList {
 
 	public Control createControl(Composite parent) {
 		composite = new Composite(parent, SWT.NONE);
-		composite.addDisposeListener(new DisposeListener() {
-			@Override
-			public void widgetDisposed(DisposeEvent e) {
-				filterJob.cancel();
-				refreshCacheJob.cancel();
-				refreshProgressMessageJob.cancel();
-			}
+		composite.addDisposeListener(e -> {
+			Optional.ofNullable(filterJob).ifPresent(Job::cancel);
+			Optional.ofNullable(refreshCacheJob).ifPresent(Job::cancel);
+			Optional.ofNullable(refreshProgressMessageJob).ifPresent(Job::cancel);
 		});
 
-		filterHistoryJob = new FilterHistoryJob();
-		filterJob = new FilterJob();
 		contentProvider = new ContentProvider();
-		refreshCacheJob = new RefreshCacheJob();
-		refreshProgressMessageJob = new RefreshProgressMessageJob();
+
 		itemsListSeparator = new ItemsListSeparator(
 				DialogMessages.FilteredItemsSelectionDialog_separatorLabel);
 		selectionMode = NONE;
@@ -565,10 +554,6 @@ public abstract class FilteredList {
 			ISelectionChangedListener changedListener) {
 		list.addSelectionChangedListener(changedListener);
 
-	}
-
-	public void setPreSelected(Object preSelected) {
-		this.preSelected = preSelected;
 	}
 
 	public void selectEntry(Object o) {
@@ -727,12 +712,9 @@ public abstract class FilteredList {
 	 * Schedule refresh job.
 	 */
 	public void scheduleRefresh() {
-		composite.getDisplay().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				refreshCacheJob.cancelAll();
-				refreshCacheJob.schedule();
-			}
+		composite.getDisplay().asyncExec(() -> {
+			Optional.ofNullable(refreshCacheJob).ifPresent(RefreshCacheJob::cancelAll);
+			(refreshCacheJob = new RefreshCacheJob()).schedule();
 		});
 	}
 
@@ -873,13 +855,15 @@ public abstract class FilteredList {
 			return;
 		}
 
-		filterHistoryJob.cancel();
-		filterJob.cancel();
+		Optional.ofNullable(filterHistoryJob).ifPresent(Job::cancel);
+		Optional.ofNullable(filterJob).ifPresent(Job::cancel);
 
 		this.filter = newFilter;
 
 		if (this.filter != null) {
-			filterHistoryJob.schedule();
+			composite.getDisplay().asyncExec(() -> {
+				(filterHistoryJob = new FilterHistoryJob()).schedule();
+			});
 		}
 	}
 
@@ -1066,9 +1050,6 @@ public abstract class FilteredList {
 	 * <li>refreshing the UI have to be run in a UIJob</li>
 	 * </ul>
 	 * 
-	 * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog.FilterJob
-	 * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog.RefreshJob
-	 * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog.RefreshCacheJob
 	 */
 	private class RefreshJob extends UIJob {
 
@@ -1106,7 +1087,7 @@ public abstract class FilteredList {
 	/**
 	 * Refreshes the progress message cyclically with 500 milliseconds delay.
 	 * <code>RefreshProgressMessageJob</code> is strictly connected with
-	 * <code>GranualProgressMonitor</code> and use it to to get progress message
+	 * <code>GranualProgressMonitor</code> and uses it to get progress message
 	 * and to decide about break of cyclical refresh.
 	 */
 	private class RefreshProgressMessageJob extends UIJob {
@@ -1157,9 +1138,11 @@ public abstract class FilteredList {
 		public void scheduleProgressRefresh(
 				GranualProgressMonitor progressMonitor) {
 			this.progressMonitor = progressMonitor;
-			// Schedule with initial delay to avoid flickering when the user
-			// types quickly
-			schedule(200);
+			composite.getDisplay().asyncExec(() -> {
+				// Schedule with initial delay to avoid flickering when the user
+				// types quickly
+				schedule(200);
+			});
 		}
 
 	}
@@ -1173,7 +1156,7 @@ public abstract class FilteredList {
 	 */
 	private class RefreshCacheJob extends Job {
 
-		private RefreshJob refreshJob = new RefreshJob();
+		private RefreshJob refreshJob;
 
 		/**
 		 * Creates a new instance of the class.
@@ -1188,7 +1171,7 @@ public abstract class FilteredList {
 		 */
 		public void cancelAll() {
 			cancel();
-			refreshJob.cancel();
+			Optional.ofNullable(refreshJob).ifPresent(Job::cancel);
 		}
 
 		/*
@@ -1209,8 +1192,10 @@ public abstract class FilteredList {
 				FilteredList.this.reloadCache(true, wrappedMonitor);
 			}
 
-			if (!monitor.isCanceled()) {
-				refreshJob.schedule();
+			if (!(monitor.isCanceled() || composite.isDisposed())) {
+				composite.getDisplay().asyncExec(() -> {
+					(refreshJob = new RefreshJob()).schedule();
+				});
 			}
 
 			return new Status(IStatus.OK, PlatformUI.PLUGIN_ID, IStatus.OK,
@@ -1651,7 +1636,7 @@ public abstract class FilteredList {
 			if (this.name == null)
 				this.name = name;
 			this.totalWork = totalWork;
-			refreshProgressMessageJob.scheduleProgressRefresh(this);
+			(refreshProgressMessageJob = new RefreshProgressMessageJob()).scheduleProgressRefresh(this);
 		}
 
 		/*
@@ -1714,11 +1699,10 @@ public abstract class FilteredList {
 				return message;
 
 			return NLS
-					.bind(DialogMessages.FilteredItemsSelectionDialog_taskProgressMessage,
-							new Object[] {
-									message,
-									new Integer(
-											(int) ((worked * 100) / totalWork)) });
+				.bind(DialogMessages.FilteredItemsSelectionDialog_taskProgressMessage,
+					new Object[]{
+						message,
+						(int) ((worked * 100) / totalWork)});
 
 		}
 
@@ -1750,22 +1734,18 @@ public abstract class FilteredList {
 		 */
 		protected IStatus run(IProgressMonitor monitor) {
 			this.itemsFilter = filter;
-
 			contentProvider.reset();
-
 			refreshWithLastSelection = false;
-
 			contentProvider.addHistoryItems(itemsFilter);
-
 			if (!(lastCompletedFilter != null && lastCompletedFilter
 					.isSubFilter(this.itemsFilter)))
 				contentProvider.refresh();
 
-			filterJob.schedule();
-
+			composite.getDisplay().asyncExec(() -> {
+				(filterJob = new FilterJob()).schedule();
+			});
 			return Status.OK_STATUS;
 		}
-
 	}
 
 	/**
