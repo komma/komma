@@ -53,7 +53,7 @@ public class URIHandler implements IURIHandler {
 	}
 
 	/**
-	 * Returns the value of the {@link URIConverter#OPTION_URI_CONVERTER URI
+	 * Returns the value of the {@link IURIConverter#OPTION_URI_CONVERTER URI
 	 * converter option}.
 	 * 
 	 * @param options
@@ -65,7 +65,7 @@ public class URIHandler implements IURIHandler {
 	}
 
 	/**
-	 * Returns the value of the {@link URIConverter#OPTION_RESPONSE response
+	 * Returns the value of the {@link IURIConverter#OPTION_RESPONSE response
 	 * option}.
 	 * 
 	 * @param options
@@ -78,7 +78,7 @@ public class URIHandler implements IURIHandler {
 	}
 
 	/**
-	 * Returns the value of the {@link URIConverter#OPTION_REQUESTED_ATTRIBUTES
+	 * Returns the value of the {@link IURIConverter#OPTION_REQUESTED_ATTRIBUTES
 	 * requested attributes option}.
 	 * 
 	 * @param options
@@ -239,7 +239,7 @@ public class URIHandler implements IURIHandler {
 
 	/**
 	 * This implementation delegates to the {@link #getURIConverter(Map) URI
-	 * converter}'s {@link URIConverter#getContentHandlers() content handlers}.
+	 * converter}'s {@link IURIConverter#getContentHandlers() content handlers}.
 	 */
 	public Map<String, ?> contentDescription(URI uri, Map<?, ?> options)
 			throws IOException {

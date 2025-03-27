@@ -56,7 +56,7 @@ public class ModelFactoryRegistry implements IModel.Factory.Registry {
 	 * @param uri
 	 *            the URI.
 	 * @return the resource factory appropriate for the given URI.
-	 * @see org.eclipse.emf.ecore.resource.ResourceSet#createModel(URI)
+	 * @see IModelSet#createModel(URI)
 	 */
 	public IModel.Factory getFactory(URI uri) {
 		return convert(getFactory(uri, protocolToFactoryMap,
@@ -155,7 +155,7 @@ public class ModelFactoryRegistry implements IModel.Factory.Registry {
 
 	/**
 	 * Returns the URI converter that's used to
-	 * {@link URIConverter#contentDescription(URI, Map) compute} the content
+	 * {@link IURIConverter#contentDescription(URI, Map) compute} the content
 	 * type identifier.
 	 * 
 	 * @return the URI converter that's used to compute the content type
@@ -167,7 +167,7 @@ public class ModelFactoryRegistry implements IModel.Factory.Registry {
 
 	/**
 	 * A constant read only map of
-	 * {@link URIConverter#contentDescription(URI, Map) options} used to request
+	 * {@link IURIConverter#contentDescription(URI, Map) options} used to request
 	 * just the {@link IContentHandler#CONTENT_TYPE_PROPERTY content type}.
 	 */
 	protected static final Map<?, ?> CONTENT_DESCRIPTION_OPTIONS;
@@ -184,7 +184,7 @@ public class ModelFactoryRegistry implements IModel.Factory.Registry {
 
 	/**
 	 * Returns the default options used to
-	 * {@link URIConverter#contentDescription(URI, Map) compute} the content
+	 * {@link IURIConverter#contentDescription(URI, Map) compute} the content
 	 * type identifier.
 	 * 
 	 * @return the default options used to compute the content type identifier.
@@ -198,7 +198,7 @@ public class ModelFactoryRegistry implements IModel.Factory.Registry {
 	 * {@link IContentHandler#CONTENT_TYPE_PROPERTY content type identifier},
 	 * when standard alternatives fail.
 	 * <p>
-	 * This implementation calls {@link #delegatedGetFactory(URI)}; clients are
+	 * This implementation calls {@link #delegatedGetFactory(URI, String)}; clients are
 	 * encouraged to override it.
 	 * </p>
 	 * 

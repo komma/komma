@@ -334,7 +334,7 @@ public interface IModelSet extends INotifier<INotification> {
 	 * 
 	 * @param converter
 	 *            the new converter.
-	 * @see URIConverter
+	 * @see IURIConverter
 	 * @see URI
 	 */
 	void setURIConverter(IURIConverter converter);

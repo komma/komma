@@ -12,8 +12,8 @@ public interface ISearchableItemProvider {
 	 * Find elements beneath <code>parent</code> according to
 	 * <code>filter</code>.
 	 * 
-	 * @param Expression
-	 *            the filter expression
+	 * @param expression
+	 *            The filter expression
 	 * @param parent
 	 *            Parent element
 	 * @param limit

@@ -31,31 +31,27 @@ public interface IValidator {
 
 	/**
 	 * This is the name of the marker attribute to hold the String
-	 * representation of the {@link org.eclipse.emf.ecore.util.EcoreUtil#getURI
-	 * URI} of the object that is the target of the marker.
+	 * representation of the URI of the object that is the target of the marker.
 	 * 
-	 * @see org.eclipse.emf.ecore.util.EcoreUtil#getURI
 	 */
 	String URI_ATTRIBUTE = "uri";
 
 	/**
 	 * This is the name of the marker attribute to hold a space separated
 	 * sequence of
-	 * {@link net.enilink.komma.core.URIImpl.common.util.URI#encodeFragment(String, boolean)
-	 * encoded} Strings where each string is the
-	 * {@link org.eclipse.emf.ecore.util.EcoreUtil#getURI URI} of an object
+	 * {@link net.enilink.komma.core.URIs#encodeFragment(String, boolean)
+	 * encoded} Strings where each string is the URI of an object
 	 * related to the target of the marker. The vale of this attribute should be
 	 * processed as follows:
 	 * 
 	 * <pre>
 	 * for (String relatedURI : relatedURIs.split(&quot; &quot;)) {
-	 * 	URI uri = URI.createURI(URI.decode(relatedURI));
+	 * 	URI uri = URIs.createURI(URIs.decode(relatedURI));
 	 * 	// ...
 	 * }
 	 *</pre>
 	 * 
-	 * @see org.eclipse.emf.ecore.util.EcoreUtil#getURI
-	 * @see net.enilink.komma.core.URIImpl.common.util.URI#decode(String)
+	 * @see net.enilink.komma.core.URIs#decode(String)
 	 */
 	String RELATED_URIS_ATTRIBUTE = "relatedURIs";
 

@@ -122,7 +122,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		/**
 		 * The local resource factory registry.
 		 * 
-		 * @see #getResourceFactoryRegistry
+		 * @see #getModelFactoryRegistry
 		 */
 		protected IModel.Factory.Registry modelFactoryRegistry;
 

@@ -265,7 +265,7 @@ public interface IModel {
 	 * Loads the model from the URI using the specified options.
 	 * 
 	 * @see #load(Map)
-	 * @see #load(InputStream)
+	 * @see #load(InputStream, Map)
 	 * @param options
 	 *            the load options.
 	 */
@@ -279,7 +279,7 @@ public interface IModel {
 	 * @param options
 	 *            the load options.
 	 * @see #load(Map)
-	 * @see #load(URI)
+	 * @see #load(URI, Map)
 	 * @see #save(OutputStream, Map)
 	 */
 	void load(InputStream inputStream, Map<?, ?> options) throws IOException;
@@ -301,8 +301,8 @@ public interface IModel {
 	 * </p>
 	 * <p>
 	 * An implementation typically uses the {@link IModelSet#getURIConverter URI
-	 * converter} of the {@link #getOntologySet containing} model set to
-	 * {@link UIRIConverter#createOutputStream(URI, Map) create} an output
+	 * converter} of the {@link #getModelSet containing} model set to
+	 * {@link IURIConverter#createOutputStream(URI, Map) create} an output
 	 * stream, and then delegates to {@link #save(OutputStream, Map)
 	 * save(OutputStream, Map)}.
 	 * </p>
@@ -378,7 +378,7 @@ public interface IModel {
 	/**
 	 * A factory for creating resources.
 	 * <p>
-	 * A factory is implemented to {@link #createResource create} a specialized
+	 * A factory is implemented to {@link #createModel create} a specialized
 	 * type of resource and is typically registered in
 	 * {@link IModel.Factory.Registry registry}.
 	 * </p>
@@ -445,10 +445,10 @@ public interface IModel {
 			 * {@link #getProtocolToFactoryMap protocol} map the URI's
 			 * {@link URI#fileExtension file extension} to search
 			 * {@link #getExtensionToFactoryMap extension} map, and the URI's
-			 * {@link URIConverter#contentDescription(URI, Map) content type
+			 * {@link IURIConverter#contentDescription(URI, Map) content type
 			 * identifier} to search the {@link #getContentTypeToFactoryMap()
 			 * content type} map. It will
-			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Descriptor#createFactory
+			 * {@link IModel.Factory.IDescriptor#createFactory
 			 * convert} a resulting descriptor into a factory. It may choose to
 			 * provide additional mechanisms and algorithms to determine a
 			 * factory appropriate for the given URI.
@@ -458,13 +458,13 @@ public interface IModel {
 			 *            the URI.
 			 * @return the resource factory appropriate for the given URI, or
 			 *         <code>null</code> if there isn't one.
-			 * @see ResourceSet#createModel(URI)
+			 * @see IModelSet#createModel(URI)
 			 */
 			Factory getFactory(URI uri);
 
 			/**
 			 * Returns the resource factory appropriate for the given URI with
-			 * the given {@link URIConverter#contentDescription(URI, Map)
+			 * the given {@link IURIConverter#contentDescription(URI, Map)
 			 * content type} identifier.
 			 * <p>
 			 * An implementation will (typically) use the URI's
@@ -474,7 +474,7 @@ public interface IModel {
 			 * {@link #getExtensionToFactoryMap extension} map, and the given
 			 * content type identifier to search the
 			 * {@link #getContentTypeToFactoryMap() content type} map. It will
-			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Descriptor#createFactory
+			 * {@link IModel.Factory.IDescriptor#createFactory
 			 * convert} a resulting descriptor into a factory. It may choose to
 			 * provide additional mechanisms and algorithms to determine a
 			 * factory appropriate for the given URI.
@@ -494,9 +494,9 @@ public interface IModel {
 
 			/**
 			 * Returns a map from {@link URI#scheme protocol} to
-			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory}
+			 * {@link IModel.Factory}
 			 * or
-			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Descriptor}
+			 * {@link IModel.Factory.IDescriptor}
 			 * .
 			 * 
 			 * @return the protocol map.
@@ -512,9 +512,9 @@ public interface IModel {
 
 			/**
 			 * Returns a map from {@link URI#fileExtension file extension} to
-			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory}
+			 * {@link IModel.Factory}
 			 * or
-			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Descriptor}
+			 * {@link IModel.Factory.IDescriptor}
 			 * .
 			 * <p>
 			 * The {@link #DEFAULT_EXTENSION default} file extension
@@ -541,9 +541,9 @@ public interface IModel {
 
 			/**
 			 * Returns a map from content type identifier to
-			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory}
+			 * {@link IModel.Factory}
 			 * or
-			 * {@link org.eclipse.ModelSetFactory.ecore.resource.Resource.Factory.Descriptor}
+			 * {@link IModel.Factory.IDescriptor}
 			 * .
 			 * <p>
 			 * The {@link #DEFAULT_CONTENT_TYPE_IDENTIFIER default} content type

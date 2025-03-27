@@ -7,6 +7,6 @@ package net.enilink.komma.model;
  * the codes defined in this interface.
  */
 public interface IModelStatusConstants {
-	public static final int INTERNAL_ERROR = 10001;
-	public static final int INTERNAL_WARNING = 10002;
+	int INTERNAL_ERROR = 10001;
+	int INTERNAL_WARNING = 10002;
 }
