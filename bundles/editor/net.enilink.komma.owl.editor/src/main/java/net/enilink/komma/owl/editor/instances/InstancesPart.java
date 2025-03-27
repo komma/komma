@@ -10,6 +10,7 @@
  *******************************************************************************/
 package net.enilink.komma.owl.editor.instances;
 
+import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
@@ -17,7 +18,9 @@ import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.URI;
+import net.enilink.komma.edit.provider.ISearchableItemProvider;
 import net.enilink.komma.edit.provider.IViewerNotification;
+import net.enilink.komma.edit.provider.SparqlSearchableItemProvider;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
 import net.enilink.komma.edit.ui.provider.AdapterFactoryLabelProvider;
@@ -59,7 +62,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 
 public class InstancesPart extends AbstractEditingDomainPart {
-	class ContentProvider extends LazyAdapterFactoryContentProvider {
+	class ContentProvider extends LazyAdapterFactoryContentProvider implements ISearchableItemProvider {
 		ContentProvider(IAdapterFactory adapterFactory) {
 			super(adapterFactory);
 		}
@@ -79,6 +82,16 @@ public class InstancesPart extends AbstractEditingDomainPart {
 		@Override
 		public void notifyChanged(Collection<? extends IViewerNotification> notifications) {
 			super.notifyChanged(notifications);
+		}
+
+		public IExtendedIterator<?> find(Object expression, Object parent, int limit) {
+			SparqlSearchableItemProvider searchableProvider = new SparqlSearchableItemProvider() {
+				@Override
+				protected String getQueryFindPatterns(Object parent) {
+					return "?s a [ rdfs:subClassOf* ?parent ] . ";
+				}
+			};
+			return searchableProvider.find(expression, input, 20);
 		}
 	};
 
