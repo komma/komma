@@ -344,20 +344,6 @@ public abstract class ModelSupport
 	}
 
 	/*
-	 * Make Models usable as subjects for content providers, proposals etc.
-	 * Change existing code that uses ((IObject) arg).getModel() to
-	 * cast to IModelAware instead, to get it working with a model as argument.
-	 * 
-	 * FIXME: return meta-model instead?
-	 * 
-	 * @see net.enilink.komma.model.IModelAware#getModel()
-	 */
-	@Override
-	public IModel getModel() {
-		return this;
-	}
-
-	/*
 	 * documentation inherited
 	 */
 	@Override
