@@ -8,6 +8,7 @@ import java.util.Map;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.ICommand;
+import net.enilink.komma.common.command.IdentityCommand;
 import net.enilink.komma.common.command.SimpleCommand;
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.IEntityManager;
@@ -154,7 +155,7 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 					return false;
 				}
 			}, null);
-			return (IValue) result[0];
+			return result[0];
 		}
 		return (IReference) value;
 	}
@@ -208,6 +209,10 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 	@Override
 	public ICommand convertEditorValue(final Object editorValue,
 			final IEntityManager entityManager, Object element) {
+		if (editorValue instanceof IValue) {
+			// short-circuit if supplied value is already an RDF resource
+			return new IdentityCommand(editorValue);
+		}
 		return new SimpleCommand() {
 			@Override
 			protected CommandResult doExecuteWithResult(
