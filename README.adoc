@@ -1,7 +1,4 @@
-= KOMMA -- RDF Mapper and Editing Framework for Java
-
-image:https://maven-badges.herokuapp.com/maven-central/net.enilink.komma/net.enilink.komma.model/badge.svg[link="https://maven-badges.herokuapp.com/maven-central/net.enilink.komma/net.enilink.komma.model"]
-image:https://badges.gitter.im/komma/komma.svg[link="https://gitter.im/komma/komma?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
+= KOMMA -- RDF Mapper and Editing Framework for Java image:https://maven-badges.herokuapp.com/maven-central/net.enilink.komma/net.enilink.komma.model/badge.svg[link="https://maven-badges.herokuapp.com/maven-central/net.enilink.komma/net.enilink.komma.model"] image:https://badges.gitter.im/komma/komma.svg[link="https://gitter.im/komma/komma?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
 
 *Documentation:* http://komma.enilink.net/docs
 
