@@ -1,5 +1,10 @@
 package net.enilink.komma.edit.ui.provider;
 
+import net.enilink.komma.common.adapter.IAdapterFactory;
+import net.enilink.komma.core.IEntity;
+import net.enilink.komma.core.IReference;
+import net.enilink.komma.edit.provider.IViewerNotification;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -9,17 +14,26 @@ import org.eclipse.jface.viewers.ILazyTreeContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.swt.widgets.Tree;
-
-import net.enilink.komma.common.adapter.IAdapterFactory;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.edit.provider.IViewerNotification;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.Widget;
 
 public class LazyAdapterFactoryContentProvider extends
 		AdapterFactoryContentProvider implements ILazyContentProvider, ILazyTreeContentProvider {
 	protected Object input;
 	protected Map<Object, Object[]> parentToChildren = new WeakHashMap<Object, Object[]>();
+
+	// used as a hack to fix performance issues with RAP
+	// see https://github.com/eclipse-rap/org.eclipse.rap/issues/286
+	static Field styleField;
+	{
+		try {
+			styleField = Widget.class.getDeclaredField("style");
+			styleField.setAccessible(true);
+		} catch (NoSuchFieldException e) {
+			styleField = null;
+		}
+	}
 
 	public LazyAdapterFactoryContentProvider(IAdapterFactory adapterFactory) {
 		super(adapterFactory);
@@ -107,7 +121,31 @@ public class LazyAdapterFactoryContentProvider extends
 				((TreeViewer) viewer).setChildCount(element, children.length);
 			} else if (viewer instanceof TableViewer) {
 				// set item count if input element is updated
-				((TableViewer) viewer).setItemCount(children.length);
+				var table = ((TableViewer) viewer).getTable();
+
+				int style = table.getStyle();
+				boolean resetStyle = false;
+				try {
+					// this is a hack to fix performance issues with RAP
+					// by prevent scrollbar updates for each destroyed item
+					if (styleField != null && (style & SWT.NO_SCROLL) == 0) {
+						try {
+							styleField.set(table, table.getStyle() | SWT.NO_SCROLL);
+							resetStyle = true;
+						} catch (IllegalAccessException e) {
+							// ignore
+						}
+					}
+					table.setItemCount(children.length);
+				} finally {
+					if (resetStyle) {
+						try {
+							styleField.set(table, style);
+						} catch (IllegalAccessException e) {
+							// ignore
+						}
+					}
+				}
 			}
 		}
 		return children;
