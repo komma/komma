@@ -61,12 +61,12 @@ public class InstanceTreePart extends InstancesPart {
 
 	protected String instancesQuery(IClass input) {
 		StringBuilder sb = new StringBuilder(ISparqlConstants.PREFIX)
-				.append("SELECT DISTINCT ?r WHERE { { select ?type { ?type rdfs:subClassOf* ?c } } ?r a ?type ] FILTER NOT EXISTS { ");
+				.append("SELECT DISTINCT ?r WHERE { { select ?type { ?type rdfs:subClassOf* ?c } } ?r a ?type FILTER NOT EXISTS { ");
 		if (RDF.TYPE_PROPERTY.equals(input)
 				|| input.getRdfsSubClassOf().contains(RDF.TYPE_PROPERTY)) {
 			sb.append("?other a ?c . ?r rdfs:subPropertyOf ?other FILTER (?r != ?other)");
 		} else {
-			sb.append("?childProp rdfs:subPropertyOf* komma:child . ?other a [ rdfs:subClassOf* ?c ]; ?childProp ?r FILTER (?r != ?other)");
+			sb.append("?childProp rdfs:subPropertyOf* komma:child . ?other a ?type; ?childProp ?r FILTER (?r != ?other)");
 		}
 		sb.append(" }} ORDER BY ?r");
 		return sb.toString();
