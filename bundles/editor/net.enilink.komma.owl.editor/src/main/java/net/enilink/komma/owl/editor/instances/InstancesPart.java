@@ -88,7 +88,7 @@ public class InstancesPart extends AbstractEditingDomainPart {
 			SparqlSearchableItemProvider searchableProvider = new SparqlSearchableItemProvider() {
 				@Override
 				protected String getQueryFindPatterns(Object parent) {
-					return "?s a [ rdfs:subClassOf* ?parent ] . ";
+					return "{ select ?type { ?type rdfs:subClassOf* ?parent } } ?s a ?type . ";
 				}
 			};
 			return searchableProvider.find(expression, input, 20);
@@ -145,7 +145,7 @@ public class InstancesPart extends AbstractEditingDomainPart {
 				// of all virtual elements
 				List<Object> existing = null;
 				if (list != null) {
-					existing = new ArrayList<Object>(list.size());
+					existing = new ArrayList<>(list.size());
 					for (Object toSelect : list) {
 						if (doFindItem(toSelect) != null) {
 							existing.add(toSelect);
@@ -163,7 +163,7 @@ public class InstancesPart extends AbstractEditingDomainPart {
 	}
 
 	public void createActions(Composite parent) {
-		IToolBarManager toolBarManager = (IToolBarManager) getForm().getAdapter(IToolBarManager.class);
+		IToolBarManager toolBarManager = getForm().getAdapter(IToolBarManager.class);
 		ToolBarManager ownManager = null;
 		if (toolBarManager == null) {
 			toolBarManager = ownManager = new ToolBarManager(SWT.HORIZONTAL);
@@ -217,7 +217,7 @@ public class InstancesPart extends AbstractEditingDomainPart {
 	
 	void addItem(boolean requireName) {
 		if (input instanceof IClass) {
-			final IClass clazz = (IClass) input;
+			final IClass clazz = input;
 			if (requireName) {
 				NewObjectWizard wizard = new NewObjectWizard(((IObject) clazz).getModel()) {
 					@Override
@@ -320,7 +320,7 @@ public class InstancesPart extends AbstractEditingDomainPart {
 
 	protected String instancesQuery(IClass input) {
 		StringBuilder sb = new StringBuilder(ISparqlConstants.PREFIX)
-				.append("SELECT DISTINCT ?r WHERE { ?r a [ rdfs:subClassOf* ?c ] } ORDER BY ?r");
+				.append("SELECT DISTINCT ?r WHERE { { select ?type { ?type rdfs:subClassOf* ?c } } ?r a ?type } ORDER BY ?r");
 		return sb.toString();
 	}
 
