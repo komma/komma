@@ -290,7 +290,14 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		@Override
 		public void notifyChanged(
 				Collection<? extends INotification> notifications) {
-			namespaceViewer.refresh();
+			var display = namespaceViewer.getControl().getDisplay();
+			if (display != null && !display.isDisposed()) {
+				display.asyncExec(() -> {
+					if (! namespaceViewer.getControl().isDisposed()) {
+						namespaceViewer.refresh();
+					}
+				});
+			}
 		}
 	}
 
