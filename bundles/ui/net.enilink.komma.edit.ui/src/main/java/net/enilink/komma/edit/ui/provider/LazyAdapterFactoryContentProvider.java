@@ -61,7 +61,7 @@ public class LazyAdapterFactoryContentProvider extends
 	
 	@Override
 	public void updateElement(int index) {
-		Object[] children = getChildren(input);
+		Object[] children = input == null ? null : getChildren(input);
 		if (children != null && index < children.length) {
 			Object child = children[index];
 			// ensure that uninitialized instances (obtained e.g. with
