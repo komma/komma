@@ -33,6 +33,19 @@ mvn package -Pupdatesite
 
 to create it. Afterwards a P2 repository can be found at `features/net.enilink.komma.updatesite/target/repository`.
 
+== Build KOMMA IDE
+
+KOMMA IDE is an Eclipse-based development environment with editing components for RDF, RDFS and OWL.
+
+You can either use the update site as described above to install the modules in Eclipse or build the whole IDE package using:
+
+[source,text]
+----
+mvn package -Pupdatesite && mvn package -Prelease -f ide/pom.xm
+----
+
+Afterwards Linux and Windows packages can be found at `ide/target/products`.
+
 == Develop KOMMA with an IDE
 - *Eclipse:* You can import the KOMMA projects into your workspace by executing
 __File > Import > Maven > Existing Maven Projects__.
