@@ -116,7 +116,7 @@
 		</repository>
 		<repository>
 			<id>KOMMA Update Site</id>
-			<url>file://${project.basedir}/../features/net.enilink.komma.updatesite/target/repository
+			<url>file:///${project.basedir}/../features/net.enilink.komma.updatesite/target/repository
 			</url>
 			<layout>p2</layout>
 		</repository>
