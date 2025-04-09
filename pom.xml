@@ -721,6 +721,7 @@ KOMMA is a framework for linked data applications. It supports the management an
 				<module>bundles/sdk</module>
 				<module>features/net.enilink.komma.rap.feature</module>
 				<module>launch</module>
+				<module>ide</module>
 			</modules>
 		</profile>
 
