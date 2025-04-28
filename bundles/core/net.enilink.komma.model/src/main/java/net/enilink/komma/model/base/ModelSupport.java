@@ -72,7 +72,6 @@ import net.enilink.komma.em.DelegatingEntityManager;
 import net.enilink.komma.em.concepts.IOntology;
 import net.enilink.komma.em.util.ISparqlConstants;
 import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.IModelAware;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.IModelStatusConstants;
 import net.enilink.komma.model.IObject;
@@ -87,7 +86,7 @@ import net.enilink.vocab.owl.OWL;
 import net.enilink.vocab.rdf.RDF;
 
 public abstract class ModelSupport
-		implements IModel, IModelAware, IModel.Internal, INotificationBroadcaster<INotification>, Model, Behaviour<IModel.Internal> {
+		implements IModel, IModel.Internal, INotificationBroadcaster<INotification>, Model, Behaviour<IModel.Internal> {
 	private final static Logger log = LoggerFactory.getLogger(ModelSupport.class);
 	
 	class ModelInjector implements IEntityDecorator {
