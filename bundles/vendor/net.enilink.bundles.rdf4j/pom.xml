@@ -170,17 +170,5 @@
 				</configuration>
 			</plugin>
 		</plugins>
-
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.sonatype.plugins</groupId>
-					<artifactId>nexus-staging-maven-plugin</artifactId>
-					<configuration>
-						<skipNexusStagingDeployMojo>${bundles.rdf4j.deploy.skip}</skipNexusStagingDeployMojo>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 </project>

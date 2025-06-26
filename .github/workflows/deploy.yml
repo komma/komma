@@ -42,4 +42,4 @@ jobs:
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-        run: mvn deploy -P ossrh,updatesite -s ./.ossrh.maven-settings.xml
+        run: mvn deploy -P central,updatesite -s ./.central.maven-settings.xml
