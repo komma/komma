@@ -1,20 +1,21 @@
 /**
- * <copyright> 
- *
+ * <copyright>
+ * <p>
  * Copyright (c) 2002-2006 IBM Corporation and others.
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-2.0/
- * 
- * Contributors: 
- *   IBM - Initial API and implementation
+ * <p>
+ * Contributors:
+ * IBM - Initial API and implementation
  *
  * </copyright>
  */
 package net.enilink.komma.core;
 
 import java.io.File;
+import java.io.Serial;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,17 +34,17 @@ import java.util.StringTokenizer;
  * providing a single URI string, which is parsed into its components. Static
  * factory methods whose names begin with "create" are used for both forms of
  * object creation.
- * 
+ *
  * <p>
  * Like <code>String</code>, <code>URI</code> implementations are immutable; a
  * <code>URI</code> instance offers several by-value methods that return a new
  * <code>URI</code> object based on its current state. Most useful, a relative
- * <code>URI</code> can be {@link #resolve(URIs) resolve}d against a base
+ * <code>URI</code> can be {@link URI#resolve(URI) resolve}d against a base
  * absolute <code>URI</code> -- the latter typically identifies the document in
- * which the former appears. The inverse to this is {@link #deresolve(URIs)
+ * which the former appears. The inverse to this is {@link URI#deresolve(URI)
  * deresolve}, which answers the question, "what relative URI will resolve,
  * against the given base, to this absolute URI?"
- * 
+ *
  * <p>
  * <a name="device_explanation"> The primary enhancement beyond the RFC
  * description is an optional device component. Instead of treating the device
@@ -63,7 +64,7 @@ import java.util.StringTokenizer;
  * {@link #createHierarchicalURI(String, String, String, String[], String, String)
  * absolute-path} form of <code>createHierarchicalURI()</code> can be used, in
  * which a non-null <code>device</code> parameter can be specified.
- * 
+ *
  * <p>
  * <a name="archive_explanation"> The other enhancement provides support for the
  * almost-hierarchical form used for files within archives, such as the JAR
@@ -75,15 +76,15 @@ import java.util.StringTokenizer;
  * The URI of the archive must have no fragment. The whole archive URI must have
  * no device and an absolute path. Special handling is supported for
  * {@link #createURI(String) creating}, {@link #validArchiveAuthority
- * validating}, {@link #devicePath getting the path} from, and
+ * validating}, {@link URI#devicePath getting the path} from, and
  * {@link #toString() displaying} archive URIs. In all other operations,
- * including {@link #resolve(URIs) resolving} and {@link #deresolve(URIs)
+ * including {@link URI#resolve(URI) resolving} and {@link URI#deresolve(URI)
  * deresolving}, they are handled like any ordinary URI. The schemes that
  * identify archive URIs can be changed from their default by setting the
  * <code>net.enilink.komma.core.URIs.archiveSchemes</code> system property.
  * Multiple schemes should be space separated, and the test of whether a URI's
  * scheme matches is always case-insensitive.
- * 
+ *
  * <p>
  * This implementation does not impose all of the restrictions on character
  * validity that are specified in the RFC. Static methods whose names begin with
@@ -93,7 +94,7 @@ import java.util.StringTokenizer;
  * createURI} to have parsed them correctly from a single URI string. If
  * necessary in the future, these tests may be made more strict, to better
  * conform to the RFC.
- * 
+ *
  * <p>
  * Another group of static methods, whose names begin with "encode", use percent
  * escaping to encode any characters that are not permitted in the various URI
@@ -103,7 +104,7 @@ import java.util.StringTokenizer;
  * These encoding methods are more strict than the validation methods described
  * above. They ensure validity according to the RFC, with one exception:
  * non-ASCII characters.
- * 
+ *
  * <p>
  * The RFC allows only characters that can be mapped to 7-bit US-ASCII
  * representations. Non-ASCII, single-byte characters can be used only via
@@ -115,7 +116,7 @@ import java.util.StringTokenizer;
  * an RFC is now in
  * <href="http://www.w3.org/International/Iri-edit/draft-duerst-Iri-09.txt"
  * >draft form</a>.
- * 
+ *
  * <p>
  * Finally, note the difference between a <code>null</code> parameter to the
  * static factory methods and an empty string. The former signifies the absence
@@ -136,6 +137,7 @@ public final class URIs {
 	private static final URICache uriCache = new URICache();
 
 	private static class URICache extends HashMap<String, WeakReference<URI>> {
+		@Serial
 		private static final long serialVersionUID = 1L;
 
 		static final int MIN_LIMIT = 1000;
@@ -156,7 +158,7 @@ public final class URIs {
 
 		private void cleanGCedValues() {
 			for (Iterator<Map.Entry<String, WeakReference<URI>>> i = entrySet()
-					.iterator(); i.hasNext();) {
+					.iterator(); i.hasNext(); ) {
 				Map.Entry<String, WeakReference<URI>> entry = i.next();
 				WeakReference<URI> reference = entry.getValue();
 				if (reference.get() == null) {
@@ -199,8 +201,8 @@ public final class URIs {
 
 	// Characters to use in escaping.
 	private static final char ESCAPE = '%';
-	private static final char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5',
-			'6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+	private static final char[] HEX_DIGITS = {'0', '1', '2', '3', '4', '5',
+			'6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
 	// Some character classes, as defined in RFC 2396's BNF for URI.
 	// These are 128-bit bitmasks, stored as two longs, where the Nth bit is set
@@ -266,7 +268,7 @@ public final class URIs {
 			set.add(SCHEME_ARCHIVE);
 		} else {
 			for (StringTokenizer t = new StringTokenizer(propertyValue); t
-					.hasMoreTokens();) {
+					.hasMoreTokens(); ) {
 				set.add(t.nextToken().toLowerCase());
 			}
 		}
@@ -348,7 +350,7 @@ public final class URIs {
 	 * Static factory method for a generic, non-hierarchical URI. There is no
 	 * concept of a relative non-hierarchical URI; such an object cannot be
 	 * created.
-	 * 
+	 *
 	 * @exception java.lang.IllegalArgumentException
 	 *                if <code>scheme</code> is null, if <code>scheme</code> is
 	 *                an <a href="#archive_explanation">archive URI</a> scheme,
@@ -359,7 +361,7 @@ public final class URIs {
 	 *                respectively.
 	 */
 	public static URI createGenericURI(String scheme, String opaquePart,
-			String fragment) {
+	                                   String fragment) {
 		if (scheme == null) {
 			throw new IllegalArgumentException("relative non-hierarchical URI");
 		}
@@ -379,7 +381,7 @@ public final class URIs {
 	 * be relative if <code>scheme</code> is non-null, and absolute otherwise.
 	 * An absolute URI with no path requires a non-null <code>authority</code>
 	 * and/or <code>device</code>.
-	 * 
+	 *
 	 * @exception java.lang.IllegalArgumentException
 	 *                if <code>scheme</code> is non-null while
 	 *                <code>authority</code> and <code>device</code> are null,
@@ -394,7 +396,7 @@ public final class URIs {
 	 *                validFragment}, respectively.
 	 */
 	public static URI createHierarchicalURI(String scheme, String authority,
-			String device, String query, String fragment) {
+	                                        String device, String query, String fragment) {
 		if (scheme != null && authority == null && device == null) {
 			throw new IllegalArgumentException(
 					"absolute hierarchical URI without authority, device, path");
@@ -414,14 +416,14 @@ public final class URIs {
 	 * Static factory method for a hierarchical URI with absolute path. The URI
 	 * will be relative if <code>scheme</code> is non-null, and absolute
 	 * otherwise.
-	 * 
+	 *
 	 * @param segments
 	 *            an array of non-null strings, each representing one segment of
 	 *            the path. As an absolute path, it is automatically preceded by
 	 *            a <code>/</code> separator. If desired, a trailing separator
 	 *            should be represented by an empty-string segment as the last
 	 *            element of the array.
-	 * 
+	 *
 	 * @exception java.lang.IllegalArgumentException
 	 *                if <code>scheme</code> is an <a
 	 *                href="#archive_explanation">archive URI</a> scheme and
@@ -437,7 +439,7 @@ public final class URIs {
 	 *                appropriate.
 	 */
 	public static URI createHierarchicalURI(String scheme, String authority,
-			String device, String[] segments, String query, String fragment) {
+	                                        String device, String[] segments, String query, String fragment) {
 		if (isArchiveScheme(scheme) && device != null) {
 			throw new IllegalArgumentException("archive URI with device");
 		}
@@ -451,12 +453,12 @@ public final class URIs {
 
 	/**
 	 * Static factory method for a relative hierarchical URI with relative path.
-	 * 
+	 *
 	 * @param segments
 	 *            an array of non-null strings, each representing one segment of
 	 *            the path. A trailing separator is represented by an
 	 *            empty-string segment at the end of the array.
-	 * 
+	 *
 	 * @exception java.lang.IllegalArgumentException
 	 *                if <code>segments</code>, <code>query</code>, or
 	 *                <code>fragment</code> is not valid according to
@@ -465,7 +467,7 @@ public final class URIs {
 	 *                respectively.
 	 */
 	public static URI createHierarchicalURI(String[] segments, String query,
-			String fragment) {
+	                                        String fragment) {
 		segments = fix(segments);
 		validateURI(true, null, null, null, false, segments, query, fragment);
 		return new URIImpl(true, null, null, null, false, segments, query,
@@ -488,7 +490,7 @@ public final class URIs {
 	 * testing is not as strict as in the RFC; essentially, only separator
 	 * characters are considered. So, for example, non-Latin alphabet characters
 	 * appearing in the scheme would not be considered an error.
-	 * 
+	 *
 	 * @exception java.lang.IllegalArgumentException
 	 *                if any component parsed from <code>uri</code> is not valid
 	 *                according to {@link #validScheme validScheme},
@@ -508,14 +510,14 @@ public final class URIs {
 	 * Appropriate encoding is performed for each component of the URI. If more
 	 * than one <code>#</code> is in the string, the last one is assumed to be
 	 * the fragment's separator, and any others are encoded.
-	 * 
+	 *
 	 * @param ignoreEscaped
 	 *            <code>true</code> to leave <code>%</code> characters unescaped
 	 *            if they already begin a valid three-character escape sequence;
 	 *            <code>false</code> to encode all <code>%</code> characters.
 	 *            Note that if a <code>%</code> is not followed by 2 hex digits,
 	 *            it will always be escaped.
-	 * 
+	 *
 	 * @exception java.lang.IllegalArgumentException
 	 *                if any component parsed from <code>uri</code> is not valid
 	 *                according to {@link #validScheme validScheme},
@@ -536,21 +538,21 @@ public final class URIs {
 	 * Appropriate encoding is performed for each component of the URI. Control
 	 * is provided over which, if any, <code>#</code> should be taken as the
 	 * fragment separator and which should be encoded.
-	 * 
+	 *
 	 * @param ignoreEscaped
 	 *            <code>true</code> to leave <code>%</code> characters unescaped
 	 *            if they already begin a valid three-character escape sequence;
 	 *            <code>false</code> to encode all <code>%</code> characters.
 	 *            Note that if a <code>%</code> is not followed by 2 hex digits,
 	 *            it will always be escaped.
-	 * 
+	 *
 	 * @param fragmentLocationStyle
-	 *            one of {@link #FRAGMENT_NONE},
-	 *            {@link #FRAGMENT_FIRST_SEPARATOR}, or
-	 *            {@link #FRAGMENT_LAST_SEPARATOR}, indicating which, if any, of
+	 *            one of {@link URI#FRAGMENT_NONE},
+	 *            {@link URI#FRAGMENT_FIRST_SEPARATOR}, or
+	 *            {@link URI#FRAGMENT_LAST_SEPARATOR}, indicating which, if any, of
 	 *            the <code>#</code> characters should be considered the
 	 *            fragment separator. Any others will be encoded.
-	 * 
+	 *
 	 * @exception java.lang.IllegalArgumentException
 	 *                if any component parsed from <code>uri</code> is not valid
 	 *                according to {@link #validScheme validScheme},
@@ -562,7 +564,7 @@ public final class URIs {
 	 *                {@link #validFragment validFragment}, as appropriate.
 	 */
 	public static URI createURI(String uri, boolean ignoreEscaped,
-			int fragmentLocationStyle) {
+	                            int fragmentLocationStyle) {
 		return createURIWithCache(encodeURI(uri, ignoreEscaped,
 				fragmentLocationStyle));
 	}
@@ -617,7 +619,6 @@ public final class URIs {
 			if (j == -1) {
 				throw new IllegalArgumentException("no archive separator");
 			}
-			hierarchical = true;
 			authority = uri.substring(i, ++j);
 			i = j;
 		} else if (uri.startsWith(AUTHORITY_SEPARATOR, i)) {
@@ -640,7 +641,7 @@ public final class URIs {
 			j = find(uri, i + 1, SEGMENT_END_HI, SEGMENT_END_LO);
 			String s = uri.substring(i + 1, j);
 
-			if (s.length() > 0 && s.charAt(s.length() - 1) == DEVICE_IDENTIFIER) {
+			if (!s.isEmpty() && s.charAt(s.length() - 1) == DEVICE_IDENTIFIER) {
 				device = s;
 				i = j;
 			}
@@ -705,7 +706,7 @@ public final class URIs {
 		if (i >= len)
 			return len;
 
-		for (i = i > 0 ? i : 0; i < len; i++) {
+		for (i = Math.max(i, 0); i < len; i++) {
 			if (matches(s.charAt(i), highBitmask, lowBitmask))
 				break;
 		}
@@ -719,19 +720,19 @@ public final class URIs {
 	 * <code>/<code>; the path is encoded; and a "file" scheme and, if missing,
 	 * a leading <code>/</code>, are added to an absolute path. The result is
 	 * then parsed using {@link #createURI(String) createURI}.
-	 * 
+	 *
 	 * <p>
 	 * The encoding step escapes all spaces, <code>#</code> characters, and
 	 * other characters disallowed in URIs, as well as <code>?</code>, which
 	 * would delimit a path from a query. Decoding is automatically performed by
-	 * {@link #toFileString toFileString}, and can be applied to the values
+	 * {@link URI#toFileString}, and can be applied to the values
 	 * returned by other accessors by via the static {@link #decode(String)
 	 * decode} method.
-	 * 
+	 *
 	 * <p>
 	 * A relative path with a specified device (something like
 	 * <code>C:myfile.txt</code>) cannot be expressed as a valid URI.
-	 * 
+	 *
 	 * @exception java.lang.IllegalArgumentException
 	 *                if <code>pathName</code> specifies a device and a relative
 	 *                path, or if any component of the path is not valid
@@ -746,10 +747,9 @@ public final class URIs {
 				File.separatorChar, SEGMENT_SEPARATOR) : pathName;
 		uri = encode(uri, PATH_CHAR_HI, PATH_CHAR_LO, false);
 		if (file.isAbsolute()) {
-			URI result = createURI((uri.charAt(0) == SEGMENT_SEPARATOR ? "file:"
+			return createURI((uri.charAt(0) == SEGMENT_SEPARATOR ? "file:"
 					: "file:/")
 					+ uri);
-			return result;
 		} else {
 			URI result = createURI(uri);
 			if (result.scheme() != null) {
@@ -763,40 +763,40 @@ public final class URIs {
 	/**
 	 * Static factory method based on parsing a workspace-relative path string,
 	 * with an option to encode the created URI.
-	 * 
+	 *
 	 * <p>
 	 * The <code>pathName</code> must be of the form:
-	 * 
+	 *
 	 * <pre>
 	 *   /project-name/path
 	 * </pre>
-	 * 
+	 *
 	 * <p>
 	 * Platform-specific path separators will be converted to slashes. If not
 	 * included, the leading path separator will be added. The result will be of
 	 * this form, which is parsed using {@link #createURI(String) createURI}:
-	 * 
+	 *
 	 * <pre>
 	 *   platform:/resource/project-name/path
 	 * </pre>
-	 * 
+	 *
 	 * <p>
 	 * This scheme supports relocatable projects in Eclipse and in stand-alone
 	 * EMF.
-	 * 
+	 *
 	 * <p>
 	 * Depending on the <code>encode</code> argument, the path may be
 	 * automatically encoded to escape all spaces, <code>#</code> characters,
 	 * and other characters disallowed in URIs, as well as <code>?</code>, which
 	 * would delimit a path from a query. Decoding can be performed with the
 	 * static {@link #decode(String) decode} method.
-	 * 
+	 *
 	 * @exception java.lang.IllegalArgumentException
 	 *                if any component parsed from the path is not valid
 	 *                according to {@link #validDevice validDevice},
 	 *                {@link #validSegments validSegments}, {@link #validQuery
 	 *                validQuery}, or {@link #validFragment validFragment}.
-	 * 
+	 *
 	 */
 	public static URI createPlatformResourceURI(String pathName, boolean encode) {
 		return createPlatformURI("platform:/resource", "platform:/resource/",
@@ -806,39 +806,39 @@ public final class URIs {
 	/**
 	 * Static factory method based on parsing a plug-in-based path string, with
 	 * an option to encode the created URI.
-	 * 
+	 *
 	 * <p>
 	 * The <code>pathName</code> must be of the form:
-	 * 
+	 *
 	 * <pre>
 	 *   /plugin-id/path
 	 * </pre>
-	 * 
+	 *
 	 * <p>
 	 * Platform-specific path separators will be converted to slashes. If not
 	 * included, the leading path separator will be added. The result will be of
 	 * this form, which is parsed using {@link #createURI(String) createURI}:
-	 * 
+	 *
 	 * <pre>
 	 *   platform:/plugin/plugin-id/path
 	 * </pre>
-	 * 
+	 *
 	 * <p>
 	 * This scheme supports relocatable plug-in content in Eclipse.
-	 * 
+	 *
 	 * <p>
 	 * Depending on the <code>encode</code> argument, the path may be
 	 * automatically encoded to escape all spaces, <code>#</code> characters,
 	 * and other characters disallowed in URIs, as well as <code>?</code>, which
 	 * would delimit a path from a query. Decoding can be performed with the
 	 * static {@link #decode(String) decode} method.
-	 * 
+	 *
 	 * @exception java.lang.IllegalArgumentException
 	 *                if any component parsed from the path is not valid
 	 *                according to {@link #validDevice validDevice},
 	 *                {@link #validSegments validSegments}, {@link #validQuery
 	 *                validQuery}, or {@link #validFragment validFragment}.
-	 * 
+	 *
 	 */
 	public static URI createPlatformPluginURI(String pathName, boolean encode) {
 		return createPlatformURI("platform:/plugin", "platform:/plugin/",
@@ -847,7 +847,7 @@ public final class URIs {
 
 	// Private constructor for use of platform factory methods.
 	private static URI createPlatformURI(String unrootedBase,
-			String rootedBase, String pathName, boolean encode) {
+	                                     String rootedBase, String pathName, boolean encode) {
 		if (File.separatorChar != SEGMENT_SEPARATOR) {
 			pathName = pathName.replace(File.separatorChar, SEGMENT_SEPARATOR);
 		}
@@ -855,10 +855,9 @@ public final class URIs {
 		if (encode) {
 			pathName = encode(pathName, PATH_CHAR_HI, PATH_CHAR_LO, false);
 		}
-		URI result = createURI((pathName.charAt(0) == SEGMENT_SEPARATOR ? unrootedBase
+		return createURI((pathName.charAt(0) == SEGMENT_SEPARATOR ? unrootedBase
 				: rootedBase)
 				+ pathName);
-		return result;
 	}
 
 	// Validates all of the URI components. Factory methods should call this
@@ -868,8 +867,8 @@ public final class URIs {
 	// an existing URI, this need not be called. Instead, just the new
 	// components may be validated individually.
 	private static void validateURI(boolean hierarchical, String scheme,
-			String authority, String device, boolean absolutePath,
-			String[] segments, String query, String fragment) {
+	                                String authority, String device, boolean absolutePath,
+	                                String[] segments, String query, String fragment) {
 		if (!validScheme(scheme)) {
 			throw new IllegalArgumentException("invalid scheme: " + scheme);
 		}
@@ -909,9 +908,9 @@ public final class URIs {
 	static String firstInvalidSegment(String[] value) {
 		if (value == null)
 			return null;
-		for (int i = 0, len = value.length; i < len; i++) {
-			if (!validSegment(value[i]))
-				return value[i];
+		for (String s : value) {
+			if (!validSegment(s))
+				return s;
 		}
 		return null;
 	}
@@ -922,7 +921,7 @@ public final class URIs {
 	/**
 	 * Returns <code>true</code> if the specified <code>value</code> would be
 	 * valid as the scheme component of a URI; <code>false</code> otherwise.
-	 * 
+	 *
 	 * <p>
 	 * A valid scheme may be null or contain any characters except for the
 	 * following: <code>: / ? #</code>
@@ -945,7 +944,7 @@ public final class URIs {
 	 * Returns <code>true</code> if the specified <code>value</code> would be
 	 * valid as the opaque part component of a URI; <code>false</code>
 	 * otherwise.
-	 * 
+	 *
 	 * <p>
 	 * A valid opaque part must be non-null, non-empty, and not contain the
 	 * <code>#</code> character. In addition, its first character must not be
@@ -953,7 +952,7 @@ public final class URIs {
 	 */
 	public static boolean validOpaquePart(String value) {
 		return value != null && value.indexOf(FRAGMENT_SEPARATOR) == -1
-				&& value.length() > 0 && value.charAt(0) != SEGMENT_SEPARATOR;
+				&& !value.isEmpty() && value.charAt(0) != SEGMENT_SEPARATOR;
 
 		// <p>A valid opaque part must be non-null and non-empty. It may contain
 		// any allowed URI characters, but its first character may not be
@@ -967,7 +966,7 @@ public final class URIs {
 	/**
 	 * Returns <code>true</code> if the specified <code>value</code> would be
 	 * valid as the authority component of a URI; <code>false</code> otherwise.
-	 * 
+	 *
 	 * <p>
 	 * A valid authority may be null or contain any characters except for the
 	 * following: <code>/ ? #</code>
@@ -989,13 +988,13 @@ public final class URIs {
 	 * valid as the authority component of an <a
 	 * href="#archive_explanation">archive URI</a>; <code>false</code>
 	 * otherwise.
-	 * 
+	 *
 	 * <p>
 	 * To be valid, the authority, itself, must be a URI with no fragment,
 	 * followed by the character <code>!</code>.
 	 */
 	public static boolean validArchiveAuthority(String value) {
-		if (value != null && value.length() > 0
+		if (value != null && !value.isEmpty()
 				&& value.charAt(value.length() - 1) == ARCHIVE_IDENTIFIER) {
 			try {
 				URI archiveURI = createURI(value.substring(0,
@@ -1011,7 +1010,7 @@ public final class URIs {
 	/**
 	 * Returns <code>true</code> if the specified <code>value</code> would be
 	 * valid as the device component of a URI; <code>false</code> otherwise.
-	 * 
+	 *
 	 * <p>
 	 * A valid device may be null or non-empty, containing any characters except
 	 * for the following: <code>/ ? #</code> In addition, its last character
@@ -1028,7 +1027,7 @@ public final class URIs {
 	/**
 	 * Returns <code>true</code> if the specified <code>value</code> would be a
 	 * valid path segment of a URI; <code>false</code> otherwise.
-	 * 
+	 *
 	 * <p>
 	 * A valid path segment must be non-null and not contain any of the
 	 * following characters: <code>/ ? #</code>
@@ -1048,7 +1047,7 @@ public final class URIs {
 	/**
 	 * Returns <code>true</code> if the specified <code>value</code> would be a
 	 * valid path segment array of a URI; <code>false</code> otherwise.
-	 * 
+	 *
 	 * <p>
 	 * A valid path segment array must be non-null and contain only path
 	 * segments that are valid according to {@link #validSegment validSegment}.
@@ -1056,8 +1055,8 @@ public final class URIs {
 	public static boolean validSegments(String[] value) {
 		if (value == null)
 			return false;
-		for (int i = 0, len = value.length; i < len; i++) {
-			if (!validSegment(value[i]))
+		for (String s : value) {
+			if (!validSegment(s))
 				return false;
 		}
 		return true;
@@ -1066,7 +1065,7 @@ public final class URIs {
 	/**
 	 * Returns <code>true</code> if the specified <code>value</code> would be
 	 * valid as the query component of a URI; <code>false</code> otherwise.
-	 * 
+	 *
 	 * <p>
 	 * A valid query may be null or contain any characters except for
 	 * <code>#</code>
@@ -1083,7 +1082,7 @@ public final class URIs {
 	/**
 	 * Returns <code>true</code> if the specified <code>value</code> would be
 	 * valid as the fragment component of a URI; <code>false</code> otherwise.
-	 * 
+	 *
 	 * <p>
 	 * A fragment is taken to be unconditionally valid.
 	 */
@@ -1107,7 +1106,7 @@ public final class URIs {
 	 * private static boolean validate(String value, long highBitmask, long
 	 * lowBitmask, boolean allowNonASCII, boolean allowEscaped) { for (int i =
 	 * 0, length = value.length(); i < length; i++) { char c = value.charAt(i);
-	 * 
+	 *
 	 * if (matches(c, highBitmask, lowBitmask)) continue; if (allowNonASCII && c
 	 * >= 160) continue; if (allowEscaped && isEscaped(value, i)) { i += 2;
 	 * continue; } return false; } return true; }
@@ -1139,7 +1138,7 @@ public final class URIs {
 	 * Encodes a string so as to produce a valid opaque part value, as defined
 	 * by the RFC. All excluded characters, such as space and <code>#</code>,
 	 * are escaped, as is <code>/</code> if it is the first character.
-	 * 
+	 *
 	 * @param ignoreEscaped
 	 *            <code>true</code> to leave <code>%</code> characters unescaped
 	 *            if they already begin a valid three-character escape sequence;
@@ -1149,7 +1148,7 @@ public final class URIs {
 	 */
 	public static String encodeOpaquePart(String value, boolean ignoreEscaped) {
 		String result = encode(value, URIC_HI, URIC_LO, ignoreEscaped);
-		return result != null && result.length() > 0
+		return result != null && !result.isEmpty()
 				&& result.charAt(0) == SEGMENT_SEPARATOR ? "%2F"
 				+ result.substring(1) : result;
 	}
@@ -1158,7 +1157,7 @@ public final class URIs {
 	 * Encodes a string so as to produce a valid authority, as defined by the
 	 * RFC. All excluded characters, such as space and <code>#</code>, are
 	 * escaped, as are <code>/</code> and <code>?</code>
-	 * 
+	 *
 	 * @param ignoreEscaped
 	 *            <code>true</code> to leave <code>%</code> characters unescaped
 	 *            if they already begin a valid three-character escape sequence;
@@ -1174,7 +1173,7 @@ public final class URIs {
 	 * Encodes a string so as to produce a valid segment, as defined by the RFC.
 	 * All excluded characters, such as space and <code>#</code>, are escaped,
 	 * as are <code>/</code> and <code>?</code>
-	 * 
+	 *
 	 * @param ignoreEscaped
 	 *            <code>true</code> to leave <code>%</code> characters unescaped
 	 *            if they already begin a valid three-character escape sequence;
@@ -1189,7 +1188,7 @@ public final class URIs {
 	/**
 	 * Encodes a string so as to produce a valid query, as defined by the RFC.
 	 * Only excluded characters, such as space and <code>#</code>, are escaped.
-	 * 
+	 *
 	 * @param ignoreEscaped
 	 *            <code>true</code> to leave <code>%</code> characters unescaped
 	 *            if they already begin a valid three-character escape sequence;
@@ -1205,7 +1204,7 @@ public final class URIs {
 	 * Encodes a string so as to produce a valid fragment, as defined by the
 	 * RFC. Only excluded characters, such as space and <code>#</code>, are
 	 * escaped.
-	 * 
+	 *
 	 * @param ignoreEscaped
 	 *            <code>true</code> to leave <code>%</code> characters unescaped
 	 *            if they already begin a valid three-character escape sequence;
@@ -1221,11 +1220,11 @@ public final class URIs {
 	// beginning a valid three-character escape sequence. We can either treat
 	// the first or # as a fragment separator, or encode them all.
 	private static String encodeURI(String uri, boolean ignoreEscaped,
-			int fragmentLocationStyle) {
+	                                int fragmentLocationStyle) {
 		if (uri == null)
 			return null;
 
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 
 		int i = uri.indexOf(SCHEME_SEPARATOR);
 		if (i != -1) {
@@ -1237,7 +1236,7 @@ public final class URIs {
 		int j = fragmentLocationStyle == URI.FRAGMENT_FIRST_SEPARATOR ? uri
 				.indexOf(FRAGMENT_SEPARATOR)
 				: fragmentLocationStyle == URI.FRAGMENT_LAST_SEPARATOR ? uri
-						.lastIndexOf(FRAGMENT_SEPARATOR) : -1;
+				.lastIndexOf(FRAGMENT_SEPARATOR) : -1;
 
 		if (j != -1) {
 			String sspart = uri.substring(++i, j);
@@ -1260,7 +1259,7 @@ public final class URIs {
 	// % is not in the set but ignoreEscaped is true, then % will not be encoded
 	// iff it already begins a valid escape sequence.
 	private static String encode(String value, long highBitmask,
-			long lowBitmask, boolean ignoreEscaped) {
+	                             long lowBitmask, boolean ignoreEscaped) {
 		if (value == null)
 			return null;
 
@@ -1350,21 +1349,21 @@ public final class URIs {
 					if (expectedBytes > 0) {
 						if (receivedBytes == expectedBytes) {
 							switch (receivedBytes) {
-							case 2: {
-								result.append((char) ((bytes[0] & 0x1F) << 6 | bytes[1] & 0x3F));
-								break;
-							}
-							case 3: {
-								result.append((char) ((bytes[0] & 0xF) << 12
-										| (bytes[1] & 0X3F) << 6 | bytes[2] & 0x3F));
-								break;
-							}
-							case 4: {
-								result.appendCodePoint(((bytes[0] & 0x7) << 18
-										| (bytes[1] & 0X3F) << 12
-										| (bytes[2] & 0X3F) << 6 | bytes[3] & 0x3F));
-								break;
-							}
+								case 2: {
+									result.append((char) ((bytes[0] & 0x1F) << 6 | bytes[1] & 0x3F));
+									break;
+								}
+								case 3: {
+									result.append((char) ((bytes[0] & 0xF) << 12
+											| (bytes[1] & 0X3F) << 6 | bytes[2] & 0x3F));
+									break;
+								}
+								case 4: {
+									result.appendCodePoint(((bytes[0] & 0x7) << 18
+											| (bytes[1] & 0X3F) << 12
+											| (bytes[2] & 0X3F) << 6 | bytes[3] & 0x3F));
+									break;
+								}
 							}
 							receivedBytes = 0;
 							expectedBytes = 0;
@@ -1412,12 +1411,12 @@ public final class URIs {
 	/*
 	 * Returns <code>true</code> if this URI contains non-ASCII characters;
 	 * <code>false</code> otherwise.
-	 * 
+	 *
 	 * This unused code is included for possible future use...
 	 */
 	/*
 	 * public boolean isIRI() { return Iri; }
-	 * 
+	 *
 	 * // Returns true if the given string contains any non-ASCII characters; //
 	 * false otherwise. private static boolean containsNonASCII(String value) {
 	 * for (int i = 0, length = value.length(); i < length; i++) { if
@@ -1429,12 +1428,12 @@ public final class URIs {
 	 * using the procedure described in Section 3.1 of the <a
 	 * href="http://www.w3.org/International/Iri-edit/draft-duerst-Iri-09.txt"
 	 * >IRI Draft RFC</a>. Otherwise, this URI, itself, is returned.
-	 * 
+	 *
 	 * This unused code is included for possible future use...
 	 */
 	/*
 	 * public URI toASCIIURI() { if (!Iri) return this;
-	 * 
+	 *
 	 * if (cachedASCIIURI == null) { String eAuthority =
 	 * encodeAsASCII(authority); String eDevice = encodeAsASCII(device); String
 	 * eQuery = encodeAsASCII(query); String eFragment =
@@ -1443,34 +1442,34 @@ public final class URIs {
 	 * eSegments[i] = encodeAsASCII(segments[i]); } cachedASCIIURI = new
 	 * URI(hierarchical, scheme, eAuthority, eDevice, absolutePath, eSegments,
 	 * eQuery, eFragment);
-	 * 
+	 *
 	 * } return cachedASCIIURI; }
-	 * 
+	 *
 	 * // Returns a strict ASCII encoding of the given value. Each non-ASCII //
 	 * character is converted to bytes using UTF-8 encoding, which are then //
 	 * represented using % escaping. private String encodeAsASCII(String value)
 	 * { if (value == null) return null;
-	 * 
+	 *
 	 * StringBuffer result = null;
-	 * 
+	 *
 	 * for (int i = 0, length = value.length(); i < length; i++) { char c =
 	 * value.charAt(i);
-	 * 
+	 *
 	 * if (c >= 128) { if (result == null) { result = new
 	 * StringBuffer(value.substring(0, i)); }
-	 * 
+	 *
 	 * try { byte[] encoded = (new String(new char[] { c })).getBytes("UTF-8");
 	 * for (int j = 0, encLen = encoded.length; j < encLen; j++) {
 	 * appendEscaped(result, encoded[j]); } } catch
 	 * (UnsupportedEncodingException e) { throw new WrappedException(e); } }
 	 * else if (result != null) { result.append(c); }
-	 * 
+	 *
 	 * } return result == null ? value : result.toString(); }
-	 * 
+	 *
 	 * // Returns the number of valid, consecutive, three-character escape //
 	 * sequences in the given string, starting at index i. private static int
 	 * countEscaped(String s, int i) { int result = 0;
-	 * 
+	 *
 	 * for (int length = s.length(); i < length; i += 3) { if (isEscaped(s, i))
 	 * result++; } return result; }
 	 */
