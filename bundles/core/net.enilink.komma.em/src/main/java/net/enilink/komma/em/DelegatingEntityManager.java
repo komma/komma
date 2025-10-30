@@ -328,7 +328,7 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public Object toInstance(Object value, Class<?> type, IGraph graph) {
+	public <T> T toInstance(Object value, Class<T> type, IGraph graph) {
 		return getDelegate().toInstance(value, type, graph);
 	}
 

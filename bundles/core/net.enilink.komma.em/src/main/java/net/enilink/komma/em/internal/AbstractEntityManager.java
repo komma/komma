@@ -233,7 +233,6 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 
 		// try to create the bean via a registered object mapper
 		// the result may be an arbitrary object not implementing IReference/IEntity
-		Object bean;
 		if (objectMappers != null && !objectMappers.isEmpty() && concepts != null && concepts.size() == 1) {
 			Class<?> concept = concepts.iterator().next();
 			IObjectMapper mapper = objectMappers.get(concept);
@@ -278,14 +277,14 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 			}
 		}
 
-		bean = createBeanForClass(resource, classResolver.resolveComposite(entityTypes));
+		IEntity bean = createBeanForClass(resource, classResolver.resolveComposite(entityTypes));
 		if (initialize) {
 			if (bean instanceof Initializable) {
 				// bean knows how to initialize itself
 				((Initializable) bean).init(graph);
 			}
 			if (graph != null) {
-				initializeBean((IEntity) bean, graph);
+				initializeBean(bean, graph);
 			}
 		}
 		return bean;
@@ -1060,8 +1059,9 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		return toInstance(value, null, null);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Object toInstance(Object value, Class<?> type, IGraph graph) {
+	public <T> T toInstance(Object value, Class<T> type, IGraph graph) {
 		if (value instanceof IReference) {
 			Collection<URI> types = null;
 			if (type != null) {
@@ -1074,20 +1074,19 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 			}
 			Object bean = createBean((IReference) value, types, type != null ? Collections.singleton(type) : null, false, true, graph);
 			if (log.isTraceEnabled()) {
-				if (!createQuery("ASK {?s ?p ?o}").setParameter("s", (IReference) value).getBooleanResult()) {
+				if (!createQuery("ASK {?s ?p ?o}").setParameter("s", value).getBooleanResult()) {
 					log.trace("Warning: Unknown entity: " + value);
 				}
 			}
-			return bean;
+			return (T) bean;
 		}
 
-		ILiteral literal = (ILiteral) value;
 		Object instance;
 		if (type != null && IValue.class.isAssignableFrom(type)) {
 			// directly use existing literal without converting it
-			instance = literal;
-		} else {
-			instance = literalConverter.createObject(literal, type);
+			instance = value;
+		} else if (value instanceof ILiteral) {
+			instance = literalConverter.createObject((ILiteral) value, type);
 			if (type != null) {
 				if (instance == null) {
 					if (type.isPrimitive()) {
@@ -1099,8 +1098,11 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 					instance = ConversionUtil.convertValue(type, instance, instance);
 				}
 			}
+		} else {
+			// value is already a plain Java object
+			instance = value;
 		}
-		return instance;
+		return (T) instance;
 	}
 
 	@Override

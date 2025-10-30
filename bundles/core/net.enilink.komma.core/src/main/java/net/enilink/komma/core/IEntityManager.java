@@ -619,7 +619,7 @@ public interface IEntityManager extends AutoCloseable {
 	 * 
 	 * @return the converted value
 	 */
-	Object toInstance(Object value, Class<?> type, IGraph graph);
+	<T> T toInstance(Object value, Class<T> type, IGraph graph);
 
 	/**
 	 * Checks if this entity manager has a mapping for the given

@@ -18,6 +18,7 @@ import java.util.Objects;
 public class PropertyAttribute {
 	public static final String LOCALIZED = "localized";
 	public static final String TYPE = "type";
+	public static final String TRANSIENT = "transient";
 
 	private final String name;
 	private final String value;
@@ -38,8 +39,7 @@ public class PropertyAttribute {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof PropertyAttribute)) return false;
-		PropertyAttribute that = (PropertyAttribute) o;
+		if (!(o instanceof PropertyAttribute that)) return false;
 		return Objects.equals(name, that.name) && Objects.equals(value, that.value);
 	}
 

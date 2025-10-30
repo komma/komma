@@ -2,6 +2,7 @@ package net.enilink.komma.model.rdf4j;
 
 import java.util.Collection;
 
+import net.enilink.komma.core.*;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
@@ -16,15 +17,6 @@ import com.google.inject.util.Modules;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.IMap;
 import net.enilink.composition.annotations.Iri;
-import net.enilink.komma.core.IBindings;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IStatement;
-import net.enilink.komma.core.IValue;
-import net.enilink.komma.core.InferencingCapability;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.core.Statement;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.dm.IDataManagerQuery;
@@ -138,7 +130,7 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 	}
 
 	@Override
-	public void collectInjectionModules(Collection<Module> modules) {
+	public void collectInjectionModules(Collection<Module> modules, IGraph config) {
 		modules.add(Modules.override(new RDF4JModule()).with(
 				new AbstractModule() {
 					@Override
@@ -173,7 +165,7 @@ public abstract class RemoteModelSetSupport implements IModelSet.Internal {
 
 			@Singleton
 			@Provides
-			protected Repository provideRepository() {
+			Repository provideRepository() {
 				try {
 					HTTPRepository repo = new HTTPRepository(getServer()
 							.toString(), valueOrDefault(getRepository(),

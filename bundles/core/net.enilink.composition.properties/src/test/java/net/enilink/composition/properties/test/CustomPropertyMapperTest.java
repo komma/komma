@@ -23,7 +23,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.util.*;
 
 public class CustomPropertyMapperTest extends

@@ -23,12 +23,7 @@ import net.enilink.komma.common.notify.INotificationBroadcaster;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.INotifier;
 import net.enilink.komma.common.util.WrappedException;
-import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.IEntityManagerFactory;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IUnitOfWork;
-import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.URI;
+import net.enilink.komma.core.*;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.model.base.ModelSetSupport;
@@ -57,7 +52,7 @@ public interface IModelSet extends INotifier<INotification> {
 		 * Collects {@link Module} that are used to construct an
 		 * {@link Injector} instance for models.
 		 */
-		void collectInjectionModules(Collection<Module> modules);
+		void collectInjectionModules(Collection<Module> modules, IGraph config);
 
 		/**
 		 * Returns the injector that was used to assemble this model set.
@@ -88,10 +83,11 @@ public interface IModelSet extends INotifier<INotification> {
 
 		/**
 		 * Creates a model set instance from this model set template.
-		 * 
+		 *
+		 * @param config The configuration the is used to create the model set
 		 * @return The model set instance
 		 */
-		IModelSet.Internal create();
+		IModelSet.Internal create(IGraph config);
 
 		/**
 		 * Initialize the model set.

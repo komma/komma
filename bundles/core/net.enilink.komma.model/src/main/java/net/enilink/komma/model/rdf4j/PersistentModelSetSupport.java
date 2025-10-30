@@ -13,6 +13,8 @@ package net.enilink.komma.model.rdf4j;
 import java.io.File;
 import java.net.URL;
 
+import net.enilink.composition.properties.annotations.Transient;
+import net.enilink.komma.core.IGraph;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -32,10 +34,11 @@ import net.enilink.komma.model.MODELS;
 @Iri(MODELS.NAMESPACE + "PersistentModelSet")
 public abstract class PersistentModelSetSupport extends MemoryModelSetSupport {
 
+	@Transient
 	@Iri(MODELS.NAMESPACE + "repository")
 	public abstract URI getRepository();
 
-	public Repository createRepository() throws RepositoryException {
+	public Repository createRepository(IGraph config) throws RepositoryException {
 		URI repo = getRepository();
 		if (repo.scheme() == "workspace") {
 			try {

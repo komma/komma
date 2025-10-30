@@ -31,15 +31,7 @@ import net.enilink.komma.common.notify.FilterUtil;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationSupport;
-import net.enilink.komma.core.EntityVar;
-import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.IEntityManagerFactory;
-import net.enilink.komma.core.IProvider;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.IUnitOfWork;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.URI;
+import net.enilink.komma.core.*;
 import net.enilink.komma.dm.IDataManagerFactory;
 import net.enilink.komma.dm.change.IDataChange;
 import net.enilink.komma.dm.change.IDataChangeListener;
@@ -234,17 +226,13 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		CopyOnWriteArraySet<INotificationListener<INotification>> listeners;
 		Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = state().subjectListeners;
 		synchronized (subjectListeners) {
-			listeners = subjectListeners.get(subject);
-			if (listeners == null) {
-				listeners = new CopyOnWriteArraySet<INotificationListener<INotification>>();
-				subjectListeners.put(subject, listeners);
-			}
+			listeners = subjectListeners.computeIfAbsent(subject, k -> new CopyOnWriteArraySet<>());
 		}
 		listeners.add(listener);
 	}
 
 	@Override
-	public void collectInjectionModules(Collection<Module> modules) {
+	public void collectInjectionModules(Collection<Module> modules, IGraph config) {
 		modules.add(new CacheModule());
 		modules.add(new EntityManagerFactoryModule(getModule(),
 				new IProvider<Locale>() {
@@ -642,9 +630,9 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	}
 
 	@Override
-	public Internal create() {
+	public Internal create(IGraph config) {
 		List<Module> modules = new ArrayList<Module>();
-		((Internal) getBehaviourDelegate()).collectInjectionModules(modules);
+		getBehaviourDelegate().collectInjectionModules(modules, config);
 
 		Injector modelSetInjector = injector.getParent().getParent()
 				.createChildInjector(modules);
@@ -664,12 +652,12 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 					.getInstance(IEntityManagerFactory.class)
 					.createChildFactory(module).get();
 			// merge data (rdf:type, etc.) into other repository
-			result = newMetaDataManager.merge(result);
+			result = (IModelSet.Internal) newMetaDataManager.toInstance(getReference(), IModelSet.class, config);
 		}
 
-		((IModelSet.Internal) result).init(modelSetInjector);
+		result.init(modelSetInjector);
 
-		// create a model for the meta data context
+		// create a model for the metadata context
 		if (metaDataContext != null) {
 			result.createModel(metaDataContext);
 		}

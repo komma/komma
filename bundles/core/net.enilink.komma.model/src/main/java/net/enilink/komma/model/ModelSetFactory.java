@@ -60,11 +60,11 @@ class ModelSetFactory implements IModelSetFactory {
 			fullConfig.rename(ms, msUri);
 			ms = msUri;
 		}
-		metaDataManager.add(fullConfig);
 
-		IModelSet modelSet = metaDataManager.find(ms, IModelSet.class);
+		// config is not added to metaDataManager to allow later modifications
+		IModelSet modelSet = metaDataManager.toInstance(ms, IModelSet.class, fullConfig);
 		if (modelSet instanceof IModelSet.Internal) {
-			modelSet = ((IModelSet.Internal) modelSet).create();
+			modelSet = ((IModelSet.Internal) modelSet).create(fullConfig);
 		}
 		return modelSet;
 	}

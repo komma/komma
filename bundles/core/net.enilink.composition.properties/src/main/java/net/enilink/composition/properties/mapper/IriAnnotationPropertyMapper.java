@@ -33,6 +33,7 @@ import net.enilink.composition.mapping.IPropertyMapper;
 import net.enilink.composition.mapping.PropertyAttribute;
 import net.enilink.composition.mapping.PropertyDescriptor;
 import net.enilink.composition.properties.annotations.Localized;
+import net.enilink.composition.properties.annotations.Transient;
 import net.enilink.composition.properties.annotations.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +72,8 @@ public class IriAnnotationPropertyMapper extends AbstractPropertyMapper {
 				attributes.add(new PropertyAttribute(PropertyAttribute.LOCALIZED, null));
 			} else if (annotation instanceof Type) {
 				attributes.add(new PropertyAttribute(PropertyAttribute.TYPE, ((Type) annotation).value()));
+			}else if (annotation instanceof Transient) {
+				attributes.add(new PropertyAttribute(PropertyAttribute.TRANSIENT, null));
 			}
 		}
 		return attributes;

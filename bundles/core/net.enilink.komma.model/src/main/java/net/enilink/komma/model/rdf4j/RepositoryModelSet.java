@@ -10,47 +10,53 @@
  *******************************************************************************/
 package net.enilink.komma.model.rdf4j;
 
-import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.composition.annotations.Iri;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.IEntityManager;
+import net.enilink.composition.properties.annotations.Transient;
+import net.enilink.komma.core.IGraph;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.KommaException;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.rdf4j.RDF4JValueConverter;
-import java.util.Set;
-
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.config.RepositoryConfig;
-import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
-import org.eclipse.rdf4j.repository.config.RepositoryConfigUtil;
-import org.eclipse.rdf4j.repository.config.RepositoryFactory;
-import org.eclipse.rdf4j.repository.config.RepositoryImplConfig;
-import org.eclipse.rdf4j.repository.config.RepositoryRegistry;
+import org.eclipse.rdf4j.repository.config.*;
+
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
 
 @Iri(MODELS.NAMESPACE + "RepositoryModelSet")
 public abstract class RepositoryModelSet extends MemoryModelSetSupport {
 
+	@Transient
     @Iri(MODELS.NAMESPACE + "repository")
     public abstract IReference getRepository();
 
-    public Repository createRepository() throws RepositoryException {
-        IEntityManager manager = ((IEntity) getBehaviourDelegate()).getEntityManager();
+    public Repository createRepository(IGraph config) throws RepositoryException {
         RDF4JValueConverter converter = new RDF4JValueConverter(SimpleValueFactory.getInstance());
         Model configModel = new LinkedHashModel();
-        try (IExtendedIterator<IStatement> stmts = manager
-            .createQuery("construct { ?s ?p ?o } where { ?repository (!<:>)* ?s . ?s ?p ?o }")
-            .setParameter("repository", getRepository())
-            .evaluateRestricted(IStatement.class)) {
-            stmts.forEach(stmt -> {
-                configModel.add(converter.toRdf4j(stmt));
-            });
-        }
+
+		// copy repository config statements into RDF4J model
+	    Set<IReference> seen = new HashSet<>();
+	    Queue<IReference> queue = new LinkedList<>();
+	    queue.add(getRepository());
+	    while (!queue.isEmpty()) {
+		    IReference s = queue.remove();
+		    if (seen.add(s)) {
+			    for (IStatement stmt : config.filter(s, null, null)) {
+				    configModel.add(converter.toRdf4j(stmt));
+				    if (stmt.getObject() instanceof IReference && !seen.contains((IReference) stmt.getObject())) {
+					    queue.add((IReference) stmt.getObject());
+				    }
+			    }
+		    }
+	    }
+
         Set<String> repositoryIDs = RepositoryConfigUtil.getRepositoryIDs(configModel);
         if (repositoryIDs.isEmpty()) {
             throw new KommaException("No repository ID in configuration: " + getRepository());

@@ -36,7 +36,6 @@ KOMMA is a framework for linked data applications. It supports the management an
 		<jackson.version>2.13.4</jackson.version>
 		<jacksondb.version>2.13.4.2</jacksondb.version>
 		<jsonld.version>0.13.4</jsonld.version>
-		<junit.version>4.13.2</junit.version>
 		<logback.version>1.2.11</logback.version>
 		<mapdb.version>1.0.8</mapdb.version>
 		<opencsv.version>5.3</opencsv.version>
@@ -353,9 +352,21 @@ KOMMA is a framework for linked data applications. It supports the management an
 
 	<dependencies>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-launcher</artifactId>
+			<version>1.13.4</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.13.4</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.vintage</groupId>
+			<artifactId>junit-vintage-engine</artifactId>
+			<version>5.13.4</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

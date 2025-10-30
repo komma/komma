@@ -12,6 +12,8 @@ package net.enilink.komma.model.rdf4j;
 
 import java.util.Collection;
 
+import net.enilink.composition.properties.annotations.Transient;
+import net.enilink.komma.core.IGraph;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
@@ -34,7 +36,7 @@ import net.enilink.komma.rdf4j.RDF4JModule;
 @Iri(MODELS.NAMESPACE + "MemoryModelSet")
 public abstract class MemoryModelSetSupport implements IModelSet,
 		IModelSet.Internal, IRepositoryModelSet, Behaviour<IRepositoryModelSet> {
-	public Repository createRepository() throws RepositoryException {
+	public Repository createRepository(IGraph config) throws RepositoryException {
 		NotifyingSail store = new MemoryStore();
 		if (! Boolean.FALSE.equals(getInference())) {
 			store = new SchemaCachingRDFSInferencer(store);
@@ -54,11 +56,12 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 		return true;
 	}
 
+	@Transient
 	@Iri(MODELS.NAMESPACE + "inference")
 	public abstract Boolean getInference();
 
 	@Override
-	public void collectInjectionModules(Collection<Module> modules) {
+	public void collectInjectionModules(Collection<Module> modules, IGraph config) {
 		modules.add(new RDF4JModule());
 		modules.add(new AbstractModule() {
 			@Override
@@ -67,9 +70,9 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 
 			@Singleton
 			@Provides
-			protected Repository provideRepository() {
+			Repository provideRepository() {
 				try {
-					return getBehaviourDelegate().createRepository();
+					return getBehaviourDelegate().createRepository(config);
 				} catch (RepositoryException e) {
 					throw new KommaException("Unable to create repository.", e);
 				}

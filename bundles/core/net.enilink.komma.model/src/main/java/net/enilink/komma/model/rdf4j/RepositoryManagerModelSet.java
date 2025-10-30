@@ -11,7 +11,10 @@
 package net.enilink.komma.model.rdf4j;
 
 import net.enilink.composition.annotations.Iri;
+import net.enilink.composition.cache.annotations.Cacheable;
+import net.enilink.composition.properties.annotations.Transient;
 import net.enilink.komma.core.EntityVar;
+import net.enilink.komma.core.IGraph;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.model.MODELS;
 import java.io.File;
@@ -26,12 +29,14 @@ public abstract class RepositoryManagerModelSet extends MemoryModelSetSupport {
 	EntityVar<LocalRepositoryManager> manager;
 
 	@Iri(MODELS.NAMESPACE + "baseDir")
+	@Transient
 	public abstract Object getBaseDir();
 
 	@Iri(MODELS.NAMESPACE + "repositoryID")
+	@Transient
 	public abstract String getRepositoryID();
 
-	public Repository createRepository() throws RepositoryException {
+	public Repository createRepository(IGraph config) throws RepositoryException {
 		Object baseDir = getBaseDir();
 		File file;
 		if (baseDir instanceof IReference && (((IReference) baseDir)).getURI() != null

@@ -12,6 +12,7 @@ package net.enilink.komma.model.rdf4j;
 
 import java.util.Collection;
 
+import net.enilink.komma.core.IGraph;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.repository.Repository;
 
@@ -52,7 +53,7 @@ public abstract class InjectedRepositoryModelSetSupport implements IModelSet, IM
 	Repository dataRepository;
 
 	@Override
-	public void collectInjectionModules(Collection<Module> modules) {
+	public void collectInjectionModules(Collection<Module> modules, IGraph config) {
 		modules.add(new AbstractModule() {
 			@Override
 			protected void configure() {

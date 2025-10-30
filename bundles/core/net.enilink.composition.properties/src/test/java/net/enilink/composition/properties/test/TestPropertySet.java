@@ -18,8 +18,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 class TestPropertySet<E> extends HashSet<E> implements PropertySet<E> {
-	private static final long serialVersionUID = 1L;
-
 	@Override
 	public Set<E> getAll() {
 		return this;

@@ -13,6 +13,7 @@ package net.enilink.composition.properties.komma;
 import net.enilink.composition.mapping.PropertyAttribute;
 import net.enilink.composition.properties.PropertySet;
 import net.enilink.composition.properties.PropertySetFactory;
+import net.enilink.composition.properties.util.TransientPropertySet;
 import net.enilink.komma.core.IEntityManager;
 import net.enilink.komma.core.IReference;
 import net.enilink.komma.core.IReferenceable;
@@ -105,6 +106,9 @@ public class KommaPropertySetFactory implements PropertySetFactory {
 					localized = true;
 				} else if (PropertyAttribute.TYPE.equals(attribute.getName())) {
 					rdfValueType = URIs.createURI(attribute.getValue());
+				} else if (PropertyAttribute.TRANSIENT.equals(attribute.getName())) {
+					// create a transient property set and directly return it
+					return new TransientPropertySet<E>(elementType);
 				}
 			}
 
