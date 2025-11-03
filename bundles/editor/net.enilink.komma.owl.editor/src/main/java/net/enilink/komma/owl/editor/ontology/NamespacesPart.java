@@ -185,7 +185,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 
 		protected IContentProposal[] proposeNamespace(String contents, int index) {
 			List<String> allImports = model.getImportsClosure().stream().map(URI::toString)
-					.sorted().collect(Collectors.toList());
+					.sorted().toList();
 			String subString = contents.substring(0, index);
 			return allImports.stream()
 					.filter(importStr -> subString.isEmpty() ||	importStr.contains(subString))

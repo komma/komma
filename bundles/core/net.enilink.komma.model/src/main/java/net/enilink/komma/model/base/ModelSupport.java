@@ -88,7 +88,7 @@ import net.enilink.vocab.rdf.RDF;
 public abstract class ModelSupport
 		implements IModel, IModel.Internal, INotificationBroadcaster<INotification>, Model, Behaviour<IModel.Internal> {
 	private final static Logger log = LoggerFactory.getLogger(ModelSupport.class);
-	
+
 	class ModelInjector implements IEntityDecorator {
 		@Override
 		public void decorate(IEntity entity) {
@@ -115,7 +115,7 @@ public abstract class ModelSupport
 	/**
 	 * Represents the transient state of this resource
 	 */
-	class State {
+	protected class State {
 		KommaModule module;
 		KommaModule moduleClosure;
 		Set<URI> importedModels;
@@ -151,7 +151,6 @@ public abstract class ModelSupport
 							public IEntityManager getDelegate() {
 								synchronized (State.this) {
 									if (delegate == null) {
-										@SuppressWarnings("resource")
 										IEntityManagerFactory factory = factoryRef != null ? factoryRef.get() : null;
 										if (factory == null) {
 											factory = getModelSet().getEntityManagerFactory()
@@ -174,8 +173,7 @@ public abstract class ModelSupport
 								for (Namespace ns : new ArrayList<>(getModelNamespaces())) {
 									if (prefix.equals(ns.getPrefix())) {
 										getModelNamespaces().remove(ns);
-										fireNotifications(
-												Arrays.asList(new NamespaceNotification(prefix, ns.getURI(), null)));
+										fireNotifications(List.of(new NamespaceNotification(prefix, ns.getURI(), null)));
 										break;
 									}
 								}
@@ -208,7 +206,7 @@ public abstract class ModelSupport
 									ns.setURI(uri);
 									getModelNamespaces().add(ns);
 								}
-								fireNotifications(Arrays.asList(new NamespaceNotification(prefix, oldUri, uri)));
+								fireNotifications(List.of(new NamespaceNotification(prefix, oldUri, uri)));
 								clearNamespaceCache();
 							}
 
@@ -220,11 +218,11 @@ public abstract class ModelSupport
 												// mark inherited
 												// namespaces as derived
 												new IMap<INamespace, INamespace>() {
-									@Override
-									public INamespace map(INamespace ns) {
-										return new net.enilink.komma.core.Namespace(ns.getPrefix(), ns.getURI(), true);
-									}
-								}))) {
+													@Override
+													public INamespace map(INamespace ns) {
+														return new net.enilink.komma.core.Namespace(ns.getPrefix(), ns.getURI(), true);
+													}
+												}))) {
 									if (!prefixMap.containsKey(ns.getPrefix())) {
 										prefixMap.put(ns.getPrefix(), new net.enilink.komma.core.Namespace(
 												ns.getPrefix(), ns.getURI(), ns.isDerived()));
@@ -257,7 +255,7 @@ public abstract class ModelSupport
 
 							@Override
 							public URI getNamespace(String prefix) {
-								if (prefix == null || prefix.length() == 0) {
+								if (prefix == null || prefix.isEmpty()) {
 									return getURI().appendLocalPart("");
 								}
 								if (prefixToUri.isEmpty()) {
@@ -279,12 +277,12 @@ public abstract class ModelSupport
 								return prefix != null ? prefix : super.getPrefix(namespace);
 							}
 
-							protected void clearNamespaceCache() {
+							private void clearNamespaceCache() {
 								uriToPrefix.clear();
 								prefixToUri.clear();
 							}
 
-							protected void cacheNamespaces() {
+							private void cacheNamespaces() {
 								for (INamespace ns : getAllModelNamespaces()) {
 									// in case of many prefixes for the same URI
 									// use the lexicographically first prefix
@@ -358,7 +356,7 @@ public abstract class ModelSupport
 				if (!manager.hasMatch(ontology, RDF.PROPERTY_TYPE, OWL.TYPE_ONTOLOGY)) {
 					manager.add(new Statement(ontology, RDF.PROPERTY_TYPE, OWL.TYPE_ONTOLOGY));
 				}
-				if (prefix != null && prefix.trim().length() > 0) {
+				if (prefix != null && !prefix.trim().isEmpty()) {
 					manager.setNamespace(prefix, uri.appendLocalPart(""));
 				}
 				manager.add(new Statement(ontology, OWL.PROPERTY_IMPORTS, uri));
@@ -367,7 +365,7 @@ public abstract class ModelSupport
 					unloadManager();
 				}
 			} catch (Exception e) {
-				if (!isActive && manager != null) {
+				if (!isActive) {
 					manager.getTransaction().rollback();
 				}
 				throw e;
@@ -450,28 +448,23 @@ public abstract class ModelSupport
 		if (importedModels == null) {
 			importedModels = new HashSet<>();
 			try {
-				IDataManager dm = getModelSet().getDataManagerFactory().get();
-				try {
+				try (IDataManager dm = getModelSet().getDataManagerFactory().get()) {
 					// retrieve imported ontologies while filtering those which
 					// are likely already contained within this model
 					IExtendedIterator<IReference> imports = dm.createQuery(ISparqlConstants.PREFIX
-							+ " SELECT ?import WHERE { ?ontology owl:imports ?import FILTER NOT EXISTS { ?import a owl:Ontology } }",
+									+ " SELECT ?import WHERE { ?ontology owl:imports ?import FILTER NOT EXISTS { ?import a owl:Ontology } }",
 							getURI().toString(), false, getURI()).evaluate().mapWith(new IMap<Object, IReference>() {
-								@Override
-								public IReference map(Object value) {
-									return (IReference) ((IBindings<?>) value).get("import");
-								}
-							});
+						@Override
+						public IReference map(Object value) {
+							return (IReference) ((IBindings<?>) value).get("import");
+						}
+					});
 					while (imports.hasNext()) {
 						URI uri = imports.next().getURI();
 						if (uri != null) {
 							importedModels.add(uri);
 						}
 					}
-				} catch (Throwable e) {
-					throw e;
-				} finally {
-					dm.close();
 				}
 			} catch (Throwable e) {
 				throw new KommaException(e);
@@ -556,7 +549,7 @@ public abstract class ModelSupport
 			queue.add(getBehaviourDelegate());
 			while (!queue.isEmpty()) {
 				IModel model = queue.remove();
-				KommaModule importedModule = ((IModel.Internal) model).getModule(); 
+				KommaModule importedModule = ((IModel.Internal) model).getModule();
 				// only include concepts and behaviours
 				moduleClosure.includeModule(importedModule, false);
 				// add readable graphs but ignore writable graphs
@@ -666,16 +659,13 @@ public abstract class ModelSupport
 	@Override
 	public boolean isLoaded() {
 		if (!isModelLoaded()) {
-			IDataManager ds = getModelSet().getDataManagerFactory().get();
-			try {
+			try (IDataManager ds = getModelSet().getDataManagerFactory().get()) {
 				// check if model is already loaded
 				if (ds.hasMatch(null, null, null, false, getURI())) {
 					((Model) getBehaviourDelegate()).setModelLoaded(true);
 					return true;
 				}
 				return false;
-			} finally {
-				ds.close();
 			}
 		} else {
 			return true;
@@ -806,7 +796,7 @@ public abstract class ModelSupport
 		Object saveOnlyIfChanged = options != null && options.containsKey(OPTION_SAVE_ONLY_IF_CHANGED)
 				? options.get(OPTION_SAVE_ONLY_IF_CHANGED)
 				: getDefaultSaveOptions() != null ? getDefaultSaveOptions().get(OPTION_SAVE_ONLY_IF_CHANGED) : null;
-		if (saveOnlyIfChanged != null && options.get(IModel.OPTION_CONTENT_DESCRIPTION) == null) {
+		if (saveOnlyIfChanged != null && (options == null || options.get(IModel.OPTION_CONTENT_DESCRIPTION) == null)) {
 			// add correct content type
 			Map<Object, Object> newOptions = new HashMap<>(options != null ? options : Collections.emptyMap());
 			newOptions.put(IModel.OPTION_CONTENT_DESCRIPTION,
@@ -846,11 +836,8 @@ public abstract class ModelSupport
 		try {
 			URI temporaryFileURI = URIs.createFileURI(temporaryFile.getPath());
 			IURIConverter uriConverter = getURIConverter();
-			OutputStream temporaryFileOutputStream = uriConverter.createOutputStream(temporaryFileURI, null);
-			try {
+			try (OutputStream temporaryFileOutputStream = uriConverter.createOutputStream(temporaryFileURI, null)) {
 				save(temporaryFileOutputStream, options);
-			} finally {
-				temporaryFileOutputStream.close();
 			}
 
 			boolean equal = true;
@@ -863,13 +850,13 @@ public abstract class ModelSupport
 			byte[] newContentBuffer = new byte[4000];
 			if (oldContents != null) {
 				try {
-					InputStream newContents = uriConverter.createInputStream(temporaryFileURI, null);
-					try {
+					try (InputStream newContents = uriConverter.createInputStream(temporaryFileURI, null)) {
 						byte[] oldContentBuffer = new byte[4000];
-						LOOP: for (int oldLength = oldContents.read(oldContentBuffer), newLength = newContents
+						LOOP:
+						for (int oldLength = oldContents.read(oldContentBuffer), newLength = newContents
 								.read(newContentBuffer); (equal = oldLength == newLength)
-										&& oldLength > 0; oldLength = oldContents.read(
-												oldContentBuffer), newLength = newContents.read(newContentBuffer)) {
+								     && oldLength > 0; oldLength = oldContents.read(
+								oldContentBuffer), newLength = newContents.read(newContentBuffer)) {
 							for (int i = 0; i < oldLength; ++i) {
 								if (oldContentBuffer[i] != newContentBuffer[i]) {
 									equal = false;
@@ -877,8 +864,6 @@ public abstract class ModelSupport
 								}
 							}
 						}
-					} finally {
-						newContents.close();
 					}
 				} finally {
 					oldContents.close();
@@ -890,20 +875,15 @@ public abstract class ModelSupport
 				if (response == null) {
 					response = new HashMap<Object, Object>();
 				}
-				OutputStream newContents = uriConverter.createOutputStream(getURI(),
-						new ExtensibleURIConverter.OptionsMap(IURIConverter.OPTION_RESPONSE, response, options));
-				try {
-					InputStream temporaryFileContents = uriConverter.createInputStream(temporaryFileURI, null);
-					try {
+				try (OutputStream newContents = uriConverter.createOutputStream(getURI(),
+						new ExtensibleURIConverter.OptionsMap(IURIConverter.OPTION_RESPONSE, response, options))) {
+					try (InputStream temporaryFileContents = uriConverter.createInputStream(temporaryFileURI, null)) {
 						for (int length = temporaryFileContents.read(
 								newContentBuffer); length > 0; length = temporaryFileContents.read(newContentBuffer)) {
 							newContents.write(newContentBuffer, 0, length);
 						}
-					} finally {
-						temporaryFileContents.close();
 					}
 				} finally {
-					newContents.close();
 					Long timeStamp = (Long) response.get(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY);
 					if (timeStamp != null) {
 						// setTimeStamp(timeStamp);
@@ -930,10 +910,8 @@ public abstract class ModelSupport
 			}
 		}
 		MyByteArrayOutputStream memoryBuffer = new MyByteArrayOutputStream();
-		try {
+		try (memoryBuffer) {
 			save(memoryBuffer, options);
-		} finally {
-			memoryBuffer.close();
 		}
 
 		byte[] newContentBuffer = memoryBuffer.buffer();
@@ -969,12 +947,10 @@ public abstract class ModelSupport
 			if (response == null) {
 				response = new HashMap<Object, Object>();
 			}
-			OutputStream newContents = uriConverter.createOutputStream(getURI(),
-					new ExtensibleURIConverter.OptionsMap(IURIConverter.OPTION_RESPONSE, response, options));
-			try {
+			try (OutputStream newContents = uriConverter.createOutputStream(getURI(),
+					new ExtensibleURIConverter.OptionsMap(IURIConverter.OPTION_RESPONSE, response, options))) {
 				newContents.write(newContentBuffer, 0, length);
 			} finally {
-				newContents.close();
 				Long timeStamp = (Long) response.get(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY);
 				if (timeStamp != null) {
 					// setTimeStamp(timeStamp);
