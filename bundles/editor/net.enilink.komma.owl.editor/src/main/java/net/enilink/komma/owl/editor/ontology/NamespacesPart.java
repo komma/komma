@@ -11,11 +11,6 @@
 
 package net.enilink.komma.owl.editor.ontology;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import net.enilink.komma.common.command.AbstractCommand.INoChangeRecording;
 import net.enilink.komma.common.command.CommandResult;
 import net.enilink.komma.common.command.SimpleCommand;
@@ -23,12 +18,7 @@ import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationListener;
 import net.enilink.komma.common.notify.NotificationFilter;
 import net.enilink.komma.common.ui.celleditor.TextCellEditorWithContentProposal;
-import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.INamespace;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.core.Namespace;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
+import net.enilink.komma.core.*;
 import net.enilink.komma.edit.provider.IItemColorProvider;
 import net.enilink.komma.edit.ui.properties.IEditUIPropertiesImages;
 import net.enilink.komma.edit.ui.properties.KommaEditUIPropertiesPlugin;
@@ -38,7 +28,6 @@ import net.enilink.komma.edit.ui.views.AbstractEditingDomainPart;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.event.INamespaceNotification;
 import net.enilink.komma.owl.editor.OWLEditorPlugin;
-
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -47,22 +36,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
-import org.eclipse.jface.fieldassist.IContentProposalProvider;
-import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.EditingSupport;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITableColorProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.TextCellEditor;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerComparator;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
@@ -73,11 +47,14 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.ToolBar;
 
+import java.util.Collection;
+import java.util.List;
+
 public class NamespacesPart extends AbstractEditingDomainPart {
 	private IModel model;
 	private TableViewer namespaceViewer;
 	private Action deleteItemAction, addItemAction;
-	private NamespaceListener listener = new NamespaceListener();
+	private final NamespaceListener listener = new NamespaceListener();
 
 	enum ColumnType {
 		Prefix, Namespace
@@ -188,8 +165,8 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 					.sorted().toList();
 			String subString = contents.substring(0, index);
 			return allImports.stream()
-					.filter(importStr -> subString.isEmpty() ||	importStr.contains(subString))
-					.map(importStr -> new ContentProposal(importStr))
+					.filter(importStr -> subString.isEmpty() || importStr.contains(subString))
+					.map(ContentProposal::new)
 					.toArray(IContentProposal[]::new);
 		}
 
@@ -206,13 +183,10 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		@Override
 		protected Object getValue(Object element) {
 			final INamespace namespace = (INamespace) element;
-			switch (columnType) {
-				case Prefix:
-					return namespace.getPrefix();
-				case Namespace:
-					return namespace.getURI().toString();
-			}
-			return "";
+			return switch (columnType) {
+				case Prefix -> namespace.getPrefix();
+				case Namespace -> namespace.getURI().toString();
+			};
 		}
 
 		@Override
@@ -224,7 +198,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 					if (value.equals(((INamespace) element).getPrefix())) {
 						return;
 					}
-					for (INamespace existing : em.getNamespaces()) {
+					for (INamespace existing : em.getNamespaces().toList()) {
 						if (value.equals(existing.getPrefix())) {
 							return;
 						}
@@ -248,11 +222,6 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 					}
 					if (uri.equals(((INamespace) element).getURI())) {
 						return;
-					}
-					for (INamespace existing : em.getNamespaces()) {
-						if (uri.equals(existing.getURI())) {
-							return;
-						}
 					}
 					if (!uri.isRelative()) {
 						execute(new ModifyNamespaceCommand(model, namespace,
@@ -293,7 +262,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 			var display = namespaceViewer.getControl().getDisplay();
 			if (display != null && !display.isDisposed()) {
 				display.asyncExec(() -> {
-					if (! namespaceViewer.getControl().isDisposed()) {
+					if (!namespaceViewer.getControl().isDisposed()) {
 						namespaceViewer.refresh();
 					}
 				});
@@ -366,7 +335,7 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		namespaceViewer.setContentProvider(new IStructuredContentProvider() {
 			@Override
 			public void inputChanged(Viewer viewer, Object oldInput,
-									 Object newInput) {
+			                         Object newInput) {
 			}
 
 			@Override
@@ -383,14 +352,11 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 			}
 		});
 		namespaceViewer.setLabelProvider(new NamespaceLabelProvider());
-		namespaceViewer
-				.addSelectionChangedListener(new ISelectionChangedListener() {
-					public void selectionChanged(SelectionChangedEvent event) {
-						if (deleteItemAction != null)
-							deleteItemAction.setEnabled(!event.getSelection()
-									.isEmpty());
-					}
-				});
+		namespaceViewer.addSelectionChangedListener(event -> {
+			if (deleteItemAction != null)
+				deleteItemAction.setEnabled(!event.getSelection()
+						.isEmpty());
+		});
 		namespaceViewer.setComparator(new ViewerComparator() {
 			@Override
 			public int compare(Viewer viewer, Object e1, Object e2) {
@@ -452,8 +418,8 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 	void deleteItem() {
 		IStructuredSelection selection = (IStructuredSelection) namespaceViewer
 				.getSelection();
-		for (Iterator<?> it = selection.iterator(); it.hasNext(); ) {
-			INamespace namespace = (INamespace) it.next();
+		for (Object o : selection) {
+			INamespace namespace = (INamespace) o;
 			removeNamespace(namespace);
 		}
 	}

@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.BasicCommandStack;
 import net.enilink.komma.common.command.ICommand;
@@ -940,9 +941,10 @@ public abstract class KommaEditorSupport<E extends ISupportedEditor> implements
 
 					if (!modelSet.getModels().isEmpty()) {
 						// Select the root object in the view.
-						contentOutlineViewer.setSelection(
-								new StructuredSelection(modelSet.getModels()
-										.iterator().next()), true);
+						// Ensures that iterator is closed
+						try (var models = WrappedIterator.create(modelSet.getModels().iterator())) {
+							contentOutlineViewer.setSelection(new StructuredSelection(models.next()), true);
+						}
 					}
 				}
 

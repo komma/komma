@@ -173,11 +173,11 @@ public abstract class ModelSupport
 								for (Namespace ns : new ArrayList<>(getModelNamespaces())) {
 									if (prefix.equals(ns.getPrefix())) {
 										getModelNamespaces().remove(ns);
+										clearNamespaceCache();
 										fireNotifications(List.of(new NamespaceNotification(prefix, ns.getURI(), null)));
 										break;
 									}
 								}
-								clearNamespaceCache();
 							}
 
 							@Override
@@ -186,18 +186,15 @@ public abstract class ModelSupport
 									prefix = "";
 								}
 								URI oldUri = null;
-								// prevent addition of redundant prefix/uri
-								// combinations
+								// prevent addition of redundant prefix/uri combinations
 								if (uri.equals(super.getNamespace(prefix))) {
-									oldUri = uri;
+									return;
 								}
-								if (oldUri == null) {
-									for (Namespace ns : new ArrayList<>(getModelNamespaces())) {
-										if (prefix.equals(ns.getPrefix())) {
-											ns.setPrefix(prefix);
-											oldUri = ns.getURI();
-											break;
-										}
+								for (Namespace ns : new ArrayList<>(getModelNamespaces())) {
+									if (prefix.equals(ns.getPrefix())) {
+										ns.setURI(uri);
+										oldUri = ns.getURI();
+										break;
 									}
 								}
 								if (oldUri == null) {
@@ -206,27 +203,24 @@ public abstract class ModelSupport
 									ns.setURI(uri);
 									getModelNamespaces().add(ns);
 								}
-								fireNotifications(List.of(new NamespaceNotification(prefix, oldUri, uri)));
 								clearNamespaceCache();
+								fireNotifications(List.of(new NamespaceNotification(prefix, oldUri, uri)));
 							}
 
 							@Override
 							public IExtendedIterator<INamespace> getNamespaces() {
 								Map<String, INamespace> prefixMap = new LinkedHashMap<>();
-								for (INamespace ns : WrappedIterator.create(getAllModelNamespaces().iterator())
+								for (final INamespace ns : WrappedIterator.create(getAllModelNamespaces().iterator())
 										.andThen(super.getNamespaces().mapWith(
-												// mark inherited
-												// namespaces as derived
-												new IMap<INamespace, INamespace>() {
+												// mark inherited namespaces as derived
+												new IMap<>() {
 													@Override
 													public INamespace map(INamespace ns) {
 														return new net.enilink.komma.core.Namespace(ns.getPrefix(), ns.getURI(), true);
 													}
 												}))) {
-									if (!prefixMap.containsKey(ns.getPrefix())) {
-										prefixMap.put(ns.getPrefix(), new net.enilink.komma.core.Namespace(
-												ns.getPrefix(), ns.getURI(), ns.isDerived()));
-									}
+									prefixMap.computeIfAbsent(ns.getPrefix(), prefix -> new net.enilink.komma.core.Namespace(
+											ns.getPrefix(), ns.getURI(), ns.isDerived()));
 								}
 								return WrappedIterator.create(prefixMap.values().iterator());
 							}
@@ -280,11 +274,13 @@ public abstract class ModelSupport
 							private void clearNamespaceCache() {
 								uriToPrefix.clear();
 								prefixToUri.clear();
+								// ensure that also all namespaces in the associated KommaModule are refreshed
+								reset();
 							}
 
 							private void cacheNamespaces() {
 								for (INamespace ns : getAllModelNamespaces()) {
-									// in case of many prefixes for the same URI
+									// in case of multiple prefixes for the same URI
 									// use the lexicographically first prefix
 									String prefix = uriToPrefix.get(ns.getURI());
 									if (prefix == null || prefix.compareTo(ns.getPrefix()) > 0) {

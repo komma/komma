@@ -52,6 +52,7 @@ import net.enilink.komma.model.ModelUtil;
 import net.enilink.komma.model.concepts.Model;
 
 import org.eclipse.core.runtime.content.IContentDescription;
+import org.eclipse.rdf4j.common.lang.FileFormat;
 import org.eclipse.rdf4j.rio.Rio;
 
 @Iri(MODELS.NAMESPACE + "SerializableModel")
@@ -61,9 +62,9 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 	 * Iterator where <code>hasNext()</code> blocks until element gets available
 	 * in <code>queue</code>.
 	 */
-	class BlockingIterator<T> implements Iterator<T>, Iterable<T> {
-		Queue<T> queue;
-		AtomicBoolean finished;
+	static class BlockingIterator<T> implements Iterator<T>, Iterable<T> {
+		final Queue<T> queue;
+		final AtomicBoolean finished;
 
 		T next;
 		boolean nextComputed = false;
@@ -181,7 +182,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 
 				final AtomicBoolean finished = new AtomicBoolean(false);
 				final Queue<IStatement> queue = new LinkedList<IStatement>();
-				final Throwable[] exception = { null };
+				final Throwable[] exception = {null};
 				Executors.newSingleThreadExecutor().execute(new Runnable() {
 					@Override
 					public void run() {
@@ -215,14 +216,12 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 							if (mimeType == null) {
 								// determine mimeType from file extension
 								mimeType = Optional.ofNullable(getURI().fileExtension())
-									.flatMap(ext -> Rio.getParserFormatForFileName("test." + ext))
-									.map(format -> format.getDefaultMIMEType())
-									.orElse(null);
+										.flatMap(ext -> Rio.getParserFormatForFileName("test." + ext))
+										.map(FileFormat::getDefaultMIMEType)
+										.orElse(null);
 							}
 							ModelUtil.readData(in, getURI().toString(), mimeType, nodeIdMapper != null, visitor);
-						} catch (IOException e) {
-							exception[0] = e;
-						} catch (RuntimeException e) {
+						} catch (IOException | RuntimeException e) {
 							exception[0] = e;
 						} finally {
 							finished.set(true);
@@ -234,8 +233,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 				});
 				// BlockingIterator ensures that add method does not return
 				// until endRDF of the above handler is called
-				dm.add(new BlockingIterator<IStatement>(queue, finished),
-						getURI());
+				dm.add(new BlockingIterator<>(queue, finished), getURI());
 				if (exception[0] != null) {
 					throw exception[0];
 				}
@@ -244,9 +242,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 				// add namespaces as model meta-data
 				for (INamespace ns : namespaces) {
 					// prevent addition of redundant prefix/uri combinations
-					if (ns.getPrefix().length() > 0
-							&& !ns.getURI().equals(
-									dm.getNamespace(ns.getPrefix()))) {
+					if (!ns.getPrefix().isEmpty() && !ns.getURI().equals(dm.getNamespace(ns.getPrefix()))) {
 						net.enilink.komma.model.concepts.Namespace newNs = getEntityManager()
 								.create(net.enilink.komma.model.concepts.Namespace.class);
 						newNs.setPrefix(ns.getPrefix());
@@ -254,6 +250,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 						getModelNamespaces().add(newNs);
 					}
 				}
+
 				// update maximal node ID
 				if (nodeIdMapper != null) {
 					maxNodeId(Math.max(maxNodeId(), nodeIdMapper.maxNodeId));
@@ -296,7 +293,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 
 		@SuppressWarnings("unchecked")
 		<V> V convert(V value) {
-			if (value instanceof IReference	&& ((IReference) value).getURI() == null) {
+			if (value instanceof IReference && ((IReference) value).getURI() == null) {
 				String valueAsString = value.toString();
 				if (valueAsString.startsWith("_:")) {
 					String id = valueAsString.substring(2);
@@ -309,14 +306,14 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 							int prefixId = seenPrefixes.computeIfAbsent(prefix, key -> seenPrefixes.size() + 1);
 
 							shortId = m.group(2);
-							if (! usedShortIds.computeIfAbsent(shortId, key -> (IReference)value).equals(value)) {
+							if (!usedShortIds.computeIfAbsent(shortId, key -> (IReference) value).equals(value)) {
 								// another bnode exists that uses the same short ID
 								// ensure that shortId is unique by appending prefixId
 								shortId += "-" + prefixId;
 							}
 						} else {
 							shortId = Long.toString(nextNodeId++, 36);
-							if (! usedShortIds.computeIfAbsent(shortId, key -> (IReference)value).equals(value)) {
+							if (!usedShortIds.computeIfAbsent(shortId, key -> (IReference) value).equals(value)) {
 								// another bnode exists that uses the same short ID, this could happen if nextNodeId is not correctly initialized
 								// ensure that shortId is unique by appending the fixed suffix "-0" as prefix IDs start with 1
 								shortId += "-0";
@@ -340,9 +337,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 		if (mimeType == null) {
 			final IContentDescription contentDescription = determineContentDescription(options);
 			if (contentDescription != null) {
-				if (mimeType == null) {
-					mimeType = ModelUtil.mimeType(contentDescription);
-				}
+				mimeType = ModelUtil.mimeType(contentDescription);
 				charset = contentDescription.getCharset();
 			}
 		}
@@ -351,16 +346,15 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 				getURI().toString(), mimeType, charset);
 		dataVisitor.visitBegin();
 
-		final IDataManager dm = ((IModelSet.Internal) getModelSet())
-				.getDataManagerFactory().get();
-		try {
+		try (IDataManager dm = ((IModelSet.Internal) getModelSet())
+				.getDataManagerFactory().get()) {
 			// only include possibly used namespaces
 			Set<URI> readableGraphs = getModuleClosure().getReadableGraphs();
 			for (INamespace namespace : getManager().getNamespaces()) {
 				if (KommaUtil.isW3cNamespace(namespace.getURI())
 						|| !namespace.isDerived()
 						|| readableGraphs.contains(namespace.getURI()
-								.trimFragment())) {
+						.trimFragment())) {
 					dataVisitor.visitNamespace(namespace);
 				}
 			}
@@ -384,7 +378,7 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 					if (i > 0) {
 						filterExpanded.append("optional {");
 					}
-					filterExpanded.append("?someS" + i).append(" ?someP" + i);
+					filterExpanded.append("?someS").append(i).append(" ?someP").append(i);
 					filterExpanded.append(" ").append(i == 0 ? "?s" : prevS)
 							.append(" . ");
 					if (i > 0) {
@@ -392,12 +386,10 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 								.append(") ");
 					}
 				}
-				for (int i = 1; i < filterDepth; i++) {
-					filterExpanded.append("}");
-				}
+				filterExpanded.append("}".repeat(filterDepth - 1));
 				filterExpanded.append(" filter(");
 				for (int i = 0; i < filterDepth; i++) {
-					filterExpanded.append("isIRI(?someS" + i + ")");
+					filterExpanded.append("isIRI(?someS").append(i).append(")");
 					if (i < filterDepth - 1) {
 						filterExpanded.append(" || ");
 					}
@@ -407,16 +399,13 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 
 				for (int i = 0; i < expandDepth; i++) {
 					String s = "?o" + i, p = "?p" + (i + 1), o = "?o" + (i + 1);
-					template.append(s).append(" " + p + " ").append(o)
+					template.append(s).append(" ").append(p).append(" ").append(o)
 							.append(" . ");
 					projection.append(p).append(" ").append(o).append(" ");
-					patterns.append("optional {").append(s)
-							.append(" " + p + " ").append(o);
+					patterns.append("optional {").append(s).append(" ").append(p).append(" ").append(o);
 					patterns.append(" filter isBlank(").append(s).append(") ");
 				}
-				for (int i = 0; i < expandDepth; i++) {
-					patterns.append("}");
-				}
+				patterns.append("}".repeat(expandDepth));
 			}
 
 			ShortenNodeIds idMapper = new ShortenNodeIds(maxNodeId() + 1);
@@ -432,14 +421,12 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 					+ filterExpanded + ")  bind (2 as ?type) }" //
 					+ " }} order by ?type ?s ?p ?o0 " + projection;
 			IExtendedIterator<IStatement> stmts = dm
-					.<IStatement> createQuery(query,
+					.<IStatement>createQuery(query,
 							getURI().trimFragment().toString(), false, getURI())
 					.setParameter("g", getURI()).evaluate().mapWith(idMapper);
 			while (stmts.hasNext()) {
 				dataVisitor.visitStatement(stmts.next());
 			}
-		} finally {
-			dm.close();
 		}
 		dataVisitor.visitEnd();
 	}
