@@ -2,6 +2,8 @@ package net.enilink.komma.model;
 
 import com.google.inject.Guice;
 import net.enilink.komma.core.*;
+import net.enilink.komma.em.concepts.IProperty;
+import net.enilink.komma.em.concepts.IResource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -114,6 +116,34 @@ class ModelNamespaceTest {
 		// Remove the overridden prefix as well
 		manager.removeNamespace(overridePrefix);
 		assertNull(manager.getNamespace(overridePrefix), "Overridden namespace should be removed");
+	}
+
+	@Test
+	void testTransactionAddTripleAndSetNamespace() {
+		manager.getTransaction().begin();
+		try {
+			// Add a triple: <http://example.org/ns#s> <http://example.org/ns#p> "object"^^xsd:string
+			IResource subject = manager.createNamed(URIs.createURI("http://example.org/ns#s"), IResource.class);
+			IReference predicate = URIs.createURI("http://example.org/ns#p");
+			subject.addProperty(predicate, "object");
+
+			// Set a namespace
+			String prefix = "ex";
+			URI nsUri = URIs.createURI("http://example.org/ns#");
+			manager.setNamespace(prefix, nsUri);
+
+			// Commit transaction
+			manager.getTransaction().commit();
+
+			// Verify triple exists
+			assertTrue(subject.hasProperty(predicate, "object", false), "Triple should exist after commit");
+			// Verify namespace exists
+			assertEquals(nsUri, manager.getNamespace(prefix), "Namespace should be set after commit");
+		} finally {
+			if (manager.getTransaction().isActive()) {
+				manager.getTransaction().rollback();
+			}
+		}
 	}
 }
 

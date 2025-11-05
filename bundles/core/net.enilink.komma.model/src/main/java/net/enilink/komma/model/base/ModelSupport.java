@@ -127,12 +127,6 @@ public abstract class ModelSupport
 			module = null;
 			moduleClosure = null;
 			importedModels = null;
-			if (managerRef != null) {
-				IEntityManager manager = managerRef.get();
-				if (manager != null) {
-					manager.close();
-				}
-			}
 			factoryRef = null;
 		}
 
@@ -1015,5 +1009,12 @@ public abstract class ModelSupport
 	@Override
 	public synchronized void unloadManager() {
 		state().reset();
+		var managerRef = state().managerRef;
+		if (managerRef != null) {
+			IEntityManager manager = managerRef.get();
+			if (manager != null) {
+				manager.close();
+			}
+		}
 	}
 }
