@@ -1,25 +1,22 @@
 /**
  * <copyright>
- *
+ * <p>
  * Copyright (c) 2002, 2009 IBM Corporation and others.
  * All rights reserved.   This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-2.0/
- *
+ * <p>
  * Contributors:
- *   IBM - Initial API and implementation
+ * IBM - Initial API and implementation
  *
  * </copyright>
- *
+ * <p>
  * $Id: ResourceItemProvider.java,v 1.12 2007/06/14 18:32:42 emerks Exp $
  */
 package net.enilink.komma.edit.provider.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -137,15 +134,15 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 		IModel model;
 
 		public Instances(IModel model, IAdapterFactory adapterFactory,
-				Object image, Collection<?> children) {
+		                 Object image, Collection<?> children) {
 			super(adapterFactory, "Instances", image, children);
 			this.model = model;
 		}
 
 		@Override
 		public void getNewChildDescriptors(Object object,
-				IEditingDomain editingDomain, Object sibling,
-				ICollector<Object> descriptors) {
+		                                   IEditingDomain editingDomain, Object sibling,
+		                                   ICollector<Object> descriptors) {
 			if (!(object instanceof Instances)) {
 				return;
 			}
@@ -156,9 +153,9 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 
 		@Override
 		public ICommand createCommand(Object object,
-				IEditingDomain editingDomain,
-				Class<? extends ICommand> commandClass,
-				CommandParameter commandParameter) {
+		                              IEditingDomain editingDomain,
+		                              Class<? extends ICommand> commandClass,
+		                              CommandParameter commandParameter) {
 			// Commands should operate on the values, not their wrappers. If the
 			// command's values needed to be unwrapped,
 			// we'll back get a new CommandParameter.
@@ -182,7 +179,7 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 		}
 
 		protected ICommand createCreateChildCommand(IEditingDomain domain,
-				Object value) {
+		                                            Object value) {
 			return new CreateInstanceCommand(domain, value);
 		}
 
@@ -212,7 +209,7 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 		List<Object> children = new ArrayList<Object>();
 
 		if (object instanceof IModel) {
-			List<IObject> classes = Arrays.asList((IObject) ((IModel) object)
+			List<IObject> classes = Collections.singletonList((IObject) ((IModel) object)
 					.getManager().find(RDFS.TYPE_RESOURCE));
 
 			children.add(new ItemProvider(getRootAdapterFactory(), "Classes",
@@ -240,13 +237,13 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 
 	@Override
 	public Object createChild(Object owner, Object property,
-			Object childDescription, IAdaptable info) {
+	                          Object childDescription, IAdaptable info) {
 		return super.createChild(owner, property, childDescription, info);
 	}
 
 	@Override
 	protected void collectChildrenProperties(Object object,
-			Collection<IProperty> childrenProperties) {
+	                                         Collection<IProperty> childrenProperties) {
 	}
 
 	/**
@@ -299,11 +296,10 @@ public class ModelItemProvider extends ItemProviderAdapter implements
 			ICollector<Object> newChildDescriptors, Object object) {
 		if (object instanceof Instances) {
 			newChildDescriptors.add(createChildParameter(
-					(IProperty) ((IEntity) object).getEntityManager().find(
+					((IEntity) object).getEntityManager().find(
 							RDFS.PROPERTY_SUBCLASSOF),
-					new ChildDescriptor(Arrays
-							.asList((IClass) ((IObject) object).getModel()
-									.resolve(OWL.TYPE_CLASS)), true)));
+					new ChildDescriptor(Collections.singletonList((IClass) ((IObject) object).getModel()
+							.resolve(OWL.TYPE_CLASS)), true)));
 		}
 	}
 

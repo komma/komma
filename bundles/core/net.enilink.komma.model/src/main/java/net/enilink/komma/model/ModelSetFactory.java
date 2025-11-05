@@ -2,14 +2,7 @@ package net.enilink.komma.model;
 
 import java.util.Set;
 
-import net.enilink.komma.core.BlankNode;
-import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.IEntityManagerFactory;
-import net.enilink.komma.core.IGraph;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.LinkedHashGraph;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
+import net.enilink.komma.core.*;
 import net.enilink.komma.em.util.UnitOfWork;
 import net.enilink.vocab.rdf.RDF;
 import net.enilink.vocab.rdfs.RDFS;
@@ -60,6 +53,11 @@ class ModelSetFactory implements IModelSetFactory {
 			fullConfig.rename(ms, msUri);
 			ms = msUri;
 		}
+
+		// add basic types persistently to model set
+		// the rest of the config is passed to the toInstance call below and only kept transiently in memory
+		metaDataManager.add(new Statement(ms, RDF.PROPERTY_TYPE, MODELS.TYPE_MODELSET));
+		metaDataManager.add(new Statement(ms, RDF.PROPERTY_TYPE, RDFS.TYPE_RESOURCE));
 
 		// config is not added to metaDataManager to allow later modifications
 		IModelSet modelSet = metaDataManager.toInstance(ms, IModelSet.class, fullConfig);

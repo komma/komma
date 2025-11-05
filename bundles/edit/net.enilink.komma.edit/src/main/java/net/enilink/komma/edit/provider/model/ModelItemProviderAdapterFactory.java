@@ -100,8 +100,7 @@ public class ModelItemProviderAdapterFactory extends
 	}
 
 	/**
-	 * This creates an adapter for a
-	 * {@link org.eclipse.emf.ecore.resource.Resource}.
+	 * This creates an adapter for a {@link IModel}.
 	 * 
 	 */
 	public Object createModelAdapter() {
@@ -109,8 +108,7 @@ public class ModelItemProviderAdapterFactory extends
 	}
 
 	/**
-	 * This creates an adapter for a
-	 * {@link org.eclipse.emf.ecore.resource.ResourceSet}.
+	 * This creates an adapter for a {@link IModelSet}.
 	 * 
 	 */
 	public Object createModelSetAdapter() {

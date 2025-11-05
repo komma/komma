@@ -34,7 +34,6 @@ import com.google.inject.Injector;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import net.enilink.commons.iterator.ConvertingIterator;
-import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.WrappedIterator;
 import net.enilink.composition.ClassResolver;
@@ -91,11 +90,11 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	@Inject
 	private Provider<Locale> locale;
 	private RoleMapper<URI> mapper;
-	private Map<Object, IReference> merged = new MapMaker().weakKeys().makeMap();
+	private final Map<Object, IReference> merged = new MapMaker().weakKeys().makeMap();
 	private volatile ResourceManager resourceManager;
 	private volatile TypeManager typeManager;
-	private volatile Map<URI, String> uriToPrefix = new ConcurrentHashMap<>();
-	private volatile Map<String, URI> prefixToUri = new ConcurrentHashMap<>();
+	private final Map<URI, String> uriToPrefix = new ConcurrentHashMap<>();
+	private final Map<String, URI> prefixToUri = new ConcurrentHashMap<>();
 	private URI[] readContexts = NO_CONTEXTS;
 	private URI[] modifyContexts = NO_CONTEXTS;
 	@Inject
@@ -122,14 +121,13 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		}, ignoreImports ? modifyContexts : readContexts, modifyContexts);
 	}
 
-	private <C extends Collection<URI>> C addConcept(IReference resource, Class<?> role, C set) {
+	private <C extends Collection<URI>> void addConcept(IReference resource, Class<?> role, C set) {
 		URI type = mapper.findType(role);
 		if (type == null) {
 			throw new KommaException("Concept is anonymous or is not registered: " + role.getSimpleName());
 		}
 		getTypeManager().addType(resource, type);
 		set.add(type);
-		return set;
 	}
 
 	private void appendFilter(Class<?> concept, StringBuilder query) {
@@ -179,8 +177,8 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 
 	@Override
 	public void clearNamespaces() {
-		uriToPrefix = null;
 		dm.clearNamespaces();
+		clearNamespaceCache();
 	}
 
 	@Override
@@ -469,12 +467,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	}
 
 	protected <T> IExtendedIterator<T> filterResultNode(Set<T> values) {
-		return WrappedIterator.create(values.iterator()).filterDrop(new Filter<>() {
-			@Override
-			public boolean accept(T o) {
-				return RESULT_NODE.equals(o);
-			}
-		});
+		return WrappedIterator.create(values.iterator()).filterDrop(RESULT_NODE::equals);
 	}
 
 	@Override
@@ -617,7 +610,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		return dm.getTransaction();
 	}
 
-	private <C extends Collection<URI>> C getTypes(Class<?> role, C set) {
+	private <C extends Collection<URI>> void getTypes(Class<?> role, C set) {
 		URI type = mapper.findType(role);
 		if (type == null) {
 			Class<?> superclass = role.getSuperclass();
@@ -625,13 +618,12 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 				getTypes(superclass, set);
 			}
 			Class<?>[] interfaces = role.getInterfaces();
-			for (int i = 0, n = interfaces.length; i < n; i++) {
-				getTypes(interfaces[i], set);
+			for (Class<?> anInterface : interfaces) {
+				getTypes(anInterface, set);
 			}
 		} else {
 			set.add(type);
 		}
-		return set;
 	}
 
 	@Override
@@ -702,8 +694,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 								// get element type
 								Type t = method.getGenericReturnType();
 								Class<?> valueType = null;
-								if (t instanceof ParameterizedType) {
-									ParameterizedType pt = (ParameterizedType) t;
+								if (t instanceof ParameterizedType pt) {
 									Type[] args = pt.getActualTypeArguments();
 									if (args.length == 1 && args[0] instanceof Class<?>) {
 										valueType = (Class<?>) args[0];
@@ -774,9 +765,8 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	public <T> T merge(T bean) {
 		if (bean == null) {
 			return null;
-		} else if (bean instanceof Set<?>) {
+		} else if (bean instanceof Set<?> old) {
 			// so we can merge both a List and a Set
-			Set<?> old = (Set<?>) bean;
 			Set<Object> set = new HashSet<>(old.size());
 			for (Object o : old) {
 				set.add(merge(o));
@@ -808,14 +798,14 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 					if (objectMappers != null && !objectMappers.isEmpty()) {
 						IObjectMapper mapper = objectMappers.get(beanType);
 						if (mapper != null) {
-							mapper.writeObject(bean, stmt -> add(stmt));
+							mapper.writeObject(bean, this::add);
 							storedViaMapper = true;
 						}
 					}
 
 					if (! storedViaMapper) {
 						// assign RDF types to the newly created RDF resource
-						types = getTypes(beanType, types);
+						getTypes(beanType, types);
 						for (URI type : types) {
 							getTypeManager().addType(resource, type);
 						}
@@ -898,8 +888,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 
 	public void removeRecursive(Object entity, boolean anonymousOnly) {
 		IReference resource = null;
-		if (entity instanceof IStatement) {
-			IStatement stmt = (IStatement) entity;
+		if (entity instanceof IStatement stmt) {
 			remove(Collections.singleton(stmt));
 			resource = getReference(stmt.getObject());
 		} else {
@@ -909,7 +898,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 		if (resource != null) {
 			Set<IReference> seen = new HashSet<>();
 			Queue<IReference> nodes = new LinkedList<>();
-			nodes.add(((IReference) resource));
+			nodes.add(resource);
 			while (!nodes.isEmpty()) {
 				IReference node = nodes.remove();
 				if (seen.add(node)) {
@@ -1002,12 +991,12 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 	@Inject(optional = true)
 	protected void setContexts(@Named("modifyContexts") Set<URI> modifyContexts,
 	                           @Named("readContexts") Set<URI> readContexts) {
-		this.modifyContexts = modifyContexts.toArray(new URI[modifyContexts.size()]);
+		this.modifyContexts = modifyContexts.toArray(new URI[0]);
 
 		LinkedHashSet<URI> readAndModifyContexts = new LinkedHashSet<>(readContexts);
 		readAndModifyContexts.retainAll(modifyContexts);
 		readAndModifyContexts.addAll(readContexts);
-		this.readContexts = readAndModifyContexts.toArray(new URI[readAndModifyContexts.size()]);
+		this.readContexts = readAndModifyContexts.toArray(new URI[0]);
 	}
 
 	/**
@@ -1075,7 +1064,7 @@ public abstract class AbstractEntityManager implements IEntityManager, IEntityMa
 			Object bean = createBean((IReference) value, types, type != null ? Collections.singleton(type) : null, false, true, graph);
 			if (log.isTraceEnabled()) {
 				if (!createQuery("ASK {?s ?p ?o}").setParameter("s", value).getBooleanResult()) {
-					log.trace("Warning: Unknown entity: " + value);
+					log.trace("Warning: Unknown entity: {}", value);
 				}
 			}
 			return (T) bean;
