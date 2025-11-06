@@ -28,10 +28,10 @@ public interface ITableItemLabelProvider
   /**
    * This does the same thing as ITableLabelProvider.getColumnText.
    */
-  public String getColumnText(Object object, int columnIndex);
+  String getColumnText(Object object, int columnIndex);
 
   /**
    * This does the same thing as ITableLabelProvider.getColumnImage.
    */
-  public Object getColumnImage(Object object, int columnIndex);
+  Object getColumnImage(Object object, int columnIndex);
 }

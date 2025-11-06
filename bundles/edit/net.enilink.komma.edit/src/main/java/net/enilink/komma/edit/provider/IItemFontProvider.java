@@ -72,5 +72,5 @@ public interface IItemFontProvider
    * This does the same thing as IFontProvider.getFont, 
    * it fetches the font specific to this object instance.
    */
-  public Object getFont(Object object);
+  Object getFont(Object object);
 }

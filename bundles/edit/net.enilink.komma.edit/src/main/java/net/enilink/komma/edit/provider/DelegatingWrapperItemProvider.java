@@ -252,8 +252,8 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	 */
 	@Override
 	public boolean hasChildren(Object object) {
-		return delegateItemProvider instanceof ITreeItemContentProvider ? ((ITreeItemContentProvider) delegateItemProvider)
-				.hasChildren(getDelegateValue()) : false;
+		return delegateItemProvider instanceof ITreeItemContentProvider && ((ITreeItemContentProvider) delegateItemProvider)
+				.hasChildren(getDelegateValue());
 	}
 
 	/**
@@ -584,7 +584,7 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 	public void notifyChanged(Collection<? extends INotification> notifications) {
 		for (INotification notification : notifications) {
 			if (getRefreshElement(notification).equals(getDelegateValue())) {
-				fireNotifications(Arrays.asList(wrapNotification(notification)));
+				fireNotifications(Collections.singletonList(wrapNotification(notification)));
 			}
 		}
 	}
@@ -602,7 +602,7 @@ public class DelegatingWrapperItemProvider extends WrapperItemProvider
 			return ((IViewerNotification) notification).getElement();
 		}
 		if (notification instanceof IPropertyNotification) {
-			return ((IPropertyNotification) notification).getSubject();
+			return notification.getSubject();
 		}
 		if (notification instanceof IStatementNotification) {
 			return ((IStatementNotification) notification).getSubject();

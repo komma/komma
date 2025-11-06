@@ -101,7 +101,7 @@ public final class KommaEditPlugin extends AbstractKommaPlugin {
 							types.size());
 					for (Object key : types) {
 						if (key instanceof URI) {
-							stringTypes.add(((URI) key).toString());
+							stringTypes.add(key.toString());
 						} else if (key instanceof Class<?>) {
 							stringTypes.add(((Class<?>) key).getName());
 						} else {

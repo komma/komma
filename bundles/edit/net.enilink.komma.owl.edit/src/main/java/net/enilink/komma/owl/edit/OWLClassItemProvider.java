@@ -12,6 +12,7 @@ package net.enilink.komma.owl.edit;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import net.enilink.komma.common.util.ICollector;
 import net.enilink.komma.common.util.IResourceLocator;
@@ -41,7 +42,7 @@ public class OWLClassItemProvider extends RDFSClassItemProvider {
 					RDFS.TYPE_CLASS)) {
 				newChildDescriptors.add(createChildParameter(em
 						.find(RDFS.PROPERTY_SUBCLASSOF), new ChildDescriptor(
-						Arrays.asList(em.find(type, IClass.class)), true)));
+						Collections.singletonList(em.find(type, IClass.class)), true)));
 			}
 		}
 	}

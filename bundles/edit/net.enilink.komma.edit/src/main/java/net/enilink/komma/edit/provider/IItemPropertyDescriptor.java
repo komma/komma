@@ -31,29 +31,29 @@ public interface IItemPropertyDescriptor {
 	 * i.e., the call is used as a notification that this descriptor is being
 	 * used to edit another object.
 	 */
-	public Object getPropertyValue(Object object);
+	Object getPropertyValue(Object object);
 
 	/**
 	 * This determines whether this descriptor's property for the object is set.
 	 * I'm not sure right now what this is used for? I should find out.
 	 */
-	public boolean isPropertySet(Object object);
+	boolean isPropertySet(Object object);
 
 	/**
 	 * This determines whether this descriptor's property for the object
 	 * supports set (and reset).
 	 */
-	public boolean canSetProperty(Object object);
+	boolean canSetProperty(Object object);
 
 	/**
 	 * This resets this descriptor's property for the object.
 	 */
-	public void resetPropertyValue(Object object);
+	void resetPropertyValue(Object object);
 
 	/**
 	 * This sets this descriptor's property for the object to the given value.
 	 */
-	public void setPropertyValue(Object object, Object value);
+	void setPropertyValue(Object object, Object value);
 
 	/**
 	 * Returns the name of the category to which this property belongs.
@@ -93,19 +93,19 @@ public interface IItemPropertyDescriptor {
 	/**
 	 * Returns the feature.
 	 */
-	public Object getProperty(Object object);
+	Object getProperty(Object object);
 
 	/**
 	 * Returns whether this property represents multiple values. This may not be
 	 * the same as the feature's getMany(), as the property may allows editing
 	 * only a single value of a multi-valued feature.
 	 */
-	public boolean isMany(Object object);
+	boolean isMany(Object object);
 
 	/**
 	 * Returns the choices of all the values that this property may take one.
 	 */
-	public Collection<?> getChoiceOfValues(Object object);
+	Collection<?> getChoiceOfValues(Object object);
 
 	/**
 	 * Returns whether this property's value will consist of multi-line text.
@@ -125,17 +125,17 @@ public interface IItemPropertyDescriptor {
 	 * typically used when a wrapper is being displayed in place of a real model
 	 * object, so that commands will be created by the wrapper.
 	 */
-	public interface OverrideableCommandOwner {
+	interface OverrideableCommandOwner {
 		/**
 		 * Sets the object to use as the owner of commands created to set the
 		 * property's value.
 		 */
-		public void setCommandOwner(Object override);
+		void setCommandOwner(Object override);
 
 		/**
 		 * Returns the override command owner set via {@link #setCommandOwner
 		 * setCommandOwner}.
 		 */
-		public Object getCommandOwner();
+		Object getCommandOwner();
 	}
 }

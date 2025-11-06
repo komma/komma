@@ -169,11 +169,10 @@ public class CopyToClipboardCommand extends AbstractOverrideableCommand
 	 */
 	@Override
 	public String toString() {
-		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (domain: " + getDomain() + ")");
-		result.append(" (sourceObjects: " + sourceObjects + ")");
-		result.append(" (oldClipboard: " + oldClipboard + ")");
+		String result = super.toString() + " (domain: " + getDomain() + ")" +
+				" (sourceObjects: " + sourceObjects + ")" +
+				" (oldClipboard: " + oldClipboard + ")";
 
-		return result.toString();
+		return result;
 	}
 }

@@ -61,7 +61,7 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 	 * This is the helper interface to which <code>CreateChildCommand</code>
 	 * functionality is delegated.
 	 */
-	public static interface IHelper {
+	public interface IHelper {
 		Object createChild(Object owner, Object property,
 				Object childDescription, IAdaptable info);
 
@@ -243,7 +243,7 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 		String text = this.helper.getCreateChildText(owner, property,
 				childDescription, selection);
 		setLabel(KommaEditPlugin.INSTANCE.getString(
-				"_UI_CreateChildCommand_label", new Object[] { text }));
+				"_UI_CreateChildCommand_label", text));
 		setDescription(KommaEditPlugin.INSTANCE
 				.getString("_UI_CreateChildCommand_description"));
 	}
@@ -379,10 +379,7 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 			}
 			doAdd = true;
 			return true;
-		} else if (owner.getCardinality(property) == 0) {
-			return true;
-		}
-		return false;
+		} else return owner.getCardinality(property) == 0;
 	}
 
 	/**
@@ -392,15 +389,14 @@ public class CreateChildCommand extends ExtendedCompositeCommand implements
 	 */
 	@Override
 	public String toString() {
-		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (domain: " + domain + ")");
-		result.append(" (owner: " + owner + ")");
-		result.append(" (property: " + property + ")");
-		result.append(" (child: " + childDescription + ")");
-		result.append(" (index: " + index + ")");
-		result.append(" (helper: " + helper + ")");
-		result.append(" (affectedObjects: " + affectedObjects + ")");
-		result.append(" (selection: " + selection + ")");
-		return result.toString();
+		String result = super.toString() + " (domain: " + domain + ")" +
+				" (owner: " + owner + ")" +
+				" (property: " + property + ")" +
+				" (child: " + childDescription + ")" +
+				" (index: " + index + ")" +
+				" (helper: " + helper + ")" +
+				" (affectedObjects: " + affectedObjects + ")" +
+				" (selection: " + selection + ")";
+		return result;
 	}
 }

@@ -131,7 +131,7 @@ public class CreateCopyCommand extends AbstractOverrideableCommand implements
 		if (owner.getURI() != null) {
 			// generate a default URI
 			copyURI = targetModel.getURI().appendLocalPart(
-					"entity_" + UUID.randomUUID().toString());
+					"entity_" + UUID.randomUUID());
 		}
 		copy = (IResource) targetModel.getManager().createNamed(copyURI,
 				ownerTypes.toArray(new IReference[0]));
@@ -165,10 +165,9 @@ public class CreateCopyCommand extends AbstractOverrideableCommand implements
 	 */
 	@Override
 	public String toString() {
-		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (owner: " + owner + ")");
-		result.append(" (copyHelper: " + copyHelper + ")");
+		String result = super.toString() + " (owner: " + owner + ")" +
+				" (copyHelper: " + copyHelper + ")";
 
-		return result.toString();
+		return result;
 	}
 }

@@ -28,15 +28,15 @@ public interface ITreeItemContentProvider extends IStructuredItemContentProvider
   /**
    * This does the same thing as ITreeContentProvider.getChildren.
    */
-  public Collection<?> getChildren(Object object);
+  Collection<?> getChildren(Object object);
 
   /**
    * This does the same thing as ITreeContentProvider.hasChildren.
    */
-  public boolean hasChildren(Object object);
+  boolean hasChildren(Object object);
 
   /**
    * This does the same thing as ITreeContentProvider.getParent.
    */
-  public Object getParent(Object object);
+  Object getParent(Object object);
 }

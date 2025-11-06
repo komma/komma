@@ -38,7 +38,7 @@ public class OWLPropertyItemProvider extends RDFSPropertyItemProvider {
 					+ "}");
 		}
 		return patterns.toString();
-	};
+	}
 
 	@Override
 	protected String getQueryFindPatterns(Object parent) {

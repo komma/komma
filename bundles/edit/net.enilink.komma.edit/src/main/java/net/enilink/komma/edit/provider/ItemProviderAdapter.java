@@ -17,22 +17,7 @@
 package net.enilink.komma.edit.provider;
 
 import java.net.URL;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.WeakHashMap;
+import java.util.*;
 
 import net.enilink.komma.common.adapter.IAdapter;
 import net.enilink.komma.common.adapter.IAdapterFactory;
@@ -314,7 +299,7 @@ public class ItemProviderAdapter extends
 
 		@Override
 		public boolean contains(Object o) {
-			return o == null ? singleElement == null : o.equals(singleElement);
+			return Objects.equals(o, singleElement);
 		}
 
 		@Override
@@ -397,8 +382,7 @@ public class ItemProviderAdapter extends
 		protected void addOwners(ICommand command) {
 			if (command instanceof CommandWrapper) {
 				addOwners(((CommandWrapper) command).getCommand());
-			} else if (command instanceof ExtendedCompositeCommand) {
-				ExtendedCompositeCommand compoundCommand = (ExtendedCompositeCommand) command;
+			} else if (command instanceof ExtendedCompositeCommand compoundCommand) {
 				List<? extends ICommand> commandList = compoundCommand
 						.getCommandList();
 				int resultIndex = compoundCommand.getResultIndex();
@@ -670,8 +654,7 @@ public class ItemProviderAdapter extends
 	 * an index, that index is adjusted by the given increment.
 	 */
 	protected void adjustWrapperIndex(Object object, int increment) {
-		if (object instanceof IWrapperItemProvider) {
-			IWrapperItemProvider wrapper = (IWrapperItemProvider) object;
+		if (object instanceof IWrapperItemProvider wrapper) {
 			int index = wrapper.getIndex();
 
 			if (index != CommandParameter.NO_INDEX) {
@@ -778,7 +761,7 @@ public class ItemProviderAdapter extends
 
 					for (net.enilink.vocab.rdfs.Class rangeClass : rangeArray) {
 						newChildDescriptors
-								.add(createChildParameter(property, new ChildDescriptor(Arrays.asList(rangeClass),
+								.add(createChildParameter(property, new ChildDescriptor(Collections.singletonList(rangeClass),
 										childRequiresName((IResource) object, property, rangeClass))));
 					}
 				}
@@ -831,7 +814,7 @@ public class ItemProviderAdapter extends
 		URI name = null;
 		boolean requiresName = childDescriptor.requiresName();
 		if ((requiresName || parentType != null)) {
-			IInputCallback input = (IInputCallback) info
+			IInputCallback input = info
 					.getAdapter(IInputCallback.class);
 			if (input != null) {
 				URI nameInput = URIs.createURI("input:name");
@@ -858,7 +841,7 @@ public class ItemProviderAdapter extends
 		if (name == null) {
 			// generate a default URI
 			name = model.getURI().appendLocalPart(
-					"entity_" + UUID.randomUUID().toString());
+					"entity_" + UUID.randomUUID());
 		}
 		return model.getManager().createNamed(name,
 				childTypes.toArray(new IReference[childTypes.size()]));
@@ -1291,7 +1274,7 @@ public class ItemProviderAdapter extends
 				ICommand setCommand = createSetCommand(domain, object,
 						childProperty, firstChild);
 				addCommand.add(new CommandWrapper(setCommand) {
-					protected Collection<?> affected;
+					private Collection<?> affected;
 
 					@Override
 					protected CommandResult doExecuteWithResult(
@@ -1456,7 +1439,7 @@ public class ItemProviderAdapter extends
 						ICommand setCommand = createSetCommand(domain, object,
 								property, null);
 						removeCommand.add(new CommandWrapper(setCommand) {
-							protected Collection<?> affected;
+							private Collection<?> affected;
 
 							@Override
 							protected CommandResult doExecuteWithResult(
@@ -1668,7 +1651,7 @@ public class ItemProviderAdapter extends
 	 */
 	protected ChildrenStore getChildrenStore(Object object) {
 		return childrenStoreMap == null ? null
-				: (ChildrenStore) childrenStoreMap.get(object);
+				: childrenStoreMap.get(object);
 	}
 
 	/**
@@ -1699,7 +1682,7 @@ public class ItemProviderAdapter extends
 		IProperty resolvedProperty = (IProperty) ((IResource) owner)
 				.getEntityManager().find((IReference) property);
 
-		String childType = resolvedProperty instanceof DatatypeProperty ? getTypeText((IProperty) resolvedProperty)
+		String childType = resolvedProperty instanceof DatatypeProperty ? getTypeText(resolvedProperty)
 				: getTypeText(child);
 		Object selectionObject = selection == null || selection.isEmpty() ? null
 				: selection.iterator().next();
@@ -1707,20 +1690,20 @@ public class ItemProviderAdapter extends
 		if (owner.equals(selectionObject)) {
 			return getResourceLocator().getString(
 					"_UI_CreateChild_description",
-					new Object[] { childType,
-							getPropertyText(resolvedProperty),
-							getTypeText(owner) });
+					childType,
+					getPropertyText(resolvedProperty),
+					getTypeText(owner));
 		}
 
 		Object sibling = selectionObject;
 		IProperty siblingProperty = getChildProperty(owner, sibling);
 
-		String siblingType = siblingProperty instanceof DatatypeProperty ? getTypeText((IProperty) siblingProperty)
+		String siblingType = siblingProperty instanceof DatatypeProperty ? getTypeText(siblingProperty)
 				: getTypeText(sibling);
 		return getResourceLocator().getString(
 				"_UI_CreateSibling_description",
-				new Object[] { childType, getPropertyText(resolvedProperty),
-						siblingType });
+				childType, getPropertyText(resolvedProperty),
+				siblingType);
 	}
 
 	/**
@@ -1751,14 +1734,14 @@ public class ItemProviderAdapter extends
 		IProperty resolvedProperty = (IProperty) ((IResource) owner)
 				.getEntityManager().find((IReference) property);
 
-		String childType = resolvedProperty instanceof DatatypeProperty ? getTypeText((IProperty) resolvedProperty)
+		String childType = resolvedProperty instanceof DatatypeProperty ? getTypeText(resolvedProperty)
 				: getTypeText(childDescription);
 
 		return getResourceLocator().getString(
 				property instanceof DatatypeProperty ? "_UI_CreateChild_text3"
 						: "_UI_CreateChild_text",
-				new Object[] { childType, getPropertyText(resolvedProperty),
-						getTypeText(owner) });
+				childType, getPropertyText(resolvedProperty),
+				getTypeText(owner));
 	}
 
 	/**
@@ -1777,8 +1760,8 @@ public class ItemProviderAdapter extends
 				: getTypeText(childDescription);
 		return getResourceLocator().getString(
 				"_UI_CreateChild_tooltip",
-				new Object[] { childType, getPropertyText(resolvedProperty),
-						getTypeText(owner) });
+				childType, getPropertyText(resolvedProperty),
+				getTypeText(owner));
 	}
 
 	/**
@@ -1875,8 +1858,7 @@ public class ItemProviderAdapter extends
 	public void getNewChildDescriptors(Object object,
 			IEditingDomain editingDomain, Object sibling,
 			final ICollector<Object> descriptors) {
-		if (object instanceof IResource) {
-			IResource resource = (IResource) object;
+		if (object instanceof IResource resource) {
 
 			// Build the collection of new child descriptors.
 			final Collection<Object> newChildDescriptors = new ArrayList<Object>();
@@ -1930,7 +1912,7 @@ public class ItemProviderAdapter extends
 						}
 					} else if (isEquivalentValue(sibling, propertyValue)) {
 						siblingPropertyIndex = i;
-						break PROPERTIES_LOOP;
+						break;
 					}
 					++i;
 				}
@@ -1938,8 +1920,7 @@ public class ItemProviderAdapter extends
 				// For each CommandParameter with a non-null, multi-valued
 				// property...
 				DESCRIPTORS_LOOP: for (Object descriptor : newChildDescriptors) {
-					if (descriptor instanceof CommandParameter) {
-						CommandParameter parameter = (CommandParameter) descriptor;
+					if (descriptor instanceof CommandParameter parameter) {
 						IProperty childProperty = (IProperty) parameter
 								.getObjectProperty();
 						if (childProperty == null
@@ -2325,8 +2306,7 @@ public class ItemProviderAdapter extends
 			return !getChildren(object).isEmpty();
 		}
 
-		if (object instanceof IResource) {
-			IResource resource = (IResource) object;
+		if (object instanceof IResource resource) {
 			for (IProperty property : getChildrenProperties(object)) {
 				if (property.isMany(resource)) {
 					Collection<?> children = (Collection<?>) resource
@@ -2407,6 +2387,7 @@ public class ItemProviderAdapter extends
 			for (IProperty f : getChildrenProperties(object)) {
 				if (f instanceof DatatypeProperty) {
 					wrappingNeeded = Boolean.TRUE;
+					break;
 				}
 			}
 		}
@@ -2610,8 +2591,7 @@ public class ItemProviderAdapter extends
 				continue;
 			}
 
-			if (notification instanceof IStatementNotification) {
-				IStatementNotification stmtNotification = (IStatementNotification) notification;
+			if (notification instanceof IStatementNotification stmtNotification) {
 				IReference predicate = stmtNotification.getPredicate();
 				// ensure that cached data is discarded
 				if (predicate == null) {
@@ -2619,8 +2599,7 @@ public class ItemProviderAdapter extends
 				} else {
 					childrenStore.getOwner().refresh(predicate);
 				}
-			} else if (notification instanceof IPropertyNotification) {
-				IPropertyNotification propertyNotification = (IPropertyNotification) notification;
+			} else if (notification instanceof IPropertyNotification propertyNotification) {
 				IProperty property = (IProperty) childrenStore.getOwner()
 						.getEntityManager()
 						.find((IReference) propertyNotification.getProperty());
@@ -2719,9 +2698,7 @@ public class ItemProviderAdapter extends
 								.getOwner().get(property);
 
 						if (children.size() != values.size()) {
-							if (propertyNotification.getNewValue() instanceof int[]) {
-								int[] indices = (int[]) propertyNotification
-										.getNewValue();
+							if (propertyNotification.getNewValue() instanceof int[] indices) {
 								for (int i = indices.length - 1; i >= 0; i--) {
 									disposeWrapper(children.remove(indices[i]));
 									adjustWrapperIndices(children, indices[i],

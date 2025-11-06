@@ -1,6 +1,7 @@
 package net.enilink.komma.edit.provider;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import net.enilink.commons.iterator.IExtendedIterator;
@@ -14,7 +15,7 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.em.util.ISparqlConstants;
 
 public class SparqlSearchableItemProvider implements ISearchableItemProvider {
-	private static Pattern ESCAPE_CHARS = Pattern.compile("[\\[.{(*+?^$|]");
+	private static final Pattern ESCAPE_CHARS = Pattern.compile("[\\[.{(*+?^$|]");
 
 	protected IEntityManager getEntityManager(Object parent) {
 		if (parent instanceof IEntity) {
@@ -41,10 +42,9 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 	@Override
 	public IExtendedIterator<?> find(Object expression, Object parent, int limit) {
 		IEntityManager em = getEntityManager(parent);
-		if (expression instanceof String && em != null) {
+		if (expression instanceof String pattern && em != null) {
 			String findPatterns = getQueryFindPatterns(parent);
 
-			String pattern = (String) expression;
 			String uriPattern = pattern;
 			if (!pattern.matches(".*[#/].*")) {
 				int colonIndex = pattern.lastIndexOf(':');
@@ -63,9 +63,9 @@ public class SparqlSearchableItemProvider implements ISearchableItemProvider {
 				}
 			}
 			IDialect dialect = em.getFactory().getDialect();
-			QueryFragment searchS = dialect.fullTextSearch(Arrays.asList("s"),
+			QueryFragment searchS = dialect.fullTextSearch(List.of("s"),
 					IDialect.ALL, pattern);
-			QueryFragment searchL = dialect.fullTextSearch(Arrays.asList("l"),
+			QueryFragment searchL = dialect.fullTextSearch(List.of("l"),
 					IDialect.DEFAULT, pattern);
 
 			boolean isFilter = Pattern

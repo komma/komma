@@ -137,10 +137,7 @@ public class ValidationStatus extends Status {
 		} else if (!getMessage().equals(other.getMessage()))
 			return false;
 		if (getException() == null) {
-			if (other.getException() != null)
-				return false;
-		} else if (!getException().equals(other.getException()))
-			return false;
-		return true;
+			return other.getException() == null;
+		} else return getException().equals(other.getException());
 	}
 }

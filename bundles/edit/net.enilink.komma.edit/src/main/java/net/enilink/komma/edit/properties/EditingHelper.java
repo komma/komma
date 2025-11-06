@@ -42,7 +42,7 @@ import org.eclipse.core.runtime.Status;
 public abstract class EditingHelper {
 	public static URI NULL_URI = URIs.createURI("komma:null");
 
-	public static enum Type {
+	public enum Type {
 		PROPERTY, VALUE, LITERAL_LANG_TYPE
 	}
 
@@ -57,7 +57,7 @@ public abstract class EditingHelper {
 		@Override
 		public boolean isFactoryForType(Object type) {
 			IAdapterFactory factory = getAdapterFactory();
-			return factory == null ? false : getAdapterFactory()
+			return factory != null && getAdapterFactory()
 					.isFactoryForType(type);
 		}
 	};
@@ -102,8 +102,7 @@ public abstract class EditingHelper {
 	abstract protected IEditingDomain getEditingDomain();
 
 	protected IEditingSupport getEditingSupport(Object element) {
-		if (element instanceof IStatement) {
-			IStatement stmt = (IStatement) element;
+		if (element instanceof IStatement stmt) {
 			// use the resource editor for predicates
 			if (type == Type.PROPERTY) {
 				return new ResourceEditingSupport(delegatingAdapterFactory,
@@ -142,8 +141,7 @@ public abstract class EditingHelper {
 	}
 
 	protected Object unwrap(Object element) {
-		if (element instanceof IStatement) {
-			IStatement stmt = (IStatement) element;
+		if (element instanceof IStatement stmt) {
 			return new Statement(stmt.getSubject(), stmt.getPredicate(),
 					unwrap(stmt.getObject()));
 		}

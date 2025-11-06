@@ -17,6 +17,7 @@ package net.enilink.komma.edit.provider.model;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.MissingResourceException;
 
 import net.enilink.komma.common.util.DelegatingResourceLocator;
@@ -85,7 +86,7 @@ public class ModelItemProviderAdapterFactory extends
 					@Override
 					protected Collection<? extends IClass> getTypes(
 							Object object) {
-						return Arrays.asList((IClass) object);
+						return Collections.singletonList((IClass) object);
 					}
 
 					@Override

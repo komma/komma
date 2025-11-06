@@ -13,8 +13,8 @@ package net.enilink.komma.edit.provider;
 import net.enilink.komma.common.notify.INotification;
 
 public class NotificationWrapper implements INotificationWrapper {
-	private Object subject;
-	private INotification wrappedNotification;
+	private final Object subject;
+	private final INotification wrappedNotification;
 
 	public NotificationWrapper(Object subject, INotification wrappedNotification) {
 		this.subject = subject;

@@ -52,11 +52,11 @@ public interface IItemColorProvider
    * This does the same thing as IColorProvider.getForeground, 
    * it fetches the foreground color specific to this object instance.
    */
-  public Object getForeground(Object object);
+  Object getForeground(Object object);
   
   /**
    * This does the same thing as IColorProvider.getBackground, 
    * it fetches the background color specific to this object instance.
    */
-  public Object getBackground(Object object);
+  Object getBackground(Object object);
 }

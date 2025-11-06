@@ -36,7 +36,7 @@ public interface IEditingDomainItemProvider {
 	 * EditingDomain.getChildren}, i.e., it imposes a hierarchical relation on a
 	 * domain's model objects.
 	 */
-	public Collection<?> getChildren(Object object);
+	Collection<?> getChildren(Object object);
 
 	/**
 	 * This does the same thing as
@@ -44,7 +44,7 @@ public interface IEditingDomainItemProvider {
 	 * EditingDomain.getParent}, i.e., it imposes a hierarchical relation on a
 	 * domain's model objects.
 	 */
-	public Object getParent(Object object);
+	Object getParent(Object object);
 
 	/**
 	 * This does the same thing as
@@ -53,9 +53,9 @@ public interface IEditingDomainItemProvider {
 	 * objects describing the children that can be added under an object in the
 	 * editing domain.
 	 */
-	public void getNewChildDescriptors(Object object,
-			IEditingDomain editingDomain, Object sibling,
-			ICollector<Object> descriptors);
+	void getNewChildDescriptors(Object object,
+	                            IEditingDomain editingDomain, Object sibling,
+	                            ICollector<Object> descriptors);
 
 	/**
 	 * This does the same thing as
@@ -63,7 +63,7 @@ public interface IEditingDomainItemProvider {
 	 * EditingDomain.createCommand}, i.e., it creates commands for a domain's
 	 * model objects.
 	 */
-	public ICommand createCommand(Object object, IEditingDomain editingDomain,
-			Class<? extends ICommand> commandClass,
-			CommandParameter commandParameter);
+	ICommand createCommand(Object object, IEditingDomain editingDomain,
+	                       Class<? extends ICommand> commandClass,
+	                       CommandParameter commandParameter);
 }

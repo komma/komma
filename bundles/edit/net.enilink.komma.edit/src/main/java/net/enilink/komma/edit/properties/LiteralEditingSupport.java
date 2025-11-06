@@ -33,8 +33,7 @@ public class LiteralEditingSupport implements IEditingSupport {
 	@Override
 	public Object getEditorValue(Object element) {
 		Object value = ((IStatement) element).getObject();
-		if (value instanceof ILiteral) {
-			ILiteral literal = (ILiteral) value;
+		if (value instanceof ILiteral literal) {
 			return literal.getLabel();
 		}
 		return value != null ? value.toString() : "";

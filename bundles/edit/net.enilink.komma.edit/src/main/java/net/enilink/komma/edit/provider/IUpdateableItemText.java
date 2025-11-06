@@ -27,10 +27,10 @@ public interface IUpdateableItemText
   /**
    * This returns the text that will be displayed when editing begins.
    */
-  public String getUpdateableText(Object object);
+  String getUpdateableText(Object object);
 
   /**
    * This sets the given object's label text to the given text. 
    */
-  public void setText(Object object, String text);
+  void setText(Object object, String text);
 }

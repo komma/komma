@@ -459,11 +459,7 @@ public class AddCommand extends AbstractOverrideableCommand {
 			}
 		}
 
-		if (owner != null && getDomain().isReadOnly(owner)) {
-			return false;
-		}
-
-		return true;
+		return owner == null || !getDomain().isReadOnly(owner);
 	}
 
 	/**
@@ -473,14 +469,13 @@ public class AddCommand extends AbstractOverrideableCommand {
 	 */
 	@Override
 	public String toString() {
-		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (owner: " + owner + ")");
-		result.append(" (feature: " + property + ")");
-		result.append(" (ownerList: " + ownerList + ")");
-		result.append(" (collection: " + collection + ")");
-		result.append(" (index: " + index + ")");
-		result.append(" (affectedObjects:" + affectedObjects + ")");
+		String result = super.toString() + " (owner: " + owner + ")" +
+				" (feature: " + property + ")" +
+				" (ownerList: " + ownerList + ")" +
+				" (collection: " + collection + ")" +
+				" (index: " + index + ")" +
+				" (affectedObjects:" + affectedObjects + ")";
 
-		return result.toString();
+		return result;
 	}
 }

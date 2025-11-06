@@ -521,7 +521,7 @@ public class RefactoringProcessor {
 				}
 			}
 		}
-	};
+	}
 
 	/**
 	 * Apply the given collection of changes to the respective models.

@@ -815,8 +815,7 @@ public class WrapperItemProvider implements IWrapperItemProvider {
 			}
 
 			for (Object child : children) {
-				if (child instanceof IWrapperItemProvider) {
-					IWrapperItemProvider wrapper = (IWrapperItemProvider) child;
+				if (child instanceof IWrapperItemProvider wrapper) {
 					if (wrapper.getProperty() == property
 							&& wrapper.getIndex() == index) {
 						return Collections.singletonList(child);

@@ -23,7 +23,7 @@ import net.enilink.komma.model.IModelAware;
 import net.enilink.vocab.rdf.RDF;
 
 public class ResourceFinder {
-	private static Pattern ESCAPE_CHARS = Pattern.compile("[\\[.{(*+?^$|]");
+	private static final Pattern ESCAPE_CHARS = Pattern.compile("[\\[.{(*+?^$|]");
 
 	public static class Options {
 		final IEntityManager em;
@@ -66,21 +66,12 @@ public class ResourceFinder {
 		}
 	}
 
-	public static class Match {
-		public final IEntity resource;
-		public final boolean inGraph;
-		public final boolean matchesRange;
-
-		public Match(IEntity resource, boolean inGraph, boolean matchesRange) {
-			this.resource = resource;
-			this.inGraph = inGraph;
-			this.matchesRange = matchesRange;
-		}
+	public record Match(IEntity resource, boolean inGraph, boolean matchesRange) {
 
 		public int score() {
-			return 0 + (matchesRange ? 1000 : 0) + (inGraph ? 1 : 0);
+				return (matchesRange ? 1000 : 0) + (inGraph ? 1 : 0);
+			}
 		}
-	}
 
 	public Iterable<Match> findAnyResources(Options options) {
 		Map<IEntity, Match> matches = new LinkedHashMap<>(options.limit);
@@ -199,9 +190,9 @@ public class ResourceFinder {
 			sparql.append("?s ?p ?o . ");
 		} else {
 			IDialect dialect = em.getFactory().getDialect();
-			searchS = dialect.fullTextSearch(Arrays.asList("s"), IDialect.ALL,
+			searchS = dialect.fullTextSearch(List.of("s"), IDialect.ALL,
 					split(pattern, "\\s*[#/]\\s*"));
-			searchL = dialect.fullTextSearch(Arrays.asList("l"),
+			searchL = dialect.fullTextSearch(List.of("l"),
 					IDialect.DEFAULT, pattern);
 
 			sparql.append("{ ?s ?p ?o . " + searchS);

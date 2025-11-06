@@ -400,8 +400,7 @@ public class ComposedAdapterFactory extends NotificationSupport<INotification>
 			return result;
 		}
 
-		if (target instanceof IResource) {
-			IResource resource = (IResource) target;
+		if (target instanceof IResource resource) {
 			result = adaptEntity(resource, type, new HashSet<URI>(),
 					new HashSet<IClass>(), sort(resource
 							.getDirectNamedClasses().toList()));

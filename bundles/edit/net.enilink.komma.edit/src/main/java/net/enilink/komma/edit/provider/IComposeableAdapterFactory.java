@@ -28,12 +28,12 @@ public interface IComposeableAdapterFactory extends IAdapterFactory {
 	 * This convenience method returns the first adapter factory that doesn't
 	 * have a parent, i.e., the root.
 	 */
-	public IComposeableAdapterFactory getRootAdapterFactory();
+	IComposeableAdapterFactory getRootAdapterFactory();
 
 	/**
 	 * This sets the direct parent adapter factory into which this factory is
 	 * composed.
 	 */
-	public void setParentAdapterFactory(
+	void setParentAdapterFactory(
 			ComposedAdapterFactory parentAdapterFactory);
 }

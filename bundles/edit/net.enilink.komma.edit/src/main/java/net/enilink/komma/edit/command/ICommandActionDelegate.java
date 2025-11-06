@@ -24,25 +24,25 @@ public interface ICommandActionDelegate {
 	/**
 	 * This returns whether the action should be enabled.
 	 */
-	public boolean canExecute();
+	boolean canExecute();
 
 	/**
 	 * This returns the decoration, if any, of the action.
 	 */
-	public Object getImage();
+	Object getImage();
 
 	/**
 	 * This returns the menu text, if any, of the action.
 	 */
-	public String getText();
+	String getText();
 
 	/**
 	 * This returns the description, if any, of the action.
 	 */
-	public String getDescription();
+	String getDescription();
 
 	/**
 	 * This returns the tool tip text, if any, of the action.
 	 */
-	public String getToolTipText();
+	String getToolTipText();
 }

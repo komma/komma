@@ -401,7 +401,7 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 			if (parentReferences != null) {
 				Collection<Object> result = new LinkedHashSet<Object>();
 				for (int i = 0; i < parentReferences.length; ++i) {
-					parentReferences[i] = (IProperty) model
+					parentReferences[i] = model
 							.resolve(parentReferences[i]);
 
 					result.addAll(KommaUtil.getInstances(
@@ -545,7 +545,7 @@ public class ItemPropertyDescriptor implements IItemPropertyDescriptor,
 	public Object getPropertyValue(Object object) {
 		if (property instanceof DatatypeProperty) {
 			Object result = getValue((IResource) object,
-					(DatatypeProperty) property);
+					property);
 
 			if (result == null) {
 				return null;

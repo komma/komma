@@ -69,8 +69,8 @@ public class PropertyUtil {
 		// subject
 		// this can be optimized by using SPARQL 1.1
 		removeCommand = removeCommand.compose(new SimpleCommand() {
-			protected boolean canDelete(IEntityManager em,
-					IReference deletedSubject, Object object) {
+			private boolean canDelete(IEntityManager em,
+			                          IReference deletedSubject, Object object) {
 				if (!(object instanceof IReference && ((IReference) object)
 						.getURI() == null)) {
 					return false;

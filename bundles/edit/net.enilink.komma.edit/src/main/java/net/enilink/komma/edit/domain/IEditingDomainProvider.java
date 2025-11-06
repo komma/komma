@@ -25,5 +25,5 @@ public interface IEditingDomainProvider {
 	/**
 	 * This returns the editing domain.
 	 */
-	public IEditingDomain getEditingDomain();
+	IEditingDomain getEditingDomain();
 }

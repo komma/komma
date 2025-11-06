@@ -178,10 +178,9 @@ public class CutToClipboardCommand extends CommandWrapper {
 	 */
 	@Override
 	public String toString() {
-		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (domain: " + domain + ")");
-		result.append(" (oldClipboard: " + oldClipboard + ")");
+		String result = super.toString() + " (domain: " + domain + ")" +
+				" (oldClipboard: " + oldClipboard + ")";
 
-		return result.toString();
+		return result;
 	}
 }

@@ -25,11 +25,11 @@ public interface IItemLabelProvider {
 	 * This does the same thing as ILabelProvider.getText, it fetches the label
 	 * text specific to this object instance.
 	 */
-	public String getText(Object object);
+	String getText(Object object);
 
 	/**
 	 * This does the same thing as ILabelProvider.getImage, it fetches the label
 	 * image specific to this object instance.
 	 */
-	public Object getImage(Object object);
+	Object getImage(Object object);
 }

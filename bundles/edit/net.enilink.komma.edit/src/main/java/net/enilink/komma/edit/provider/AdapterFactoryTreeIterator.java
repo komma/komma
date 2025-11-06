@@ -62,6 +62,6 @@ public class AdapterFactoryTreeIterator<E> extends AbstractTreeIterator<E> {
 				.adapt(o, ITreeItemContentProvider.class);
 		return treeItemContentProvider != null ? (Iterator<E>) treeItemContentProvider
 				.getChildren(o).iterator()
-				: Collections.<E> emptyList().iterator();
+				: Collections.emptyIterator();
 	}
 }

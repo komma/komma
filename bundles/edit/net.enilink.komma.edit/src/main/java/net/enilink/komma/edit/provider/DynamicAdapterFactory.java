@@ -26,8 +26,8 @@ import net.enilink.komma.core.URIs;
 
 public class DynamicAdapterFactory implements IAdapterFactory {
 	protected class AdapterCompositionModule extends AbstractModule {
-		private KommaModule module;
-		private Locale locale;
+		private final KommaModule module;
+		private final Locale locale;
 
 		protected AdapterCompositionModule(IEntityManagerFactory factory,
 				KommaModule module, Locale locale) {
@@ -144,7 +144,7 @@ public class DynamicAdapterFactory implements IAdapterFactory {
 
 			@Provides
 			@Singleton
-			protected TypeFactory<String> provideTypeFactory() {
+			private TypeFactory<String> provideTypeFactory() {
 				return new TypeFactory<String>() {
 					@Override
 					public String createType(String type) {

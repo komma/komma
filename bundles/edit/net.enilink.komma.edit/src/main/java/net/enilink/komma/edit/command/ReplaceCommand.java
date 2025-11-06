@@ -334,14 +334,13 @@ public class ReplaceCommand extends AbstractOverrideableCommand {
 	 */
 	@Override
 	public String toString() {
-		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (owner: " + owner + ")");
-		result.append(" (property: " + property + ")");
-		result.append(" (ownerList: " + ownerList + ")");
-		result.append(" (value: " + value + ")");
-		result.append(" (collection: " + collection + ")");
-		result.append(" (affectedObjects:" + affectedObjects + ")");
+		String result = super.toString() + " (owner: " + owner + ")" +
+				" (property: " + property + ")" +
+				" (ownerList: " + ownerList + ")" +
+				" (value: " + value + ")" +
+				" (collection: " + collection + ")" +
+				" (affectedObjects:" + affectedObjects + ")";
 
-		return result.toString();
+		return result;
 	}
 }

@@ -289,10 +289,7 @@ public class CopyCommand extends ExtendedCompositeCommand {
 
 	@Override
 	protected boolean prepare() {
-		if (owner == null) {
-			return false;
-		}
-		return true;
+		return owner != null;
 	}
 
 	@Override
@@ -313,10 +310,9 @@ public class CopyCommand extends ExtendedCompositeCommand {
 	 */
 	@Override
 	public String toString() {
-		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (domain: " + domain + ")");
-		result.append(" (owner: " + owner + ")");
+		String result = super.toString() + " (domain: " + domain + ")" +
+				" (owner: " + owner + ")";
 
-		return result.toString();
+		return result;
 	}
 }

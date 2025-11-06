@@ -203,9 +203,7 @@ public class PasteFromClipboardCommand extends AbstractOverrideableCommand {
 	 */
 	@Override
 	public String toString() {
-		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (domain: " + getDomain() + ")");
 
-		return result.toString();
+		return super.toString() + " (domain: " + getDomain() + ")";
 	}
 }

@@ -591,8 +591,7 @@ public class SetCommand extends AbstractOverrideableCommand {
 
 				if (value == UNSET_VALUE) {
 					result = true;
-				} else if (value instanceof Collection<?>) {
-					Collection<?> collection = (Collection<?>) value;
+				} else if (value instanceof Collection<?> collection) {
 					result = true;
 					if (!resolvedProperty.hasListRange()) {
 						for (Object object : collection) {
@@ -708,8 +707,7 @@ public class SetCommand extends AbstractOverrideableCommand {
 							}
 							removeCommand = compoundCommand;
 						}
-					} else if (value instanceof IResource) {
-						IResource eObject = (IResource) value;
+					} else if (value instanceof IResource eObject) {
 						IResource otherEObject = (IResource) eObject
 								.get(otherProperty);
 						if (otherEObject != null) {

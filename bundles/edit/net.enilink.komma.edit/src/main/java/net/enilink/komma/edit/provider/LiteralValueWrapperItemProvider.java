@@ -85,7 +85,7 @@ public class LiteralValueWrapperItemProvider extends WrapperItemProvider
 	public List<IItemPropertyDescriptor> getPropertyDescriptors(Object object) {
 		if (propertyDescriptors == null) {
 			propertyDescriptors = Collections
-					.<IItemPropertyDescriptor> singletonList(new WrapperItemPropertyDescriptor(
+					.singletonList(new WrapperItemPropertyDescriptor(
 							resourceLocator, property));
 		}
 		return propertyDescriptors;
@@ -119,7 +119,7 @@ public class LiteralValueWrapperItemProvider extends WrapperItemProvider
 				}
 				return new LiteralValueWrapperItemProvider(valueCopy,
 						(IObject) LiteralValueWrapperItemProvider.this.owner,
-						(IReference) property, index, adapterFactory, resourceLocator);
+						property, index, adapterFactory, resourceLocator);
 			}
 		};
 	}

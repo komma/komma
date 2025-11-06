@@ -43,6 +43,6 @@ public class ReflectiveItemProviderAdapterFactory extends
 	protected Collection<IClass> getTypes(Object object) {
 		return object instanceof IResource ? ((IResource) object)
 				.getDirectNamedClasses().toSet() : Collections
-				.<IClass> emptySet();
+				.emptySet();
 	}
 }

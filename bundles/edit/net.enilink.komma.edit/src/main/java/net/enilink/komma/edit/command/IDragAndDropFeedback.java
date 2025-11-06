@@ -29,58 +29,58 @@ public interface IDragAndDropFeedback {
 	/**
 	 * This is the same as org.eclipse.swt.dnd.DND.DROP_NONE.
 	 */
-	public final static int DROP_NONE = 0;
+	int DROP_NONE = 0;
 
 	/**
 	 * This is the same as org.eclipse.swt.dnd.DND.DROP_COPY.
 	 */
-	public final static int DROP_COPY = 1;
+	int DROP_COPY = 1;
 
 	/**
 	 * This is the same as org.eclipse.swt.dnd.DND.DROP_MOVE.
 	 */
-	public final static int DROP_MOVE = 2;
+	int DROP_MOVE = 2;
 
 	/**
 	 * This is the same as org.eclipse.swt.dnd.DND.DROP_LINK.
 	 */
-	public final static int DROP_LINK = 4;
+	int DROP_LINK = 4;
 
 	/**
 	 * This is the same as org.eclipse.swt.dnd.DND.FEEDBACK_NONE.
 	 */
-	public final static int FEEDBACK_NONE = 0;
+	int FEEDBACK_NONE = 0;
 
 	/**
 	 * This is the same as org.eclipse.swt.dnd.DND.FEEDBACK_SELECT.
 	 */
-	public final static int FEEDBACK_SELECT = 1;
+	int FEEDBACK_SELECT = 1;
 
 	/**
 	 * This is the same as org.eclipse.swt.dnd.DND.FEEDBACK_INSERT_BEFORE.
 	 */
-	public final static int FEEDBACK_INSERT_BEFORE = 2;
+	int FEEDBACK_INSERT_BEFORE = 2;
 
 	/**
 	 * This is the same as org.eclipse.swt.dnd.DND.FEEDBACK_INSERT_AFTER.
 	 */
-	public final static int FEEDBACK_INSERT_AFTER = 4;
+	int FEEDBACK_INSERT_AFTER = 4;
 
 	/**
 	 * This is called repeatedly as the drag and drop information changes. The
 	 * collection, which represents the dragged source, does not normally
 	 * change.
 	 */
-	public boolean validate(Object owner, float location, int operations,
-			int operation, Collection<?> collection);
+	boolean validate(Object owner, float location, int operations,
+	                 int operation, Collection<?> collection);
 
 	/**
 	 * This returns one of the FEEDBACK_* values.
 	 */
-	public int getFeedback();
+	int getFeedback();
 
 	/**
 	 * This returns one of the DROP_* values.
 	 */
-	public int getOperation();
+	int getOperation();
 }

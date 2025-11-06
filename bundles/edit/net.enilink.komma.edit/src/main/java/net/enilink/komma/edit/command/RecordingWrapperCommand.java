@@ -48,8 +48,8 @@ import org.eclipse.core.runtime.IStatus;
 public class RecordingWrapperCommand extends AbstractCommand implements
 		INoChangeRecording {
 	private IChangeDescription change;
-	private ICommand command;
-	private IEditingDomain domain;
+	private final ICommand command;
+	private final IEditingDomain domain;
 
 	/**
 	 * Initializes me with the editing domain in which I am to be executed.

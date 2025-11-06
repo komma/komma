@@ -55,7 +55,7 @@ public class LiteralLangTypeEditingSupport extends ResourceEditingSupport {
 		IStatement stmt = (IStatement) element;
 		final ILiteral oldLiteral = (ILiteral) stmt.getObject();
 		String newValue = editorValue.toString().trim();
-		if (newValue.toString().isEmpty()) {
+		if (newValue.isEmpty()) {
 			return new IdentityCommand(new Literal(oldLiteral.getLabel()));
 		} else if (newValue.startsWith("@")) {
 			return new IdentityCommand(new Literal(oldLiteral.getLabel(),

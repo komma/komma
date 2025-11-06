@@ -58,7 +58,7 @@ public abstract class AbstractOverrideableCommand extends AbstractCommand
 	/**
 	 * This is the editing domain in which this command operates.
 	 */
-	private IEditingDomain domain;
+	private final IEditingDomain domain;
 
 	/**
 	 * This is the command that overrides this command.
@@ -283,10 +283,9 @@ public abstract class AbstractOverrideableCommand extends AbstractCommand
 	 */
 	@Override
 	public String toString() {
-		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (domain: " + getDomain() + ")");
-		result.append(" (overrideCommand: " + overrideCommand + ")");
-		return result.toString();
+		String result = super.toString() + " (domain: " + getDomain() + ")" +
+				" (overrideCommand: " + overrideCommand + ")";
+		return result;
 	}
 
 	@Override

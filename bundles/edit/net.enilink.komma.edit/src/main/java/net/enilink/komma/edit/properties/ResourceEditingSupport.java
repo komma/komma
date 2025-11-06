@@ -139,9 +139,9 @@ public class ResourceEditingSupport implements IEditingSupport {
 				for (Match match : finder.findRestrictedResources(options
 						.forPredicate(p))) {
 					// globally filter duplicate proposals
-					Match existing = allMatches.get(match.resource);
+					Match existing = allMatches.get(match.resource());
 					if (existing == null || existing.score() < match.score()) {
-						allMatches.put(match.resource, match);
+						allMatches.put(match.resource(), match);
 					}
 				}
 			}
@@ -188,11 +188,11 @@ public class ResourceEditingSupport implements IEditingSupport {
 				String prefix, boolean useAsValue) {
 			List<ResourceProposal> proposals = new ArrayList<>();
 			for (Match match : matches) {
-				String content = getLabel(match.resource);
+				String content = getLabel(match.resource());
 				if (content.length() > 0) {
 					content = prefix + content;
 					proposals.add(new ResourceProposal(content, content
-							.length(), match.resource)
+							.length(), match.resource())
 							.setUseAsValue(useAsValue).setScore(match.score()));
 				}
 			}
@@ -201,7 +201,7 @@ public class ResourceEditingSupport implements IEditingSupport {
 	}
 
 	protected IAdapterFactory adapterFactory;
-	private boolean editPredicate;
+	private final boolean editPredicate;
 
 	public ResourceEditingSupport(IAdapterFactory adapterFactory) {
 		this(adapterFactory, false);
@@ -442,7 +442,7 @@ public class ResourceEditingSupport implements IEditingSupport {
 		Iterator<Match> matches = new ResourceFinder().findAnyResources(
 				options.forPredicate(createNew[0] ? null : property)).iterator();
 		if (matches.hasNext()) {
-			final IEntity resource = matches.next().resource;
+			final IEntity resource = matches.next().resource();
 			if (createNew[0] && getLabel(resource).equals(valueStr)) {
 				// create a new object
 				return new SimpleCommand() {

@@ -15,11 +15,7 @@
  */
 package net.enilink.komma.edit.provider.komma;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.MissingResourceException;
-import java.util.Set;
+import java.util.*;
 
 import net.enilink.komma.common.util.DelegatingResourceLocator;
 import net.enilink.komma.common.util.IResourceLocator;
@@ -32,7 +28,7 @@ import net.enilink.vocab.komma.KOMMA;
 public class KommaItemProviderAdapterFactory extends
 		ItemProviderAdapterFactory<URI> {
 	static Set<URI> properties = new HashSet<>(
-			Arrays.asList(KOMMA.PROPERTY_ROOTPROPERTY));
+			Collections.singletonList(KOMMA.PROPERTY_ROOTPROPERTY));
 
 	public KommaItemProviderAdapterFactory() {
 		super(new DelegatingResourceLocator() {
@@ -69,7 +65,7 @@ public class KommaItemProviderAdapterFactory extends
 
 	@Override
 	protected Collection<URI> getTypes(Object object) {
-		return Arrays.asList(((IReference) object).getURI());
+		return Collections.singletonList(((IReference) object).getURI());
 	}
 
 	@Override

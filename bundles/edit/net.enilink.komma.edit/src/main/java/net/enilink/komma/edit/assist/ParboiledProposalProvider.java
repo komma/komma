@@ -10,14 +10,7 @@
  *******************************************************************************/
 package net.enilink.komma.edit.assist;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.parboiled.MatcherContext;
 import org.parboiled.Rule;
@@ -255,11 +248,8 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 			} else if (!content.equals(other.content))
 				return false;
 			if (label == null) {
-				if (other.label != null)
-					return false;
-			} else if (!label.equals(other.label))
-				return false;
-			return true;
+				return other.label == null;
+			} else return label.equals(other.label);
 		}
 
 		@Override
@@ -376,9 +366,7 @@ public class ParboiledProposalProvider implements IContentProposalProvider {
 		for (Map.Entry<ISemanticProposal, String> entry : runner.getSemanticProposals().entrySet()) {
 			IContentProposal[] computedProposals = entry.getKey().compute(result, position, entry.getValue());
 			if (computedProposals != null) {
-				for (IContentProposal proposal : computedProposals) {
-					proposals.add(proposal);
-				}
+				Collections.addAll(proposals, computedProposals);
 			}
 		}
 

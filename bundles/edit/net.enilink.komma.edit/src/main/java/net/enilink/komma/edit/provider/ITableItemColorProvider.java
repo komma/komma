@@ -28,10 +28,10 @@ public interface ITableItemColorProvider
   /**
    * This does the same thing as ITableColorProvider.getForeground.
    */
-  public Object getForeground(Object object, int columnIndex);
+  Object getForeground(Object object, int columnIndex);
 
   /**
    * This does the same thing as ITableColorProvider.getBackground.
    */
-  public Object getBackground(Object object, int columnIndex);
+  Object getBackground(Object object, int columnIndex);
 }

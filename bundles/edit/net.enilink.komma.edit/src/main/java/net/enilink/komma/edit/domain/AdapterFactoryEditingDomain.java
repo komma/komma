@@ -161,8 +161,7 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 	 * resolved} result.
 	 */
 	static public boolean isStale(Object object) {
-		if (object instanceof IWrapperItemProvider) {
-			IWrapperItemProvider wrapper = (IWrapperItemProvider) object;
+		if (object instanceof IWrapperItemProvider wrapper) {
 			return isStale(wrapper.getValue()) || isStale(wrapper.getOwner());
 		} else if (object instanceof Collection<?>) {
 			for (Object item : (Collection<?>) object) {
@@ -412,8 +411,8 @@ public class AdapterFactoryEditingDomain implements IEditingDomain,
 			Constructor<? extends ICommand> constructor = commandClass
 					.getConstructor(IEditingDomain.class,
 							CommandParameter.class);
-			ICommand command = constructor.newInstance(new Object[] { this,
-					commandParameter });
+			ICommand command = constructor.newInstance(this,
+					commandParameter);
 			return command;
 		} catch (IllegalAccessException exception) {
 			// Ignore.

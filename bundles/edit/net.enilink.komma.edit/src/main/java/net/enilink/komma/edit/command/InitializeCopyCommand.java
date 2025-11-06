@@ -193,12 +193,11 @@ public class InitializeCopyCommand extends AbstractOverrideableCommand {
 	 */
 	@Override
 	public String toString() {
-		StringBuffer result = new StringBuffer(super.toString() + ")");
-		result.append(" (domain: " + getDomain() + ")");
-		result.append(" (owner: " + owner + ")");
-		result.append(" (copy: " + copy + ")");
-		result.append(" (copyHelper: " + copyHelper + ")");
+		String result = super.toString() + ")" + " (domain: " + getDomain() + ")" +
+				" (owner: " + owner + ")" +
+				" (copy: " + copy + ")" +
+				" (copyHelper: " + copyHelper + ")";
 
-		return result.toString();
+		return result;
 	}
 }

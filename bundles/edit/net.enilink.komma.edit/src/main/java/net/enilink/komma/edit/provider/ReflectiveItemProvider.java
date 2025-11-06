@@ -68,8 +68,7 @@ public class ReflectiveItemProvider extends ItemProviderAdapter
 
 		Collection<IViewerNotification> viewerNotifications = new ArrayList<IViewerNotification>(0);
 		for (INotification notification : notifications) {
-			if (notification instanceof IStatementNotification) {
-				IStatementNotification stmtNotification = (IStatementNotification) notification;
+			if (notification instanceof IStatementNotification stmtNotification) {
 				// ensure that adapter is replaced by another one that matches
 				// the current entity types
 				if (RDF.PROPERTY_TYPE.equals(stmtNotification.getPredicate())
@@ -89,7 +88,6 @@ public class ReflectiveItemProvider extends ItemProviderAdapter
 
 		if (!viewerNotifications.isEmpty()) {
 			fireNotifications(viewerNotifications);
-			return;
 		}
 	}
 
@@ -102,7 +100,7 @@ public class ReflectiveItemProvider extends ItemProviderAdapter
 		IEntity object = resolveReference(notification.getSubject());
 		if (object instanceof IResource) {
 			if (notification.getPredicate() == null) {
-				((IResource) object).refresh();
+				object.refresh();
 			} else {
 				((IResource) object).refresh(notification.getPredicate());
 			}

@@ -8,6 +8,7 @@ package net.enilink.komma.owl.edit;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import net.enilink.composition.annotations.Iri;
@@ -38,25 +39,23 @@ public class OWLItemProviderAdapterFactory extends
 	protected Collection<IClass> getTypes(Object object) {
 		// classes
 		if (object instanceof AnnotationProperty) {
-			return Arrays.asList(((IResource) object).getEntityManager().find(
+			return Collections.singletonList(((IResource) object).getEntityManager().find(
 					OWL.TYPE_ANNOTATIONPROPERTY, IClass.class));
 		}
 		if (object instanceof DatatypeProperty) {
-			return Arrays.asList(((IResource) object).getEntityManager().find(
+			return Collections.singletonList(((IResource) object).getEntityManager().find(
 					OWL.TYPE_DATATYPEPROPERTY, IClass.class));
 		}
 		if (object instanceof ObjectProperty) {
-			return Arrays.asList(((IResource) object).getEntityManager().find(
+			return Collections.singletonList(((IResource) object).getEntityManager().find(
 					OWL.TYPE_OBJECTPROPERTY, IClass.class));
 		}
 		if (object instanceof IClass) {
-			return Arrays.asList(((IResource) object).getEntityManager().find(
+			return Collections.singletonList(((IResource) object).getEntityManager().find(
 					OWL.TYPE_CLASS, IClass.class));
 		}
 		// others
-		Set<IClass> classes = ((IResource) object).getDirectNamedClasses()
-				.toSet();
-		return classes;
+		return ((IResource) object).getDirectNamedClasses().toSet();
 	}
 
 	@Override

@@ -26,5 +26,5 @@ public interface IUpdateableItemParent
   /**
    * This sets the given object's parent to be parent.
    */
-  public void setParent(Object object, Object parent);
+  void setParent(Object object, Object parent);
 }

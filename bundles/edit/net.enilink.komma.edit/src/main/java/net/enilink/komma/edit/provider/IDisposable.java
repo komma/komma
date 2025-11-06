@@ -24,5 +24,5 @@ public interface IDisposable {
 	/**
 	 * This is called to dispose the object.
 	 */
-	public void dispose();
+	void dispose();
 }

@@ -375,14 +375,13 @@ public class RemoveCommand extends AbstractOverrideableCommand {
 	 */
 	@Override
 	public String toString() {
-		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (owner: " + owner + ")");
-		result.append(" (property: " + property + ")");
-		result.append(" (ownerList: " + ownerList + ")");
-		result.append(" (collection: " + collection + ")");
-		result.append(" (indices: " + Arrays.toString(indices) + ")");
-		result.append(" (affectedObjects: " + affectedObjects + ")");
+		String result = super.toString() + " (owner: " + owner + ")" +
+				" (property: " + property + ")" +
+				" (ownerList: " + ownerList + ")" +
+				" (collection: " + collection + ")" +
+				" (indices: " + Arrays.toString(indices) + ")" +
+				" (affectedObjects: " + affectedObjects + ")";
 
-		return result.toString();
+		return result;
 	}
 }

@@ -44,7 +44,7 @@ import net.enilink.komma.model.IObject;
 public abstract class ItemProviderAdapterFactory<T> extends AdapterFactory
 		implements IComposeableAdapterFactory, IDisposable,
 		INotificationBroadcaster<INotification> {
-	private Set<URI> namespaceURIs;
+	private final Set<URI> namespaceURIs;
 
 	protected Map<Pair<IModel, Collection<? extends T>>, Object> providers = new HashMap<Pair<IModel, Collection<? extends T>>, Object>();
 

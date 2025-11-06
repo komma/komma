@@ -21,7 +21,7 @@ import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.core.IReferenceable;
 
 public abstract class AdapterFactory implements IAdapterFactory, IDisposable {
-	private Map<Object, List<Object>> object2adapters = Collections
+	private final Map<Object, List<Object>> object2adapters = Collections
 			.synchronizedMap(new WeakHashMap<Object, List<Object>>());
 
 	@Override

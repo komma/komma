@@ -28,5 +28,5 @@ public interface ITableItemFontProvider
   /**
    * This does the same thing as ITableFontProvider.getFont.
    */
-  public Object getFont(Object object, int columnIndex);
+  Object getFont(Object object, int columnIndex);
 }

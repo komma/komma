@@ -271,14 +271,13 @@ public class MoveCommand extends AbstractOverrideableCommand {
 	 */
 	@Override
 	public String toString() {
-		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (owner: " + owner + ")");
-		result.append(" (property: " + property + ")");
-		result.append(" (ownerList: " + ownerList + ")");
-		result.append(" (value: " + value + ")");
-		result.append(" (index: " + index + ")");
-		result.append(" (oldIndex: " + oldIndex + ")");
+		String result = super.toString() + " (owner: " + owner + ")" +
+				" (property: " + property + ")" +
+				" (ownerList: " + ownerList + ")" +
+				" (value: " + value + ")" +
+				" (index: " + index + ")" +
+				" (oldIndex: " + oldIndex + ")";
 
-		return result.toString();
+		return result;
 	}
 }

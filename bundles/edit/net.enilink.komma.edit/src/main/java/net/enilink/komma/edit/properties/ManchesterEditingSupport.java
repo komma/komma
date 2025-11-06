@@ -76,20 +76,20 @@ public class ManchesterEditingSupport extends ResourceEditingSupport {
 			Options options = subject == null ? Options.create(em, null,
 					prefix, limit) : Options.create(subject, prefix, limit);
 			for (Match match : new ResourceFinder().findAnyResources(options)) {
-				String label = getLabel(match.resource);
+				String label = getLabel(match.resource());
 				String origText = text.substring(insertPos, index);
 				// insert proposal text
 				text.replace(insertPos, index, label);
 				// create proposal
 				proposals.add(new ResourceProposal(text.toString(), insertPos
-						+ label.length(), match.resource).setUseAsValue(text
+						+ label.length(), match.resource()).setUseAsValue(text
 						.length() == label.length()));
 				// restore original text
 				text.replace(insertPos, insertPos + label.length(), origText);
 			}
 			return proposals.toArray(new IContentProposal[proposals.size()]);
 		}
-	};
+	}
 
 	public ManchesterEditingSupport(IAdapterFactory adapterFactory) {
 		super(adapterFactory);

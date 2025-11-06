@@ -34,9 +34,9 @@ public class Change {
 	}
 
 	public static class StatementChange {
-		public static enum Type {
+		public enum Type {
 			ADD, REMOVE
-		};
+		}
 
 		IStatement statement;
 		Type type;
@@ -56,12 +56,11 @@ public class Change {
 
 		@Override
 		public String toString() {
-			StringBuffer buf = new StringBuffer();
-			buf.append(type == Type.ADD ? "ADD" : "REMOVE").append(" subj=")
-					.append(statement.getSubject()).append(" pred=")
-					.append(statement.getPredicate()).append(" obj=")
-					.append(statement.getObject());
-			return buf.toString();
+			String buf = (type == Type.ADD ? "ADD" : "REMOVE") + " subj=" +
+					statement.getSubject() + " pred=" +
+					statement.getPredicate() + " obj=" +
+					statement.getObject();
+			return buf;
 		}
-	};
+	}
 }

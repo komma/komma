@@ -736,7 +736,7 @@ public class DragAndDropCommand extends AbstractCommand implements
 						object, index));
 			}
 
-			dropCommand = compoundCommand.getCommandList().size() == 0 ? (ICommand) IdentityCommand.INSTANCE
+			dropCommand = compoundCommand.getCommandList().size() == 0 ? IdentityCommand.INSTANCE
 					: compoundCommand;
 		} else if (isCrossModelSet()) {
 			dragCommand = IdentityCommand.INSTANCE;
@@ -877,18 +877,17 @@ public class DragAndDropCommand extends AbstractCommand implements
 	 */
 	@Override
 	public String toString() {
-		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (domain: " + domain + ")");
-		result.append(" (owner: " + owner + ")");
-		result.append(" (location: " + location + ")");
-		result.append(" (lowerLocationBound: " + lowerLocationBound + ")");
-		result.append(" (upperLocationBound: " + upperLocationBound + ")");
-		result.append(" (operations: " + operations + ")");
-		result.append(" (operation: " + operation + ")");
-		result.append(" (collection: " + collection + ")");
-		result.append(" (feedback: " + feedback + ")");
+		String result = super.toString() + " (domain: " + domain + ")" +
+				" (owner: " + owner + ")" +
+				" (location: " + location + ")" +
+				" (lowerLocationBound: " + lowerLocationBound + ")" +
+				" (upperLocationBound: " + upperLocationBound + ")" +
+				" (operations: " + operations + ")" +
+				" (operation: " + operation + ")" +
+				" (collection: " + collection + ")" +
+				" (feedback: " + feedback + ")";
 
-		return result.toString();
+		return result;
 	}
 
 	/**

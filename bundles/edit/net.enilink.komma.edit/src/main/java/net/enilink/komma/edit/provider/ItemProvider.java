@@ -18,6 +18,8 @@ package net.enilink.komma.edit.provider;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import net.enilink.komma.common.adapter.IAdapterFactory;
 import net.enilink.komma.common.command.ICommand;
@@ -402,7 +404,7 @@ public class ItemProvider extends NotificationSupport<INotification> implements
 		 */
 		@Override
 		protected void dispatchNotification(IPropertyNotification notification) {
-			ItemProvider.this.fireNotifications(Arrays.asList(notification));
+			ItemProvider.this.fireNotifications(Collections.singletonList(notification));
 		}
 
 		/**
@@ -768,7 +770,7 @@ public class ItemProvider extends NotificationSupport<INotification> implements
 	public void setImage(Object object, Object image) {
 		this.image = image;
 
-		fireNotifications(Arrays.asList(new ItemProviderNotification(
+		fireNotifications(List.of(new ItemProviderNotification(
 				IPropertyNotification.SET, null, image,
 				IPropertyNotification.NO_INDEX, false, false, true)));
 	}
@@ -814,7 +816,7 @@ public class ItemProvider extends NotificationSupport<INotification> implements
 	public void setText(Object object, String text) {
 		this.text = text;
 
-		fireNotifications(Arrays.asList(new ItemProviderNotification(
+		fireNotifications(List.of(new ItemProviderNotification(
 				IPropertyNotification.SET, null, text,
 				IPropertyNotification.NO_INDEX, false, false, true)));
 	}
@@ -848,7 +850,7 @@ public class ItemProvider extends NotificationSupport<INotification> implements
 	public void setFont(Object object, Object font) {
 		this.font = font;
 
-		fireNotifications(Arrays.asList(new ItemProviderNotification(
+		fireNotifications(List.of(new ItemProviderNotification(
 				IPropertyNotification.SET, null, font,
 				IPropertyNotification.NO_INDEX, false, false, true)));
 	}
@@ -882,7 +884,7 @@ public class ItemProvider extends NotificationSupport<INotification> implements
 	public void setForeground(Object object, Object foreground) {
 		this.foreground = foreground;
 
-		fireNotifications(Arrays.asList(new ItemProviderNotification(
+		fireNotifications(List.of(new ItemProviderNotification(
 				IPropertyNotification.SET, null, foreground,
 				IPropertyNotification.NO_INDEX, false, false, true)));
 	}
@@ -917,7 +919,7 @@ public class ItemProvider extends NotificationSupport<INotification> implements
 	public void setBackground(Object object, Object background) {
 		this.background = background;
 
-		fireNotifications(Arrays.asList(new ItemProviderNotification(
+		fireNotifications(List.of(new ItemProviderNotification(
 				IPropertyNotification.SET, null, background,
 				IPropertyNotification.NO_INDEX, false, false, true)));
 	}
