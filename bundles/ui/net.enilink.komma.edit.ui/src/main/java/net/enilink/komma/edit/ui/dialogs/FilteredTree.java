@@ -20,33 +20,14 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.viewers.IContentProvider;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -92,7 +73,7 @@ public class FilteredTree {
 	 * The pattern filter for the tree. This value must not be <code>null</code>
 	 * .
 	 */
-	private PatternFilter patternFilter;
+	private final PatternFilter patternFilter;
 
 	/**
 	 * The text to initially show in the filter text control.
@@ -106,7 +87,7 @@ public class FilteredTree {
 
 	private ILabelProvider treeLabelProvider;
 
-	private TreeContentProvider contentProvider;
+	private final TreeContentProvider contentProvider;
 
 	/**
 	 * Whether or not to show the filter controls (text and clear button). The
@@ -137,7 +118,7 @@ public class FilteredTree {
 	 */
 	private static final long SOFT_MAX_EXPAND_TIME = 200;
 
-	private class TreeContentProvider implements ITreeContentProvider {
+	private static class TreeContentProvider implements ITreeContentProvider {
 		private ITreeContentProvider provider;
 
 		/**
@@ -203,9 +184,7 @@ public class FilteredTree {
 
 	}
 
-	/**
-	 * Get image descriptors for the clear button.
-	 */
+	// Get image descriptors for the clear button.
 	static {
 		ImageDescriptor descriptor = AbstractUIPlugin
 				.imageDescriptorFromPlugin(PlatformUI.PLUGIN_ID,
@@ -359,12 +338,12 @@ public class FilteredTree {
 	 * @return the first matching TreeItem
 	 */
 	private TreeItem getFirstMatchingItem(TreeItem[] items) {
-		for (int i = 0; i < items.length; i++) {
-			if (patternFilter.isLeafMatch(treeViewer, items[i].getData())
-					&& patternFilter.isElementSelectable(items[i].getData())) {
-				return items[i];
+		for (TreeItem treeItem : items) {
+			if (patternFilter.isLeafMatch(treeViewer, treeItem.getData())
+					&& patternFilter.isElementSelectable(treeItem.getData())) {
+				return treeItem;
 			}
-			TreeItem item = getFirstMatchingItem(items[i].getItems());
+			TreeItem item = getFirstMatchingItem(treeItem.getItems());
 			if (item != null) {
 				return item;
 			}
@@ -399,7 +378,7 @@ public class FilteredTree {
 						&& initialText.equals(text);
 				if (initial) {
 					patternFilter.setPattern(null);
-				} else if (text != null) {
+				} else {
 					patternFilter.setPattern(text);
 				}
 
@@ -414,8 +393,7 @@ public class FilteredTree {
 					if (!narrowingDown) {
 						// collapse all
 						TreeItem[] is = treeViewer.getTree().getItems();
-						for (int i = 0; i < is.length; i++) {
-							TreeItem item = is[i];
+						for (TreeItem item : is) {
 							if (item.getExpanded()) {
 								treeViewer.setExpandedState(item.getData(),
 										false);
@@ -424,7 +402,7 @@ public class FilteredTree {
 					}
 					treeViewer.refresh(true);
 
-					if (text.length() > 0 && !initial) {
+					if (!text.isEmpty() && !initial) {
 						/*
 						 * Expand elements one at a time. After each is
 						 * expanded, check to see if the filter text has been
@@ -469,7 +447,6 @@ public class FilteredTree {
 			 * actual cancellation).
 			 * 
 			 * @param items
-			 * @param provider
 			 * @param monitor
 			 * @param cancelTime
 			 * @param numItemsLeft
@@ -494,10 +471,8 @@ public class FilteredTree {
 								treeViewer.setExpandedState(itemData, true);
 							}
 							TreeItem[] children = item.getItems();
-							if (items.length > 0) {
-								canceled = recursiveExpand(children, monitor,
+							canceled = recursiveExpand(children, monitor,
 										cancelTime, numItemsLeft);
-							}
 						}
 					}
 				}
@@ -603,7 +578,7 @@ public class FilteredTree {
 						boolean textChanged = !getInitialText().equals(
 								filterText.getText().trim());
 						if (hasFocus && textChanged
-								&& filterText.getText().trim().length() > 0) {
+								&& !filterText.getText().trim().isEmpty()) {
 							TreeItem item = getFirstMatchingItem(getViewer()
 									.getTree().getItems());
 							if (item != null) {
@@ -834,15 +809,8 @@ public class FilteredTree {
 
 		// Do nothing if it's empty string
 		String initialText = tree.getInitialText();
-		if (!("".equals(filterText) || initialText.equals(filterText))) {//$NON-NLS-1$
-			boolean initial = initialText != null
-					&& initialText.equals(filterText);
-			if (initial) {
-				filter.setPattern(null);
-			} else if (filterText != null) {
-				filter.setPattern(filterText);
-			}
-
+		if (!(filterText.isEmpty() || initialText.equals(filterText))) {//$NON-NLS-1$
+			filter.setPattern(filterText);
 			if (filter.isElementVisible(tree.getViewer(), element)
 					&& filter.isLeafMatch(tree.getViewer(), element)) {
 				return JFaceResources.getFontRegistry().getBold(

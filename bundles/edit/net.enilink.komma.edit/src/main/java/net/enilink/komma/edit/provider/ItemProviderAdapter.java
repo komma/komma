@@ -1616,8 +1616,7 @@ public class ItemProviderAdapter extends
 
 		for (IProperty property : getChildrenProperties(object)) {
 			Object oneOrMultipleChildren = resource.get(property);
-			if (oneOrMultipleChildren instanceof Collection<?>) {
-				Collection<?> children = (Collection<?>) oneOrMultipleChildren;
+			if (oneOrMultipleChildren instanceof Collection<?> children) {
 				int index = 0;
 				for (Object unwrappedChild : children) {
 					Object child = wrap(resource, property, unwrappedChild,

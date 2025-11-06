@@ -124,7 +124,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		 */
 		protected KommaModule module;
 
-		protected NotificationSupport<INotification> notificationSupport = new NotificationSupport<INotification>();
+		protected NotificationSupport<INotification> notificationSupport = new NotificationSupport<>();
 
 		protected Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = new HashMap<>();
 

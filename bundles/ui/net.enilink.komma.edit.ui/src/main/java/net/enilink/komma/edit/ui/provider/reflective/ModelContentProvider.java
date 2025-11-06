@@ -250,10 +250,8 @@ public abstract class ModelContentProvider implements IContentProvider {
 		if (isValid(element)) {
 			runnables.add(new Runnable() {
 				public void run() {
-					Widget[] items = ((TreeViewer) viewer)
-							.testFindItems(element);
-					for (int i = 0; i < items.length; i++) {
-						Widget item = items[i];
+					Widget[] items = ((TreeViewer) viewer).testFindItems(element);
+					for (Widget item : items) {
 						if (item instanceof TreeItem && !item.isDisposed()) {
 							TreeItem parentItem = ((TreeItem) item)
 									.getParentItem();

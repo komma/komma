@@ -198,9 +198,11 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 					if (value.equals(((INamespace) element).getPrefix())) {
 						return;
 					}
-					for (INamespace existing : em.getNamespaces().toList()) {
-						if (value.equals(existing.getPrefix())) {
-							return;
+					if (namespace instanceof NewNamespace) {
+						for (INamespace existing : em.getNamespaces().toList()) {
+							if (value.equals(existing.getPrefix())) {
+								return;
+							}
 						}
 					}
 					if (namespace.getURI().isRelative()) {
@@ -259,13 +261,15 @@ public class NamespacesPart extends AbstractEditingDomainPart {
 		@Override
 		public void notifyChanged(
 				Collection<? extends INotification> notifications) {
-			var display = namespaceViewer.getControl().getDisplay();
-			if (display != null && !display.isDisposed()) {
-				display.asyncExec(() -> {
-					if (!namespaceViewer.getControl().isDisposed()) {
-						namespaceViewer.refresh();
-					}
-				});
+			if (!namespaceViewer.getControl().isDisposed()) {
+				var display = namespaceViewer.getControl().getDisplay();
+				if (display != null && !display.isDisposed()) {
+					display.asyncExec(() -> {
+						if (!namespaceViewer.getControl().isDisposed()) {
+							namespaceViewer.refresh();
+						}
+					});
+				}
 			}
 		}
 	}
