@@ -20,6 +20,10 @@ image:https://badges.gitter.im/komma/komma.svg[link="https://gitter.im/komma/kom
 * *Editing framework* for CRUD applications
 * Eclipse RCP and RAP integration
 
+== Use KOMMA from Maven Central
+
+KOMMA pushes its artifcats to Sonatype Snapshots and Maven Central - click on the "badge" above to see its GAV!
+
 == Build KOMMA with Maven
 
 KOMMA is a plain Maven project. You can simply use `mvn package` to compile and package all modules or `mvn install` to install them within your local Maven repository.
