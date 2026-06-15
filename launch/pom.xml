@@ -71,7 +71,26 @@
 					<artifactId>org.apache.batik.css</artifactId>
 					<version>1.17</version>
 				</dependency>
-
+				<dependency>
+					<groupId>org.osgi</groupId>
+					<artifactId>org.osgi.service.component</artifactId>
+					<version>1.5.0</version>
+				</dependency>
+				<dependency>
+					<groupId>org.osgi</groupId>
+					<artifactId>org.osgi.util.function</artifactId>
+					<version>1.2.0</version>
+				</dependency>
+				<dependency>
+					<groupId>org.osgi</groupId>
+					<artifactId>org.osgi.util.promise</artifactId>
+					<version>1.3.0</version>
+				</dependency>
+				<dependency>
+					<groupId>org.eclipse.platform</groupId>
+					<artifactId>org.eclipse.equinox.slf4j</artifactId>
+					<version>1.0.300</version>
+				</dependency>
 				<dependency>
 					<groupId>net.enilink.komma</groupId>
 					<artifactId>net.enilink.komma.feature</artifactId>
@@ -97,89 +116,54 @@
 					<type>pom</type>
 				</dependency>
 				<dependency>
-					<groupId>javax.servlet</groupId>
-					<artifactId>javax.servlet-api</artifactId>
-					<version>4.0.1</version>
-				</dependency>
-				<dependency>
-					<groupId>javax.servlet.jsp</groupId>
-					<artifactId>javax.servlet.jsp-api</artifactId>
-					<version>2.3.3</version>
-				</dependency>
-				<dependency>
-					<groupId>javax.el</groupId>
-					<artifactId>javax.el-api</artifactId>
-					<version>3.0.1-b06</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.servicemix.bundles</groupId>
-					<artifactId>org.apache.servicemix.bundles.jdom</artifactId>
-					<version>1.1.2_1</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.servicemix.bundles</groupId>
-					<artifactId>org.apache.servicemix.bundles.xerces</artifactId>
-					<version>2.10.0_1</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.servicemix.bundles</groupId>
-					<artifactId>org.apache.servicemix.bundles.xmlresolver</artifactId>
-					<version>1.2_5</version>
-				</dependency>
-				<dependency>
-					<groupId>org.eclipse.birt.runtime</groupId>
-					<artifactId>com.ibm.icu</artifactId>
-					<version>56.1.0.v201601250100</version>
-				</dependency>
-				<dependency>
 					<groupId>org.apache.felix</groupId>
 					<artifactId>org.apache.felix.scr</artifactId>
-					<version>2.1.26</version>
+					<version>2.2.18</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.console</artifactId>
-					<version>1.4.600</version>
+					<version>1.4.1100</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.osgi.util</artifactId>
-					<version>3.7.300</version>
+					<version>3.7.400</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.e4.core.di.extensions.supplier</artifactId>
-					<version>0.17.300</version>
+					<version>0.17.1100</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.p2.repository</artifactId>
-					<version>2.8.0</version>
+					<version>2.9.700</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.p2.artifact.repository</artifactId>
-					<version>1.5.200</version>
+					<version>1.5.900</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.p2.metadata.repository</artifactId>
-					<version>1.5.200</version>
+					<version>1.5.800</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.p2.jarprocessor</artifactId>
-					<version>1.3.200</version>
+					<version>1.3.700</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.simpleconfigurator</artifactId>
-					<version>1.5.0</version>
+					<version>1.5.700</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.launcher</artifactId>
-					<version>1.6.600</version>
+					<version>1.7.100</version>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.directory.studio</groupId>
@@ -189,22 +173,32 @@
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.ui.ide.application</artifactId>
-					<version>1.5.200</version>
+					<version>1.6.100</version>
+				</dependency>
+				<dependency>
+					<groupId>org.eclipse.platform</groupId>
+					<artifactId>org.eclipse.ui.themes</artifactId>
+					<version>1.3.0</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.jface.notifications</artifactId>
-					<version>0.7.0</version>
+					<version>0.8.100</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
-					<version>3.124.200</version>
+					<version>3.134.0</version>
+				</dependency>
+				<dependency>
+					<groupId>org.eclipse.platform</groupId>
+					<artifactId>org.eclipse.swt.svg</artifactId>
+					<version>3.133.0</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.security</artifactId>
-					<version>1.4.100</version>
+					<version>1.4.700</version>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.felix</groupId>
@@ -219,27 +213,17 @@
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.osgi.compatibility.state</artifactId>
-					<version>1.2.900</version>
+					<version>1.3.0</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.equinox.event</artifactId>
-					<version>1.6.300</version>
+					<version>1.7.300</version>
 				</dependency>
 				<dependency>
-					<groupId>org.bouncycastle</groupId>
-					<artifactId>bcprov-jdk15on</artifactId>
-					<version>1.70</version>
-				</dependency>
-				<dependency>
-					<groupId>org.bouncycastle</groupId>
-					<artifactId>bcprov-ext-jdk15on</artifactId>
-					<version>1.70</version>
-				</dependency>
-				<dependency>
-					<groupId>org.bouncycastle</groupId>
-					<artifactId>bcpg-jdk15on</artifactId>
-					<version>1.70</version>
+					<groupId>org.apache.aries.spifly</groupId>
+					<artifactId>org.apache.aries.spifly.dynamic.framework.extension</artifactId>
+					<version>1.3.7</version>
 				</dependency>
 			</dependencies>
 

@@ -180,8 +180,7 @@ public class OWLEditor extends KommaMultiPageEditor implements
 					project = ((IFileEditorInput) getEditorInput()).getFile()
 							.getProject();
 				} else {
-					project = (IProject) getEditorInput().getAdapter(
-							IProject.class);
+					project = getEditorInput().getAdapter(IProject.class);
 				}
 				modelSetManager = ProjectModelSetManager.getSharedInstance(project);
 				modelSetManager.addClient(OWLEditor.this);
