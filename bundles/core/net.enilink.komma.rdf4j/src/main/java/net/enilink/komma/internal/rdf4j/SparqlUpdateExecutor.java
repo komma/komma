@@ -48,9 +48,9 @@ import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.UpdateExpr;
 import org.eclipse.rdf4j.query.algebra.ValueConstant;
 import org.eclipse.rdf4j.query.algebra.Var;
-import org.eclipse.rdf4j.query.algebra.helpers.StatementPatternCollector;
+import org.eclipse.rdf4j.query.algebra.helpers.collectors.StatementPatternCollector;
+import org.eclipse.rdf4j.query.parser.sparql.SPARQLUpdateDataBlockParser;
 import org.eclipse.rdf4j.queryrender.sparql.SparqlTupleExprRenderer;
-import org.eclipse.rdf4j.repository.sail.helpers.SPARQLUpdateDataBlockParser;
 import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.helpers.AbstractRDFHandler;
@@ -82,7 +82,7 @@ public class SparqlUpdateExecutor {
 	static final Collection<IStatementPattern> ANY_STATEMENT = Collections
 			.<IStatementPattern> singleton(new net.enilink.komma.core.StatementPattern(null, null, null));
 
-	static class UpdateContext {
+	protected static class UpdateContext {
 		final UpdateExpr updateExpr;
 		final String baseURI;
 		final IReference[] readContexts;
@@ -269,12 +269,8 @@ public class SparqlUpdateExecutor {
 		});
 		try {
 			parser.parse(new StringReader(dataBlock), uc.baseURI);
-		} catch (RDFParseException rpe) {
+		} catch (RDFParseException | RDFHandlerException | IOException rpe) {
 			throw new KommaException(rpe);
-		} catch (RDFHandlerException rhe) {
-			throw new KommaException(rhe);
-		} catch (IOException ioe) {
-			throw new KommaException(ioe);
 		}
 		return stmts;
 	}
@@ -331,7 +327,7 @@ public class SparqlUpdateExecutor {
 					// so, merge.
 					Set<String> uniqueBindings = new HashSet<String>(uc.bindings.getKeys());
 					uniqueBindings.removeAll(sourceBindings.getKeys());
-					if (uniqueBindings.size() > 0) {
+					if (!uniqueBindings.isEmpty()) {
 						LinkedHashBindings<IValue> mergedSet = new LinkedHashBindings<IValue>();
 						for (String bindingName : sourceBindings.getKeys()) {
 							mergedSet.put(bindingName, sourceBindings.get(bindingName));

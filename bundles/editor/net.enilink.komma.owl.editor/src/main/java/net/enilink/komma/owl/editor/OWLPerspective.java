@@ -1,5 +1,8 @@
 package net.enilink.komma.owl.editor;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
@@ -53,7 +56,19 @@ public class OWLPerspective implements IPerspectiveFactory {
 		bottom.addView(OWLViews.ID_NAMESPACES);
 
 		if (CommonsUi.IS_RAP_RUNNING) {
-			layout.addFastView("net.enilink.rap.workbench.modelsView");
+			addFastView(layout, "net.enilink.rap.workbench.modelsView");
+		}
+	}
+
+	private static void addFastView(IPageLayout layout, String viewId) {
+		try {
+			Method addFastView = layout.getClass().getMethod("addFastView",
+					String.class);
+			addFastView.invoke(layout, viewId);
+		} catch (NoSuchMethodException e) {
+			// addFastView is not available on all target platforms.
+		} catch (IllegalAccessException | InvocationTargetException e) {
+			throw new IllegalStateException("Unable to invoke addFastView", e);
 		}
 	}
 }
