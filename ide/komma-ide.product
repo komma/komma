@@ -2,7 +2,7 @@
 <?pde version="3.5"?>
 
 <product name="KOMMA IDE" uid="komma-ide" id="net.enilink.komma.ide.product"
-	application="org.eclipse.ui.ide.workbench" version="1.8.0" useFeatures="true"
+	application="org.eclipse.ui.ide.workbench" version="1.10.0" type="mixed"
 	includeLaunchers="true">
 
 	<configIni use="default">
@@ -17,7 +17,7 @@
 		</vmArgsMac>
 	</launcherArgs>
 
-	<launcher name="KOMMA-IDE">
+	<launcher name="komma-ide">
 		<win useIco="false">
 			<bmp/>
 		</win>
@@ -25,14 +25,15 @@
 
 	<vm>
 		<linux include="false">
-			org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11
+			org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21
 		</linux>
 		<windows include="false">
-			org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11
+			org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21
 		</windows>
 	</vm>
 
 	<plugins>
+		<plugin id="org.eclipse.equinox.slf4j" />
 	</plugins>
 
 	<features>
@@ -41,10 +42,6 @@
 		<feature id="net.enilink.komma.editor.feature"/>
 		<feature id="net.enilink.komma.feature"/>
 		<!-- feature id="org.eclipse.e4.rcp"/ -->
-		<feature id="org.eclipse.ecf.core.feature"/>
-		<feature id="org.eclipse.ecf.filetransfer.feature"/>
-		<feature id="org.eclipse.emf.common"/>
-		<feature id="org.eclipse.emf.ecore"/>
 		<feature id="org.eclipse.equinox.compendium.sdk"/>
 		<feature id="org.eclipse.equinox.core.feature"/>
 		<feature id="org.eclipse.equinox.executable"/>
@@ -60,13 +57,14 @@
 	</features>
 
 	<configurations>
-		<plugin id="net.enilink.commons.logging" autoStart="true" startLevel="2"/>
 		<plugin id="org.apache.felix.scr" autoStart="true" startLevel="2"/>
 		<plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0"/>
 		<plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2"/>
 		<plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2"/>
 		<!--plugin id="org.eclipse.equinox.http.jetty" autoStart="true" startLevel="5" /-->
 		<plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1"/>
+		<plugin id="org.apache.aries.spifly.dynamic.bundle" autoStart="true" startLevel="1"/>
+		<plugin id="org.eclipse.equinox.slf4j" autoStart="true" startLevel="2"/>
 	</configurations>
 
 	<preferencesInfo>

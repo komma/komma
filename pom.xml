@@ -36,13 +36,13 @@ KOMMA is a framework for linked data applications. It supports the management an
 		<jackson.version>2.22.0</jackson.version>
 		<jackson.annotations.version>2.22</jackson.annotations.version>
 		<jacksondb.version>2.22.0</jacksondb.version>
-		<logback.version>1.2.11</logback.version>
+		<logback.version>1.5.34</logback.version>
 		<mapdb.version>3.1.0</mapdb.version>
 		<opencsv.version>5.12.0</opencsv.version>
 		<parboiled.version>1.4.1</parboiled.version>
 		<rdf4j.version>5.2.2</rdf4j.version>
 		<hasmac.jsonld.version>0.10.2</hasmac.jsonld.version>
-		<slf4j.version>1.7.36</slf4j.version>
+		<slf4j.version>2.0.18</slf4j.version>
 
 		<bnd.version>7.3.0</bnd.version>
 
@@ -381,8 +381,8 @@ KOMMA is a framework for linked data applications. It supports the management an
 			</dependency>
 			<dependency>
 				<groupId>org.osgi</groupId>
-				<artifactId>osgi.cmpn</artifactId>
-				<version>7.0.0</version>
+				<artifactId>org.osgi.service.component</artifactId>
+				<version>1.5.0</version>
 			</dependency>
 
 			<!-- selected RDF4J dependencies -->
@@ -513,7 +513,7 @@ KOMMA is a framework for linked data applications. It supports the management an
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-simple</artifactId>
-				<version>2.0.18</version>
+				<version>${slf4j.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<!-- ensure that jsr305 is always excluded as it conflicts with javax.annotation in an OSGi environment -->

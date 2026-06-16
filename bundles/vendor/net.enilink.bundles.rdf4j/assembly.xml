@@ -19,6 +19,8 @@
 			</unpackOptions>
 			<includes>
 				<include>org.eclipse.rdf4j:*:jar:*</include>
+				<include>org.mapdb:*:jar:*</include>
+				<include>no.hasmac:*:jar:*</include>
 			</includes>
 		</dependencySet>
 	</dependencySets>

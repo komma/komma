@@ -27,12 +27,22 @@
 			<artifactId>net.enilink.bundles.aopalliance</artifactId>
 			<version>${aopalliance.version}</version>
 		</dependency>
-
 		<dependency>
-			<groupId>net.enilink.komma</groupId>
-			<artifactId>org.slf4j.logback</artifactId>
-			<version>${project.version}</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>${logback.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>net.enilink.komma</groupId>
 			<artifactId>net.enilink.commons.iterator</artifactId>
@@ -136,7 +146,6 @@
 	</dependencies>
 
 	<modules>
-		<module>../../bundles/core/org.slf4j.logback</module>
 		<module>../../bundles/vendor/net.enilink.bundles.aopalliance</module>
 		<module>../../bundles/vendor/net.enilink.bundles.parboiled</module>
 		<module>../../bundles/vendor/net.enilink.bundles.rdf4j</module>

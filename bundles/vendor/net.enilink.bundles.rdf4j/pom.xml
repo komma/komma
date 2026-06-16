@@ -45,6 +45,18 @@
 			</exclusions>
 		</dependency>
 
+		<!-- included dependencies -->
+		<dependency>
+			<groupId>no.hasmac</groupId>
+			<artifactId>hasmac-json-ld</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mapdb</groupId>
+			<artifactId>mapdb</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- selected RDF4J dependencies -->
 		<dependency>
 			<groupId>commons-codec</groupId>
@@ -75,10 +87,6 @@
 			<artifactId>opencsv</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.mapdb</groupId>
-			<artifactId>mapdb</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient-osgi</artifactId>
 		</dependency>
@@ -97,10 +105,6 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>no.hasmac</groupId>
-			<artifactId>hasmac-json-ld</artifactId>
 		</dependency>
 	</dependencies>
 

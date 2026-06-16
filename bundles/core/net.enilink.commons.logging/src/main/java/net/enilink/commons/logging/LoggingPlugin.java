@@ -112,9 +112,7 @@ public class LoggingPlugin implements BundleActivator {
 								}
 							}
 						}
-					} catch (InvalidSyntaxException e) {
-						// should not happen
-					} catch (URISyntaxException e) {
+					} catch (InvalidSyntaxException | URISyntaxException e) {
 						// should not happen
 					}
 				}
@@ -142,7 +140,7 @@ public class LoggingPlugin implements BundleActivator {
 
 	private static void redirectStdoutToLogError() {
 		System.setErr(new PrintStream(System.err) {
-			private Logger log = LoggerFactory.getLogger(System.class);
+			private final Logger log = LoggerFactory.getLogger(System.class);
 
 			public void print(String message) {
 				log.error(message);
@@ -152,7 +150,7 @@ public class LoggingPlugin implements BundleActivator {
 
 	private static void redirectStdoutToLogInfo() {
 		System.setOut(new PrintStream(System.out) {
-			private Logger log = LoggerFactory.getLogger(System.class);
+			private final Logger log = LoggerFactory.getLogger(System.class);
 
 			public void print(String message) {
 				log.info(message);
