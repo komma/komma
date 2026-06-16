@@ -43,6 +43,7 @@ KOMMA is a framework for linked data applications. It supports the management an
 		<rdf4j.version>5.2.2</rdf4j.version>
 		<hasmac.jsonld.version>0.10.2</hasmac.jsonld.version>
 		<slf4j.version>2.0.18</slf4j.version>
+		<jakarta.json.version>2.0.1</jakarta.json.version>
 
 		<bnd.version>7.3.0</bnd.version>
 
@@ -685,6 +686,11 @@ KOMMA is a framework for linked data applications. It supports the management an
 						<artifactId>*</artifactId>
 					</exclusion>
 				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish</groupId>
+				<artifactId>jakarta.json</artifactId>
+				<version>${jakarta.json.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

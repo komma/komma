@@ -68,5 +68,9 @@
 			</exclusions>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>jakarta.json</artifactId>
+		</dependency>
 	</dependencies>
 </project>
