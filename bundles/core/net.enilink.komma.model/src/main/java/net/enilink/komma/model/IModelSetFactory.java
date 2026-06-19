@@ -37,4 +37,12 @@ public interface IModelSetFactory {
 	 * @return A model set instance
 	 */
 	IModelSet createModelSet(URI name, IGraph config);
+
+	/**
+	 * Returns a previously create model set by name.
+	 *
+	 * @param name The name of the model set.
+	 * @return the model set with the given name or <code>null</code> if no such model set exists
+	 */
+	IModelSet getModelSet(URI name);
 }

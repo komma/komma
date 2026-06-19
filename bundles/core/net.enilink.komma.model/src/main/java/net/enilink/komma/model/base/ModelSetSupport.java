@@ -20,7 +20,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicReference;
 
+import com.google.inject.*;
+import com.google.inject.Module;
 import net.enilink.commons.util.extensions.RegistryFactoryHelper;
 import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.traits.Behaviour;
@@ -59,11 +62,6 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.Provider;
-
 /**
  * An extensible model set implementation.
  * <p>
@@ -93,7 +91,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	public static class State {
 		/**
 		 * The registered adapter factories.
-		 * 
+		 *
 		 * @see #getAdapterFactories
 		 */
 		protected List<IAdapterFactory> adapterFactories;
@@ -104,7 +102,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 
 		/**
 		 * The load options.
-		 * 
+		 *
 		 * @see #getLoadOptions
 		 */
 		protected Map<Object, Object> loadOptions;
@@ -113,7 +111,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 
 		/**
 		 * The local resource factory registry.
-		 * 
+		 *
 		 * @see #getModelFactoryRegistry
 		 */
 		protected IModel.Factory.Registry modelFactoryRegistry;
@@ -132,7 +130,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 
 		/**
 		 * The URI converter.
-		 * 
+		 *
 		 * @see #getURIConverter
 		 */
 		protected IURIConverter uriConverter;
@@ -222,7 +220,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 
 	@Override
 	public void addSubjectListener(IReference subject,
-			INotificationListener<INotification> listener) {
+	                               INotificationListener<INotification> listener) {
 		CopyOnWriteArraySet<INotificationListener<INotification>> listeners;
 		Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = state().subjectListeners;
 		synchronized (subjectListeners) {
@@ -235,20 +233,15 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	public void collectInjectionModules(Collection<Module> modules, IGraph config) {
 		modules.add(new CacheModule());
 		modules.add(new EntityManagerFactoryModule(getModule(),
-				new IProvider<Locale>() {
-					@Override
-					public Locale get() {
-						return locale.get();
-					}
-				}, new CachingEntityManagerModule() {
-					@Override
-					protected Class<? extends PropertySetFactory> getPropertySetFactoryClass() {
-						Class<? extends PropertySetFactory> factoryClass = getBehaviourDelegate()
-								.getPropertySetFactoryClass();
-						return factoryClass != null ? factoryClass : super
-								.getPropertySetFactoryClass();
-					}
-				}));
+				() -> locale.get(), new CachingEntityManagerModule() {
+			@Override
+			protected Class<? extends PropertySetFactory> getPropertySetFactoryClass() {
+				Class<? extends PropertySetFactory> factoryClass = getBehaviourDelegate()
+						.getPropertySetFactoryClass();
+				return factoryClass != null ? factoryClass : super
+						.getPropertySetFactoryClass();
+			}
+		}));
 	}
 
 	@Override
@@ -290,9 +283,8 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	 * doesn't exist as a model is demand loaded. This implementation simply
 	 * calls {@link #createModel(URI, String) createModel(URI)}. Clients may
 	 * extend this as appropriate.
-	 * 
-	 * @param uri
-	 *            the URI of the resource to create.
+	 *
+	 * @param uri the URI of the resource to create.
 	 * @return a new resource.
 	 * @see #getModel(URI, boolean)
 	 */
@@ -307,11 +299,9 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	 * demand load. This implementation simply calls <code>model.</code>
 	 * {@link IModel#load(Map) load}({@link #getLoadOptions() getLoadOptions}
 	 * ()). Clients may extend this as appropriate.
-	 * 
-	 * @param model
-	 *            a model that isn't loaded.
-	 * @exception IOException
-	 *                if there are serious problems loading the model.
+	 *
+	 * @param model a model that isn't loaded.
+	 * @throws IOException if there are serious problems loading the model.
 	 * @see #getModel(URI, boolean)
 	 * @see #demandLoadHelper(IModel)
 	 */
@@ -324,9 +314,8 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	 * {@link KommaException wraps} any {@link IOException} as a runtime
 	 * exception. It is called by {@link #getModel(URI, boolean) getModel(URI,
 	 * boolean)} to perform a demand load.
-	 * 
-	 * @param model
-	 *            a model that isn't loaded.
+	 *
+	 * @param model a model that isn't loaded.
 	 * @see #demandLoad(IModel)
 	 */
 	protected void demandLoadHelper(IModel model) {
@@ -353,12 +342,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	}
 
 	private <K, T> List<T> ensureList(Map<K, List<T>> map, K key) {
-		List<T> list = map.get(key);
-		if (list == null) {
-			list = new ArrayList<T>();
-			map.put(key, list);
-		}
-		return list;
+		return map.computeIfAbsent(key, k -> new ArrayList<T>());
 	}
 
 	protected Map<Object, List<INotification>> addNotification(
@@ -512,7 +496,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 			state().modelFactoryRegistry = new ModelFactoryRegistry() {
 				@Override
 				protected IModel.Factory delegatedGetFactory(URI uri,
-						String contentTypeIdentifier) {
+				                                             String contentTypeIdentifier) {
 					IModel.Factory.Registry defaultModelFactoryRegistry = ModelPlugin
 							.getDefault().getModelFactoryRegistry();
 
@@ -600,11 +584,9 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	/**
 	 * Handles the exception thrown during demand load by recording it as an
 	 * error diagnostic and throwing a wrapping runtime exception.
-	 * 
-	 * @param model
-	 *            the model that threw an exception while loading.
-	 * @param exception
-	 *            the exception thrown from the resource while loading.
+	 *
+	 * @param model     the model that threw an exception while loading.
+	 * @param exception the exception thrown from the resource while loading.
 	 * @see #demandLoadHelper(IModel)
 	 */
 	protected void handleDemandLoadException(IModel model, IOException exception) {
@@ -634,6 +616,14 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		List<Module> modules = new ArrayList<Module>();
 		getBehaviourDelegate().collectInjectionModules(modules, config);
 
+		AtomicReference<IModelSet.Internal> modelSetRef = new AtomicReference<>();
+		modules.add(new AbstractModule() {
+			@Override
+			protected void configure() {
+				bind(IModelSet.class).toProvider(modelSetRef::get);
+				bind(IModelSet.Internal.class).toProvider(modelSetRef::get);
+			}
+		});
 		Injector modelSetInjector = injector.getParent().getParent()
 				.createChildInjector(modules);
 
@@ -656,6 +646,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		}
 
 		result.init(modelSetInjector);
+		modelSetRef.set(result);
 
 		// create a model for the metadata context
 		if (metaDataContext != null) {
@@ -686,7 +677,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 
 	@Override
 	public void removeSubjectListener(IReference subject,
-			INotificationListener<INotification> listener) {
+	                                  INotificationListener<INotification> listener) {
 		Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = state().subjectListeners;
 
 		CopyOnWriteArraySet<INotificationListener<INotification>> listeners;
@@ -757,7 +748,9 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		state().uriConverter = uriConverter;
 	}
 
-	/** Transforms changes tracked in the repository into {@link INotification}s */
+	/**
+	 * Transforms changes tracked in the repository into {@link INotification}s
+	 */
 	protected List<INotification> transformChanges(List<IDataChange> changes) {
 		List<INotification> notifications = new ArrayList<INotification>(
 				changes.size());
@@ -773,7 +766,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 				IStatementChange stmtChange = (IStatementChange) change;
 				notifications.add(new StatementNotification(
 						getBehaviourDelegate(), stmtChange.isAdd(), stmtChange
-								.getStatement()));
+						.getStatement()));
 			}
 		}
 		return notifications;

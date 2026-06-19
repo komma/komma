@@ -34,6 +34,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
+import org.eclipse.emf.ecore.resource.URIConverter;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -87,7 +88,7 @@ public class EditUIUtil {
 		}
 
 		@Override
-		public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+		public Object getAdapter(Class adapter) {
 			if (IProject.class.equals(adapter)) {
 				return project;
 			}

@@ -232,7 +232,7 @@ public class ProjectModelSetManager {
 			modelSet = factory.createModelSet(modelSetUri, config);
 			// this is required for undo/redo support
 			modelSet.getDataChangeSupport().setDefaultMode(IDataChangeSupport.Mode.VERIFY_ALL);
-			if (modelSet instanceof IProjectModelSet && project != null) {
+			if (modelSet instanceof IProjectModelSet) {
 				((IProjectModelSet) modelSet).setProject(project);
 			}
 			initializeEditingDomain(modelSet);

@@ -208,12 +208,7 @@ class EntityManagerFactory implements IEntityManagerFactory {
 				bind(new TypeLiteral<Set<URI>>() {
 				}).annotatedWith(Names.named("modifyContexts")).toInstance(module.getWritableGraphs());
 
-				bind(Locale.class).toProvider(new Provider<Locale>() {
-					@Override
-					public Locale get() {
-						return locale == null ? Locale.getDefault() : locale.get();
-					}
-				});
+				bind(Locale.class).toProvider(() -> locale == null ? Locale.getDefault() : locale.get());
 			}
 		}, managerModule);
 	}

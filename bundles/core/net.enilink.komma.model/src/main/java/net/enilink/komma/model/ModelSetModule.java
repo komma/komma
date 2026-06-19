@@ -59,10 +59,9 @@ public class ModelSetModule extends AbstractModule {
 
 		module.includeModule(KommaUtil.getCoreModule());
 
-		ModelSetFactory factory = injector.createChildInjector(
+		return injector.createChildInjector(
 				createFactoryModules(module))
 				.getInstance(ModelSetFactory.class);
-		return factory;
 	}
 
 	protected List<? extends Module> createFactoryModules(
@@ -96,7 +95,7 @@ public class ModelSetModule extends AbstractModule {
 			Collection<URL> conceptLibraries = KommaUtil.getConceptLibraries(
 					ModelPlugin.PLUGIN_ID).toList();
 			URLClassLoader cl = new URLClassLoader(
-					conceptLibraries.toArray(new URL[conceptLibraries.size()]));
+					conceptLibraries.toArray(new URL[0]));
 			for (String owl : loadOntologyList(cl)) {
 				URL url = cl.getResource(owl);
 				loadOntology(repository, url);

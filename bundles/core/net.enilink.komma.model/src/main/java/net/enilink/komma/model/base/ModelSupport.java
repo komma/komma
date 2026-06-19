@@ -31,6 +31,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.enilink.komma.model.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
@@ -71,14 +72,6 @@ import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.em.DelegatingEntityManager;
 import net.enilink.komma.em.concepts.IOntology;
 import net.enilink.komma.em.util.ISparqlConstants;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.IModelStatusConstants;
-import net.enilink.komma.model.IObject;
-import net.enilink.komma.model.IURIConverter;
-import net.enilink.komma.model.ModelPlugin;
-import net.enilink.komma.model.ModelUtil;
-import net.enilink.komma.model.ObjectSupport;
 import net.enilink.komma.model.concepts.Model;
 import net.enilink.komma.model.concepts.Namespace;
 import net.enilink.komma.model.event.NamespaceNotification;
@@ -425,9 +418,16 @@ public abstract class ModelSupport
 	public IModelSet.Internal getModelSet() {
 		IModelSet.Internal modelSet = this.modelSet;
 		if (modelSet == null) {
-			this.modelSet = modelSet = (IModelSet.Internal) getEntityManager()
+			List<IReference> modelSetRefs = getEntityManager()
 					.createQuery("SELECT DISTINCT ?ms WHERE { ?ms <http://enilink.net/vocab/komma/models#model> ?m }")
-					.setParameter("m", getBehaviourDelegate()).getSingleResult(IModelSet.class);
+					.setParameter("m", getBehaviourDelegate())
+					.evaluateRestricted(IReference.class)
+					.toList();
+			if (modelSetRefs.isEmpty()) {
+				return null;
+			}
+			this.modelSet = modelSet = (IModelSet.Internal) injector.getInstance(IModelSetFactory.class)
+					.getModelSet(modelSetRefs.getFirst().getURI());
 		}
 		return modelSet;
 	}

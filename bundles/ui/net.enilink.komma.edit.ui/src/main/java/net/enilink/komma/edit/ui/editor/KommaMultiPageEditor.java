@@ -40,12 +40,7 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 		if (editorSupport != null) {
 			// trick to dispose editor support after action bars are disposed
 			final KommaEditorSupport<?> support = editorSupport;
-			getSite().getShell().getDisplay().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					support.dispose();
-				}
-			});
+			getSite().getShell().getDisplay().asyncExec(support::dispose);
 			editorSupport = null;
 		}
 	}
@@ -105,7 +100,7 @@ public abstract class KommaMultiPageEditor extends MultiPageEditorPart
 	 * This returns the editing domain as required by the
 	 * {@link IEditingDomainProvider} interface. This is important for
 	 * implementing the static methods of {@link AdapterFactoryEditingDomain}
-	 * and for supporting {@link org.eclipse.emf.edit.ui.action.CommandAction}.
+	 * and for supporting {@link net.enilink.komma.edit.ui.action.CommandAction}.
 	 */
 	public IEditingDomain getEditingDomain() {
 		if (editorSupport == null) {

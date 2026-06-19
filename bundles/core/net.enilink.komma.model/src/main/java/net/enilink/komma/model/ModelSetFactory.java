@@ -1,6 +1,7 @@
 package net.enilink.komma.model;
 
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.enilink.komma.core.*;
 import net.enilink.komma.em.util.UnitOfWork;
@@ -12,6 +13,8 @@ import com.google.inject.Inject;
 class ModelSetFactory implements IModelSetFactory {
 	@Inject
 	private IEntityManagerFactory metaDataManagerFactory;
+
+	private ConcurrentHashMap<URI, IModelSet> modelSets = new ConcurrentHashMap<>();
 
 	@Override
 	public IModelSet createModelSet(URI... modelSetTypes) {
@@ -64,7 +67,13 @@ class ModelSetFactory implements IModelSetFactory {
 		if (modelSet instanceof IModelSet.Internal) {
 			modelSet = ((IModelSet.Internal) modelSet).create(fullConfig);
 		}
+		modelSets.put(ms.getURI(), modelSet);
 		return modelSet;
+	}
+
+	@Override
+	public IModelSet getModelSet(URI name) {
+		return modelSets.get(name);
 	}
 
 	@Inject
