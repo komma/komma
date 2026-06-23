@@ -9,7 +9,7 @@ public class RDF4JBooleanResult extends RDF4JResult<Boolean, Boolean>
 	Boolean value;
 
 	public RDF4JBooleanResult(Boolean value) {
-		super(new SingletonIteration<Boolean>(value));
+		super(new SingletonIteration<>(value));
 	}
 
 	@Override

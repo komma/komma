@@ -6,7 +6,7 @@ import net.enilink.commons.iterator.NiceIterator;
 import net.enilink.komma.core.KommaException;
 
 public abstract class RDF4JResult<S, T> extends NiceIterator<T> {
-	protected CloseableIteration<S> delegate;
+	protected final CloseableIteration<S> delegate;
 	protected boolean open = true;
 
 	private S current;

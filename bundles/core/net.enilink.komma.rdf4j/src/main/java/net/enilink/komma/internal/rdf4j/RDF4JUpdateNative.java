@@ -15,13 +15,13 @@ import net.enilink.komma.rdf4j.RDF4JValueConverter;
  * Implements {@link IDataManagerUpdate} for {@link RDF4JRepositoryDataManager}
  * .
  */
-public class RDF4JUpdateRemote implements IDataManagerUpdate {
+public class RDF4JUpdateNative implements IDataManagerUpdate {
 	protected Update update;
 
 	@Inject
 	RDF4JValueConverter valueConverter;
 
-	public RDF4JUpdateRemote(Update update) {
+	public RDF4JUpdateNative(Update update) {
 		this.update = update;
 	}
 

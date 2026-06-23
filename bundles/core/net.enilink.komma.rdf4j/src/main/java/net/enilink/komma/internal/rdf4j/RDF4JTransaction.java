@@ -40,8 +40,8 @@ import net.enilink.komma.dm.change.IDataChangeSupport;
  * {@link ITransaction} interface for {@link RDF4JRepositoryDataManager}.
  */
 public class RDF4JTransaction implements ITransaction {
-	private RDF4JRepositoryDataManager dm;
-	private IDataChangeSupport changeSupport;
+	private final RDF4JRepositoryDataManager dm;
+	private final IDataChangeSupport changeSupport;
 
 	private boolean rollbackOnly = false;
 

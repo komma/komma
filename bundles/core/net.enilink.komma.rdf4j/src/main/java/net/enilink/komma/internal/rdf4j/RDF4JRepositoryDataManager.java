@@ -1,9 +1,6 @@
 package net.enilink.komma.internal.rdf4j;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Namespace;
@@ -21,7 +18,6 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-import net.enilink.commons.iterator.Filter;
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.komma.core.INamespace;
 import net.enilink.komma.core.IReference;
@@ -40,9 +36,48 @@ import net.enilink.komma.dm.change.IDataChangeSupport;
 import net.enilink.komma.internal.rdf4j.result.RDF4JGraphResult;
 import net.enilink.komma.internal.rdf4j.result.RDF4JResult;
 import net.enilink.komma.rdf4j.RDF4JValueConverter;
+import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
+import org.eclipse.rdf4j.sail.NotifyingSailConnection;
+import org.eclipse.rdf4j.sail.SailConnectionListener;
 
 public class RDF4JRepositoryDataManager implements IDataManager {
-	protected static final IReference[] NULL_CTX = { null };
+	class ChangeListener implements SailConnectionListener {
+		@Override
+		public void statementAdded(org.eclipse.rdf4j.model.Statement st, boolean inferred) {
+			if (changeSupportEnabled) {
+				changeSupport.add(RDF4JRepositoryDataManager.this,
+						new Statement(valueConverter.fromRdf4j(st.getSubject()),
+								valueConverter.fromRdf4j(st.getPredicate()),
+								valueConverter.fromRdf4j(st.getObject()),
+								valueConverter.fromRdf4j(st.getContext()),
+								inferred));
+			}
+		}
+
+		@Override
+		public void statementRemoved(org.eclipse.rdf4j.model.Statement st, boolean inferred) {
+			if (changeSupportEnabled) {
+				changeSupport.remove(RDF4JRepositoryDataManager.this,
+						new Statement(valueConverter.fromRdf4j(st.getSubject()),
+								valueConverter.fromRdf4j(st.getPredicate()),
+								valueConverter.fromRdf4j(st.getObject()),
+								valueConverter.fromRdf4j(st.getContext()),
+								inferred));
+			}
+		}
+
+		@Override
+		public void statementAdded(org.eclipse.rdf4j.model.Statement statement) {
+			// ignore
+		}
+
+		@Override
+		public void statementRemoved(org.eclipse.rdf4j.model.Statement statement) {
+			// ignore
+		}
+	}
+
+	protected static final IReference[] NULL_CTX = {null};
 
 	protected IDataChangeSupport changeSupport;
 
@@ -62,9 +97,12 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 	@Inject
 	protected RDF4JValueConverter valueConverter;
 
+	protected SailConnectionListener sailConnectionListener;
+
+	protected boolean changeSupportEnabled;
+
 	@Inject
-	public RDF4JRepositoryDataManager(Repository repository,
-			IDataChangeSupport changeSupport) {
+	public RDF4JRepositoryDataManager(Repository repository, IDataChangeSupport changeSupport) {
 		try {
 			connection = repository.getConnection();
 		} catch (Exception e) {
@@ -72,10 +110,16 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 		}
 		this.changeSupport = changeSupport;
 		this.transaction = new RDF4JTransaction(this, changeSupport);
+		if (connection instanceof SailRepositoryConnection srConnection) {
+			if (srConnection.getSailConnection() instanceof NotifyingSailConnection notifyingSailConnection) {
+				sailConnectionListener = new ChangeListener();
+				notifyingSailConnection.addConnectionListener(sailConnectionListener);
+			}
+		}
 	}
 
-	protected IReference[] addNullContext(boolean includeInferred,
-			IReference[] contexts) {
+
+	protected IReference[] addNullContext(boolean includeInferred, IReference[] contexts) {
 		if (includeInferred && getInferencing().inDefaultGraph()) {
 			for (IReference ctx : contexts) {
 				if (ctx == null) {
@@ -89,8 +133,9 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 	}
 
 	@Override
-	public IDataManager add(Iterable<? extends IStatement> statements,
-			IReference[] readContexts, IReference... addContexts) {
+	public IDataManager add(Iterable<? extends IStatement> statements, IReference[] readContexts,
+	                        IReference... addContexts) {
+		this.changeSupportEnabled = changeSupport.isEnabled(this);
 		if (addContexts.length == 0) {
 			addContexts = NULL_CTX;
 		}
@@ -100,26 +145,21 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 			Iterator<? extends IStatement> it = statements.iterator();
 
 			RepositoryConnection conn = getConnection();
-			boolean trackChanges = changeSupport.isEnabled(this);
+			boolean trackChanges = changeSupportEnabled && sailConnectionListener == null;
 			boolean verifyChanges = changeSupport.getMode(this) == IDataChangeSupport.Mode.VERIFY_ALL;
 			while (it.hasNext()) {
 				IStatement stmt = it.next();
 
 				Resource subject = valueConverter.toRdf4j(stmt.getSubject());
-				IRI predicate = (IRI) valueConverter.toRdf4j(stmt
-						.getPredicate());
-				Value object = valueConverter.toRdf4j((IValue) stmt
-						.getObject());
+				IRI predicate = (IRI) valueConverter.toRdf4j(stmt.getPredicate());
+				Value object = valueConverter.toRdf4j((IValue) stmt.getObject());
 
 				if (trackChanges) {
-					if (!verifyChanges || !conn.hasStatement(subject, predicate, object, false,
-							readCtx)) {
+					if (!verifyChanges || !conn.hasStatement(subject, predicate, object, false, readCtx)) {
 						for (IReference ctx : addContexts) {
-							changeSupport.add(
-									this,
-									new Statement(stmt.getSubject(), stmt
-											.getPredicate(), stmt.getObject(),
-											ctx, stmt.isInferred()));
+							changeSupport.add(this, new Statement(stmt.getSubject(), stmt
+									.getPredicate(), stmt.getObject(),
+									ctx, stmt.isInferred()));
 						}
 					}
 				}
@@ -129,7 +169,7 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 			}
 			if (!getTransaction().isActive()) {
 				clearNodeMappings();
-				if (changeSupport.isEnabled(this)) {
+				if (changeSupportEnabled) {
 					changeSupport.commit(this);
 				}
 			}
@@ -140,8 +180,7 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 	}
 
 	@Override
-	public IDataManager add(Iterable<? extends IStatement> statements,
-			IReference... addContexts) {
+	public IDataManager add(Iterable<? extends IStatement> statements, IReference... addContexts) {
 		return add(statements, addContexts, addContexts);
 	}
 
@@ -150,8 +189,7 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 		try {
 			if (changeSupport.isEnabled(this)) {
 				for (INamespace namespace : getNamespaces()) {
-					changeSupport.removeNamespace(this, namespace.getPrefix(),
-							namespace.getURI());
+					changeSupport.removeNamespace(this, namespace.getPrefix(), namespace.getURI());
 				}
 				changeSupport.commit(this);
 			}
@@ -178,11 +216,9 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 		}
 	}
 
-	protected Query prepareRdf4jQuery(String query, String baseURI,
-			boolean includeInferred) throws MalformedQueryException,
-			RepositoryException {
-		return getConnection().prepareQuery(QueryLanguage.SPARQL, query,
-				baseURI);
+	protected Query prepareRdf4jQuery(String query, String baseURI, boolean includeInferred)
+			throws MalformedQueryException, RepositoryException {
+		return getConnection().prepareQuery(QueryLanguage.SPARQL, query, baseURI);
 	}
 
 	protected String ensureBindingsInGraph(String query, IReference[] contexts) {
@@ -191,7 +227,7 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 		}
 		boolean allNull = true;
 		for (int i = 0; allNull && i < contexts.length; i++) {
-			allNull &= contexts[i] == null;
+			allNull = contexts[i] == null;
 		}
 		if (allNull) {
 			return query;
@@ -204,7 +240,7 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 		while (i < qlen) {
 			int ch = query.charAt(i++);
 			if (ch == '{') {
-				if (variables.size() > 0) {
+				if (!variables.isEmpty()) {
 					// only projection part of select queries is investigated
 					break;
 				}
@@ -234,7 +270,7 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 		int n = 0, g = 0;
 		if (!variables.isEmpty()) {
 			sb.append("\nfilter (");
-			for (Iterator<String> varIt = variables.iterator(); varIt.hasNext();) {
+			for (Iterator<String> varIt = variables.iterator(); varIt.hasNext(); ) {
 				String var = varIt.next();
 
 				sb.append("\n(!bound(").append(var).append(") || isLiteral(")
@@ -259,21 +295,19 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 	}
 
 	protected void setDataset(Operation operation, IReference[] readContexts,
-			IReference... modifyContexts) {
+	                          IReference... modifyContexts) {
 		if (readContexts.length > 0 || modifyContexts.length > 0) {
-			operation.setDataset(valueConverter.createDataset(readContexts,
-					modifyContexts));
+			operation.setDataset(valueConverter.createDataset(readContexts, modifyContexts));
 		}
 	}
 
 	@Override
 	public <R> IDataManagerQuery<R> createQuery(String query, String baseURI,
-			boolean includeInferred, IReference... contexts) {
+	                                            boolean includeInferred, IReference... contexts) {
 		contexts = addNullContext(includeInferred, contexts);
 		try {
 			// query = ensureBindingsInGraph(query, contexts);
-			Query rdf4jQuery = prepareRdf4jQuery(query, baseURI,
-					includeInferred);
+			Query rdf4jQuery = prepareRdf4jQuery(query, baseURI, includeInferred);
 			setDataset(rdf4jQuery, contexts);
 			rdf4jQuery.setIncludeInferred(includeInferred);
 
@@ -289,28 +323,37 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 
 	@Override
 	public IDataManagerUpdate createUpdate(final String update, String baseURI,
-			final boolean includeInferred, final IReference... contexts) {
+	                                       final boolean includeInferred, final IReference... contexts) {
 		return createUpdate(update, baseURI, includeInferred, contexts,
 				contexts);
 	}
 
 	@Override
 	public IDataManagerUpdate createUpdate(String update, String baseURI,
-			boolean includeInferred, IReference[] readContexts,
-			IReference... modifyContexts) {
+	                                       boolean includeInferred, IReference[] readContexts,
+	                                       IReference... modifyContexts) {
 		readContexts = addNullContext(includeInferred, readContexts);
-		if (changeSupport.isEnabled(this)) {
+		if (changeSupport.isEnabled(this) && sailConnectionListener == null) {
 			RDF4JUpdate result = new RDF4JUpdate(this, update, baseURI,
 					includeInferred, readContexts, modifyContexts);
 			injector.injectMembers(result);
 			return result;
 		} else {
 			try {
-				Update updateOp = getConnection().prepareUpdate(
-						QueryLanguage.SPARQL, update);
+				Update updateOp = getConnection().prepareUpdate(QueryLanguage.SPARQL, update);
 				setDataset(updateOp, readContexts, modifyContexts);
 				updateOp.setIncludeInferred(includeInferred);
-				RDF4JUpdateRemote result = new RDF4JUpdateRemote(updateOp);
+				RDF4JUpdateNative result = new RDF4JUpdateNative(updateOp) {
+					@Override
+					public void execute() {
+						boolean changeSupportEnabled = changeSupport.isEnabled(RDF4JRepositoryDataManager.this);
+						RDF4JRepositoryDataManager.this.changeSupportEnabled = changeSupportEnabled;
+						super.execute();
+						if (changeSupportEnabled) {
+							changeSupport.commit(RDF4JRepositoryDataManager.this);
+						}
+					}
+				};
 				injector.injectMembers(result);
 				return result;
 			} catch (Exception e) {
@@ -361,19 +404,16 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 		}
 	}
 
-	@SuppressWarnings("resource")
 	@Override
 	public IExtendedIterator<INamespace> getNamespaces() {
 		IExtendedIterator<INamespace> result = null;
 		try {
-			result = new RDF4JResult<Namespace, INamespace>(getConnection().getNamespaces()) {
+			result = new RDF4JResult<>(getConnection().getNamespaces()) {
 				@Override
-				protected INamespace convert(Namespace element)
-						throws Exception {
+				protected INamespace convert(Namespace element) {
 					try {
-						return new net.enilink.komma.core.Namespace(
-								element.getPrefix(), URIs.createURI(element
-										.getName()));
+						return new net.enilink.komma.core.Namespace(element.getPrefix(),
+								URIs.createURI(element.getName()));
 					} catch (IllegalArgumentException e) {
 						return null;
 					}
@@ -382,12 +422,7 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 			// "resource leak" warning about result not being closed,
 			// which is of course the intention here
 			// TODO: change to streams and Java 8 filters
-			return result.filterDrop(new Filter<INamespace>() {
-				@Override
-				public boolean accept(INamespace ns) {
-					return ns == null;
-				}
-			});
+			return result.filterDrop(Objects::isNull);
 		} catch (Exception e) {
 			if (null != result) {
 				result.close();
@@ -403,11 +438,11 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 
 	@Override
 	public boolean hasMatch(IReference subject, IReference predicate,
-			IValue object, boolean includeInferred, IReference... contexts) {
+	                        IValue object, boolean includeInferred, IReference... contexts) {
 		contexts = addNullContext(includeInferred, contexts);
 		try {
 			return getConnection().hasStatement(
-					(Resource) valueConverter.toRdf4j(subject),
+					valueConverter.toRdf4j(subject),
 					(IRI) valueConverter.toRdf4j(predicate),
 					valueConverter.toRdf4j(object), includeInferred,
 					valueConverter.toRdf4jIRI(contexts));
@@ -422,9 +457,8 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 	}
 
 	@Override
-	public IExtendedIterator<IStatement> match(IReference subject,
-			IReference predicate, IValue object, boolean includeInferred,
-			IReference... contexts) {
+	public IExtendedIterator<IStatement> match(IReference subject, IReference predicate, IValue object,
+	                                           boolean includeInferred, IReference... contexts) {
 		contexts = addNullContext(includeInferred, contexts);
 		try {
 			RDF4JGraphResult result = new RDF4JGraphResult(getConnection()
@@ -453,21 +487,21 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 		if (id.startsWith("_:")) {
 			id = id.substring(2);
 		}
-		return new RDF4JReference(getConnection().getValueFactory()
-				.createBNode(id));
+		return new RDF4JReference(getConnection().getValueFactory().createBNode(id));
 	}
 
 	@Override
 	public IDataManager remove(
 			Iterable<? extends IStatementPattern> statements,
 			IReference... contexts) {
+		this.changeSupportEnabled = changeSupport.isEnabled(this);
 		if (contexts.length == 0) {
 			contexts = NULL_CTX;
 		}
 		IRI[] removeContexts = valueConverter.toRdf4jIRI(contexts);
 		try {
 			RepositoryConnection conn = getConnection();
-			boolean trackChanges = changeSupport.isEnabled(this);
+			boolean trackChanges = changeSupportEnabled && sailConnectionListener == null;
 			IDataChangeSupport.Mode changeSupportMode = changeSupport.getMode(this);
 			for (IStatementPattern stmt : statements) {
 				if (stmt instanceof IStatement
@@ -475,11 +509,8 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 					// special handling for inferred statements
 					if (trackChanges) {
 						for (IReference ctx : contexts) {
-							changeSupport.remove(
-									this,
-									new Statement(stmt.getSubject(), stmt
-											.getPredicate(), stmt.getObject(),
-											ctx, true));
+							changeSupport.remove(this, new Statement(stmt.getSubject(), stmt
+									.getPredicate(), stmt.getObject(), ctx, true));
 						}
 					}
 				} else {
@@ -494,16 +525,16 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 						if (changeSupportMode == IDataChangeSupport.Mode.VERIFY_ALL
 								// ensure that wild cards (null values) are expanded
 								|| changeSupportMode == IDataChangeSupport.Mode.EXPAND_WILDCARDS_ON_REMOVAL
-										&& (stmt.getObject() == null || stmt.getPredicate() == null
-												|| stmt.getSubject() == null)) {
+								&& (stmt.getObject() == null || stmt.getPredicate() == null
+								|| stmt.getSubject() == null)) {
 							// retrieve existing statements from underlying repository
 							for (IStatement existing : match(stmt.getSubject(),
 									stmt.getPredicate(), (IValue) stmtObject,
 									false, contexts)) {
 								// pretend that statement was in changeCtx if no
 								// context is set
-								IReference[] changeContexts = existing.getContext() != null ? new IReference[] { existing
-										.getContext() } : contexts;
+								IReference[] changeContexts = existing.getContext() != null ?
+										new IReference[]{existing.getContext()} : contexts;
 								for (IReference ctx : changeContexts) {
 									changeSupport.remove(this,
 											new Statement(existing.getSubject(),
@@ -516,18 +547,15 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 							// simply notify about removal even if some parts (subject, predicate or object) of
 							// the statement pattern are null
 							for (IReference ctx : contexts) {
-								changeSupport.remove(
-										this,
-										new Statement(stmt.getSubject(), stmt
-												.getPredicate(), stmt.getObject(),
-												ctx, true));
+								changeSupport.remove(this, new Statement(stmt.getSubject(), stmt
+										.getPredicate(), stmt.getObject(), ctx, true));
 							}
 						}
 					}
 					conn.remove(subject, predicate, object, removeContexts);
 				}
 			}
-			if (changeSupport.isEnabled(this) && !getTransaction().isActive()) {
+			if (changeSupportEnabled && !getTransaction().isActive()) {
 				changeSupport.commit(this);
 			}
 		} catch (Exception e) {
@@ -542,8 +570,7 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 			if (changeSupport.isEnabled(this)) {
 				String namespace = getConnection().getNamespace(prefix);
 				if (namespace != null) {
-					changeSupport.removeNamespace(this, prefix,
-							URIs.createURI(namespace));
+					changeSupport.removeNamespace(this, prefix, URIs.createURI(namespace));
 				}
 			}
 
@@ -559,8 +586,7 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 	}
 
 	@Override
-	public IDataManager setNamespace(String prefix,
-			net.enilink.komma.core.URI uri) {
+	public IDataManager setNamespace(String prefix, net.enilink.komma.core.URI uri) {
 		try {
 			if (changeSupport.isEnabled(this)) {
 				net.enilink.komma.core.URI existing = getNamespace(prefix);

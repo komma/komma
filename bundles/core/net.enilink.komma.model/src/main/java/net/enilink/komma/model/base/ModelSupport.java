@@ -753,7 +753,7 @@ public abstract class ModelSupport
 					unloadManager();
 				}
 			} catch (Exception e) {
-				if (!isActive && manager != null) {
+				if (!isActive) {
 					manager.getTransaction().rollback();
 				}
 				throw e;

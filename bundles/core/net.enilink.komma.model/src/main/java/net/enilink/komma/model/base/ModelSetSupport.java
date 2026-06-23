@@ -55,6 +55,7 @@ import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.model.event.NamespaceNotification;
 import net.enilink.komma.model.event.StatementNotification;
 
+import net.enilink.vocab.owl.OWL;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
@@ -80,10 +81,8 @@ import org.slf4j.LoggerFactory;
  * </ul>
  * </p>
  */
-public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
-		Behaviour<IModelSet.Internal> {
-	private final static Logger log = LoggerFactory
-			.getLogger(ModelSetSupport.class);
+public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet, Behaviour<IModelSet.Internal> {
+	private final static Logger log = LoggerFactory.getLogger(ModelSetSupport.class);
 
 	/**
 	 * Represents the transient state of this resource
@@ -143,8 +142,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 			if (dmFactory == null) {
 				synchronized (this) {
 					if (dmFactory == null) {
-						dmFactory = injector
-								.getInstance(IDataManagerFactory.class);
+						dmFactory = injector.getInstance(IDataManagerFactory.class);
 					}
 				}
 			}
@@ -155,8 +153,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 			if (emFactory == null) {
 				synchronized (this) {
 					if (emFactory == null) {
-						emFactory = injector
-								.getInstance(IEntityManagerFactory.class);
+						emFactory = injector.getInstance(IEntityManagerFactory.class);
 					}
 				}
 			}
@@ -213,14 +210,12 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	}
 
 	@Override
-	public void addMetaDataListener(
-			INotificationListener<INotification> listener) {
+	public void addMetaDataListener(INotificationListener<INotification> listener) {
 		state().metaDataNotificationSupport.addListener(listener);
 	}
 
 	@Override
-	public void addSubjectListener(IReference subject,
-	                               INotificationListener<INotification> listener) {
+	public void addSubjectListener(IReference subject, INotificationListener<INotification> listener) {
 		CopyOnWriteArraySet<INotificationListener<INotification>> listeners;
 		Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = state().subjectListeners;
 		synchronized (subjectListeners) {
@@ -232,14 +227,11 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	@Override
 	public void collectInjectionModules(Collection<Module> modules, IGraph config) {
 		modules.add(new CacheModule());
-		modules.add(new EntityManagerFactoryModule(getModule(),
-				() -> locale.get(), new CachingEntityManagerModule() {
+		modules.add(new EntityManagerFactoryModule(getModule(), () -> locale.get(), new CachingEntityManagerModule() {
 			@Override
 			protected Class<? extends PropertySetFactory> getPropertySetFactoryClass() {
-				Class<? extends PropertySetFactory> factoryClass = getBehaviourDelegate()
-						.getPropertySetFactoryClass();
-				return factoryClass != null ? factoryClass : super
-						.getPropertySetFactoryClass();
+				Class<? extends PropertySetFactory> factoryClass = getBehaviourDelegate().getPropertySetFactoryClass();
+				return factoryClass != null ? factoryClass : super.getPropertySetFactoryClass();
 			}
 		}));
 	}
@@ -265,11 +257,9 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	 * Javadoc copied from interface.
 	 */
 	public IModel createModel(URI uri, String contentType) {
-		IModel.Factory modelFactory = getModelFactoryRegistry().getFactory(uri,
-				contentType);
+		IModel.Factory modelFactory = getModelFactoryRegistry().getFactory(uri, contentType);
 		if (modelFactory != null) {
-			IModel result = modelFactory.createModel(getBehaviourDelegate(),
-					uri);
+			IModel result = modelFactory.createModel(getBehaviourDelegate(), uri);
 			getModels().add(result);
 			return result;
 		} else {
@@ -289,8 +279,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	 * @see #getModel(URI, boolean)
 	 */
 	protected IModel demandCreateModel(URI uri) {
-		return getBehaviourDelegate().createModel(uri,
-				IContentHandler.UNSPECIFIED_CONTENT_TYPE);
+		return getBehaviourDelegate().createModel(uri, IContentHandler.UNSPECIFIED_CONTENT_TYPE);
 	}
 
 	/**
@@ -345,9 +334,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		return map.computeIfAbsent(key, k -> new ArrayList<T>());
 	}
 
-	protected Map<Object, List<INotification>> addNotification(
-			Map<Object, List<INotification>> groupedNotifications,
-			INotification notification, Object target) {
+	protected Map<Object, List<INotification>> addNotification(Map<Object, List<INotification>> groupedNotifications, INotification notification, Object target) {
 		if (groupedNotifications == null) {
 			groupedNotifications = new HashMap<Object, List<INotification>>();
 		}
@@ -356,8 +343,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	}
 
 	@Override
-	public void fireNotifications(
-			Collection<? extends INotification> notifications) {
+	public void fireNotifications(Collection<? extends INotification> notifications) {
 		state().notificationSupport.fireNotifications(notifications);
 
 		Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = state().subjectListeners;
@@ -377,8 +363,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 				notify = subjectListeners.containsKey(subject);
 			}
 			if (notify) {
-				groupedNotifications = addNotification(groupedNotifications,
-						notification, subject);
+				groupedNotifications = addNotification(groupedNotifications, notification, subject);
 			}
 			// also send notifications for objects of statements
 			if (notification instanceof IStatementNotification) {
@@ -387,14 +372,12 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 					notify = subjectListeners.containsKey(subject);
 				}
 				if (notify) {
-					groupedNotifications = addNotification(
-							groupedNotifications, notification, subject);
+					groupedNotifications = addNotification(groupedNotifications, notification, subject);
 				}
 			}
 		}
 		if (groupedNotifications != null) {
-			for (Map.Entry<Object, List<INotification>> entry : groupedNotifications
-					.entrySet()) {
+			for (Map.Entry<Object, List<INotification>> entry : groupedNotifications.entrySet()) {
 				Collection<INotificationListener<INotification>> listeners;
 				synchronized (subjectListeners) {
 					listeners = subjectListeners.get(entry.getKey());
@@ -402,8 +385,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 				if (listeners != null) {
 					List<INotification> cache = new ArrayList<INotification>();
 					for (INotificationListener<INotification> listener : listeners) {
-						Collection<INotification> filtered = FilterUtil.select(
-								notifications, listener.getFilter(), cache);
+						Collection<INotification> filtered = FilterUtil.select(notifications, listener.getFilter(), cache);
 						if (!filtered.isEmpty()) {
 							listener.notifyChanged(entry.getValue());
 						}
@@ -445,7 +427,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	 */
 	public Map<Object, Object> getLoadOptions() {
 		if (state().loadOptions == null) {
-			state().loadOptions = new HashMap<Object, Object>();
+			state().loadOptions = new HashMap<>();
 		}
 
 		return state().loadOptions;
@@ -460,12 +442,9 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	 * Javadoc copied from interface.
 	 */
 	public IModel getModel(URI uri, boolean loadOnDemand) {
-		List<?> result = getMetaDataManager()
-				.createQuery(
-						"SELECT DISTINCT ?m WHERE { ?ms <http://enilink.net/vocab/komma/models#model> ?m }")
-				.setParameter("m", uri).evaluate(IModel.class).toList();
+		List<?> result = getMetaDataManager().createQuery("SELECT DISTINCT ?m WHERE { ?ms <http://enilink.net/vocab/komma/models#model> ?m }").setParameter("m", uri).evaluate(IModel.class).toList();
 		if (!result.isEmpty()) {
-			IModel model = (IModel) result.get(0);
+			IModel model = (IModel) result.getFirst();
 			if (loadOnDemand && !model.isLoaded()) {
 				demandLoadHelper(model);
 			}
@@ -475,8 +454,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		if (loadOnDemand) {
 			IModel model = demandCreateModel(uri);
 			if (model == null) {
-				throw new RuntimeException("Cannot create a model for '" + uri
-						+ "'; a registered model factory is needed");
+				throw new RuntimeException("Cannot create a model for '" + uri + "'; a registered model factory is needed");
 			}
 
 			if (!model.isLoaded()) {
@@ -495,19 +473,10 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 		if (state().modelFactoryRegistry == null) {
 			state().modelFactoryRegistry = new ModelFactoryRegistry() {
 				@Override
-				protected IModel.Factory delegatedGetFactory(URI uri,
-				                                             String contentTypeIdentifier) {
-					IModel.Factory.Registry defaultModelFactoryRegistry = ModelPlugin
-							.getDefault().getModelFactoryRegistry();
+				protected IModel.Factory delegatedGetFactory(URI uri, String contentTypeIdentifier) {
+					IModel.Factory.Registry defaultModelFactoryRegistry = ModelPlugin.getDefault().getModelFactoryRegistry();
 
-					return convert(getFactory(uri,
-							defaultModelFactoryRegistry
-									.getProtocolToFactoryMap(),
-							defaultModelFactoryRegistry
-									.getExtensionToFactoryMap(),
-							defaultModelFactoryRegistry
-									.getContentTypeToFactoryMap(),
-							contentTypeIdentifier, false));
+					return convert(getFactory(uri, defaultModelFactoryRegistry.getProtocolToFactoryMap(), defaultModelFactoryRegistry.getExtensionToFactoryMap(), defaultModelFactoryRegistry.getContentTypeToFactoryMap(), contentTypeIdentifier, false));
 				}
 
 				@Override
@@ -531,24 +500,20 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 			// as class loader -> including this module then within modules of
 			// models would cause mixing of "meta-model behaviors" and
 			// "model behaviors".
-			KommaModule module = new KommaModule(
-					ModelSetSupport.class.getClassLoader());
+			KommaModule module = new KommaModule(ModelSetSupport.class.getClassLoader());
 			module.includeModule(KommaUtil.getCoreModule());
 
 			// load modules which are registered for any namespace
 			IExtensionRegistry registry = RegistryFactoryHelper.getRegistry();
 			if (registry != null) {
-				IExtensionPoint extensionPoint = registry.getExtensionPoint(
-						ModelPlugin.PLUGIN_ID, "modules");
+				IExtensionPoint extensionPoint = registry.getExtensionPoint(ModelPlugin.PLUGIN_ID, "modules");
 				if (extensionPoint != null) {
-					for (IConfigurationElement cfgElement : extensionPoint
-							.getConfigurationElements()) {
+					for (IConfigurationElement cfgElement : extensionPoint.getConfigurationElements()) {
 						if (cfgElement.isValid()) {
 							String namespace = cfgElement.getAttribute("uri");
 							if (namespace == null || namespace.trim().isEmpty()) {
 								try {
-									KommaModule extensionModule = (KommaModule) cfgElement
-											.createExecutableExtension("class");
+									KommaModule extensionModule = (KommaModule) cfgElement.createExecutableExtension("class");
 									module.includeModule(extensionModule);
 								} catch (CoreException e) {
 									// this may happen if an extension module is stale because
@@ -590,21 +555,15 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	 * @see #demandLoadHelper(IModel)
 	 */
 	protected void handleDemandLoadException(IModel model, IOException exception) {
-		String location = model.getURI() == null ? null : model.getURI()
-				.toString();
-		Exception cause = exception instanceof IModel.IOWrappedException ? (Exception) exception
-				.getCause() : exception;
-		DiagnosticWrappedException wrappedException = new DiagnosticWrappedException(
-				location, cause);
+		String location = model.getURI() == null ? null : model.getURI().toString();
+		Exception cause = exception instanceof IModel.IOWrappedException ? (Exception) exception.getCause() : exception;
+		DiagnosticWrappedException wrappedException = new DiagnosticWrappedException(location, cause);
 		if (model.getErrors().isEmpty()) {
 			try {
-				model.getErrors()
-						.add(exception instanceof IModel.IDiagnostic ? (IModel.IDiagnostic) exception
-								: wrappedException);
+				model.getErrors().add(exception instanceof IModel.IDiagnostic ? (IModel.IDiagnostic) exception : wrappedException);
 			} catch (Exception e) {
 				// exception is not serializable
-				wrappedException = new DiagnosticWrappedException(location,
-						new RuntimeException(cause.getMessage()));
+				wrappedException = new DiagnosticWrappedException(location, new RuntimeException(cause.getMessage()));
 				model.getErrors().add(wrappedException);
 			}
 		}
@@ -624,8 +583,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 				bind(IModelSet.Internal.class).toProvider(modelSetRef::get);
 			}
 		});
-		Injector modelSetInjector = injector.getParent().getParent()
-				.createChildInjector(modules);
+		Injector modelSetInjector = injector.getParent().getParent().createChildInjector(modules);
 
 		IModelSet.Internal result = getBehaviourDelegate();
 
@@ -634,13 +592,10 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 			KommaModule module = new KommaModule();
 			// reuse module with model concepts and behaviours, but ignore its
 			// graphs
-			module.includeModule(getEntityManager().getFactory().getModule(),
-					false);
+			module.includeModule(getEntityManager().getFactory().getModule(), false);
 			module.addWritableGraph(metaDataContext);
 			module.addReadableGraph(metaDataContext);
-			IEntityManager newMetaDataManager = modelSetInjector
-					.getInstance(IEntityManagerFactory.class)
-					.createChildFactory(module).get();
+			IEntityManager newMetaDataManager = modelSetInjector.getInstance(IEntityManagerFactory.class).createChildFactory(module).get();
 			// merge data (rdf:type, etc.) into other repository
 			result = (IModelSet.Internal) newMetaDataManager.toInstance(getReference(), IModelSet.class, config);
 		}
@@ -670,14 +625,12 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	}
 
 	@Override
-	public void removeMetaDataListener(
-			INotificationListener<INotification> listener) {
+	public void removeMetaDataListener(INotificationListener<INotification> listener) {
 		state().metaDataNotificationSupport.removeListener(listener);
 	}
 
 	@Override
-	public void removeSubjectListener(IReference subject,
-	                                  INotificationListener<INotification> listener) {
+	public void removeSubjectListener(IReference subject, INotificationListener<INotification> listener) {
 		Map<IReference, CopyOnWriteArraySet<INotificationListener<INotification>>> subjectListeners = state().subjectListeners;
 
 		CopyOnWriteArraySet<INotificationListener<INotification>> listeners;
@@ -692,29 +645,35 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	public void setDataChangeSupport(IDataChangeSupport changeSupport) {
 		state().dataChangeSupport = changeSupport;
 		state().dataChangeSupport.addChangeListener(new IDataChangeListener() {
-			URI metaDataContext = getMetaDataContext();
+			final URI metaDataContext = getMetaDataContext();
 
 			@Override
 			public void dataChanged(List<IDataChange> changes) {
-				ModelSetSupport.this
-						.fireNotifications(transformChanges(changes));
+				ModelSetSupport.this.fireNotifications(transformChanges(changes));
 
-				Set<IReference> changedModels = new HashSet<IReference>();
+				Set<IReference> modifiedModels = new HashSet<>();
+				Set<IReference> importsModified = new HashSet<>();
 				for (IDataChange change : changes) {
-					if (change instanceof IStatementChange) {
-						IReference context = ((IStatementChange) change)
-								.getStatement().getContext();
+					if (change instanceof IStatementChange stmtChange) {
+						var stmt = stmtChange.getStatement();
+						IReference context = stmt.getContext();
 						if (context != null) {
-							changedModels.add(context);
+							modifiedModels.add(context);
+						}
+						if (OWL.PROPERTY_IMPORTS.equals(stmt.getPredicate())) {
+							importsModified.add(stmt.getSubject());
 						}
 					}
 				}
-				for (IReference changedModel : changedModels) {
-					if (changedModel.getURI() != null
-							&& !changedModel.getURI().equals(metaDataContext)) {
-						IModel model = getModel(changedModel.getURI(), false);
+				for (IReference modifiedModel : modifiedModels) {
+					if (modifiedModel.getURI() != null && !modifiedModel.getURI().equals(metaDataContext)) {
+						IModel model = getModel(modifiedModel.getURI(), false);
 						if (model != null && model.isLoaded()) {
 							model.setModified(true);
+							// ensure that updates to owl:imports are reflected in entity manager
+							if (importsModified.contains(modifiedModel)) {
+								model.unloadManager();
+							}
 						}
 					}
 				}
@@ -724,20 +683,13 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 
 	@Inject
 	protected void setMetaDataChangeSupport(IDataChangeSupport changeSupport) {
-		changeSupport.addChangeListener(new IDataChangeListener() {
-			@Override
-			public void dataChanged(List<IDataChange> changes) {
-				state().metaDataNotificationSupport
-						.fireNotifications(transformChanges(changes));
-			}
-		});
+		changeSupport.addChangeListener(changes -> state().metaDataNotificationSupport.fireNotifications(transformChanges(changes)));
 	}
 
 	/*
 	 * Javadoc copied from interface.
 	 */
-	public void setModelFactoryRegistry(
-			IModel.Factory.Registry modelFactoryRegistry) {
+	public void setModelFactoryRegistry(IModel.Factory.Registry modelFactoryRegistry) {
 		state().modelFactoryRegistry = modelFactoryRegistry;
 	}
 
@@ -752,21 +704,15 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet,
 	 * Transforms changes tracked in the repository into {@link INotification}s
 	 */
 	protected List<INotification> transformChanges(List<IDataChange> changes) {
-		List<INotification> notifications = new ArrayList<INotification>(
-				changes.size());
+		List<INotification> notifications = new ArrayList<INotification>(changes.size());
 		for (IDataChange change : changes) {
 			if (change instanceof INotification) {
 				notifications.add((INotification) change);
-			} else if (change instanceof INamespaceChange) {
-				INamespaceChange nsChange = (INamespaceChange) change;
-				notifications
-						.add(new NamespaceNotification(nsChange.getPrefix(),
-								nsChange.getOldNS(), nsChange.getNewNS()));
+			} else if (change instanceof INamespaceChange nsChange) {
+				notifications.add(new NamespaceNotification(nsChange.getPrefix(), nsChange.getOldNS(), nsChange.getNewNS()));
 			} else {
 				IStatementChange stmtChange = (IStatementChange) change;
-				notifications.add(new StatementNotification(
-						getBehaviourDelegate(), stmtChange.isAdd(), stmtChange
-						.getStatement()));
+				notifications.add(new StatementNotification(getBehaviourDelegate(), stmtChange.isAdd(), stmtChange.getStatement()));
 			}
 		}
 		return notifications;

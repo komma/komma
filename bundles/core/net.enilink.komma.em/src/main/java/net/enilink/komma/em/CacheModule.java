@@ -10,6 +10,9 @@
  *******************************************************************************/
 package net.enilink.komma.em;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -50,7 +53,8 @@ public class CacheModule extends AbstractModule {
 	}
 
 	public static CacheBuilder<Object, Object> DEFAULT_BUILDER = CacheBuilder.newBuilder()
-			.expireAfterAccess(2, TimeUnit.MINUTES).maximumSize(30000);
+			.expireAfterAccess(Duration.of(2, ChronoUnit.MINUTES))
+			.maximumSize(30000);
 
 	protected final CacheBuilder<Object, Object> cacheBuilder;
 
@@ -120,7 +124,7 @@ public class CacheModule extends AbstractModule {
 						Object stmtObject = stmt.getObject();
 
 						// refresh existing subjects and objects
-						boolean subjectRefreshed = stmtSubject != null ? refresh(stmtSubject) : false;
+						boolean subjectRefreshed = stmtSubject != null && refresh(stmtSubject);
 						if (stmtObject != null) {
 							refresh(stmtObject);
 						}

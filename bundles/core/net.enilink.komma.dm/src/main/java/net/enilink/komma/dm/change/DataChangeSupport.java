@@ -25,22 +25,22 @@ import net.enilink.komma.dm.internal.change.RemoveChange;
  * 
  */
 public class DataChangeSupport implements IDataChangeSupport {
-	static class Options {
+	protected static class Options {
 		volatile Boolean enabled;
 		volatile Mode mode;
 	}
 
-	protected Map<IDataManager, List<IDataChange>> activeDataManagers = new HashMap<>();
-	protected WeakHashMap<IDataManager, Options> dataManagerOptions = new WeakHashMap<>();
+	protected final Map<IDataManager, List<IDataChange>> activeDataManagers = new HashMap<>();
+	protected final WeakHashMap<IDataManager, Options> dataManagerOptions = new WeakHashMap<>();
 
-	private CopyOnWriteArraySet<IDataChangeListener> listeners = new CopyOnWriteArraySet<>();
-	private CopyOnWriteArraySet<IDataChangeListener> internalListeners = new CopyOnWriteArraySet<>();
+	private final CopyOnWriteArraySet<IDataChangeListener> listeners = new CopyOnWriteArraySet<>();
+	private final CopyOnWriteArraySet<IDataChangeListener> internalListeners = new CopyOnWriteArraySet<>();
 
 	private volatile boolean defaultEnabled = true;
-	private ThreadLocal<Boolean> perThreadEnabled = new ThreadLocal<>();
+	private final ThreadLocal<Boolean> perThreadEnabled = new ThreadLocal<>();
 
 	private volatile Mode defaultMode = Mode.VERIFY_NONE;
-	private ThreadLocal<Mode> perThreadMode = new ThreadLocal<>();
+	private final ThreadLocal<Mode> perThreadMode = new ThreadLocal<>();
 
 	@Override
 	public void add(IDataManager dm, IStatement stmt) {
@@ -75,7 +75,7 @@ public class DataChangeSupport implements IDataChangeSupport {
 		synchronized (activeDataManagers) {
 			List<IDataChange> changes = activeDataManagers.get(dm);
 			if (changes != null && !changes.isEmpty()) {
-				committed = new ArrayList<IDataChange>(changes);
+				committed = new ArrayList<>(changes);
 				changes.clear();
 			}
 		}
@@ -85,12 +85,7 @@ public class DataChangeSupport implements IDataChangeSupport {
 	}
 
 	private <K, T> List<T> ensureList(Map<K, List<T>> map, K key) {
-		List<T> list = map.get(key);
-		if (list == null) {
-			list = new ArrayList<T>();
-			map.put(key, list);
-		}
-		return list;
+		return map.computeIfAbsent(key, k -> new ArrayList<T>());
 	}
 
 	@Override
@@ -124,7 +119,7 @@ public class DataChangeSupport implements IDataChangeSupport {
 	public boolean isEnabled(IDataManager dm) {
 		Boolean perThreadEnabledValue = perThreadEnabled.get();
 		if (perThreadEnabledValue != null) {
-			return perThreadEnabledValue.booleanValue();
+			return perThreadEnabledValue;
 		} else {
 			synchronized (dataManagerOptions) {
 				Options options = dataManagerOptions.get(dm);
@@ -188,11 +183,7 @@ public class DataChangeSupport implements IDataChangeSupport {
 			perThreadEnabled.set(enabled);
 		} else {
 			synchronized (dataManagerOptions) {
-				Options options = dataManagerOptions.get(dm);
-				if (options == null) {
-					options = new Options();
-					dataManagerOptions.put(dm, options);
-				}
+				Options options = dataManagerOptions.computeIfAbsent(dm, k -> new Options());
 				options.enabled = enabled;
 			}
 		}
@@ -204,11 +195,7 @@ public class DataChangeSupport implements IDataChangeSupport {
 			perThreadMode.set(mode);
 		} else {
 			synchronized (dataManagerOptions) {
-				Options options = dataManagerOptions.get(dm);
-				if (options == null) {
-					options = new Options();
-					dataManagerOptions.put(dm, options);
-				}
+				Options options = dataManagerOptions.computeIfAbsent(dm, k -> new Options());
 				options.mode = mode;
 			}
 		}

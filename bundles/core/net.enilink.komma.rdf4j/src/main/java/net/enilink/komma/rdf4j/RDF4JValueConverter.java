@@ -1,9 +1,6 @@
 package net.enilink.komma.rdf4j;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
@@ -33,18 +30,22 @@ import net.enilink.komma.internal.rdf4j.RDF4JReference;
 
 public class RDF4JValueConverter {
 	private static final IRI[] EMPTY_IRIS = {};
-	private static final IRI[] NULL_IRI = { null };
+	private static final IRI[] NULL_IRI = {null};
 
 	protected ValueFactory valueFactory;
 	protected final Map<String, BNode> bnodeMap = new HashMap<>();
+	protected final Map<Value, IValue> valueCache = new LinkedHashMap<>((int)(1000 / 0.75f + 1), 0.75f, true) {
+		protected boolean removeEldestEntry(Map.Entry<Value, IValue> eldest) {
+			return this.size() > 1000;
+		}
+	};
 
 	@Inject
 	public RDF4JValueConverter(ValueFactory valueFactory) {
 		this.valueFactory = valueFactory;
 	}
 
-	public Dataset createDataset(IReference[] readContexts,
-			IReference[] modifyContexts) {
+	public Dataset createDataset(IReference[] readContexts, IReference[] modifyContexts) {
 		SimpleDataset ds = new SimpleDataset();
 		for (IRI graph : toRdf4jIRI(readContexts)) {
 			ds.addDefaultGraph(graph);
@@ -70,10 +71,12 @@ public class RDF4JValueConverter {
 		if (value == null) {
 			return null;
 		}
-		if (value instanceof Resource) {
-			return new RDF4JReference((Resource) value);
-		}
-		return new RDF4JLiteral((Literal) value);
+		return valueCache.computeIfAbsent(value, v -> {
+			if (v instanceof Resource) {
+				return new RDF4JReference((Resource) v);
+			}
+			return new RDF4JLiteral((Literal) v);
+		});
 	}
 
 	public BindingSet toRdf4j(IBindings<?> bindings) {
@@ -86,9 +89,7 @@ public class RDF4JValueConverter {
 
 	public Statement toRdf4j(IStatement next) {
 		return valueFactory.createStatement((Resource) toRdf4j(next.getSubject()),
-				toRdf4j(next.getPredicate().getURI()),
-				toRdf4j((IValue) next.getObject()),
-				toRdf4j(next.getContext()));
+				toRdf4j(next.getPredicate().getURI()), toRdf4j((IValue) next.getObject()), toRdf4j(next.getContext()));
 	}
 
 	public Resource toRdf4j(IReference reference) {
@@ -99,10 +100,8 @@ public class RDF4JValueConverter {
 			reference = ((IReferenceable) reference).getReference();
 		}
 		if (reference instanceof RDF4JReference) {
-			Resource resource = ((RDF4JReference) reference)
-					.getRDF4JResource();
-			if (resource instanceof BNode
-					&& ((BNode) resource).getID().startsWith("new-")) {
+			Resource resource = ((RDF4JReference) reference).getRDF4JResource();
+			if (resource instanceof BNode && ((BNode) resource).getID().startsWith("new-")) {
 				// enforce that newly created RDF4J blank nodes are also
 				// correctly converted
 				reference = new BlankNode(reference.toString());
@@ -131,36 +130,33 @@ public class RDF4JValueConverter {
 				}
 				return valueFactory.createBNode(id);
 			}
-			throw new KommaException(
-					"Cannot convert blank node with nominal value '"
-							+ valueAsString + "' to RDF4J blank node.");
+			throw new KommaException("Cannot convert blank node with nominal value '" + valueAsString + "' to RDF4J blank node.");
 		}
 	}
 
 	public Value toRdf4j(IValue value) {
-		if (value == null) {
-			return null;
-		}
-		if (value instanceof IReference) {
-			return toRdf4j((IReference) value);
-		}
-		if (value instanceof ILiteral) {
-			if (value instanceof RDF4JLiteral) {
-				return ((RDF4JLiteral) value).getRDF4JLiteral();
+		switch (value) {
+			case null -> {
+				return null;
 			}
-			ILiteral literal = (ILiteral) value;
-			String language = literal.getLanguage();
-			if (language != null) {
-				return valueFactory.createLiteral(literal.getLabel(), language);
-			} else {
-				return valueFactory
-						.createLiteral(literal.getLabel(),
-								(IRI) toRdf4j(literal
-										.getDatatype()));
+			case IReference reference -> {
+				return toRdf4j(reference);
+			}
+			case ILiteral literal -> {
+				if (value instanceof RDF4JLiteral) {
+					return ((RDF4JLiteral) value).getRDF4JLiteral();
+				}
+				String language = literal.getLanguage();
+				if (language != null) {
+					return valueFactory.createLiteral(literal.getLabel(), language);
+				} else {
+					return valueFactory.createLiteral(literal.getLabel(), toRdf4j(literal.getDatatype()));
+				}
+			}
+			default -> {
 			}
 		}
-		throw new KommaException("Cannot convert object of type: "
-				+ value.getClass().getName());
+		throw new KommaException("Cannot convert object of type: " + value.getClass().getName());
 	}
 
 	public IRI toRdf4j(URI uri) {
@@ -177,8 +173,7 @@ public class RDF4JValueConverter {
 		} else if (references.length == 1 && references[0] == null) {
 			return NULL_IRI;
 		}
-		List<IRI> iris = new ArrayList<IRI>(
-				references.length);
+		List<IRI> iris = new ArrayList<>(references.length);
 		for (IReference ref : references) {
 			if (ref == null) {
 				iris.add(null);
@@ -189,7 +184,7 @@ public class RDF4JValueConverter {
 				}
 			}
 		}
-		return iris.toArray(new IRI[iris.size()]);
+		return iris.toArray(new IRI[0]);
 	}
 
 	public void reset() {

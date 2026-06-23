@@ -21,7 +21,7 @@ public class RDF4JLiteral implements ILiteral {
 			if (literal.getDatatype() != null) {
 				datatype = URIs.createURI(literal.getDatatype().toString());
 			} else {
-				datatype = literal.getLanguage() == null ? net.enilink.komma.core.Literal.TYPE_STRING
+				datatype = literal.getLanguage().isEmpty() ? net.enilink.komma.core.Literal.TYPE_STRING
 						: net.enilink.komma.core.Literal.TYPE_LANGSTRING;
 			}
 		}

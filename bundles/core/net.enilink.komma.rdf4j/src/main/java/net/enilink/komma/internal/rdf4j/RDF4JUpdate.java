@@ -45,9 +45,7 @@ public class RDF4JUpdate implements IDataManagerUpdate {
 		try {
 			this.parsedUpdate = QueryParserUtil.parseUpdate(
 					QueryLanguage.SPARQL, update, baseURI);
-		} catch (MalformedQueryException e) {
-			throw new KommaException(e);
-		} catch (UnsupportedQueryLanguageException e) {
+		} catch (MalformedQueryException | UnsupportedQueryLanguageException e) {
 			throw new KommaException(e);
 		}
 		this.baseURI = baseURI;

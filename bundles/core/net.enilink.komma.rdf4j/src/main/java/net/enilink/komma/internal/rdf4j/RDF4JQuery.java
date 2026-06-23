@@ -10,12 +10,7 @@
  *******************************************************************************/
 package net.enilink.komma.internal.rdf4j;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BooleanQuery;
@@ -41,7 +36,7 @@ import net.enilink.komma.rdf4j.RDF4JValueConverter;
  */
 public class RDF4JQuery<R> implements IDataManagerQuery<R> {
 	protected static Set<String> supportedProperties = new HashSet<>(
-			Arrays.asList(Properties.TIMEOUT));
+			List.of(Properties.TIMEOUT));
 
 	protected Map<String, Object> properties;
 
@@ -57,7 +52,7 @@ public class RDF4JQuery<R> implements IDataManagerQuery<R> {
 		this.query = query;
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
+	@SuppressWarnings({ "unchecked"})
 	@Override
 	public IExtendedIterator<R> evaluate() {
 		try {
@@ -110,8 +105,7 @@ public class RDF4JQuery<R> implements IDataManagerQuery<R> {
 
 	@Override
 	public IDataManagerQuery<R> setProperty(String propertyName, Object value) {
-		switch (propertyName) {
-		case Properties.TIMEOUT:
+		if (propertyName.equals(Properties.TIMEOUT)) {
 			if (value instanceof Number) {
 				long timeout = ((Number) value).longValue();
 				query.setMaxExecutionTime(timeout <= 0 ? 0 : (int) (timeout / 1000));

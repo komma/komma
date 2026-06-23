@@ -19,14 +19,16 @@ import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 
 public class RDF4JReference implements IReference {
-	private Resource resource;
+	private final Resource resource;
 
-	private URI uri;
+	private final URI uri;
 
 	public RDF4JReference(Resource resource) {
 		this.resource = resource;
 		if (resource instanceof IRI) {
-			this.uri = URIs.createURI(((IRI) resource).stringValue());
+			this.uri = URIs.createURI(resource.stringValue());
+		} else {
+			this.uri = null;
 		}
 	}
 
