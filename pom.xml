@@ -30,6 +30,7 @@ KOMMA is a framework for linked data applications. It supports the management an
 		<commons-text.version>1.15.0</commons-text.version>
 		<guava.version>33.6.0-jre</guava.version>
 		<guice.version>7.0.0</guice.version>
+		<jmh.version>1.37</jmh.version>
 		<httpclient.version>4.5.14</httpclient.version>
 		<httpcore.version>4.4.16</httpcore.version>
 		<javax.inject.version>1</javax.inject.version>
@@ -798,6 +799,7 @@ KOMMA is a framework for linked data applications. It supports the management an
 
 	<modules>
 		<module>features</module>
+		<module>benchmarks</module>
 	</modules>
 
 	<repositories>

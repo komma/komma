@@ -88,7 +88,7 @@ public class RDF4JValueConverter {
 	}
 
 	public Statement toRdf4j(IStatement next) {
-		return valueFactory.createStatement((Resource) toRdf4j(next.getSubject()),
+		return valueFactory.createStatement(toRdf4j(next.getSubject()),
 				toRdf4j(next.getPredicate().getURI()), toRdf4j((IValue) next.getObject()), toRdf4j(next.getContext()));
 	}
 
