@@ -669,7 +669,9 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet, B
 					if (modifiedModel.getURI() != null && !modifiedModel.getURI().equals(metaDataContext)) {
 						IModel model = getModel(modifiedModel.getURI(), false);
 						if (model != null && model.isLoaded()) {
-							model.setModified(true);
+							if (! model.isModified()) {
+								model.setModified(true);
+							}
 							// ensure that updates to owl:imports are reflected in entity manager
 							if (importsModified.contains(modifiedModel)) {
 								model.unloadManager();

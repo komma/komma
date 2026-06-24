@@ -31,6 +31,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.enilink.komma.core.*;
+import net.enilink.komma.em.DelegatingTransaction;
 import net.enilink.komma.model.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -54,20 +56,6 @@ import net.enilink.commons.util.extensions.RegistryFactoryHelper;
 import net.enilink.composition.traits.Behaviour;
 import net.enilink.komma.common.notify.INotification;
 import net.enilink.komma.common.notify.INotificationBroadcaster;
-import net.enilink.komma.core.EntityVar;
-import net.enilink.komma.core.IBindings;
-import net.enilink.komma.core.IEntity;
-import net.enilink.komma.core.IEntityDecorator;
-import net.enilink.komma.core.IEntityManager;
-import net.enilink.komma.core.IEntityManagerFactory;
-import net.enilink.komma.core.INamespace;
-import net.enilink.komma.core.IReference;
-import net.enilink.komma.core.KommaException;
-import net.enilink.komma.core.KommaModule;
-import net.enilink.komma.core.Statement;
-import net.enilink.komma.core.StatementPattern;
-import net.enilink.komma.core.URI;
-import net.enilink.komma.core.URIs;
 import net.enilink.komma.dm.IDataManager;
 import net.enilink.komma.em.DelegatingEntityManager;
 import net.enilink.komma.em.concepts.IOntology;
@@ -81,6 +69,218 @@ import net.enilink.vocab.rdf.RDF;
 public abstract class ModelSupport
 		implements IModel, IModel.Internal, INotificationBroadcaster<INotification>, Model, Behaviour<IModel.Internal> {
 	private final static Logger log = LoggerFactory.getLogger(ModelSupport.class);
+
+	class ModelEntityManager extends DelegatingEntityManager {
+		final ITransaction transaction = new DelegatingTransaction() {
+			@Override
+			public ITransaction getDelegate() {
+				return ModelEntityManager.this.getDelegate().getTransaction();
+			}
+
+			@Override
+			public void commit() {
+				super.commit();
+				if (stale) {
+					closeDelegate();
+				}
+			}
+
+			@Override
+			public void rollback() {
+				super.rollback();
+				if (stale) {
+					closeDelegate();
+				}
+			}
+		};
+
+		final State s;
+		boolean stale;
+
+		IEntityManager delegate;
+		final Map<URI, String> uriToPrefix = new ConcurrentHashMap<>();
+		final Map<String, URI> prefixToUri = new ConcurrentHashMap<>();
+
+		ModelEntityManager(State s) {
+			this.s = s;
+		}
+
+		@Override
+		public IEntityManager getDelegate() {
+			synchronized (s) {
+				if (delegate == null) {
+					IEntityManagerFactory factory = s.factoryRef != null ? s.factoryRef.get() : null;
+					if (factory == null) {
+						factory = getModelSet().getEntityManagerFactory()
+								// allow interception of call to getModuleClosure()
+								.createChildFactory(getBehaviourDelegate().getModuleClosure());
+						s.factoryRef = new WeakReference<>(factory);
+					}
+					delegate = factory.create(this);
+					delegate.addDecorator(new ModelInjector());
+				}
+			}
+			return delegate;
+		}
+
+		@Override
+		public ITransaction getTransaction() {
+			return transaction;
+		}
+
+		@Override
+		public void removeNamespace(String prefix) {
+			if (prefix == null) {
+				prefix = "";
+			}
+			for (Namespace ns : new ArrayList<>(getModelNamespaces())) {
+				if (prefix.equals(ns.getPrefix())) {
+					getModelNamespaces().remove(ns);
+					clearNamespaceCache();
+					fireNotifications(List.of(new NamespaceNotification(prefix, ns.getURI(), null)));
+					break;
+				}
+			}
+		}
+
+		@Override
+		public void setNamespace(String prefix, URI uri) {
+			if (prefix == null) {
+				prefix = "";
+			}
+			URI oldUri = null;
+			// prevent addition of redundant prefix/uri combinations
+			if (uri.equals(super.getNamespace(prefix))) {
+				return;
+			}
+			for (Namespace ns : new ArrayList<>(getModelNamespaces())) {
+				if (prefix.equals(ns.getPrefix())) {
+					ns.setURI(uri);
+					oldUri = ns.getURI();
+					break;
+				}
+			}
+			if (oldUri == null) {
+				Namespace ns = getEntityManager().create(Namespace.class);
+				ns.setPrefix(prefix);
+				ns.setURI(uri);
+				getModelNamespaces().add(ns);
+			}
+			clearNamespaceCache();
+			fireNotifications(List.of(new NamespaceNotification(prefix, oldUri, uri)));
+		}
+
+		@Override
+		public IExtendedIterator<INamespace> getNamespaces() {
+			Map<String, INamespace> prefixMap = new LinkedHashMap<>();
+			for (final INamespace ns : WrappedIterator.create(getAllModelNamespaces().iterator())
+					.andThen(super.getNamespaces().mapWith(
+							// mark inherited namespaces as derived
+							ns -> new net.enilink.komma.core.Namespace(ns.getPrefix(), ns.getURI(), true)))) {
+				prefixMap.computeIfAbsent(ns.getPrefix(), prefix -> new net.enilink.komma.core.Namespace(
+						ns.getPrefix(), ns.getURI(), ns.isDerived()));
+			}
+			return WrappedIterator.create(prefixMap.values().iterator());
+		}
+
+		List<INamespace> getAllModelNamespaces() {
+			List<INamespace> nsList = new ArrayList<>(getModelNamespaces());
+			boolean emptyPrefix = false;
+			for (INamespace ns : nsList) {
+				if (ns.getPrefix().isEmpty()) {
+					emptyPrefix = true;
+					break;
+				}
+			}
+			if (!emptyPrefix) {
+				nsList.add(new net.enilink.komma.core.Namespace("", getURI().appendLocalPart("")));
+			}
+			KommaModule module = s.moduleClosure;
+			if (module != null) {
+				for (INamespace ns : module.getNamespaces()) {
+					nsList.add(new net.enilink.komma.core.Namespace(ns.getPrefix(), ns.getURI(),
+							true));
+				}
+			}
+			return nsList;
+		}
+
+		@Override
+		public URI getNamespace(String prefix) {
+			if (prefix == null || prefix.isEmpty()) {
+				return getURI().appendLocalPart("");
+			}
+			if (prefixToUri.isEmpty()) {
+				cacheNamespaces();
+			}
+			URI uri = prefixToUri.get(prefix);
+			return uri != null ? uri : super.getNamespace(prefix);
+		}
+
+		@Override
+		public String getPrefix(URI namespace) {
+			if (namespace.equals(getURI().appendLocalPart(""))) {
+				return "";
+			}
+			if (uriToPrefix.isEmpty()) {
+				cacheNamespaces();
+			}
+			String prefix = uriToPrefix.get(namespace);
+			return prefix != null ? prefix : super.getPrefix(namespace);
+		}
+
+		private void clearNamespaceCache() {
+			uriToPrefix.clear();
+			prefixToUri.clear();
+			// ensure that also all namespaces in the associated KommaModule are refreshed
+			s.reset();
+		}
+
+		private void cacheNamespaces() {
+			for (INamespace ns : getAllModelNamespaces()) {
+				// in case of multiple prefixes for the same URI
+				// use the lexicographically first prefix
+				String prefix = uriToPrefix.get(ns.getURI());
+				if (prefix == null || prefix.compareTo(ns.getPrefix()) > 0) {
+					uriToPrefix.put(ns.getURI(), ns.getPrefix());
+				}
+				prefixToUri.put(ns.getPrefix(), ns.getURI());
+			}
+		}
+
+		@Override
+		public void close() {
+			synchronized (s) {
+				if (delegate != null) {
+					// manager can't be directly closed with active transaction
+					if (delegate.getTransaction().isActive()) {
+						this.stale = true;
+					} else {
+						closeDelegate();
+					}
+				}
+			}
+		}
+
+		protected void closeDelegate() {
+			synchronized (s) {
+				if (delegate != null) {
+					delegate.close();
+					delegate = null;
+				}
+			}
+		}
+
+		@Override
+		protected void finalize() throws Throwable {
+			// remove all state if weak reference to this
+			// entity manager is gc'ed
+			close();
+			ModelSupport.this.state.remove();
+			delegate = null;
+			super.finalize();
+		}
+	}
 
 	class ModelInjector implements IEntityDecorator {
 		@Override
@@ -99,7 +299,7 @@ public abstract class ModelSupport
 		} else if (map2 == null || map2.isEmpty()) {
 			return map1;
 		} else {
-			Map<Object, Object> mergedMap = new HashMap<Object, Object>(map2);
+			Map<Object, Object> mergedMap = new HashMap<>(map2);
 			mergedMap.putAll(map1);
 			return mergedMap;
 		}
@@ -129,174 +329,7 @@ public abstract class ModelSupport
 				synchronized (this) {
 					manager = managerRef != null ? managerRef.get() : null;
 					if (manager == null) {
-						manager = new DelegatingEntityManager() {
-							IEntityManager delegate;
-							final Map<URI, String> uriToPrefix = new ConcurrentHashMap<>();
-							final Map<String, URI> prefixToUri = new ConcurrentHashMap<>();
-
-							@Override
-							public IEntityManager getDelegate() {
-								synchronized (State.this) {
-									if (delegate == null) {
-										IEntityManagerFactory factory = factoryRef != null ? factoryRef.get() : null;
-										if (factory == null) {
-											factory = getModelSet().getEntityManagerFactory()
-													// allow interception of call to getModuleClosure()
-													.createChildFactory(getBehaviourDelegate().getModuleClosure());
-											factoryRef = new WeakReference<>(factory);
-										}
-										delegate = factory.create(managerRef.get());
-										delegate.addDecorator(new ModelInjector());
-									}
-								}
-								return delegate;
-							}
-
-							@Override
-							public void removeNamespace(String prefix) {
-								if (prefix == null) {
-									prefix = "";
-								}
-								for (Namespace ns : new ArrayList<>(getModelNamespaces())) {
-									if (prefix.equals(ns.getPrefix())) {
-										getModelNamespaces().remove(ns);
-										clearNamespaceCache();
-										fireNotifications(List.of(new NamespaceNotification(prefix, ns.getURI(), null)));
-										break;
-									}
-								}
-							}
-
-							@Override
-							public void setNamespace(String prefix, URI uri) {
-								if (prefix == null) {
-									prefix = "";
-								}
-								URI oldUri = null;
-								// prevent addition of redundant prefix/uri combinations
-								if (uri.equals(super.getNamespace(prefix))) {
-									return;
-								}
-								for (Namespace ns : new ArrayList<>(getModelNamespaces())) {
-									if (prefix.equals(ns.getPrefix())) {
-										ns.setURI(uri);
-										oldUri = ns.getURI();
-										break;
-									}
-								}
-								if (oldUri == null) {
-									Namespace ns = getEntityManager().create(Namespace.class);
-									ns.setPrefix(prefix);
-									ns.setURI(uri);
-									getModelNamespaces().add(ns);
-								}
-								clearNamespaceCache();
-								fireNotifications(List.of(new NamespaceNotification(prefix, oldUri, uri)));
-							}
-
-							@Override
-							public IExtendedIterator<INamespace> getNamespaces() {
-								Map<String, INamespace> prefixMap = new LinkedHashMap<>();
-								for (final INamespace ns : WrappedIterator.create(getAllModelNamespaces().iterator())
-										.andThen(super.getNamespaces().mapWith(
-												// mark inherited namespaces as derived
-												new IMap<>() {
-													@Override
-													public INamespace map(INamespace ns) {
-														return new net.enilink.komma.core.Namespace(ns.getPrefix(), ns.getURI(), true);
-													}
-												}))) {
-									prefixMap.computeIfAbsent(ns.getPrefix(), prefix -> new net.enilink.komma.core.Namespace(
-											ns.getPrefix(), ns.getURI(), ns.isDerived()));
-								}
-								return WrappedIterator.create(prefixMap.values().iterator());
-							}
-
-							List<INamespace> getAllModelNamespaces() {
-								List<INamespace> nsList = new ArrayList<INamespace>(getModelNamespaces());
-								boolean emptyPrefix = false;
-								for (INamespace ns : nsList) {
-									if (ns.getPrefix().isEmpty()) {
-										emptyPrefix = true;
-										break;
-									}
-								}
-								if (!emptyPrefix) {
-									nsList.add(new net.enilink.komma.core.Namespace("", getURI().appendLocalPart("")));
-								}
-								KommaModule module = moduleClosure;
-								if (module != null) {
-									for (INamespace ns : module.getNamespaces()) {
-										nsList.add(new net.enilink.komma.core.Namespace(ns.getPrefix(), ns.getURI(),
-												true));
-									}
-								}
-								return nsList;
-							}
-
-							@Override
-							public URI getNamespace(String prefix) {
-								if (prefix == null || prefix.isEmpty()) {
-									return getURI().appendLocalPart("");
-								}
-								if (prefixToUri.isEmpty()) {
-									cacheNamespaces();
-								}
-								URI uri = prefixToUri.get(prefix);
-								return uri != null ? uri : super.getNamespace(prefix);
-							}
-
-							@Override
-							public String getPrefix(URI namespace) {
-								if (namespace.equals(getURI().appendLocalPart(""))) {
-									return "";
-								}
-								if (uriToPrefix.isEmpty()) {
-									cacheNamespaces();
-								}
-								String prefix = uriToPrefix.get(namespace);
-								return prefix != null ? prefix : super.getPrefix(namespace);
-							}
-
-							private void clearNamespaceCache() {
-								uriToPrefix.clear();
-								prefixToUri.clear();
-								// ensure that also all namespaces in the associated KommaModule are refreshed
-								reset();
-							}
-
-							private void cacheNamespaces() {
-								for (INamespace ns : getAllModelNamespaces()) {
-									// in case of multiple prefixes for the same URI
-									// use the lexicographically first prefix
-									String prefix = uriToPrefix.get(ns.getURI());
-									if (prefix == null || prefix.compareTo(ns.getPrefix()) > 0) {
-										uriToPrefix.put(ns.getURI(), ns.getPrefix());
-									}
-									prefixToUri.put(ns.getPrefix(), ns.getURI());
-								}
-							}
-
-							@Override
-							public void close() {
-								synchronized (State.this) {
-									if (delegate != null) {
-										delegate.close();
-										delegate = null;
-									}
-								}
-							}
-
-							@Override
-							protected void finalize() throws Throwable {
-								// remove all state if weak reference to this
-								// entity manager is gc'ed
-								close();
-								ModelSupport.this.state.remove();
-								delegate = null;
-								super.finalize();
-							}
-						};
+						manager = new ModelEntityManager(this);
 						injector.injectMembers(manager);
 						managerRef = new WeakReference<>(manager);
 					}
@@ -345,8 +378,8 @@ public abstract class ModelSupport
 				manager.add(new Statement(ontology, OWL.PROPERTY_IMPORTS, uri));
 				if (!isActive) {
 					manager.getTransaction().commit();
-					unloadManager();
 				}
+				unloadManager();
 			} catch (Exception e) {
 				if (!isActive) {
 					manager.getTransaction().rollback();
@@ -443,12 +476,7 @@ public abstract class ModelSupport
 					// are likely already contained within this model
 					IExtendedIterator<IReference> imports = dm.createQuery(ISparqlConstants.PREFIX
 									+ " SELECT ?import WHERE { ?ontology owl:imports ?import FILTER NOT EXISTS { ?import a owl:Ontology } }",
-							getURI().toString(), false, getURI()).evaluate().mapWith(new IMap<Object, IReference>() {
-						@Override
-						public IReference map(Object value) {
-							return (IReference) ((IBindings<?>) value).get("import");
-						}
-					});
+							getURI().toString(), false, getURI()).evaluate().mapWith(value -> (IReference) ((IBindings<?>) value).get("import"));
 					while (imports.hasNext()) {
 						URI uri = imports.next().getURI();
 						if (uri != null) {
@@ -694,7 +722,7 @@ public abstract class ModelSupport
 		IURIConverter uriConverter = getURIConverter();
 		Map<?, ?> response = options == null ? null : (Map<?, ?>) options.get(IURIConverter.OPTION_RESPONSE);
 		if (response == null) {
-			response = new HashMap<Object, Object>();
+			response = new HashMap<>();
 		}
 
 		InputStream inputStream = null;
@@ -750,8 +778,8 @@ public abstract class ModelSupport
 				manager.remove(new Statement(getURI(), OWL.PROPERTY_IMPORTS, importedOnt));
 				if (!isActive) {
 					manager.getTransaction().commit();
-					unloadManager();
 				}
+				unloadManager();
 			} catch (Exception e) {
 				if (!isActive) {
 					manager.getTransaction().rollback();
@@ -800,15 +828,13 @@ public abstract class ModelSupport
 		} else {
 			Map<?, ?> response = options == null ? null : (Map<?, ?>) options.get(IURIConverter.OPTION_RESPONSE);
 			if (response == null) {
-				response = new HashMap<Object, Object>();
+				response = new HashMap<>();
 			}
 			IURIConverter uriConverter = getURIConverter();
-			OutputStream outputStream = uriConverter.createOutputStream(getURI(),
-					new ExtensibleURIConverter.OptionsMap(IURIConverter.OPTION_RESPONSE, response, options));
-			try {
+			try (OutputStream outputStream = uriConverter.createOutputStream(getURI(),
+					new ExtensibleURIConverter.OptionsMap(IURIConverter.OPTION_RESPONSE, response, options))) {
 				getBehaviourDelegate().save(outputStream, options);
 			} finally {
-				outputStream.close();
 				Long timeStamp = (Long) response.get(IURIConverter.RESPONSE_TIME_STAMP_PROPERTY);
 				if (timeStamp != null) {
 					// setTimeStamp(timeStamp);
@@ -863,7 +889,7 @@ public abstract class ModelSupport
 			if (!equal) {
 				Map<?, ?> response = options == null ? null : (Map<?, ?>) options.get(IURIConverter.OPTION_RESPONSE);
 				if (response == null) {
-					response = new HashMap<Object, Object>();
+					response = new HashMap<>();
 				}
 				try (OutputStream newContents = uriConverter.createOutputStream(getURI(),
 						new ExtensibleURIConverter.OptionsMap(IURIConverter.OPTION_RESPONSE, response, options))) {
@@ -935,7 +961,7 @@ public abstract class ModelSupport
 		if (!equal) {
 			Map<?, ?> response = options == null ? null : (Map<?, ?>) options.get(IURIConverter.OPTION_RESPONSE);
 			if (response == null) {
-				response = new HashMap<Object, Object>();
+				response = new HashMap<>();
 			}
 			try (OutputStream newContents = uriConverter.createOutputStream(getURI(),
 					new ExtensibleURIConverter.OptionsMap(IURIConverter.OPTION_RESPONSE, response, options))) {

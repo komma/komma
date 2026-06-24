@@ -16,7 +16,7 @@ import net.enilink.komma.dm.change.IStatementChange;
 /**
  * Internal command object representing a statement being added to the
  * connection.
- * 
+ *
  */
 public class AddChange implements IDataChange, IStatementChange {
 	protected final IStatement stmt;
@@ -27,8 +27,7 @@ public class AddChange implements IDataChange, IStatementChange {
 
 	protected IReference[] getModifyContexts() {
 		IReference context = stmt.getContext();
-		return context == null ? new IReference[0]
-				: new IReference[] { context };
+		return context == null ? new IReference[0] : new IReference[]{context};
 	}
 
 	@Override
@@ -42,8 +41,7 @@ public class AddChange implements IDataChange, IStatementChange {
 
 	@Override
 	public String toString() {
-		return new StringBuilder().append("statement added ")
-				.append(super.toString()).toString();
+		return "statement added " + super.toString();
 	}
 
 	public void undo(IDataManager dm) {

@@ -24,7 +24,7 @@ public class ThreadLocalDataManager extends DelegatingDataManager {
 	@Inject
 	protected UnitOfWork uow;
 
-	private ThreadLocal<IDataManager> delegate = new ThreadLocal<IDataManager>();
+	private final ThreadLocal<IDataManager> delegate = new ThreadLocal<IDataManager>();
 
 	public ThreadLocalDataManager() {
 		super();
@@ -60,6 +60,6 @@ public class ThreadLocalDataManager extends DelegatingDataManager {
 	@Override
 	public boolean isOpen() {
 		IDataManager manager = delegate.get();
-		return (manager != null) ? manager.isOpen() : false;
+		return manager != null && manager.isOpen();
 	}
 }

@@ -374,7 +374,7 @@ public interface IEntityManager extends AutoCloseable {
 	 * Returns the resource-level transaction object. The {@link ITransaction}
 	 * instance may be used serially to begin and commit multiple transactions.
 	 * 
-	 * @return IKommaTransaction instance
+	 * @return ITransaction instance
 	 */
 	ITransaction getTransaction();
 

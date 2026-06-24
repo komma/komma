@@ -38,7 +38,7 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 		IModelSet.Internal, IRepositoryModelSet, Behaviour<IRepositoryModelSet> {
 	public Repository createRepository(IGraph config) throws RepositoryException {
 		NotifyingSail store = new MemoryStore();
-		if (! Boolean.FALSE.equals(getInference())) {
+		if (Boolean.TRUE.equals(getInference())) {
 			store = new SchemaCachingRDFSInferencer(store);
 		}
 		SailRepository repository = new SailRepository(store);

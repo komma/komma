@@ -40,8 +40,7 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public void add(Iterable<? extends IStatement> statements,
-			boolean ignoreImports) {
+	public void add(Iterable<? extends IStatement> statements, boolean ignoreImports) {
 		getDelegate().add(statements, ignoreImports);
 	}
 
@@ -91,14 +90,12 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public <T> T createNamed(net.enilink.komma.core.URI uri, Class<T> concept,
-			Class<?>... concepts) {
+	public <T> T createNamed(net.enilink.komma.core.URI uri, Class<T> concept, Class<?>... concepts) {
 		return getDelegate().createNamed(uri, concept, concepts);
 	}
 
 	@Override
-	public IEntity createNamed(net.enilink.komma.core.URI uri,
-			IReference... concepts) {
+	public IEntity createNamed(net.enilink.komma.core.URI uri, IReference... concepts) {
 		return getDelegate().createNamed(uri, concepts);
 	}
 
@@ -118,8 +115,7 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public IQuery<?> createQuery(String query, String baseURI,
-			boolean includeInferred) {
+	public IQuery<?> createQuery(String query, String baseURI, boolean includeInferred) {
 		return getDelegate().createQuery(query, baseURI, includeInferred);
 	}
 
@@ -134,14 +130,12 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public IUpdate createUpdate(String update, String baseURI,
-			boolean includeInferred) {
+	public IUpdate createUpdate(String update, String baseURI, boolean includeInferred) {
 		return getDelegate().createUpdate(update, baseURI, includeInferred);
 	}
 
 	@Override
-	public <T> T assignTypes(Object entity, Class<T> concept,
-			Class<?>... concepts) {
+	public <T> T assignTypes(Object entity, Class<T> concept, Class<?>... concepts) {
 		return getDelegate().assignTypes(entity, concept, concepts);
 	}
 
@@ -166,8 +160,7 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public <T> T findRestricted(IReference reference, Class<T> concept,
-			Class<?>... concepts) {
+	public <T> T findRestricted(IReference reference, Class<T> concept, Class<?>... concepts) {
 		return getDelegate().findRestricted(reference, concept, concepts);
 	}
 
@@ -224,14 +217,12 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public boolean hasMatch(IReference subject, IReference predicate,
-			Object object) {
+	public boolean hasMatch(IReference subject, IReference predicate, Object object) {
 		return getDelegate().hasMatch(subject, predicate, object);
 	}
 
 	@Override
-	public boolean hasMatchAsserted(IReference subject, IReference predicate,
-			Object object) {
+	public boolean hasMatchAsserted(IReference subject, IReference predicate, Object object) {
 		return getDelegate().hasMatchAsserted(subject, predicate, object);
 	}
 
@@ -246,14 +237,12 @@ public abstract class DelegatingEntityManager implements IEntityManager {
 	}
 
 	@Override
-	public IExtendedIterator<IStatement> match(IReference subject,
-			IReference predicate, Object object) {
+	public IExtendedIterator<IStatement> match(IReference subject, IReference predicate, Object object) {
 		return getDelegate().match(subject, predicate, object);
 	}
 
 	@Override
-	public IExtendedIterator<IStatement> matchAsserted(IReference subject,
-			IReference predicate, IValue object) {
+	public IExtendedIterator<IStatement> matchAsserted(IReference subject, IReference predicate, IValue object) {
 		return getDelegate().matchAsserted(subject, predicate, object);
 	}
 
