@@ -101,6 +101,12 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 
 	protected boolean changeSupportEnabled;
 
+	protected final Map<String, Query> queryCache = new LinkedHashMap<>((int)(100 / 0.75f + 1), 0.75f, true) {
+		protected boolean removeEldestEntry(Map.Entry<String, Query> eldest) {
+			return this.size() > 100;
+		}
+	};
+
 	@Inject
 	public RDF4JRepositoryDataManager(Repository repository, IDataChangeSupport changeSupport) {
 		try {
@@ -218,7 +224,9 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 
 	protected Query prepareRdf4jQuery(String query, String baseURI, boolean includeInferred)
 			throws MalformedQueryException, RepositoryException {
-		return getConnection().prepareQuery(QueryLanguage.SPARQL, query, baseURI);
+		var result = queryCache.computeIfAbsent(query, q -> getConnection().prepareQuery(QueryLanguage.SPARQL, q, baseURI));
+		result.clearBindings();
+		return result;
 	}
 
 	protected String ensureBindingsInGraph(String query, IReference[] contexts) {
@@ -311,7 +319,7 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 			setDataset(rdf4jQuery, contexts);
 			rdf4jQuery.setIncludeInferred(includeInferred);
 
-			RDF4JQuery<R> result = new RDF4JQuery<R>(rdf4jQuery);
+			RDF4JQuery<R> result = new RDF4JQuery<>(rdf4jQuery);
 			injector.injectMembers(result);
 			return result;
 		} catch (RepositoryException e) {
