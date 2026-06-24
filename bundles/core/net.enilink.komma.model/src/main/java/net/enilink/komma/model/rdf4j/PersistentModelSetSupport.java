@@ -68,7 +68,7 @@ public abstract class PersistentModelSetSupport extends MemoryModelSetSupport {
 		}
 
 		NotifyingSail store = new NativeStore(new File(repoUri.toFileString()));
-		if (! Boolean.FALSE.equals(getInference())) {
+		if (Boolean.TRUE.equals(getInference())) {
 			store = new SchemaCachingRDFSInferencer(store);
 		}
 		SailRepository repository = new SailRepository(store);

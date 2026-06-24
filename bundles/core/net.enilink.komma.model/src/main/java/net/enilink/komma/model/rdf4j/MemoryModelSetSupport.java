@@ -64,10 +64,6 @@ public abstract class MemoryModelSetSupport implements IModelSet,
 	public void collectInjectionModules(Collection<Module> modules, IGraph config) {
 		modules.add(new RDF4JModule());
 		modules.add(new AbstractModule() {
-			@Override
-			protected void configure() {
-			}
-
 			@Singleton
 			@Provides
 			Repository provideRepository() {
