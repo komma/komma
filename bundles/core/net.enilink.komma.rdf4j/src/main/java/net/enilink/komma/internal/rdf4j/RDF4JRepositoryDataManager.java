@@ -42,6 +42,9 @@ import org.eclipse.rdf4j.sail.SailConnectionListener;
 
 public class RDF4JRepositoryDataManager implements IDataManager {
 	class ChangeListener implements SailConnectionListener {
+		static final int MAX_CACHED_CHANGES = 10000;
+		int changes;
+
 		@Override
 		public void statementAdded(org.eclipse.rdf4j.model.Statement st, boolean inferred) {
 			if (changeSupportEnabled) {
@@ -51,6 +54,11 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 								valueConverter.fromRdf4j(st.getObject()),
 								valueConverter.fromRdf4j(st.getContext()),
 								inferred));
+				// ensure that not too many changes are kept in memory
+				if (changes++ >= MAX_CACHED_CHANGES) {
+					changeSupport.flush(RDF4JRepositoryDataManager.this);
+					changes = 0;
+				}
 			}
 		}
 
@@ -63,6 +71,11 @@ public class RDF4JRepositoryDataManager implements IDataManager {
 								valueConverter.fromRdf4j(st.getObject()),
 								valueConverter.fromRdf4j(st.getContext()),
 								inferred));
+				// ensure that not too many changes are kept in memory
+				if (changes++ >= MAX_CACHED_CHANGES) {
+					changeSupport.flush(RDF4JRepositoryDataManager.this);
+					changes = 0;
+				}
 			}
 		}
 

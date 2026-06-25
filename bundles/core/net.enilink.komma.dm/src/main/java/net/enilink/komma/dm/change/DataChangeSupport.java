@@ -5,13 +5,6 @@
  */
 package net.enilink.komma.dm.change;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 import net.enilink.komma.core.IStatement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.dm.IDataManager;
@@ -19,10 +12,17 @@ import net.enilink.komma.dm.internal.change.AddChange;
 import net.enilink.komma.dm.internal.change.NamespaceChange;
 import net.enilink.komma.dm.internal.change.RemoveChange;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 /**
  * Tracks changes to an {@link IDataManager} by implementing the interface
  * {@link IDataChangeSupport}.
- * 
+ *
  */
 public class DataChangeSupport implements IDataChangeSupport {
 	protected static class Options {
@@ -30,7 +30,7 @@ public class DataChangeSupport implements IDataChangeSupport {
 		volatile Mode mode;
 	}
 
-	protected final Map<IDataManager, List<IDataChange>> activeDataManagers = new HashMap<>();
+	protected final Map<IDataManager, List<IDataChange>> activeDataManagers = new ConcurrentHashMap<>();
 	protected final WeakHashMap<IDataManager, Options> dataManagerOptions = new WeakHashMap<>();
 
 	private final CopyOnWriteArraySet<IDataChangeListener> listeners = new CopyOnWriteArraySet<>();
@@ -48,9 +48,7 @@ public class DataChangeSupport implements IDataChangeSupport {
 	}
 
 	private void addChange(IDataManager dm, IDataChange change) {
-		synchronized (activeDataManagers) {
-			ensureList(activeDataManagers, dm).add(change);
-		}
+		activeDataManagers.computeIfAbsent(dm, k -> new ArrayList<>()).add(change);
 	}
 
 	@Override
@@ -64,28 +62,25 @@ public class DataChangeSupport implements IDataChangeSupport {
 
 	@Override
 	public void close(IDataManager dm) {
-		synchronized (activeDataManagers) {
-			activeDataManagers.remove(dm);
-		}
+		activeDataManagers.remove(dm);
 	}
 
 	@Override
 	public void commit(IDataManager dm) {
-		List<IDataChange> committed = null;
-		synchronized (activeDataManagers) {
-			List<IDataChange> changes = activeDataManagers.get(dm);
-			if (changes != null && !changes.isEmpty()) {
-				committed = new ArrayList<>(changes);
-				changes.clear();
-			}
-		}
-		if (committed != null) {
-			handleChanges(committed);
-		}
+		flush(dm);
 	}
 
-	private <K, T> List<T> ensureList(Map<K, List<T>> map, K key) {
-		return map.computeIfAbsent(key, k -> new ArrayList<T>());
+	@Override
+	public void flush(IDataManager dm) {
+		List<IDataChange> copiedChanges = null;
+		List<IDataChange> changes = activeDataManagers.get(dm);
+		if (changes != null && !changes.isEmpty()) {
+			copiedChanges = new ArrayList<>(changes);
+			changes.clear();
+		}
+		if (copiedChanges != null) {
+			handleChanges(copiedChanges);
+		}
 	}
 
 	@Override
@@ -203,7 +198,7 @@ public class DataChangeSupport implements IDataChangeSupport {
 
 	@Override
 	public void setNamespace(IDataManager dm, String prefix, URI oldNS,
-			URI newNS) {
+	                         URI newNS) {
 		IDataChange change = new NamespaceChange(prefix, oldNS, newNS);
 		addChange(dm, change);
 	}

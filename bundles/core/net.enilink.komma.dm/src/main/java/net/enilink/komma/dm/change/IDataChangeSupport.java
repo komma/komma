@@ -60,6 +60,14 @@ public interface IDataChangeSupport {
 	void close(IDataManager dm);
 
 	/**
+	 * Flushes intermediate changes to registered listeners.
+	 *
+	 * @param dm
+	 *            The data manager whose changes should be flushed
+	 */
+	void flush(IDataManager dm);
+
+	/**
 	 * Tracks the commit of a transaction.
 	 * 
 	 * @param dm
