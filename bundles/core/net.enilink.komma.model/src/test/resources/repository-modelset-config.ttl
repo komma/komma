@@ -1,21 +1,17 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
-@prefix rep: <http://www.openrdf.org/config/repository#>.
-@prefix sr: <http://www.openrdf.org/config/repository/sail#>.
-@prefix sail: <http://www.openrdf.org/config/sail#>.
-@prefix ms: <http://www.openrdf.org/config/sail/memory#>.
-@prefix sb: <http://www.openrdf.org/config/sail/base#>.
+@prefix config: <tag:rdf4j.org,2023:config/>.
 @prefix models: <http://enilink.net/vocab/komma/models#> .
 
 <test:modelset> a models:RepositoryModelSet ;
 	models:repository <test:repo> .
 
-<test:repo> a rep:Repository ;
-   rep:repositoryID "memory" ;
+<test:repo> a config:Repository ;
+   config:rep.id "memory" ;
    rdfs:label "Memory-based data repository" ;
-   rep:repositoryImpl [
-      rep:repositoryType "openrdf:SailRepository" ;
-      sr:sailImpl [
-         sail:sailType "openrdf:MemoryStore" ;
-         ms:persist false
+   config:rep.impl [
+      config:rep.type "openrdf:SailRepository" ;
+      config:sail.impl [
+         config:sail.type "openrdf:MemoryStore" ;
+         config:mem.persist false
       ]
    ] .
