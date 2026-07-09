@@ -14,8 +14,6 @@ class ModelSetFactory implements IModelSetFactory {
 	@Inject
 	private IEntityManagerFactory metaDataManagerFactory;
 
-	private ConcurrentHashMap<URI, IModelSet> modelSets = new ConcurrentHashMap<>();
-
 	@Override
 	public IModelSet createModelSet(URI... modelSetTypes) {
 		IGraph config = new LinkedHashGraph();
@@ -67,13 +65,7 @@ class ModelSetFactory implements IModelSetFactory {
 		if (modelSet instanceof IModelSet.Internal) {
 			modelSet = ((IModelSet.Internal) modelSet).create(fullConfig);
 		}
-		modelSets.put(ms.getURI(), modelSet);
 		return modelSet;
-	}
-
-	@Override
-	public IModelSet getModelSet(URI name) {
-		return modelSets.get(name);
 	}
 
 	@Inject

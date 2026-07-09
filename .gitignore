@@ -5,6 +5,7 @@ target/
 .project
 .idea/
 *.iml
+*.versionsBackup
 # exclude symlinks
 META-INF
 OSGI-INF

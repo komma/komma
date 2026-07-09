@@ -459,7 +459,7 @@ public abstract class ModelSupport
 			if (modelSetRefs.isEmpty()) {
 				return null;
 			}
-			this.modelSet = modelSet = (IModelSet.Internal) injector.getInstance(IModelSetFactory.class)
+			this.modelSet = modelSet = (IModelSet.Internal) injector.getInstance(IModelSetRegistry.class)
 					.getModelSet(modelSetRefs.getFirst().getURI());
 		}
 		return modelSet;

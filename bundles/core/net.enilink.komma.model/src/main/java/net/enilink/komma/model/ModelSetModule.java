@@ -47,6 +47,8 @@ public class ModelSetModule extends AbstractModule {
 	protected void configure() {
 		bind(UnitOfWork.class).in(Singleton.class);
 		bind(IUnitOfWork.class).to(UnitOfWork.class);
+		bind(ModelSetRegistry.class).in(Singleton.class);
+		bind(IModelSetRegistry.class).to(ModelSetRegistry.class);
 	}
 
 	@Provides

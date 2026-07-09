@@ -45,11 +45,7 @@ import net.enilink.komma.em.CacheModule;
 import net.enilink.komma.em.CachingEntityManagerModule;
 import net.enilink.komma.em.EntityManagerFactoryModule;
 import net.enilink.komma.em.util.KommaUtil;
-import net.enilink.komma.model.IContentHandler;
-import net.enilink.komma.model.IModel;
-import net.enilink.komma.model.IModelSet;
-import net.enilink.komma.model.IURIConverter;
-import net.enilink.komma.model.ModelPlugin;
+import net.enilink.komma.model.*;
 import net.enilink.komma.model.concepts.ModelSet;
 import net.enilink.komma.model.event.IStatementNotification;
 import net.enilink.komma.model.event.NamespaceNotification;
@@ -320,6 +316,7 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet, B
 		State theState = state.get();
 		if (theState != null) {
 			getUnitOfWork().end();
+			theState.injector.getInstance(IModelSetRegistry.class).unregisterModelSet(getURI());
 			theState.dispose();
 			try {
 				metaDataManagerFactory.close();
@@ -572,17 +569,8 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet, B
 
 	@Override
 	public Internal create(IGraph config) {
-		List<Module> modules = new ArrayList<Module>();
+		List<Module> modules = new ArrayList<>();
 		getBehaviourDelegate().collectInjectionModules(modules, config);
-
-		AtomicReference<IModelSet.Internal> modelSetRef = new AtomicReference<>();
-		modules.add(new AbstractModule() {
-			@Override
-			protected void configure() {
-				bind(IModelSet.class).toProvider(modelSetRef::get);
-				bind(IModelSet.Internal.class).toProvider(modelSetRef::get);
-			}
-		});
 		Injector modelSetInjector = injector.getParent().getParent().createChildInjector(modules);
 
 		IModelSet.Internal result = getBehaviourDelegate();
@@ -601,13 +589,12 @@ public abstract class ModelSetSupport implements IModelSet.Internal, ModelSet, B
 		}
 
 		result.init(modelSetInjector);
-		modelSetRef.set(result);
 
 		// create a model for the metadata context
 		if (metaDataContext != null) {
 			result.createModel(metaDataContext);
 		}
-
+		modelSetInjector.getInstance(IModelSetRegistry.class).registerModelSet(result);
 		return result;
 	}
 
