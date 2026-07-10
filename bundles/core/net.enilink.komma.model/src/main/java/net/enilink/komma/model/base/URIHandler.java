@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010 Fraunhofer IWU and others.
+ * Copyright (c) 2009, 2026 Fraunhofer IWU and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -103,11 +104,10 @@ public class URIHandler implements IURIHandler {
 	public OutputStream createOutputStream(URI uri, Map<?, ?> options)
 			throws IOException {
 		try {
-			URL url = new URL(uri.toString());
+			URL url = getURL(uri);
 			final URLConnection urlConnection = url.openConnection();
 			urlConnection.setDoOutput(true);
-			if (urlConnection instanceof HttpURLConnection) {
-				final HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
+			if (urlConnection instanceof HttpURLConnection httpURLConnection) {
 				httpURLConnection.setRequestMethod("PUT");
 				return new FilterOutputStream(urlConnection.getOutputStream()) {
 					@Override
@@ -162,7 +162,7 @@ public class URIHandler implements IURIHandler {
 		StringBuilder accept = new StringBuilder();
 		for (Map.Entry<String, Double> mimeType : ModelUtil
 				.getSupportedMimeTypes().entrySet()) {
-			if (accept.length() > 0) {
+			if (!accept.isEmpty()) {
 				accept.append(", ");
 			}
 			accept.append(mimeType.getKey()).append("; q=")
@@ -178,11 +178,10 @@ public class URIHandler implements IURIHandler {
 	 * @exception IOException
 	 *                if there is a problem obtaining an open input stream.
 	 */
-
 	public InputStream createInputStream(URI uri, Map<?, ?> options)
 			throws IOException {
 		try {
-			URL url = new URL(uri.toString());
+			URL url = getURL(uri);
 			final URLConnection urlConnection = url.openConnection();
 			urlConnection.setRequestProperty("Accept", acceptHeader());
 			InputStream result = getInputStream(urlConnection);
@@ -209,11 +208,10 @@ public class URIHandler implements IURIHandler {
 	 */
 	public void delete(URI uri, Map<?, ?> options) throws IOException {
 		try {
-			URL url = new URL(uri.toString());
+			URL url = getURL(uri);
 			URLConnection urlConnection = url.openConnection();
 			urlConnection.setDoOutput(true);
-			if (urlConnection instanceof HttpURLConnection) {
-				final HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
+			if (urlConnection instanceof HttpURLConnection httpURLConnection) {
 				httpURLConnection.setRequestMethod("DELETE");
 				int responseCode = getResponseCode(httpURLConnection);
 				switch (responseCode) {
@@ -247,7 +245,7 @@ public class URIHandler implements IURIHandler {
 				.get(IURIConverter.OPTION_URI_CONVERTER);
 		InputStream inputStream = null;
 		Map<String, ?> result = null;
-		Map<Object, Object> context = new HashMap<Object, Object>();
+		Map<Object, Object> context = new HashMap<>();
 		try {
 			for (IContentHandler contentHandler : uriConverter
 					.getContentHandlers()) {
@@ -304,11 +302,10 @@ public class URIHandler implements IURIHandler {
 	 */
 	public boolean exists(URI uri, Map<?, ?> options) {
 		try {
-			URL url = new URL(uri.toString());
+			URL url = getURL(uri);
 			URLConnection urlConnection = url.openConnection();
 			urlConnection.setRequestProperty("Accept", acceptHeader());
-			if (urlConnection instanceof HttpURLConnection) {
-				HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
+			if (urlConnection instanceof HttpURLConnection httpURLConnection) {
 				httpURLConnection.setRequestMethod("HEAD");
 				int responseCode = getResponseCode(httpURLConnection);
 				// TODO
@@ -328,18 +325,17 @@ public class URIHandler implements IURIHandler {
 	}
 
 	public Map<String, ?> getAttributes(URI uri, Map<?, ?> options) {
-		Map<String, Object> result = new HashMap<String, Object>();
+		Map<String, Object> result = new HashMap<>();
 		Set<String> requestedAttributes = getRequestedAttributes(options);
 		try {
-			URL url = new URL(uri.toString());
+			URL url = getURL(uri);
 			URLConnection urlConnection = null;
 			if (requestedAttributes == null
 					|| requestedAttributes
 							.contains(IURIConverter.ATTRIBUTE_READ_ONLY)) {
 				urlConnection = url.openConnection();
 				urlConnection.setRequestProperty("Accept", acceptHeader());
-				if (urlConnection instanceof HttpURLConnection) {
-					HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
+				if (urlConnection instanceof HttpURLConnection httpURLConnection) {
 					httpURLConnection.setRequestMethod("OPTIONS");
 					int responseCode = getResponseCode(httpURLConnection);
 					if (responseCode == HttpURLConnection.HTTP_OK) {
@@ -364,8 +360,7 @@ public class URIHandler implements IURIHandler {
 				if (urlConnection == null) {
 					urlConnection = url.openConnection();
 					urlConnection.setRequestProperty("Accept", acceptHeader());
-					if (urlConnection instanceof HttpURLConnection) {
-						HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
+					if (urlConnection instanceof HttpURLConnection httpURLConnection) {
 						httpURLConnection.setRequestMethod("HEAD");
 						getResponseCode(httpURLConnection);
 					}
@@ -406,7 +401,7 @@ public class URIHandler implements IURIHandler {
 	private int getResponseCode(final HttpURLConnection connection)
 			throws InterruptedException, ExecutionException, TimeoutException {
 		FutureTask<Integer> futureTask = new FutureTask<>(
-				new Callable<Integer>() {
+				new Callable<>() {
 					@Override
 					public Integer call() throws Exception {
 						setupTimeout(connection);
@@ -421,7 +416,7 @@ public class URIHandler implements IURIHandler {
 	private InputStream getInputStream(final URLConnection connection)
 			throws InterruptedException, ExecutionException, TimeoutException {
 		FutureTask<InputStream> futureTask = new FutureTask<>(
-				new Callable<InputStream>() {
+				new Callable<>() {
 					@Override
 					public InputStream call() throws Exception {
 						setupTimeout(connection);
@@ -441,5 +436,15 @@ public class URIHandler implements IURIHandler {
 	public void setAttributes(URI uri, Map<String, ?> attributes,
 			Map<?, ?> options) throws IOException {
 		// We can't update any properties via just a URL connection.
+	}
+
+	/**
+	 * Converts a URI into a URL. This implementation uses the {@link java.net.URI} class to perform the conversion.
+	 * @param uri the URI to convert
+	 * @return the corresponding URL
+	 * @throws MalformedURLException if the URI cannot be converted to a URL
+	 */
+	protected URL getURL(URI uri) throws MalformedURLException {
+		return java.net.URI.create(uri.toString()).toURL();
 	}
 }
