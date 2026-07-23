@@ -12,11 +12,13 @@ package net.enilink.komma.em;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 import net.enilink.komma.em.concepts.Person;
@@ -69,5 +71,32 @@ public class CachingEntityManagerTest extends EntityManagerTest {
 		assertNotNull(moritz);
 		assertTrue(uriMoritz + " must be converted to a person",
 			manager.toInstance(uriMoritz, Person.class, null) instanceof Person);
+	}
+
+	@Test
+	public void testCachePropertyInvalidation() {
+		URI uriWilhelm = URIs.createURI(NS + "wilhelm");
+		Person wilhelm = manager.createNamed(uriWilhelm, Person.class);
+		// as per testAdHocConversion, there should not be a cache entry for wilhelm yet
+		assertFalse(uriWilhelm + " should not be in the cache", wilhelm == manager.find(uriWilhelm));
+
+		// NOTE: accessing the property for the cached entity here hides the issue
+		//manager.find(uriWilhelm, Person.class).getName();
+
+		// set the name using the mapped property (on the un-cached entity)
+		wilhelm.setName("wilhelm");
+		assertTrue("name should be wilhelm", "wilhelm".equals(wilhelm.getName()));
+
+		// change the name using direct triple removal/addition
+		// this should invalidate property caches, but the cached entry does not "know" the property
+		URI propName = URIs.createURI(NS + "name");
+		manager.remove(new Statement(uriWilhelm, propName, "wilhelm"));
+		manager.add(new Statement(uriWilhelm, propName, "erich"));
+		assertFalse(manager.hasMatch(uriWilhelm, propName, "wilhelm"));
+		assertTrue(manager.hasMatch(uriWilhelm, propName, "erich"));
+
+		// CacheModule should have invalidated the cached values for the property, but
+		// the property had not been accessed on the cached entity and thus was skipped
+		assertTrue("mapped property value should reflect the change to 'erich'", "erich".equals(wilhelm.getName()));
 	}
 }
