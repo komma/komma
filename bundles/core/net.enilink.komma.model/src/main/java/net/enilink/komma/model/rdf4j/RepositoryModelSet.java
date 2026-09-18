@@ -24,7 +24,10 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.config.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -32,6 +35,7 @@ import java.util.Set;
 
 @Iri(MODELS.NAMESPACE + "RepositoryModelSet")
 public abstract class RepositoryModelSet extends MemoryModelSetSupport {
+	static final Logger log = LoggerFactory.getLogger(RepositoryModelSet.class);
 
 	@Transient
     @Iri(MODELS.NAMESPACE + "repository")
@@ -74,6 +78,11 @@ public abstract class RepositoryModelSet extends MemoryModelSetSupport {
             .get(implConfig.getType())
             .orElseThrow(() -> new RepositoryConfigException("Unsupported repository type: " + implConfig.getType()));
         Repository repository = factory.getRepository(implConfig);
+        String dataDirPath = getDataDirPath();
+		if (dataDirPath != null) {
+			log.info("Using data directory: " + dataDirPath);
+			repository.setDataDir(new File(dataDirPath));
+		}
         repository.init();
         addBasicKnowledge(repository);
         return repository;

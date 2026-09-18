@@ -24,12 +24,7 @@ public class CachedEntity {
 		if (contextToProperties == null) {
 			contextToProperties = new HashMap<>();
 		}
-		Map<Object, Object> properties = contextToProperties.get(context);
-		if (properties == null) {
-			properties = new HashMap<>();
-			contextToProperties.put(context, properties);
-		}
-		return properties;
+		return contextToProperties.computeIfAbsent(context, k -> new HashMap<>());
 	}
 
 	/**
