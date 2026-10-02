@@ -132,30 +132,26 @@ public class EntityVarModule extends AbstractModule {
 				EntityVar<Object> var = varMap.get(key);
 				if (var == null) {
 					synchronized (field.getDeclaringClass()) {
-						var = varMap.get(key);
-						if (var == null) {
-							var = new EntityVarImpl<Object>() {
-								boolean isValid = true;
+						var = varMap.computeIfAbsent(key, k -> new EntityVarImpl<>() {
+							boolean isValid = true;
 
-								public void remove() {
-									super.remove();
-									varMap.remove(key);
-									isValid = false;
-								}
+							public void remove() {
+								super.remove();
+								varMap.remove(k);
+								isValid = false;
+							}
 
-								@Override
-								public void set(Object value) {
-									if (!isValid && value != null) {
-										// reinsert variable into map if it was
-										// previously removed
-										varMap.put(key, this);
-										isValid = true;
-									}
-									super.set(value);
+							@Override
+							public void set(Object value) {
+								if (!isValid && value != null) {
+									// reinsert variable into map if it was
+									// previously removed
+									varMap.put(k, this);
+									isValid = true;
 								}
-							};
-							varMap.put(key, var);
-						}
+								super.set(value);
+							}
+						});
 					}
 				}
 

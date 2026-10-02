@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.Cleaner;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -68,7 +69,8 @@ import net.enilink.vocab.rdf.RDF;
 
 public abstract class ModelSupport
 		implements IModel, IModel.Internal, INotificationBroadcaster<INotification>, Model, Behaviour<IModel.Internal> {
-	private final static Logger log = LoggerFactory.getLogger(ModelSupport.class);
+	private static final Logger log = LoggerFactory.getLogger(ModelSupport.class);
+	private static final Cleaner cleaner = Cleaner.create();
 
 	class ModelEntityManager extends DelegatingEntityManager {
 		final ITransaction transaction = new DelegatingTransaction() {
@@ -270,16 +272,6 @@ public abstract class ModelSupport
 				}
 			}
 		}
-
-		@Override
-		protected void finalize() throws Throwable {
-			// remove all state if weak reference to this
-			// entity manager is gc'ed
-			close();
-			ModelSupport.this.state.remove();
-			delegate = null;
-			super.finalize();
-		}
 	}
 
 	class ModelInjector implements IEntityDecorator {
@@ -331,6 +323,10 @@ public abstract class ModelSupport
 					if (manager == null) {
 						manager = new ModelEntityManager(this);
 						injector.injectMembers(manager);
+						cleaner.register(manager, () -> {
+							// remove all state if weak reference to entity manager is gone
+							state.remove();
+						});
 						managerRef = new WeakReference<>(manager);
 					}
 				}
@@ -1037,7 +1033,7 @@ public abstract class ModelSupport
 		state().reset();
 		var managerRef = state().managerRef;
 		if (managerRef != null) {
-			IEntityManager manager = managerRef.get();
+			var manager = managerRef.get();
 			if (manager != null) {
 				manager.close();
 			}

@@ -83,7 +83,7 @@ public class GCTest {
 	public void testGC() throws Exception {
 		int count = 30;
 		final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(15);
-		final Set<Reference<IModel>> refs = Collections.synchronizedSet(new HashSet<Reference<IModel>>());
+		final Set<Reference<IModel>> refs = Collections.synchronizedSet(new HashSet<>());
 		final ReferenceQueue<IModel> refQueue = new ReferenceQueue<>();
 		class TestRunnable implements Runnable {
 			@Override
@@ -91,7 +91,7 @@ public class GCTest {
 				IUnitOfWork uow = modelSet.getUnitOfWork();
 				uow.begin();
 
-				IModel model = modelSet.createModel(URIs.createURI("test:model:" + UUID.randomUUID().toString()));
+				IModel model = modelSet.createModel(URIs.createURI("test:model:" + UUID.randomUUID()));
 				refs.add(new WeakReference<>(model, refQueue));
 
 				modelSet.getDataChangeSupport().setEnabled(null, false);
@@ -144,7 +144,6 @@ public class GCTest {
 			Thread.sleep(100);
 		}
 
-		System.out.println("Created references: " + refs.size());
 		// try to remove the model references
 		Reference<?> ref;
 		while ((ref = refQueue.remove(1000)) != null) {
