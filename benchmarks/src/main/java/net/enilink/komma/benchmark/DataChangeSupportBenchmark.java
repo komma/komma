@@ -1,10 +1,12 @@
 package net.enilink.komma.benchmark;
 
 import net.enilink.komma.core.*;
+import net.enilink.komma.dm.change.IStatementChange;
 import net.enilink.komma.model.IModel;
 import net.enilink.komma.model.IModelSet;
 import net.enilink.komma.model.MODELS;
 import net.enilink.komma.model.rdf4j.RDF4JModelSetFactory;
+import net.enilink.vocab.owl.OWL;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
@@ -20,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
@@ -55,6 +58,19 @@ public class DataChangeSupportBenchmark {
 			modelSet.getDataChangeSupport().setEnabled(null, false);
 			preloadedStatements = preload(Math.max(batchSize * 32, 1024));
 			modelSet.getDataChangeSupport().setEnabled(null, dataChangeSupportEnabled);
+			if (dataChangeSupportEnabled) {
+				var count = new AtomicLong(0);
+				modelSet.getDataChangeSupport().addChangeListener(event -> {
+					if (event instanceof IStatementChange &&
+							OWL.PROPERTY_IMPORTS.equals(((IStatementChange) event).getStatement().getPredicate())) {
+						if (((IStatementChange) event).isAdd()) {
+							count.incrementAndGet();
+						} else {
+							count.decrementAndGet();
+						}
+					}
+				});
+			}
 		}).get();
 	}
 

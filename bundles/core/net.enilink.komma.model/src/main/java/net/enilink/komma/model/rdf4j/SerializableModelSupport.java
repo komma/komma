@@ -174,7 +174,6 @@ public abstract class SerializableModelSupport implements IModel.Internal,
 				.getDataManagerFactory().get();
 		final ReconstructNodeIds nodeIdMapper = getModelSet().isPersistent() ? null
 				: new ReconstructNodeIds();
-		getModelSet().getDataChangeSupport().setEnabled(dm, false);
 		try {
 			setModelLoading(true);
 			if (in != null && in.available() > 0) {
