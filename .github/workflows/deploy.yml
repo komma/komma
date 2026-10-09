@@ -20,6 +20,16 @@ jobs:
     environment: default
 
     steps:
+      - name: Validate Sonatype credentials
+        env:
+          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        run: |
+          if [[ -z "$SONATYPE_USER" || -z "$SONATYPE_PASSWORD" ]]; then
+            echo "::error::SONATYPE_USER and SONATYPE_PASSWORD must both be set."
+            exit 1
+          fi
+
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v6.0.3
 
