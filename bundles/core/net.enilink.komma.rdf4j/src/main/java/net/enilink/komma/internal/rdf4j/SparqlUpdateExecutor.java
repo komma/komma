@@ -286,7 +286,8 @@ public class SparqlUpdateExecutor {
 	protected IExtendedIterator<?> evaluateSparql(TupleExpr tupleExpr, UpdateContext uc) {
 		try {
 			SparqlTupleExprRenderer renderer = new SparqlTupleExprRenderer();
-			String sparql = renderer.render(tupleExpr);
+			String tupleExpStr = renderer.render(tupleExpr);
+			String sparql = "SELECT * WHERE { " + tupleExpStr + " }";
 			return dm.createQuery(sparql, uc.baseURI, uc.includeInferred, uc.readContexts).evaluate();
 		} catch (KommaException e) {
 			throw e;

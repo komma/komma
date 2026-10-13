@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -109,6 +110,57 @@ class RDF4JRepositoryDataManagerTest {
 		changeSupport.removeChangeListener(listener);
 		dataManager.add(List.of(new Statement(subject, predicate, new Literal("value-2"))));
 		assertEquals(4, committedChanges.size());
+	}
+
+	/**
+	 * Tests that KOMMA is able to execute an update on its own without fully relying on RDF4J's update execution and
+	 * the associated connection listener.
+	 */
+	@Test
+	void executesUpdateWithoutListener() {
+		// ensure that the connection listener is removed so that KOMMA executes the update itself
+		if (dataManager.connection instanceof SailRepositoryConnection connection
+				&& connection.getSailConnection() instanceof NotifyingSailConnection notifyingSailConnection
+				&& dataManager.sailConnectionListener != null) {
+			notifyingSailConnection.removeConnectionListener(dataManager.sailConnectionListener);
+			dataManager.sailConnectionListener = null;
+		}
+
+		IReference subject = URIs.createURI("tag:example.org,2026:model#subject");
+		URI vocabulary = URIs.createURI("tag:example.org,2026:vocabulary");
+		Set<IStatement> expected = Set.of(
+				new Statement(subject, vocabulary.appendFragment("host"), new Literal("localhost")),
+				new Statement(subject, vocabulary.appendFragment("port"),
+						new Literal("57544", URIs.createURI("http://www.w3.org/2001/XMLSchema#int"))),
+				new Statement(subject, vocabulary.appendFragment("user"), new Literal("test-user")));
+		dataManager.add(expected.stream()
+				.map(statement -> new Statement(subject, statement.getPredicate(), new Literal("old-value")))
+				.toList());
+
+		dataManager.createUpdate("""
+				DELETE WHERE
+				{
+				<tag:example.org,2026:model#subject> <tag:example.org,2026:vocabulary#host> ?obj.
+				};
+				DELETE WHERE
+				{
+				<tag:example.org,2026:model#subject> <tag:example.org,2026:vocabulary#port> ?obj.
+				};
+				DELETE WHERE
+				{
+				<tag:example.org,2026:model#subject> <tag:example.org,2026:vocabulary#user> ?obj.
+				};
+				INSERT DATA
+				{
+				<tag:example.org,2026:model#subject> <tag:example.org,2026:vocabulary#host> "localhost"^^<http://www.w3.org/2001/XMLSchema#string> .
+				<tag:example.org,2026:model#subject> <tag:example.org,2026:vocabulary#port> "57544"^^<http://www.w3.org/2001/XMLSchema#int> .
+				<tag:example.org,2026:model#subject> <tag:example.org,2026:vocabulary#user> "test-user"^^<http://www.w3.org/2001/XMLSchema#string> .
+				};
+				""", null, false).execute();
+
+		try (var statements = dataManager.match(subject, null, null, false)) {
+			assertEquals(expected, statements.toSet());
+		}
 	}
 
 	@Test
