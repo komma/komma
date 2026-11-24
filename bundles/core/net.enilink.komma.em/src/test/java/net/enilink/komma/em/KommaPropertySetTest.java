@@ -10,9 +10,12 @@
  *******************************************************************************/
 package net.enilink.komma.em;
 
+import com.google.common.cache.Cache;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
+import com.google.inject.TypeLiteral;
 
 import net.enilink.commons.iterator.IExtendedIterator;
 import net.enilink.commons.iterator.NiceIterator;
@@ -24,6 +27,7 @@ import net.enilink.composition.properties.PropertySetFactory;
 import net.enilink.composition.properties.komma.KommaPropertySet;
 import net.enilink.composition.properties.komma.KommaPropertySetFactory;
 import net.enilink.komma.core.*;
+import net.enilink.komma.em.internal.CachedEntity;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,7 +35,10 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.AbstractList;
 import java.util.List;
 import java.util.Set;
@@ -96,6 +103,11 @@ public class KommaPropertySetTest extends EntityManagerTest {
 				throw new IllegalArgumentException("Not supported by this test");
 			}
 			return new TestKommaPropertySet<E>(subject, property, valueType, rdfValueType);
+		}
+
+		@Override
+		public boolean isIndexed(IReference subject) {
+			return super.isIndexed(subject);
 		}
 	}
 
@@ -279,7 +291,7 @@ public class KommaPropertySetTest extends EntityManagerTest {
 		a.getName();
 		// clear cache of property sets
 		((KommaPropertySetFactory) a.getInjector()
-				.getInstance(PropertySetFactory.class)).getPropertySetCache().clear();
+				.getInstance(PropertySetFactory.class)).clearPropertySetCache();
 		b = manager.createNamed(uri, Concept.class);
 		// set b's name
 		b.setName("name");
@@ -315,5 +327,47 @@ public class KommaPropertySetTest extends EntityManagerTest {
 		manager.add(new Statement(uri, anyProperty, 1337));
 		manager.refresh(a);
 		assertEquals(1337, a.getAnyProperty().toArray()[0]);
+	}
+
+	/**
+	 * Tests that the subject index of the property set factory keeps property sets
+	 * as long as they are in use and releases them afterwards.
+	 */
+	@Test
+	public void testPropertySetIndexIsGarbageCollected() throws Exception {
+		URI uri = URIs.createURI(NS + "gc");
+		Concept a = manager.createNamed(uri, Concept.class);
+		a.setName("name");
+		TestKommaPropertySetFactory factory = (TestKommaPropertySetFactory) a.getInjector()
+				.getInstance(PropertySetFactory.class);
+		assertTrue("subject should be indexed", factory.isIndexed(uri));
+
+		// the index must not be cleared while the property set is still in use
+		forceGc();
+		assertTrue("subject should still be indexed while the bean is alive", factory.isIndexed(uri));
+		Reference.reachabilityFence(a);
+
+		// release all strong references to the bean and its property sets:
+		// the local variable and the entity cache of the caching entity manager
+		Cache<Object, CachedEntity> entityCache = a.getInjector()
+				.getInstance(Key.get(new TypeLiteral<Cache<Object, CachedEntity>>() {
+				}));
+		a = null;
+		entityCache.invalidateAll();
+
+		for (int i = 0; i < 50 && factory.isIndexed(uri); i++) {
+			forceGc();
+		}
+		assertFalse("subject index should be garbage collected", factory.isIndexed(uri));
+	}
+
+	private static void forceGc() throws InterruptedException {
+		for (int i = 0; i < 3; i++) {
+			WeakReference<Object> sentinel = new WeakReference<>(new Object());
+			while (sentinel.get() != null) {
+				System.gc();
+				Thread.sleep(10);
+			}
+		}
 	}
 }
