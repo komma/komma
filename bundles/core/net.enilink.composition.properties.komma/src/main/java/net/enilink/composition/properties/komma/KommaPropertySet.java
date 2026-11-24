@@ -82,6 +82,11 @@ public class KommaPropertySet<E> implements PropertySet<E>, Set<E>, Filterable<E
 	 * thread while iterating the elements.
 	 */
 	private int refreshVersion;
+	/**
+	 * Strong reference to the factory's index bucket for this property set's subject.
+	 * It keeps the bucket alive as long as this property set is in use.
+	 */
+	KommaPropertySetFactory.Bucket bucket;
 
 	public KommaPropertySet(IReference subject, IReference property) {
 		this(subject, property, null, null);

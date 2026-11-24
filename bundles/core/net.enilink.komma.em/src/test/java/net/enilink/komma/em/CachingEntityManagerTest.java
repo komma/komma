@@ -10,6 +10,8 @@
  *******************************************************************************/
 package net.enilink.komma.em;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -17,6 +19,7 @@ import org.junit.Test;
 
 import net.enilink.komma.core.IEntity;
 import net.enilink.komma.core.KommaModule;
+import net.enilink.komma.core.Statement;
 import net.enilink.komma.core.URI;
 import net.enilink.komma.core.URIs;
 import net.enilink.komma.em.concepts.Person;
@@ -69,5 +72,27 @@ public class CachingEntityManagerTest extends EntityManagerTest {
 		assertNotNull(moritz);
 		assertTrue(uriMoritz + " must be converted to a person",
 			manager.toInstance(uriMoritz, Person.class, null) instanceof Person);
+	}
+
+	@Test
+	public void testCachePropertyInvalidation() {
+		URI uriWilhelm = URIs.createURI(NS + "wilhelm");
+		Person wilhelm = manager.createNamed(uriWilhelm, Person.class);
+		// as per testAdHocConversion, there should not be a cache entry for wilhelm yet
+		assertFalse(uriWilhelm + " should not be in the cache", wilhelm == manager.find(uriWilhelm));
+
+		// set the name using the mapped property (on the un-cached entity)
+		wilhelm.setName("wilhelm");
+		assertEquals("wilhelm", wilhelm.getName());
+
+		// change the name using direct triple removal/addition
+		URI propName = URIs.createURI(NS + "name");
+		manager.remove(new Statement(uriWilhelm, propName, "wilhelm"));
+		manager.add(new Statement(uriWilhelm, propName, "erich"));
+		assertFalse(manager.hasMatch(uriWilhelm, propName, "wilhelm"));
+		assertTrue(manager.hasMatch(uriWilhelm, propName, "erich"));
+
+		// the shared property set must have been refreshed
+		assertEquals("mapped property value should reflect the change", "erich", wilhelm.getName());
 	}
 }
