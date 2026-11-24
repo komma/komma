@@ -56,6 +56,21 @@ public abstract class ResourceSupport extends BehaviorBase implements
 			this.property = getEntityManager().find(property);
 		}
 
+		/**
+		 * Resets the cached cardinality and refreshes the property set.
+		 * <p>
+		 * The property set itself is kept as it is shared between beans via weak
+		 * references. Dropping it could lead to garbage collection of its state,
+		 * e.g. the tracking of related active transactions.
+		 */
+		void refresh() {
+			single = null;
+			PropertySet<Object> ps = propertySet;
+			if (ps != null) {
+				ps.refresh();
+			}
+		}
+
 		synchronized PropertySet<Object> getPropertySet() {
 			if (propertySet != null) {
 				return propertySet;
@@ -549,7 +564,11 @@ public abstract class ResourceSupport extends BehaviorBase implements
 
 	@Override
 	public synchronized void refresh() {
-		// reset all cached properties
-		properties = null;
+		// reset all cached property information but keep the property sets
+		if (properties != null) {
+			for (PropertyInfo propertyInfo : properties.values()) {
+				propertyInfo.refresh();
+			}
+		}
 	}
 }
